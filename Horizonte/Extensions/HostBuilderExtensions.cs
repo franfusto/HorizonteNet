@@ -44,6 +44,7 @@ public static class HostBuilderExtensions
                 StaticLogFileName = settings.FileAppenderStaticLogFileName
             };
             roller.ActivateOptions();
+            
             hierarchy.Root.AddAppender(roller);
         }
         if (settings.EnableConsoleAppender)
