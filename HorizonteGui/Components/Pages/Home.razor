@@ -1,0 +1,29 @@
+﻿@page "/"
+@using HorizonteGui.Components.Elements
+@inject HGuiSession GuiSession
+@inject IHContext Context;
+<PageTitle>@_header</PageTitle>
+@if (GuiSession.UserRegistered)
+{
+    <Main></Main>
+}
+else
+{
+    <Login></Login>    
+}
+
+
+@code
+{
+    private string _header = string.Empty;
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _header = Context.Get<HGuiSettings>()?.AppTitle ?? "Horizonte Net";
+        GuiSession.StateChanged += (sender, args) =>
+        {
+            InvokeAsync(StateHasChanged);
+        };
+    }
+
+}

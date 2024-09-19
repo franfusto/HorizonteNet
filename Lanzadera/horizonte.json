@@ -1,0 +1,73 @@
+{
+  "ModulesSettings": {
+    "ModulesPath": "./mod",
+    "RepoPath": "./repo",
+    "List": [
+      {
+        "Active": true,
+        "ModuleName": "HorizonteGui",
+        "ModuleVersion": "1.0.0",
+        "Path": null
+      }
+    ]
+  },
+  "Log4NetSettings": {
+    "RepoConversionPattern": "[%thread]  %-5p %d %5rms %-22.22c{2} %-18.18M - %m%n",
+    "RootLevel": "All",
+    "EnableFileAppender": true,
+    "EnableConsoleAppender": true,
+    "FileAppenderFileName": "horizonte.log",
+    "FileAppenderMaxSizeRollBackups": 10,
+    "FileAppenderMaximumFileSize": "2MB",
+    "FileAppenderRollingMode": 1,
+    "FileAppenderStaticLogFileName": true
+  },
+  "WorkerSettings": {
+    "List": [
+      {
+        "WorkerType": "HorizonteGui.Worker,HorizonteGui",
+        "RunOnStart": true,
+        "ServiceName": "HorizonteNet GUI"
+      },
+      {
+        "WorkerType": "Horizonte.FakeWorker,Horizonte",
+        "RunOnStart": false,
+        "ServiceName": "Fake Worker Contador"
+      },
+      {
+        "WorkerType": "Horizonte.StartEndWorker,Horizonte",
+        "RunOnStart": false,
+        "ServiceName": "StartEnd Worker"
+      }
+    ]
+  },
+  "SECommandsSettings": {
+    "StartCommands": [
+      {
+        "CommandName": "cmd",
+        "Active": true
+      }
+    ],
+    "EndCommands": [
+      {
+        "CommandName": "cmd",
+        "Active": true
+      }
+    ]
+  },
+  "HGuiSettings": {
+    "ProtectApp": false,
+    "AppPassword": "admin",
+    "AppTitle": "Horizonte Net",
+    "DefaultTheme": "material-dark",
+    "HomePageComponent": "HorizonteGui.Components.Elements.StartPage",
+    "HomePageName": "Horizonte Net",
+    "CustomMenuItems": [
+      {
+        "Icon": "",
+        "Caption": "Start",
+        "Component": "HorizonteGui.Components.Elements.StartPage"
+      }
+    ]
+  }
+}

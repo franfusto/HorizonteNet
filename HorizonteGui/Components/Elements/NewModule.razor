@@ -1,0 +1,72 @@
+@using System.Runtime.InteropServices.JavaScript
+@using System.Text
+@inject IHGesCom GesCom
+@inject IJSRuntime JsRuntime
+@inject NotificationService NotificationService
+@inject IHModManager ModManager;
+<RadzenCard Style="width: 100%">
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText TextStyle="TextStyle.H6" Text="Nuevo módulo"/>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton Text="Lmpiar" Click="CleanData" Icon="delete" Variant="Variant.Outlined" Size="ButtonSize.ExtraSmall"/>
+                <RadzenButton Text="Crear" Click="Crear" Icon="new_releases" Variant="Variant.Outlined" Size="ButtonSize.ExtraSmall"/>
+            </RadzenStack>
+
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenText Text="Nombre del módulo"></RadzenText>
+            <RadzenTextBox @bind-Value=@_moduleConfig.ModuleName/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenText Text="Versión del módulo"/>
+            <RadzenTextBox @bind-value=@_moduleConfig.ModuleVersion/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenText Text="Ruta binarios "/>
+            <RadzenTextBox @bind-value=@_moduleConfig.BinPath/>
+        </RadzenStack>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+
+    NewModuleConfig _moduleConfig = new();
+
+    protected override Task OnInitializedAsync()
+    {
+        CleanData();
+        return base.OnInitializedAsync();
+    }
+
+    public async Task Crear()
+    {
+        byte[] newmodfile = ModManager.BuildModule(_moduleConfig);
+        if (newmodfile == Array.Empty<byte>())
+        {
+            //error al crear
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error, Summary = "Error al crear el módulo",  Duration = 4000
+            });
+        }
+        else
+        {
+            string fileName = $"{_moduleConfig.ModuleName}-{_moduleConfig.ModuleVersion}.hmod";
+            await JsRuntime.InvokeAsync<object>(
+                "saveAsFile",
+                fileName,
+                Convert.ToBase64String(newmodfile)
+            );
+        }
+    }
+
+    public async Task CleanData()
+    {
+        _moduleConfig = new NewModuleConfig();
+        await InvokeAsync(StateHasChanged);
+    }
+    
+
+
+}

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <NoDefaultLaunchSettingsFile>True</NoDefaultLaunchSettingsFile>
+        <OutputType>Library</OutputType>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Radzen.Blazor" Version="5.1.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Assets\**" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+</Project>

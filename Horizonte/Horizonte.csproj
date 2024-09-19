@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <DoNotCopyLocalIfInGac>false</DoNotCopyLocalIfInGac>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugSymbols>true</DebugSymbols>
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="logconfig.xml"/>
+        <None Remove="defaults.json"/>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Metadata" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
+      <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore">
+        <HintPath>..\..\..\..\..\usr\share\dotnet\shared\Microsoft.AspNetCore.App\8.0.7\Microsoft.AspNetCore.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

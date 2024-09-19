@@ -1,0 +1,82 @@
+@using System.Data
+@using Newtonsoft.Json
+@inject IHGesCom GesCom
+@inject ILogger Log
+<RadzenStack Orientation="Orientation.Vertical">
+    @if (Command != null)
+    {
+        @foreach (var item in _paramsIn)
+        {
+            <p>@item.ParamName : @item.TypeName </p>
+            <RadzenTextArea Value="@item.JsonIn" Change="args => { UpdateValue(item.ParamName, args); }"></RadzenTextArea>
+        }
+        <RadzenButton Click="Execute" Text="Execute"></RadzenButton>
+        <RadzenText Text="@_restype"></RadzenText>
+        <RadzenTextArea  @bind-Value="@_result"></RadzenTextArea>
+    }
+</RadzenStack>
+
+
+@code {
+    [Parameter] public HCommand? Command { get; set; }
+    private string? _result = string.Empty;
+    private readonly List<Paramin> _paramsIn = new List<Paramin>();
+    private string _restype = string.Empty;
+    protected override Task OnInitializedAsync()
+    {
+        GetParamsInList();
+        return base.OnInitializedAsync();
+    }
+
+    private void GetParamsInList()
+    {
+        try
+        {
+            _restype ="Resultado: " + Command?.OutType?.FullName;
+            if (Command != null)
+            {
+                var inTypes = Command.InTypes?.Select(t => t.FullName).ToArray();
+                var inNames = Command.InNames?.ToArray();
+                if (inTypes != null && inNames !=null)
+                    for (var i = 0; i < inTypes.Length; i++)
+                    {
+                        _paramsIn.Add(new Paramin(inTypes[i], inNames[i], string.Empty));
+                    }
+            }
+        }
+        catch (Exception e)
+        {
+            Log.LogError(e.ToString());
+        }
+    }
+
+    private void UpdateValue(string paramName, string jsonValue)
+    {
+        Log.LogInformation("update: 1 " + paramName);
+        var item = _paramsIn.FirstOrDefault(x => x.ParamName == paramName);
+        if (item != null) item.JsonIn = jsonValue;
+    }
+
+    private void Execute()
+    {
+        if(Command==null) return;
+        var objparam = _paramsIn.Select(x=> x.JsonIn).ToArray();
+        _result = GesCom.RunCommandJson(Command.CommandKey, objparam);
+
+    }
+
+    public class Paramin
+    {
+        public string? TypeName { get; set; }
+        public string ParamName { get; set; }
+        public string JsonIn { get; set; }
+
+        public Paramin(string? typeName, string paramName, string jsonIn)
+        {
+            TypeName = typeName;
+            ParamName = paramName;
+            JsonIn = jsonIn;
+        }
+    }
+
+}

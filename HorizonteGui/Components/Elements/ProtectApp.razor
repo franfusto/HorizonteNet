@@ -1,0 +1,40 @@
+@inject IHContext Context
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Proteger GUI"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+        <RadzenCheckBox @bind-Value=@_hGuiSettings!.ProtectApp Name="CheckBox1"/>
+        <RadzenLabel Text="Proteger con contraseña" Component="CheckBox1"/>
+        <RadzenLabel Text="Contraseña" Component="TextBox1"/>
+        <RadzenPassword @bind-Value=@_hGuiSettings!.AppPassword Component="TextBox1"/>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private HGuiSettings _hGuiSettings = new HGuiSettings();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        Context.Update<HGuiSettings>(_hGuiSettings);
+    }
+
+    private void Get()
+    {
+        _hGuiSettings = Context.Get<HGuiSettings>() ?? new HGuiSettings();
+    }
+
+
+}

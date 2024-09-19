@@ -1,0 +1,138 @@
+@using System.Text.Json
+@using Newtonsoft.Json
+@inject IHContext Context
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Menú"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="Etiqueta"/>
+            <RadzenTextBox @bind-value="_hGuiSettings.HomePageName"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="Componente"/>
+            <RadzenTextBox @bind-value="_hGuiSettings.HomePageComponent"/>
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
+                    EditMode="DataGridEditMode.Single" Data="_list" TItem="HGuiMenuItem"
+                    RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+        <HeaderTemplate>
+            <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(HGuiMenuItem.Caption)" Title="Etiqueta">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Caption"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(HGuiMenuItem.Component)" Title="Componente">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Component"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(HGuiMenuItem.Icon)" Title="Icono">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Icon"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="item">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => EditRow(item))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                  Click="@((args) => CancelEdit(item))">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                  Click="@(args => DeleteRow(item))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+    
+</RadzenCard>
+
+@code {
+    private HGuiSettings _hGuiSettings = new HGuiSettings();
+    RadzenDataGrid<HGuiMenuItem> _grid = new RadzenDataGrid<HGuiMenuItem>();
+    List<HGuiMenuItem> _list = new ();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+   
+    
+    private void Update()
+    {
+        _hGuiSettings.CustomMenuItems = _list;
+        Context.Update<HGuiSettings>(_hGuiSettings);
+
+    }
+
+    private void Get()
+    {
+        _hGuiSettings = Context.Get<HGuiSettings>() ?? new HGuiSettings();
+        _list = _hGuiSettings.CustomMenuItems;
+    }
+    async Task InsertRow()
+    {
+        var item = new HGuiMenuItem() ;
+        await _grid.InsertRow(item);
+    }
+
+
+    void OnUpdateRow(HGuiMenuItem item)
+    {
+        _grid.Reload();
+    }
+
+    void OnCreateRow(HGuiMenuItem item)
+    {
+        _list.Add(item);
+    }
+
+    async Task EditRow(HGuiMenuItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(HGuiMenuItem item)
+    {
+         await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(HGuiMenuItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(HGuiMenuItem item)
+    {
+        var selitem = _list.FirstOrDefault(x => x.Caption == item.Caption);
+        if (selitem != null) _list.Remove(selitem);
+        await _grid.Reload();
+    }
+}

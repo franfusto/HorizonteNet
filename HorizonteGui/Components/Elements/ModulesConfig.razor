@@ -1,0 +1,43 @@
+@inject IHContext Context
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Módulos"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <div>
+            <RadzenText Text="Carpeta de instalación"/>
+            <RadzenTextBox @bind-value="_modulesSettings.ModulesPath"/>
+        </div>
+        <div>
+            <RadzenText Text="Ruta repositorio"/>
+            <RadzenTextBox @bind-value="_modulesSettings.RepoPath"/>
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private ModulesSettings _modulesSettings = new ModulesSettings();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        Context.Update<ModulesSettings>(_modulesSettings);
+    }
+
+    private void Get()
+    {
+        _modulesSettings = Context.Get<ModulesSettings>() ?? new ModulesSettings();
+    }
+
+
+}

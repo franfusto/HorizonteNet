@@ -1,0 +1,42 @@
+@inject HGuiSession GuiSession
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="25">
+            <RadzenSidebarToggle/>
+            <RadzenLabel Text="LOGIN"/>
+            <RadzenAppearanceToggle/>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenBody>
+        <RadzenStack style="width: 100%; height: 90%" Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+            <RadzenCard>
+                <br/>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
+                             Gap="20px">
+                    <RadzenPassword @bind-value=@_password Change ="() => {_correct=null; }"></RadzenPassword>
+                    <RadzenButton Text="Login" Click="DoLogin"></RadzenButton>
+                </RadzenStack>
+                @if (_correct.HasValue && !_correct.Value)
+                {
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-background-color-danger-dark" >acceso denegado</RadzenText>
+                }
+                else
+                {
+                    <br/>
+                }
+            </RadzenCard>
+        </RadzenStack>
+    </RadzenBody>
+</RadzenLayout>
+
+@code {
+
+    bool? _correct;
+    string _password = String.Empty;
+    private async Task DoLogin()
+    {
+        _correct = GuiSession.DoLogin(_password);
+
+    }
+
+}

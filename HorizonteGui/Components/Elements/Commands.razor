@@ -1,0 +1,72 @@
+@inject IHGesCom GesCom
+@inject DialogService DialogService
+<RadzenStack Orientation="Orientation.Vertical">
+
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="true" FilterMode="FilterMode.Advanced"
+                    AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left"
+                    ShowPagingSummary="true" Data="_filterlist"  LogicalFilterOperator="LogicalFilterOperator.Or"
+                    SelectionMode="DataGridSelectionMode.Single"  IsLoading=@isLoading >
+        <Columns>
+            <RadzenDataGridColumn Title=""  Width="100px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" >
+                <Template Context="data">
+                    <RadzenButton Click="async() => { await GetInfo(data);  }" Variant="Variant.Outlined" Icon="info"></RadzenButton>
+                    <RadzenButton Click="async() => { await ExecuteCommand(data);  }" Variant="Variant.Outlined" Icon="settings_slow_motion"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(HCommand.CommandKey)" Title="Key"/>
+            <RadzenDataGridColumn Property="@nameof(HCommand.Description)" Title="Description"/>
+        </Columns>
+    </RadzenDataGrid>
+    <RadzenTextBox @oninput="@(args => OnChange(args.Value?.ToString()))"/>
+</RadzenStack>
+
+@code {
+    IEnumerable<HCommand>? _comlist = new List<HCommand>();
+    IEnumerable<HCommand>? _filterlist = new List<HCommand>();
+
+    bool isLoading = false;
+
+    async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+
+    async Task ExecuteCommand(HCommand command)
+    {
+        await DialogService.OpenAsync<ExecuteCommand>(command.CommandKey, 
+            new Dictionary<string, object>() {{"Command",command}},
+            new DialogOptions() { CloseDialogOnOverlayClick = true , Resizable = true});
+    } 
+    async Task GetInfo(HCommand command)
+    {
+        await DialogService.OpenAsync<CommandInfo>(command.CommandKey, 
+            new Dictionary<string, object>() {{"Command",command}},
+            new DialogOptions() { CloseDialogOnOverlayClick = true});
+    } 
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await ShowLoading();
+        _comlist = GesCom.GetCommandList();
+        _filterlist = _comlist;
+    }
+
+    private async Task OnChange(string? text)
+    {
+        await ShowLoading();
+        if (text == null)
+        {
+            _filterlist = _comlist;
+            return;
+        }
+        text = text.ToLower();
+        if (_comlist != null) _filterlist = _comlist.Where(x => x.CommandKey.ToLower().Contains(text!));
+        
+    }
+
+}

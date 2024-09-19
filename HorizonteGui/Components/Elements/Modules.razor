@@ -1,0 +1,327 @@
+@inject IHContext Context
+@inject IHGesCom Gescom
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject IHModManager ModManager;
+
+<RadzenCard>
+
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText TextStyle="TextStyle.DisplayH5" Text="Módulos"/>
+
+            <div>
+                <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+                <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+            </div>
+        </RadzenStack>
+
+        <RadzenProgressBar Visible="_showbar" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+   
+
+        <RadzenStack Orientation="Orientation.Vertical" Visible=@(_showrepo)>
+            <RadzenDataGrid @ref="_gridrepo" AllowAlternatingRows="true" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
+                            EditMode="DataGridEditMode.Single" Data="_repofilelist" TItem="ModulesSettingsItem"
+                            RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" AllowGrouping="true" Render="@OnRender">
+                <HeaderTemplate>
+                    <RadzenButton Size="ButtonSize.ExtraSmall" Text="Cancelar" Icon="cancel" 
+                                  Variant="Variant.Outlined" Click="CancelRepoFile"/>
+
+                </HeaderTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleName)" Title="Nombre"/>
+                    <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleVersion)" Title="Versión"/>
+                    <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Active)" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                        <Template Context="item">
+                            <RadzenButton Size="ButtonSize.ExtraSmall" Icon="download" Variant="Variant.Outlined" Click=@(async () => { await OnSelectRepoFile(item); })/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+
+        <RadzenDataGrid @ref="@_grid" AllowAlternatingRows="true" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
+                        EditMode="DataGridEditMode.Single" Data="_moduleList" TItem="ModulesSettingsItem" Visible=@(!_showrepo)
+                        RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" AllowGrouping="true" Render="@OnRender">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical">
+                    <RadzenStack Visible="@(!_showlocal)" Orientation="Orientation.Horizontal">
+                        <RadzenButton Disabled=@(!_showbuttons) Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow"
+                                      Size="ButtonSize.Small" Text="Añadir manualmente"/>
+                        <RadzenButton Disabled=@(!_showbuttons) Text="Instalar desde archivo" Variant="Variant.Outlined"
+                                      Icon="file_open" Size="ButtonSize.Small" Click="OnSelectedLocalFile"/>
+                        <RadzenButton Disabled=@(!_showbuttons) Text="Instalar desde repositorio" Variant="Variant.Outlined" Icon="download"
+                                      Size="ButtonSize.Small" Click="SelectRepoFile"/>
+
+                    </RadzenStack>
+                    <RadzenStack Visible="@(_showlocal)" Orientation="Orientation.Horizontal" Gap="1.5rem">
+                        <RadzenTextBox Style="width: 400px;"/>
+                        <RadzenButton Text="Instalar" Icon="download" Variant="Variant.Outlined"
+                                      Size="ButtonSize.Small" Click="@(async () => { await InstallFromFromFile("asdfa"); })"/>
+                        <RadzenButton Icon="close" Variant="Variant.Outlined" Size="ButtonSize.Small"
+                                      Click=@(() => { ClosLocalFile(); })/>
+                    </RadzenStack>
+
+                </RadzenStack>
+
+
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Path)" Title="Ruta">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.Path"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleVersion)" Title="Versión">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.ModuleVersion"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleName)" Title="Nombre">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.ModuleName"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Active)" Title="Activo">
+                    <EditTemplate Context="item">
+                        <RadzenCheckBox @bind-Value="item.Active"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template Context="item">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Click="@(args => EditRow(item))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="item">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                        </RadzenButton>
+                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                      Click="@((args) => CancelEdit(item))">
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                      Click="@(args => DeleteRow(item))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+
+@code {
+    ModulesSettings _modulesSettings = new ModulesSettings();
+    List<ModulesSettingsItem> _moduleList = new();
+    RadzenDataGrid<ModulesSettingsItem> _grid = new RadzenDataGrid<ModulesSettingsItem>();
+    RadzenDataGrid<ModulesSettingsItem> _gridrepo = new();
+    List<ModulesSettingsItem> _repofilelist = new();
+    private bool _showbar = false;
+    private bool _showbuttons = true;
+    private bool _showrepo = false;
+    private bool _showlocal = false;
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    //
+    private void ErrorMessage()
+    {
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error, Summary = "Error al crear el módulo",  Duration = 4000
+        });
+    }
+    private void OkMessage()
+    {
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success, Summary = "Módulo instalado",  Duration = 4000
+        });
+    }
+
+    //desde archivo
+    private async Task ClosLocalFile()
+    {
+        await ShowLocal(false);
+    }
+
+    private async void OnSelectedLocalFile()
+    {
+        await ShowLocal(true);
+    }
+
+    private async Task InstallFromFromFile(string path)
+    {
+        ShowLocal(false);
+        ShowButtons(false);
+        ShowBar(true);
+        await Task.Yield();
+        bool result = ModManager.InstallFromFile("result"); 
+        Get();
+        ShowBar(false);
+        ShowButtons(true);
+        if(result) OkMessage();
+        else ErrorMessage();
+    }
+
+
+    // desde repositorio
+
+    private async Task OnSelectRepoFile(ModulesSettingsItem item)
+    {
+        await ShowButtons(false);
+        await ShowBar(true);
+        await ShowRepo(false);
+        await Task.Yield();
+        bool result = item.Path != null && ModManager.InstallFromRepo(item.Path) ;
+        Get();
+        await ShowButtons(true);
+        await ShowBar(false);
+        if(result) OkMessage();
+        else ErrorMessage();
+    }
+
+    private async Task CancelRepoFile()
+    {
+        await ShowRepo(false);
+        await ShowButtons(true);
+    }
+
+
+    private void GetRepoFiles()
+    {
+        _repofilelist = ModManager.GetRepoFiles();
+    }
+
+    private async Task SelectRepoFile()
+    {
+        GetRepoFiles();
+        await ShowRepo(true);
+        await ShowButtons(false);
+    }
+
+
+    private async Task ShowLocal(bool show)
+    {
+        _showlocal = show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowRepo(bool show)
+    {
+        _showrepo = show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowButtons(bool show)
+    {
+        _showbuttons = show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowBar(bool show)
+    {
+        _showbar = show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    // datos configuración
+
+    private void Get()
+    {
+        _modulesSettings = Context.Get<ModulesSettings>() ?? new ModulesSettings();
+        _moduleList = _modulesSettings.List;
+    }
+
+    private void Update()
+    {
+        _modulesSettings.List = _moduleList;
+        Context.Update<ModulesSettings>(_modulesSettings);
+    }
+
+    // rejilla modulos
+
+    void OnRender(DataGridRenderEventArgs<ModulesSettingsItem> args)
+    {
+        if (args.FirstRender)
+        {
+            args.Grid.Groups.Add(new GroupDescriptor() { Property = "ModuleName", SortOrder = SortOrder.Descending });
+            StateHasChanged();
+        }
+    }
+
+    async Task InsertRow()
+    {
+        var item = new ModulesSettingsItem() { ModuleName = "Module_name", ModuleVersion = "1.0.0", Active = false };
+        await _grid.InsertRow(item);
+    }
+
+
+    void OnUpdateRow(ModulesSettingsItem item)
+    {
+        _grid.Reload();
+    }
+
+    void OnCreateRow(ModulesSettingsItem item)
+    {
+        _moduleList.Add(item);
+    }
+
+    async Task EditRow(ModulesSettingsItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(ModulesSettingsItem item)
+    {
+        await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(ModulesSettingsItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(ModulesSettingsItem item)
+    {
+        bool result = await DialogService.OpenAsync("¿Desea eliminar el módulo?", ds =>
+            @<RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton Text="Eliminar" Click="() => ds.Close(true)"  />
+                <RadzenButton Text="Cancelar" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            </RadzenStack>);
+        if (!result)
+        {
+            return;
+        }
+        _moduleList.Remove(item);
+        await _grid.Reload();
+        Update();
+        /*
+        bool result2 = await DialogService.OpenAsync("¿Desea eliminar los archivos asociados?", ds =>
+            @<RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Text="Eliminar" Click="() => ds.Close(true)"  />
+                        <RadzenButton Text="Cancelar" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+                    </RadzenStack>);
+        if(!result2)
+        {
+            return;
+        }
+        */
+        ModManager.RemoveFiles(item);
+        
+        
+    }
+
+}

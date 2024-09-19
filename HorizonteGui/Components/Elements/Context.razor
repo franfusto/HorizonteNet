@@ -1,0 +1,41 @@
+@using System.Text
+@inject IHGesCom Gescom
+@inject IJSRuntime JSRuntime
+<RadzenButton  Click="DownloadFile" Variant="Variant.Outlined" Text="Descargar" Icon="download"></RadzenButton>
+<RadzenButton Icon="refresh" Variant="Variant.Outlined" Click="GetData"></RadzenButton>
+<br/>
+<br/>
+<RadzenCard>
+@_content
+</RadzenCard>
+
+
+@code {
+
+    MarkupString _content = new MarkupString();
+    string? _filecontent = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GetData();
+        base.OnInitialized();
+    }
+
+    private void GetData()
+    {
+        _filecontent = Gescom.RunCommand<string>("Context_GetJsonContent");
+        _content = new MarkupString(_filecontent?.Replace(Environment.NewLine,"<br/>").Replace(" ","&nbsp;") ?? string.Empty);
+    }
+
+    private async Task DownloadFile()
+    {
+        if(string.IsNullOrEmpty(_filecontent)) return;
+        string fileName = "context.json";
+        await JSRuntime.InvokeAsync<object>(
+            "saveAsFile",
+            fileName,
+            Convert.ToBase64String(Encoding.ASCII.GetBytes(_filecontent))
+        );
+    }
+
+}

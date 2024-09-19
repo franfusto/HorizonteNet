@@ -1,0 +1,74 @@
+@inject IHGesCom GesCom
+@if (_services != null)
+{
+    @foreach (var item in _services)
+    {
+        <RadzenCard >
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            
+                    <div>
+
+                        @if (@item.Isrunning)
+                        {
+                            <RadzenIcon  Icon="sync" IconStyle="IconStyle.Success"></RadzenIcon>
+                        }
+                        else
+                        {
+                            <RadzenIcon  Icon="sync_disabled" IconStyle="IconStyle.Danger"></RadzenIcon>
+                        }
+                    </div>
+                        @item.Name
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    <RadzenButton Variant="Variant.Outlined" Text="Iniciar" Click="() => { StartService(item.Typename); }"></RadzenButton>
+                    <RadzenButton Variant="Variant.Outlined" Text="Detener" Click="() => { StopService(item.Typename); }"></RadzenButton>
+                </RadzenStack>
+            </RadzenStack>
+
+
+        </RadzenCard>
+        <br/>
+        <br/>
+    }
+}
+
+
+@code {
+    private List<RunningServiceInfo>? _services;
+
+    protected override Task OnInitializedAsync()
+    {
+        LoadData();
+        return base.OnInitializedAsync();
+    }
+
+    private void LoadData()
+    {
+        _services = GesCom.RunCommand("Workers_GetServicesRunning") as List<RunningServiceInfo>;
+    }
+
+    private void StartService(string servicename)
+    {
+        GesCom.RunCommand("Workers_StartService", new object[] { servicename });
+        UpdateState();
+    }
+
+    private void StopService(string servicename)
+    {
+        GesCom.RunCommand("Workers_StopService", new object[] { servicename });
+        UpdateState();
+    }
+
+    private void UpdateState()
+    {
+        Task.Run(() =>
+        {
+            Thread.Sleep(500);
+            LoadData();
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+
+}

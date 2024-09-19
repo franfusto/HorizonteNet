@@ -1,0 +1,50 @@
+@using System.Reflection.Metadata
+@if (Command != null)
+{
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="Command Key: "/>
+            <RadzenLabel Text="@Command.CommandKey"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="Description: "/>
+            <RadzenLabel  Text="@Command.Description"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="tipos de entrada: "/>
+            <RadzenLabel  Text="@(GetInTypes())"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="nombre tipos de entrada: "/>
+            <RadzenLabel  Text="@(GetInNames())"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="Tipo de salida: "/>
+            <RadzenLabel  Text="@(Command.OutType?.Name)"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenLabel Text="Roles: "/>
+            <RadzenLabel  Text="@(GetRoles())"/>
+        </RadzenStack>
+    </RadzenStack>
+}
+
+@code {
+    [Parameter]
+    public HCommand? Command { get; set; }
+
+    private string GetInTypes()
+    {
+        return string.Join(",", Command?.InTypes!.Select(t => t.Name)!);
+    }
+    private string GetInNames()
+    {
+        if (Command?.InNames != null) return string.Join(",", Command?.InNames!);
+        return string.Empty;
+    }
+    private string GetRoles()
+    {
+        if (Command?.Roles != null) return string.Join(",", Command?.Roles!);
+        return string.Empty;
+    }
+}

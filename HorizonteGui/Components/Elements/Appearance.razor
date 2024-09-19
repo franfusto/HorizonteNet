@@ -1,0 +1,42 @@
+
+@inject IHContext Context
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Apariencia"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenText Text="Titulo aplicación"/>
+        <RadzenTextBox @bind-value="_hGuiSettings.AppTitle"></RadzenTextBox>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="Tema visual"></RadzenText>
+            <RadzenTextBox @bind-value="_hGuiSettings.DefaultTheme"></RadzenTextBox>
+        </RadzenStack>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private HGuiSettings _hGuiSettings = new HGuiSettings();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        Context.Update<HGuiSettings>(_hGuiSettings);
+    }
+
+    private void Get()
+    {
+        _hGuiSettings = Context.Get<HGuiSettings>() ?? new HGuiSettings();
+    }
+
+
+}

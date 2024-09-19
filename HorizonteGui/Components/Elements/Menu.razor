@@ -1,0 +1,88 @@
+@using Horizonte
+@inject IHGesCom Gescom
+@inject HGuiSession GuiSession
+@inject IHContext HContext
+
+<RadzenPanelMenu Click="Onlicked" Style="width:300px" Multiple="@true">
+    @if (_hGuiSettings.CustomMenuItems.Count == 0)
+    {
+        <RadzenPanelMenuItem Text="@_hGuiSettings.HomePageName" Value=@(_hGuiSettings.HomePageComponent) Icon="home"/>
+    }
+    else
+    {
+        <RadzenPanelMenuItem Text="@_hGuiSettings.HomePageName" Icon="home">
+            @foreach (var menuitem in _hGuiSettings.CustomMenuItems)
+            {
+                <RadzenPanelMenuItem Value="@menuitem.Component" Text="@menuitem.Caption" Icon="@menuitem.Icon"/>
+            }
+        </RadzenPanelMenuItem>
+    }
+    
+    <RadzenPanelMenuItem Text="Módulos" Icon="view_module">
+        <RadzenPanelMenuItem Text="Módulos instalado" Value=@("HorizonteGui.Components.Elements.Modules")/>
+        <RadzenPanelMenuItem Text="Crear módulos" Value=@("HorizonteGui.Components.Elements.NewModule")/>
+    </RadzenPanelMenuItem>
+    <RadzenPanelMenuItem Text="Comandos" Value=@("HorizonteGui.Components.Elements.Commands") Icon="tab_move"/>
+    <RadzenPanelMenuItem Value=@("HorizonteGui.Components.Elements.Workers") Text="Service Worker" Icon="view_cozy"/>
+    <RadzenPanelMenuItem Value=@("HorizonteGui.Components.Elements.Log") Text="Registro" Icon="news"/>
+    <RadzenPanelMenuItem Value=@("HorizonteGui.Components.Elements.Context") Icon="settings_system_daydream" Text="Contexto"/>
+    <RadzenPanelMenuItem Expanded="false" Text="Configuraciones" Icon="settings">
+        @foreach (var item in menuItems)
+        {
+            <RadzenPanelMenuItem Text=@item.text Value=@item.value></RadzenPanelMenuItem>
+        }
+    </RadzenPanelMenuItem>
+    <RadzenPanelMenuItem Icon="power_settings_new" Text="Aplicación">
+        @if (GuiSession.ProtectApp)
+        {
+            <RadzenPanelMenuItem Click="LogOut" Icon="logout" Text="Cerrar sesión"/>
+        }
+        <RadzenPanelMenuItem Click="Reboot" Icon="restart_alt" Text="Reiniciar"/>
+        <RadzenPanelMenuItem Click="ShutDown" Icon="power_settings_circle" Text="Apagar"/>
+
+    </RadzenPanelMenuItem>
+</RadzenPanelMenu>
+
+@code
+{
+    [Parameter] public EventCallback<MenuItemEventArgs> OnSelected { get; set; }
+
+    private List<ConfigMenuItems> menuItems = new();
+    private HGuiSettings _hGuiSettings = new HGuiSettings();
+    protected override void OnInitialized()
+    {
+        _hGuiSettings = HContext.Get<HGuiSettings>() ?? new HGuiSettings();
+        
+        var listcomm = Gescom.GetRoleCommands("configpage");
+        foreach (var roleitem in listcomm)
+        {
+            var comtype = Gescom.RunCommand(roleitem.CommandName)?.ToString();
+            if (comtype != null) menuItems.Add(new ConfigMenuItems(roleitem.Description, comtype));
+        }
+    }
+    
+    private async Task LogOut()
+    {
+        GuiSession.LogOut();
+        await InvokeAsync(StateHasChanged);
+    }
+    void ShutDown()
+    {
+        Gescom.RunCommand("Horizonte_Quit");
+    }
+
+    void Reboot()
+    {
+        Gescom.RunCommand("Horizonte_Reboot");
+    }
+    
+    void Onlicked(MenuItemEventArgs args)
+    {
+        OnSelected.InvokeAsync(args);
+    }
+
+
+
+    public record ConfigMenuItems(string text, string value);
+
+}

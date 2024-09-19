@@ -1,0 +1,44 @@
+﻿@inject IHContext HContext
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="app.css"/>
+    <link rel="stylesheet" href="MainLayout.css"/>
+    <HeadOutlet @rendermode="InteractiveServer"/>
+    <RadzenTheme Theme="@_themedef" @rendermode="InteractiveServer"/>
+</head>
+
+<body>
+<Routes @rendermode="InteractiveServer"/>
+<script src="blazor.web.js"></script>
+<script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+<script>
+    window.saveAsFile = (filename, content) => {
+        var link = document.createElement('a');
+        link.download = filename;
+        link.href = "data:application/octet-stream;base64," + content;
+        document.body.appendChild(link); // Needed for Firefox
+        link.click();
+        document.body.removeChild(link);
+    };
+</script>
+
+</body>
+
+</html>
+
+@code
+{
+    private string _themedef = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _themedef = HContext.Get<HGuiSettings>()?.DefaultTheme ?? "material-dark";
+        base.OnInitialized();
+    }
+
+}

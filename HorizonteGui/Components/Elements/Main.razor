@@ -1,0 +1,113 @@
+@inject IHContext Context
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="25">
+            <RadzenSidebarToggle Click="@(() => _sidebar1Expanded = !_sidebar1Expanded)"/>
+            <RadzenLabel Text="@_header"/>
+            <RadzenAppearanceToggle/>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="@_sidebar1Expanded">
+        <Menu OnSelected="Callback"></Menu>
+    </RadzenSidebar>
+
+    <RadzenBody>
+        <RadzenTabs @ref="_tabs" RenderMode="TabRenderMode.Client" >
+            <Tabs>
+                @foreach (var item in _elementItems)
+                {
+                    <RadzenTabsItem Text="@item.Name" Selected="@item.Selected">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
+                            <div>
+                                @CreateDynamicComponent(@item.Type)
+                            </div>
+                            <RadzenButton Icon="close" Click="() => OnCloseClick(item.Id)" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" class="rz-border-radius-10 rz-shadow-4"/>
+                        </RadzenStack>
+                    </RadzenTabsItem>
+                }
+            </Tabs>
+        </RadzenTabs>
+    </RadzenBody>
+
+
+</RadzenLayout>
+
+@code {
+    bool _sidebar1Expanded = true;
+    RadzenTabs? _tabs;
+    string _header = string.Empty;    
+    private List<ElementItem> _elementItems = new List<ElementItem>();
+
+    protected override void OnInitialized()
+    {
+        _header = Context.Get<HGuiSettings>()?.AppTitle ?? "Horizonte Net";
+        base.OnInitialized();
+    }
+
+    private void ClearSelected()
+    {
+        foreach (var item in _elementItems)
+        {
+            item.Selected = false;
+        }
+    }
+
+    private void Callback(MenuItemEventArgs args)
+    {
+        if (args.Value == null) return;
+        
+       ClearSelected();
+       var curtype = Type.GetType((string)args.Value);
+        var element = _elementItems.FirstOrDefault(x => x.Type == curtype );
+        if (element != null)
+        {
+            element.Selected = true;
+            return;
+        }
+        
+        var type = Type.GetType(args.Value.ToString() ?? string.Empty);
+        var rndid = new Random().Next(999999);
+        if (type != null) _elementItems.Add(new ElementItem(rndid, args.Text, type,true));
+        
+    }
+
+    RenderFragment CreateDynamicComponent(Type? type) => builder =>
+    {
+        if (type != null)
+        {
+            builder.OpenComponent(0, type);
+            builder.CloseComponent();
+        }
+    };
+
+
+
+
+    private void OnCloseClick(int itemid)
+    {
+        var element = _elementItems.Find(x => x.Id == itemid);
+        if (element != null) _elementItems.Remove(element);
+        ClearSelected();
+        if(_elementItems.Count > 0) _elementItems.LastOrDefault()!.Selected = true;
+    }
+    
+    
+    public class ElementItem
+    {
+        public int Id { get; init; }
+        public string Name { get; init; }
+        public Type? Type { get; init; }
+        public bool Selected { get; set; }
+    
+        public ElementItem(int id, string name, Type? type, bool selected)
+        {
+            Id = id;
+            Name = name;
+            Type = type;
+            Selected = selected;
+        }
+
+    }
+
+}
