@@ -19,10 +19,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Radzen.Blazor" Version="5.1.5" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
     <ItemGroup>
