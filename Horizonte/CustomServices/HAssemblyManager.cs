@@ -3,23 +3,23 @@ using Microsoft.Extensions.Configuration;
 
 namespace Horizonte;
 
-public class HAssemblyManager : IHAssemblyManager
+public class HAssemblyManager : IhAssemblyManager
 {
-    private ModulesSettings? modset;
-    private HorizonteEnv _env;
     public Assembly[]? Assemblies;
+    private readonly ModulesSettings _modset;
+    private readonly HorizonteEnv _env;
 
 
     public HAssemblyManager(ModulesSettings modulesSettings, HorizonteEnv env)
     {
-        modset = modulesSettings;
+        _modset = modulesSettings ?? new ModulesSettings();
         _env = env;
         Assemblies = LoadAssembliesFromEnviromente();
     }
 
     private void CheckAssetsFolder(ModulesSettingsItem item)
     {
-        string assetsdir = string.Empty;
+        string assetsdir;
         if (item.Path == null)
         {
             assetsdir = Path.Combine(_env.RootPath,"mod", item.ModuleName, item.ModuleVersion, "wwwroot");
@@ -33,17 +33,16 @@ public class HAssemblyManager : IHAssemblyManager
         if (Directory.Exists(assetsdir)) _env.AssetsFolders.Add(assetsdir);
     }
 
-    public Assembly[] LoadAssembliesFromEnviromente()
+    private new Assembly[] LoadAssembliesFromEnviromente()
     {
         //comprobar directorio
-        if (!Directory.Exists(modset.ModulesPath))
-            Directory.CreateDirectory(modset.ModulesPath);
+        if (!Directory.Exists(_modset.ModulesPath))
+            Directory.CreateDirectory(_modset.ModulesPath);
 
         //cargamos ensamblados
-        AppDomain currentDomain = AppDomain.CurrentDomain;
-        foreach (var moditem in modset.List)
+        var currentDomain = AppDomain.CurrentDomain;
+        foreach (var moditem in _modset.List.Where(moditem => moditem.Active))
         {
-            if (!moditem.Active) continue;
             try
             {
                 string modulePath;
@@ -53,7 +52,7 @@ public class HAssemblyManager : IHAssemblyManager
                 }
                 else
                 {
-                    modulePath = Path.Combine(modset.ModulesPath, moditem.ModuleName, moditem.ModuleVersion,
+                    modulePath = Path.Combine(_modset.ModulesPath, moditem.ModuleName, moditem.ModuleVersion,
                         moditem.ModuleName + ".dll");
                 }
 
@@ -73,17 +72,10 @@ public class HAssemblyManager : IHAssemblyManager
                 Console.WriteLine(e);
             }
         }
-
-
         var assemblies = currentDomain.GetAssemblies();
-
-        //
-
         Console.WriteLine("List of assemblies loaded in current appdomain:");
-        foreach (Assembly assem in assemblies)
+        foreach (var assem in assemblies)
             Console.WriteLine(assem.ToString());
-
-
         return assemblies;
     }
 }

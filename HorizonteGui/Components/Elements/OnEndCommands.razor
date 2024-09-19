@@ -11,18 +11,18 @@
     <br/>
     <RadzenStack Orientation="Orientation.Vertical">
         <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
-                        EditMode="DataGridEditMode.Single" Data="_commandlist" TItem="SECommandsSettingsItem"
+                        EditMode="DataGridEditMode.Single" Data="_commandlist" TItem="SeCommandsSettingsItem"
                         RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
             <HeaderTemplate>
                 <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(SECommandsSettingsItem.CommandName)" Title="HCommand">
+                <RadzenDataGridColumn Property="@nameof(SeCommandsSettingsItem.CommandName)" Title="HCommand">
                     <EditTemplate Context="item">
                         <RadzenTextBox @bind-Value="item.CommandName"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(SECommandsSettingsItem.Active)" Title="Activo">
+                <RadzenDataGridColumn Property="@nameof(SeCommandsSettingsItem.Active)" Title="Activo">
                     <EditTemplate Context="item">
                         <RadzenCheckBox @bind-Value="item.Active"/>
                     </EditTemplate>
@@ -56,9 +56,9 @@
 </RadzenCard>
 
 @code {
-    SECommandsSettings _onStartComSettings = new SECommandsSettings();
-    List<SECommandsSettingsItem> _commandlist = new ();
-    RadzenDataGrid<SECommandsSettingsItem> _grid = new RadzenDataGrid<SECommandsSettingsItem>();
+    SeCommandsSettings _onStartComSettings = new SeCommandsSettings();
+    List<SeCommandsSettingsItem> _commandlist = new ();
+    RadzenDataGrid<SeCommandsSettingsItem> _grid = new RadzenDataGrid<SeCommandsSettingsItem>();
 
 
     protected override void OnInitialized()
@@ -69,25 +69,25 @@
     }
     private void Get()
     {
-        _onStartComSettings = Context.Get<SECommandsSettings>() ?? new SECommandsSettings();
+        _onStartComSettings = Context.Get<SeCommandsSettings>() ?? new SeCommandsSettings();
         _commandlist = _onStartComSettings.EndCommands;
     }
     private void Update()
     {
         _onStartComSettings.EndCommands = _commandlist;
-        Context.Update<SECommandsSettings>(_onStartComSettings);
+        Context.Update<SeCommandsSettings>(_onStartComSettings);
     }
 
 
 
     async Task InsertRow()
     {
-        var item = new SECommandsSettingsItem() {CommandName = "cmd",Active = false};
+        var item = new SeCommandsSettingsItem() {CommandName = "cmd",Active = false};
         await _grid.InsertRow(item);
     }
 
 
-    void OnUpdateRow(SECommandsSettingsItem item)
+    void OnUpdateRow(SeCommandsSettingsItem item)
     {
         var selitem = _commandlist.FirstOrDefault(x => x.CommandName == item.CommandName);
         if (selitem == null) return;
@@ -96,29 +96,29 @@
         _grid.Reload();
     }
 
-    void OnCreateRow(SECommandsSettingsItem item)
+    void OnCreateRow(SeCommandsSettingsItem item)
     {
         _commandlist.Add(item);
     }
 
-    async Task EditRow(SECommandsSettingsItem item)
+    async Task EditRow(SeCommandsSettingsItem item)
     {
         await _grid.EditRow(item);
     }
 
-    async Task SaveRow(SECommandsSettingsItem item)
+    async Task SaveRow(SeCommandsSettingsItem item)
     {
         if(string.IsNullOrEmpty(item.CommandName)) CancelEdit(item);
         else await _grid.UpdateRow(item);
     }
 
-    void CancelEdit(SECommandsSettingsItem item)
+    void CancelEdit(SeCommandsSettingsItem item)
     {
         _grid.CancelEditRow(item);
         _grid.Reload();
     }
 
-    async Task DeleteRow(SECommandsSettingsItem item)
+    async Task DeleteRow(SeCommandsSettingsItem item)
     {
         var selitem = _commandlist.FirstOrDefault(x => x.CommandName == item.CommandName);
         if (selitem != null) _commandlist.Remove(selitem);

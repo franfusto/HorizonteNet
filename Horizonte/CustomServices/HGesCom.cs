@@ -9,9 +9,10 @@ namespace Horizonte;
 
 public class HGesCom : IHGesCom
 {
-    private Dictionary<string, HCommand> CommandList = new();
-    private Lazy<IHorizonteEnv> _env = new();
     public record RoleListItem(string CommandName, string Description);
+    
+    private readonly Dictionary<string, HCommand> _commandList = new();
+    private readonly Lazy<IHorizonteEnv> _env;
     private ILogger? _log;
 
     public HGesCom(IHorizonteEnv env)
@@ -32,7 +33,7 @@ public class HGesCom : IHGesCom
 
     public List<RoleListItem> GetRoleCommands(string role)
     {
-        return CommandList
+        return _commandList
             .Where(x => x.Value.Roles.Contains(role))
             .Select(item => new RoleListItem(item.Value.CommandKey, item.Value.Description))
             .ToList();
@@ -42,17 +43,14 @@ public class HGesCom : IHGesCom
     {
         try
         {
+            var env = _env.Value;
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            IHorizonteEnv env = _env.Value;
-
             //llenamos diccionario de commandos
             foreach (var assembly in assemblies)
             {
                 var modulostypes = from type in assembly.GetTypes()
                     where Attribute.IsDefined(type, typeof(HorizonteModule))
                     select type;
-
                 foreach (var modtype in modulostypes)
                 {
                     try
@@ -84,8 +82,7 @@ public class HGesCom : IHGesCom
                     }
                 }
             }
-
-            _log?.LogInformation($"Loaded {CommandList.Count} HCommands");
+            _log?.LogInformation($"Loaded {_commandList.Count} HCommands");
             
         }
         catch (Exception e)
@@ -100,19 +97,20 @@ public class HGesCom : IHGesCom
         var hAttrib = method.CustomAttributes.First(t =>
             t.AttributeType == typeof(HorizonteCommand));
         var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false)
-            as HorizonteRole[] ?? Array.Empty<HorizonteRole>()).ToList().Select(x => x.Role).ToList();
+            as HorizonteRole[] ?? []).ToList().Select(x => x.Role).ToList();
 
-        HCommand miCmd = new HCommand();
-        miCmd.CommandKey = hAttrib.ConstructorArguments[0].Value!.ToString()!;
-        miCmd.Description = hAttrib.ConstructorArguments[1].Value?.ToString() ?? string.Empty;
-        ;
-        miCmd.CommandAction = method;
-        miCmd.Instance = instance;
-        miCmd.InTypes = method.GetParameters().Select(p => p.ParameterType).ToList();
-        miCmd.InNames = GetParameterNames(method);
-        miCmd.OutType = method.ReturnType;
-        miCmd.Roles = roleAttrib;
-        CommandList.Add(miCmd.CommandKey, miCmd);
+        var miCmd = new HCommand
+        {
+            CommandKey = hAttrib.ConstructorArguments[0].Value!.ToString()!,
+            Description = hAttrib.ConstructorArguments[1].Value?.ToString() ?? string.Empty,
+            CommandAction = method,
+            Instance = instance,
+            InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
+            InNames = GetParameterNames(method),
+            OutType = method.ReturnType,
+            Roles = roleAttrib
+        };
+        _commandList.Add(miCmd.CommandKey, miCmd);
     }
 
 
@@ -129,25 +127,21 @@ public class HGesCom : IHGesCom
         try
         {
             object?[]? inobjparams = null;
-
-            HCommand? method = GetHCommand(commandKey);
+            var method = GetHCommand(commandKey);
             if (method == null) return null;
-
             var intypes = method.InTypes?.ToArray();
             if (intypes != null && intypes.Length != 0)
             {
-                List<object?> tmpobjlst = new List<object?>();
-                for (int i = 0; i < intypes.Count(); i++)
+                var tmpobjlst = new List<object?>();
+                for (var i = 0; i < intypes.Count(); i++)
                 {
-                    Type? T = intypes![i];
-                    object? serob = JsonConvert.DeserializeObject(jsonarglist[i], T);
+                    var T = intypes![i];
+                    var serob = JsonConvert.DeserializeObject(jsonarglist[i], T);
                     tmpobjlst.Add(serob);
                 }
-
                 inobjparams = tmpobjlst.ToArray();
             }
-
-            object? resobj = RunCommand(method.CommandKey, inobjparams!);
+            var resobj = RunCommand(method.CommandKey, inobjparams!);
             return JsonConvert.SerializeObject(resobj);
         }
         catch (Exception e)
@@ -169,20 +163,15 @@ public class HGesCom : IHGesCom
             commandKeyor = commandKeyor.Trim();
 
             // recuperamos del diccionario el comando correspondiente al CommandKey
-            HCommand rCommand = (HCommand)CommandList[commandKeyor];
-
-
+            var rCommand = (HCommand)_commandList[commandKeyor];
             // invocamos el método de la clase Panel con los argumentos
-            if (rCommand.CommandAction != null)
-            {
-                var resObject = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
-                if (typeof(T) != typeof(object))
-                    resObject = Convert.ChangeType(resObject, typeof(T));
-                //devolvemos el objeto
-                return (T)resObject!;
-            }
+            if (rCommand.CommandAction == null) return default(T);
+            var resObject = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
+            if (typeof(T) != typeof(object))
+                resObject = Convert.ChangeType(resObject, typeof(T));
+            //devolvemos el objeto
+            return (T)resObject!;
 
-            return default(T);
         }
         catch (Exception ex)
         {
@@ -193,12 +182,12 @@ public class HGesCom : IHGesCom
 
     public HCommand? GetHCommand(string commandKey)
     {
-        CommandList.TryGetValue(commandKey, out HCommand? rCommand);
+        _commandList.TryGetValue(commandKey, out HCommand? rCommand);
         return rCommand;
     }
 
     public IEnumerable<HCommand> GetCommandList()
     {
-        return CommandList.Values.ToList();
+        return _commandList.Values.ToList();
     }
 }

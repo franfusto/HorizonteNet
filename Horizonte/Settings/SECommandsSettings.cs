@@ -1,14 +1,16 @@
 namespace Horizonte;
 
-public class SECommandsSettings
+public class SeCommandsSettings
 {
-    public List<SECommandsSettingsItem> StartCommands { get; set; } = new List<SECommandsSettingsItem>() { new SECommandsSettingsItem(){CommandName = "dd1",Active = true} };
-    public List<SECommandsSettingsItem> EndCommands { get; set; } = new List<SECommandsSettingsItem>() { new SECommandsSettingsItem(){CommandName = "dd1dd",Active = true} };
+    public List<SeCommandsSettingsItem> StartCommands { get; set; } =
+        [new SeCommandsSettingsItem() { CommandName = "cmd", Active = false }];
+    public List<SeCommandsSettingsItem> EndCommands { get; set; } =
+        [new SeCommandsSettingsItem() { CommandName = "cmd", Active = false }];
 }
 
-public class SECommandsSettingsItem
+public class SeCommandsSettingsItem
 {
-    public string CommandName { get; set; } = "sub";
+    public string CommandName { get; set; } = "cmd";
     public bool Active { get; set; } = false;
     
 }

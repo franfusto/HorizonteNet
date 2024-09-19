@@ -14,30 +14,20 @@ namespace Horizonte;
 public class HorizonteEnv : IHorizonteEnv
 {
     public IHost HHost { get; private set; }
+    public List<string> AssetsFolders { get; set; }= new List<string>();
     public string RootPath { get; private set; }
 
     private HostApplicationBuilder? _builder { get; set; }
     private readonly string[] _args;
-
-    //public readonly string Contextname;
     public string Contextname { get; private set; }
-
     private HContext _context;
-    //
     private ModulesSettings _modulesSettings;
     private WorkerSettings _workerSettings;
-
     private Log4NetSettings _log4NetSettings;
-
-    //
     private IHGesCom? _gescom;
-    private IHAssemblyManager? _assemblyManager;
+    private IhAssemblyManager? _assemblyManager;
     private List<BackgroundService> _startServicesList = new();
-
     private CancellationToken _cts = new CancellationToken();
-
-
-    public List<string> AssetsFolders { get; set; }= new List<string>();
 
     public HorizonteEnv(string contextname, string[] appargs)
     {
@@ -50,8 +40,7 @@ public class HorizonteEnv : IHorizonteEnv
         Stage4(); // Crear Host
         Stage5(); // Iniciar Modulos
         Stage6(); // Iniciar Workers
-        Stage7(); //On Start Commands
-        Stage8(); // Iniciar Host 
+        Stage7(); // Iniciar Host 
     }
 
     public T? GetService<T>()
@@ -72,14 +61,13 @@ public class HorizonteEnv : IHorizonteEnv
             var appexe =Environment.GetCommandLineArgs()[0]; // añadir resto de argumentos de inicio
             string extension = "";
             if (OperatingSystem.IsWindows()) extension = ".exe";
-            Thread.Sleep(5000);
+            Thread.Sleep(5000); // sacar a configuración
             System.Diagnostics.Process.Start(appexe.Replace(".dll",extension));
         }).Start();
         Quit();
     }
 
-
-    public void Quit()
+    public  void Quit()
     {
         var services= HHost.Services.GetServices<BackgroundService>();
         foreach (var service in services)
@@ -87,7 +75,7 @@ public class HorizonteEnv : IHorizonteEnv
             service.StopAsync(new CancellationToken());
         }
         
-        HHost.StopAsync();
+        HHost.StopAsync(new CancellationToken());
     }
 
 
@@ -103,12 +91,10 @@ public class HorizonteEnv : IHorizonteEnv
             Directory.SetCurrentDirectory(RootPath);
 
             //creamos contexto y obtenemos configuraciones
-
             _context = new HContext(Contextname);
             _modulesSettings = _context.Get<ModulesSettings>() ?? new ModulesSettings();
             _log4NetSettings = _context.Get<Log4NetSettings>() ?? new Log4NetSettings();
             _workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
-
 
         }
         catch (Exception e)
@@ -160,13 +146,10 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHContext>(_context);
 
             //ensamblados
-            _builder.Services.AddSingleton<IHAssemblyManager>(_assemblyManager);
+            if (_assemblyManager != null) _builder.Services.AddSingleton(_assemblyManager);
 
             //log 
             _builder.ConfigureLog4Net(_context);
-            //_builder.Logging.ClearProviders();
-            //_builder.Logging.AddLog4Net(new Log4NetProviderOptions() { ExternalConfigurationSetup = true });
-
 
             // traducciones
             _builder.Services.AddSingleton<IHtrans, Htrans>();
@@ -175,9 +158,9 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHorizonteEnv>(this);
 
             //gestor de commandos
-            _builder.Services.AddSingleton<IHGesCom>(_gescom);
+            if (_gescom != null) _builder.Services.AddSingleton(_gescom);
 
-            //instalador
+            //gestión de módulos
             _builder.Services.AddSingleton<IHModManager, HModManager>();
 
             //Workers
@@ -220,40 +203,8 @@ public class HorizonteEnv : IHorizonteEnv
         }
     }
 
-
-    //stage 7 - On Start Commands
+    //stage 7 - Iniciar Host
     private void Stage7()
-    {
-        Console.WriteLine("******** STAGE 7 - ON START COMMANDS **********");
-        try
-        {
-            /*
-                var onstartset = _context?.GetSection("OnStartComSettings").Get<Dictionary<string,bool>>();
-                if (onstartset == null)
-                {
-                    onstartset = new Dictionary<string, bool>();
-                    onstartset.Add("comando1",false);
-                    onstartset.Add("comando2",false);
-                    _context?.GetSection("OnStartComSettings").Set(onstartset);
-                }
-                //if(!onstartset.ActiveOnStartCommands) return;
-                foreach (var item in onstartset)
-                {
-                    if(!item.Value) return;
-                    Console.WriteLine($"OnStartCommand: {item.Key}");
-                    _gescom?.RunCommand(item.Key);
-                }
-
-            */
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    //stage 8 - Iniciar Host
-    private void Stage8()
     {
         Console.WriteLine("******** STAGE 8 - RUN HOST **********");
         try
@@ -265,7 +216,6 @@ public class HorizonteEnv : IHorizonteEnv
             Console.WriteLine(e);
         }
     }
-
 
     public void AddOnStartWorker(BackgroundService worker)
     {

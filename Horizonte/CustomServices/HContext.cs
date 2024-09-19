@@ -17,21 +17,16 @@ public class HContext : IHContext
     {
         return Get<T>(_defaultcontextname);
     }
-    public T Get<T>(string contextname)
+    public T? Get<T>(string contextname)
     {
         contextname = contextname ?? _defaultcontextname;
-        string jsonFilePath = contextname + ".json";
-        T value;
-        if(JsonFileHelper.TryGet(jsonFilePath, typeof(T).Name, out value ))
-        {
-            return (T)value;
-        }
-        return default(T);
+        var jsonFilePath = contextname + ".json";
+        return JsonFileHelper.TryGet(jsonFilePath, typeof(T).Name, out T? value ) ? value : default(T);
     }
 
     public void Update<T>(Action<T> update)
     {
-        Update<T>(update,_defaultcontextname);
+        Update(update,_defaultcontextname);
     }
     public void Update<T>(Action<T> update, string contexname)
     {
@@ -42,7 +37,7 @@ public class HContext : IHContext
     }
     public void Update<T>(T newvalue)
     {
-         Update<T>(newvalue,_defaultcontextname);
+         Update(newvalue,_defaultcontextname);
     }
     public void Update<T>(T newvalue, string contexname) 
     {

@@ -4,28 +4,20 @@ public class ModulesSettings
 {
     public ModulesSettings()
     {
-        this.ModulesPath = "./mod";
+        this.ModulesPath = "mod";
         
         List.Add(new ModulesSettingsItem
         {
             Active = true,
             ModuleName = "HorizonteGui",
-            ModuleVersion = "0.1.0",
-            Path = "/home/Datos/KONEK/HorizonteNet/HorizonteGui/bin/Debug/net8.0/HorizonteGui.dll"
+            ModuleVersion = "1.0.0",
+            Path = null
         });
-        List.Add(new ModulesSettingsItem
-        {
-            Active = true,
-            ModuleName = "Modulo1",
-            ModuleVersion = "0.1.0",
-            Path = "/home/Datos/KONEK/HorizonteNet/Modulo1/bin/Debug/net8.0/Modulo1.dll"
-        });
-
     }
     
-    public string ModulesPath { get; set; } = string.Empty;
+    public string ModulesPath { get; set; }
     public string RepoPath { get; set; } = string.Empty;
-    public List<ModulesSettingsItem> List { get; set; } = new();
+    public List<ModulesSettingsItem> List { get; set; } = [];
 }
 
 public class ModulesSettingsItem

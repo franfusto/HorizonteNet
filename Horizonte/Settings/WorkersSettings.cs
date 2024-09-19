@@ -17,8 +17,14 @@ public class WorkerSettings
             WorkerType = "Horizonte.FakeWorker,Horizonte",
             RunOnStart = true
         });
+        List.Add(new WorkerSettingsItem()
+        {
+            ServiceName = "Start/End Worker",
+            WorkerType = "Horizonte.StartEndWorker,Horizonte",
+            RunOnStart = true
+        }); 
     }
-    public List<WorkerSettingsItem> List { get; set; } = new();
+    public List<WorkerSettingsItem> List { get; set; } = [];
 }
 
 public class WorkerSettingsItem

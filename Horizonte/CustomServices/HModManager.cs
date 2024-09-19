@@ -24,7 +24,7 @@ public class HModManager : IHModManager
 
     public void RemoveFiles(ModulesSettingsItem item)
     {
-        string dir = Path.Combine(_modulesSettings.ModulesPath, item.ModuleName, item.ModuleVersion);
+        var dir = Path.Combine(_modulesSettings.ModulesPath, item.ModuleName, item.ModuleVersion);
         if(Directory.Exists(dir)) Directory.Delete(dir,true);
     }
     
@@ -35,33 +35,29 @@ public class HModManager : IHModManager
             _log?.LogInformation($"Instalando módulo {filename}");
             if (!Directory.Exists(_modulesSettings.ModulesPath))
                 Directory.CreateDirectory(_modulesSettings.ModulesPath);
-            using (ZipArchive archive = ZipFile.OpenRead(filename))
+            using var archive = ZipFile.OpenRead(filename);
+            var infofile = archive.Entries.FirstOrDefault(x => x.Name == "module.json");
+            if (infofile == null) return false;
+            using var stream = infofile.Open();
+            using var reader = new StreamReader(stream);
+            var text = reader.ReadToEnd();
+            var info = JsonSerializer.Deserialize<ModuleConfig>(text);
+            var moduledir = Path.Combine(_modulesSettings.ModulesPath, info.ModuleName);
+            if (!Directory.Exists(moduledir)) Directory.CreateDirectory(moduledir);
+            var versiondir = Path.Combine(moduledir, info.ModuleVersion);
+            if (!Directory.Exists(versiondir)) Directory.CreateDirectory(versiondir);
+            var modfiles = archive.Entries.Where(x => x.FullName.StartsWith("_module"));
+            foreach (var file in modfiles)
             {
-                var infofile = archive.Entries.FirstOrDefault(x => x.Name == "module.json");
-                if (infofile == null) return false;
-                using var stream = infofile.Open();
-                using StreamReader reader = new StreamReader(stream);
-                string text = reader.ReadToEnd();
-                ModuleConfig? info = JsonSerializer.Deserialize<ModuleConfig>(text);
-                string moduledir = Path.Combine(_modulesSettings.ModulesPath, info.ModuleName);
-                if (!Directory.Exists(moduledir)) Directory.CreateDirectory(moduledir);
-                string versiondir = Path.Combine(moduledir, info.ModuleVersion);
-                if (!Directory.Exists(versiondir)) Directory.CreateDirectory(versiondir);
-                var modfiles = archive.Entries.Where(x => x.FullName.StartsWith("_module"));
-            
-                foreach (var file in modfiles)
-                {
-                    string destinationPath = Path.GetFullPath(Path.Combine(versiondir, file.FullName.Replace("_module/", "")));
-                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-                    file.ExtractToFile(destinationPath, true);
-                }
-                _modulesSettings.List.Add(new ModulesSettingsItem()
-                {
-                    Active = false, ModuleName = info.ModuleName, ModuleVersion = info.ModuleVersion
-                });
-                _context?.Update(_modulesSettings);
-                
+                string destinationPath = Path.GetFullPath(Path.Combine(versiondir, file.FullName.Replace("_module/", "")));
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                file.ExtractToFile(destinationPath, true);
             }
+            _modulesSettings.List.Add(new ModulesSettingsItem()
+            {
+                Active = false, ModuleName = info.ModuleName, ModuleVersion = info.ModuleVersion
+            });
+            _context?.Update(_modulesSettings);
 
             return true;
         }
@@ -82,16 +78,14 @@ public class HModManager : IHModManager
     {
         try
         {
-            using (ZipArchive archive = ZipFile.OpenRead(path))
-            {
-                var zipfile = archive.Entries.FirstOrDefault(x => x.Name == "module.json");
-                if (zipfile == null) return null;
-                using var stream = zipfile.Open();
-                using StreamReader reader = new StreamReader(stream);
-                string text = reader.ReadToEnd();
-                ModuleConfig? info = JsonSerializer.Deserialize<ModuleConfig>(text);
-                return info;
-            }
+            using var archive = ZipFile.OpenRead(path);
+            var zipfile = archive.Entries.FirstOrDefault(x => x.Name == "module.json");
+            if (zipfile == null) return null;
+            using var stream = zipfile.Open();
+            using var reader = new StreamReader(stream);
+            var text = reader.ReadToEnd();
+            var info = JsonSerializer.Deserialize<ModuleConfig>(text);
+            return info;
         }
         catch (Exception e)
         {
@@ -109,7 +103,7 @@ public class HModManager : IHModManager
         var direpo = new DirectoryInfo(_modulesSettings.RepoPath);
         foreach (var item in direpo.GetFiles("*.hmod"))
         {
-            ModuleConfig? moduleConfig = GetInfo(item.FullName);
+            var moduleConfig = GetInfo(item.FullName);
             if (moduleConfig != null)
                 list.Add(new ModulesSettingsItem()
                 {
@@ -121,17 +115,18 @@ public class HModManager : IHModManager
 
         return list;
     }
-    void AddFilesFromDirectoryToZip(ZipArchive archive, string sourcePath, string entryPrefix = "")
+
+    private static void AddFilesFromDirectoryToZip(ZipArchive archive, string sourcePath, string entryPrefix = "")
     {
-        DirectoryInfo directoryInfo = new DirectoryInfo(sourcePath);
+        var directoryInfo = new DirectoryInfo(sourcePath);
         foreach (var file in directoryInfo.GetFiles())
         {
-            string entryName = Path.Combine(entryPrefix, file.Name);
+            var entryName = Path.Combine(entryPrefix, file.Name);
             archive.CreateEntryFromFile(file.FullName, entryName);
         }
         foreach (var subDirectory in directoryInfo.GetDirectories())
         {
-            string newEntryPrefix = Path.Combine(entryPrefix, subDirectory.Name);
+            var newEntryPrefix = Path.Combine(entryPrefix, subDirectory.Name);
             AddFilesFromDirectoryToZip(archive, subDirectory.FullName, newEntryPrefix);
         }
     }
@@ -139,43 +134,32 @@ public class HModManager : IHModManager
     {
         try
         {
-            ModuleConfig moduleConfig = new ModuleConfig()
+            var moduleConfig = new ModuleConfig()
             {
                 ModuleName = newModuleConfig.ModuleName,
                 ModuleVersion = newModuleConfig.ModuleVersion
             };
-            _log?.LogInformation($"Construir móduo {newModuleConfig.ModuleName} {newModuleConfig.ModuleVersion}");
-            using (var memoryStream = new MemoryStream())
+            _log?.LogInformation($"Construir módulo {newModuleConfig.ModuleName} {newModuleConfig.ModuleVersion}");
+            using var memoryStream = new MemoryStream();
+            using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
             {
-                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
-                {
-                    var demoFile = archive.CreateEntry("module.json");
+                var demoFile = archive.CreateEntry("module.json");
 
-                    using (var entryStream = demoFile.Open())
-                    using (var streamWriter = new StreamWriter(entryStream))
-                    {
-                        string jsonString = JsonSerializer.Serialize(moduleConfig,
-                            new JsonSerializerOptions() { WriteIndented = true });
-                        streamWriter.Write(jsonString);
-                    }
-                    AddFilesFromDirectoryToZip(archive, newModuleConfig.BinPath, "_module");
-                }
-
-                /*
-                using (var fileStream = new FileStream(@"test.zip", FileMode.Create))
+                using (var entryStream = demoFile.Open())
+                using (var streamWriter = new StreamWriter(entryStream))
                 {
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-                    memoryStream.CopyTo(fileStream);
+                    string jsonString = JsonSerializer.Serialize(moduleConfig,
+                        new JsonSerializerOptions() { WriteIndented = true,IncludeFields = true});
+                    streamWriter.Write(jsonString);
                 }
-                */
-                return memoryStream.ToArray();
+                AddFilesFromDirectoryToZip(archive, newModuleConfig.BinPath, "_module");
             }
+            return memoryStream.ToArray();
         }
         catch (Exception e)
         {
             _log?.LogError(e.ToString());
         }
-
         return Array.Empty<byte>();
     }
 }

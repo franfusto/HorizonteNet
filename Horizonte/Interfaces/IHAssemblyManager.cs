@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Horizonte;
 
-public abstract class IHAssemblyManager
+public abstract class IhAssemblyManager
 {
-    public Assembly[] LoadAssembliesFromEnviromente;
+    public Assembly[]? LoadAssembliesFromEnviromente;
 }

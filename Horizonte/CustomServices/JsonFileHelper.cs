@@ -8,99 +8,80 @@ namespace Horizonte
 {
     public static class JsonFileHelper
     {
-        public static Func<JsonSerializerOptions> DefaultSerializerOptions = new Func<JsonSerializerOptions>(() => {
-            return new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                IncludeFields = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Converters = { new JsonStringEnumConverter() }
-            };
+        public static Func<JsonSerializerOptions> DefaultSerializerOptions = new Func<JsonSerializerOptions>(() => new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            IncludeFields = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Converters = { new JsonStringEnumConverter() }
         });
 
-        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null, JsonSerializerOptions serializerOptions = null)
+        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T>? updateAction = null, JsonSerializerOptions? serializerOptions = null)
             
         {
-            if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
             var updatedValue = TryGet<T>(jsonFilePath, sectionName, out var value, serializerOptions) ? value : default(T);
-
+            if (updatedValue == null) return;
             updateAction?.Invoke(updatedValue);
-
             AddOrUpdateSection(jsonFilePath, sectionName, updatedValue, serializerOptions);
         }
 
-        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value, JsonSerializerOptions serializerOptions = null)
+        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value, JsonSerializerOptions? serializerOptions = null)
         {
-            if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
             var jsonContent = ReadOrCreateJsonFile(jsonFilePath);
-
-            using(var jsonDocument = JsonDocument.Parse(jsonContent))
-            using(var stream = File.OpenWrite(jsonFilePath))
+            using var jsonDocument = JsonDocument.Parse(jsonContent);
+            using var stream = File.OpenWrite(jsonFilePath);
+            var writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
             {
-                var writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
+                Indented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+            writer.WriteStartObject();
+            var isWritten = false;
+            var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value, serializerOptions));
+            foreach(var element in jsonDocument.RootElement.EnumerateObject())
+            {
+                if(element.Name != sectionName)
                 {
-                    Indented = true,
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
-
-                writer.WriteStartObject();
-                var isWritten = false;
-                var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value, serializerOptions));
-                foreach(var element in jsonDocument.RootElement.EnumerateObject())
-                {
-                    if(element.Name != sectionName)
-                    {
-                        element.WriteTo(writer);
-                        continue;
-                    }
-                    writer.WritePropertyName(element.Name);
-                    optionsElement.WriteTo(writer);
-                    isWritten = true;
+                    element.WriteTo(writer);
+                    continue;
                 }
-                if(!isWritten)
-                {
-                    writer.WritePropertyName(sectionName);
-                    optionsElement.WriteTo(writer);
-                }
-                writer.WriteEndObject();
-                writer.Flush();
-                stream.SetLength(stream.Position);
+                writer.WritePropertyName(element.Name);
+                optionsElement.WriteTo(writer);
+                isWritten = true;
             }
+            if(!isWritten)
+            {
+                writer.WritePropertyName(sectionName);
+                optionsElement.WriteTo(writer);
+            }
+            writer.WriteEndObject();
+            writer.Flush();
+            stream.SetLength(stream.Position);
         }
 
-        public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value, JsonSerializerOptions serializerOptions = null)
+        public static bool TryGet<T>(string jsonFilePath, string sectionName, out T? value, JsonSerializerOptions? serializerOptions = null)
         {
             if(File.Exists(jsonFilePath))
             {
                 var jsonContent = File.ReadAllBytes(jsonFilePath);
-
-                using(var jsonDocument = JsonDocument.Parse(jsonContent))
+                using var jsonDocument = JsonDocument.Parse(jsonContent);
+                if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
                 {
-                    if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
-                    {
-                        if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
-                        value = JsonSerializer.Deserialize<T>(sectionValue.ToString(), serializerOptions);
-                        return true;
-                    }
+                    value = JsonSerializer.Deserialize<T>(sectionValue.ToString(), serializerOptions);
+                    return true;
                 }
             }
-
-            value = default;
+            value = default(T);
             return false;
         }
 
         private static byte[] ReadOrCreateJsonFile(string jsonFilePath)
         {
-            if(!File.Exists(jsonFilePath))
-            {
-                var fileDirectoryPath = Path.GetDirectoryName(jsonFilePath);
-                if(!string.IsNullOrEmpty(fileDirectoryPath))
-                {
-                    Directory.CreateDirectory(fileDirectoryPath);
-                }
-
-                File.WriteAllText(jsonFilePath, "{}");
-            }
+            if (File.Exists(jsonFilePath)) return File.ReadAllBytes(jsonFilePath);
+            var fileDirectoryPath = Path.GetDirectoryName(jsonFilePath);
+            if(!string.IsNullOrEmpty(fileDirectoryPath))
+                Directory.CreateDirectory(fileDirectoryPath);
+            File.WriteAllText(jsonFilePath, "{}");
             return File.ReadAllBytes(jsonFilePath);
         }
     }
