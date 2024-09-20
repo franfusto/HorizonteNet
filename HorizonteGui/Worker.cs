@@ -12,7 +12,7 @@ namespace HorizonteGui;
 
 public sealed class Worker : BackgroundService, IHservice
 {
-    private IHorizonteEnv _env;
+    private readonly IHorizonteEnv _env;
     private ILogger? _log;
     private IHGesCom? _gesCom;
     private WebApplication _app;
@@ -46,10 +46,8 @@ public sealed class Worker : BackgroundService, IHservice
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log?.LogInformation("Build and start Host");
-//
         string location = Assembly.GetExecutingAssembly().Location;
         string dir = Path.GetDirectoryName(location)!;
-//
         var builder = WebApplication.CreateSlimBuilder(
             new WebApplicationOptions
             {
@@ -64,7 +62,6 @@ public sealed class Worker : BackgroundService, IHservice
         if (_context != null) builder.Services.AddSingleton(_context);
         if (_modManager != null) builder.Services.AddSingleton(_modManager);
 
-        // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();

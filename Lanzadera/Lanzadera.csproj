@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+        <OutputType>WinExe</OutputType>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -24,7 +26,6 @@
       <EmbeddedResource Include="horizonte.json">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </EmbeddedResource>
-        
       <None Remove="mod.zip" />
       <EmbeddedResource Include="mod.zip" />
     </ItemGroup>

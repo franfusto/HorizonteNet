@@ -17,13 +17,6 @@ public class PanelModulo
         _env = env;
     }
 
-    [HorizonteCommand("HorizonteGui_Command1")]
-    public DateTime Command1()
-    {
-        _logger?.LogInformation("desde el módulo HorizonteGui");
-        return DateTime.Now;
-    }
-
     [HorizonteRole("init")]
     [HorizonteCommand("HorizonteGui_Init")]
     public bool Init()

@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GtkSharp" Version="3.24.24.95" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="icon.png" />
+      <None Remove="system.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="icons\home.png" />
+      <EmbeddedResource Include="icons\home.png" />
+      <None Remove="icons\netapp.png" />
+      <EmbeddedResource Include="icons\netapp.png" />
+      <None Remove="icons\red.png" />
+      <EmbeddedResource Include="icons\red.png" />
+      <None Remove="icons\work.png" />
+      <EmbeddedResource Include="icons\work.png" />
+      <None Remove="icons\works.png" />
+      <EmbeddedResource Include="icons\works.png" />
+    </ItemGroup>
+
+</Project>

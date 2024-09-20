@@ -10,7 +10,7 @@ public class HGuiSession
     private ILogger<HGuiSession>? _logger;
     private HGuiSettings _hGuiSettings;
     public bool UserRegistered { get; private set; } = false;
-    public bool ProtectApp = false;
+    public readonly bool ProtectApp = false;
 
     public HGuiSession(IHorizonteEnv env, IHGesCom gesCom, IHContext context, ILogger<HGuiSession> logger)
     {
@@ -33,7 +33,7 @@ public class HGuiSession
 
     public void LogOut()
     {
-        if ((!_hGuiSettings.ProtectApp)) return;
+        if (!_hGuiSettings.ProtectApp) return;
         UserRegistered = false;
         StateChanged?.Invoke(this, EventArgs.Empty);
         _logger?.LogInformation("Fin sesión");

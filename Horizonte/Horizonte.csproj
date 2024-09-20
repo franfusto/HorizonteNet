@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <DoNotCopyLocalIfInGac>false</DoNotCopyLocalIfInGac>
+        <TargetFramework>net8.0</TargetFramework>
+        <Authors>franfusto</Authors>
+        <Description>Entorno modular para net8 basado en blazor.radzen</Description>
+        <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/franfusto/HorizonteNet</RepositoryUrl>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DebugType>embedded</DebugType>
