@@ -1,0 +1,48 @@
+@inject IHContext Context
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Razor App Sample"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <div>
+            <RadzenText Text="Titulo de la APP"/>
+            <RadzenTextBox @bind-value="_conifg.Title"/>
+        </div>
+        <div>
+            <RadzenText Text="Url de la APP"/>
+            <RadzenTextBox @bind-value="_conifg.Url"/>
+        </div>
+        <div>
+            <RadzenText Text="Modo desarrollo"/>
+            <RadzenCheckBox TValue="bool" @bind-Value="_conifg.DevelMode"></RadzenCheckBox>
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private RazorAppConfig _conifg = new RazorAppConfig();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        Context.Update<RazorAppConfig>(_conifg);
+    }
+
+    private void Get()
+    {
+        _conifg = Context.Get<RazorAppConfig>() ?? new RazorAppConfig();
+    }
+
+
+}

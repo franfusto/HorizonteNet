@@ -1,0 +1,45 @@
+@inject IHContext Context
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Razor Web Service Sample"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+
+        <div>
+            <RadzenText Text="Url de la APP"/>
+            <RadzenTextBox @bind-value="_conifg.Url"/>
+        </div>
+        <div>
+            <RadzenText Text="Swagger"/>
+            <RadzenCheckBox TValue="bool" @bind-Value="_conifg.EnableSwagger"></RadzenCheckBox>
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private ServiceConfig _conifg = new ServiceConfig();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        Context.Update<ServiceConfig>(_conifg);
+    }
+
+    private void Get()
+    {
+        _conifg = Context.Get<ServiceConfig>() ?? new ServiceConfig();
+    }
+
+
+}

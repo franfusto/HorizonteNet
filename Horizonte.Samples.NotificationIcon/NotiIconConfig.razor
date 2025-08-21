@@ -1,0 +1,138 @@
+@inject IHContext Context
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Icono de notificación"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <br/>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="StocIcon name"></RadzenText>
+            <RadzenTextBox @bind-value="_notiIconSettings.IconResource"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="OnActivate comando"></RadzenText>
+            <RadzenTextBox @bind-value="_notiIconSettings.OnActivatedCommand"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenText Text="Titulo icono"></RadzenText>
+            <RadzenTextBox @bind-value="_notiIconSettings.IconTitle"/>
+        </RadzenStack>
+        <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
+                        EditMode="DataGridEditMode.Single" Data="_list" TItem="IconMenuItem"
+                        RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+            <HeaderTemplate>
+                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+            </HeaderTemplate>
+            <Columns>
+                
+                <RadzenDataGridColumn Property="@nameof(IconMenuItem.Label)" Title="Nombre">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.Label"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(IconMenuItem.Command)" Title="Comando">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.Command"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(IconMenuItem.StockIcon)" Title="Icono">
+                    <EditTemplate Context="item">
+                        <RadzenTextBox @bind-Value="item.StockIcon"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template Context="item">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Click="@(args => EditRow(item))" >
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))" >
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="item">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                        </RadzenButton>
+                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                      Click="@((args) => CancelEdit(item))">
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                      Click="@(args => DeleteRow(item))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private NotiIconSettings _notiIconSettings = new NotiIconSettings();
+    List<IconMenuItem> _list = new ();
+    RadzenDataGrid<IconMenuItem> _grid = new RadzenDataGrid<IconMenuItem>();
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        _notiIconSettings.MenuItems = _list;
+        Context.Update<NotiIconSettings>(_notiIconSettings);
+    }
+
+    private void Get()
+    {
+        _notiIconSettings = Context.Get<NotiIconSettings>() ?? new NotiIconSettings();
+        _list = _notiIconSettings.MenuItems;
+    }
+    async Task InsertRow()
+    {
+        var item = new IconMenuItem();
+        await _grid.InsertRow(item);
+    }
+
+
+    void OnUpdateRow(IconMenuItem item)
+    {
+        _grid.Reload();
+    }
+
+    void OnCreateRow(IconMenuItem item)
+    {
+        _list.Add(item);
+    }
+
+    async Task EditRow(IconMenuItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(IconMenuItem item)
+    {
+        if(string.IsNullOrEmpty(item.Label) ||string.IsNullOrEmpty(item.Command)) CancelEdit(item);
+        else await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(IconMenuItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(IconMenuItem item)
+    {
+        var selitem = _list.FirstOrDefault(x => x.Label == item.Label);
+        if (selitem != null) _list.Remove(selitem);
+        await _grid.Reload();
+    }
+
+}

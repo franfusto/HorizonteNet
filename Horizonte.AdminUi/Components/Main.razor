@@ -1,0 +1,38 @@
+@inject IHContext Context
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="25">
+            <RadzenSidebarToggle Click="@(() => _sidebar1Expanded = !_sidebar1Expanded)"/>
+            <RadzenLabel Text="@_header"/>
+            <RadzenAppearanceToggle/>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="@_sidebar1Expanded">
+        <Menu OnSelected="Callback"></Menu>
+    </RadzenSidebar>
+
+    <RadzenBody>
+        <PageContainer @ref="_pageContainer"></PageContainer>
+    </RadzenBody>
+
+
+</RadzenLayout>
+
+@code {
+    bool _sidebar1Expanded = true;
+    string _header = string.Empty;
+    PageContainer? _pageContainer;
+    protected override void OnInitialized()
+    {
+        _header = Context.Get<HGuiSettings>()?.AppTitle ?? "Horizonte Net";
+        base.OnInitialized();
+    }
+
+
+    private void Callback(MenuItemEventArgs obj)
+    {
+        _pageContainer?.AddPage(obj);
+    }
+
+}

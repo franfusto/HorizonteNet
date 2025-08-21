@@ -1,0 +1,17 @@
+@if (WidgetDef == null)
+{
+    <RadzenText Text="Error al mostrar el widget" TextStyle="TextStyle.Subtitle1"/>
+}
+else
+{
+    <DynamicComponent
+        Type="@WidgetDef.Type"
+        Parameters="@WidgetDef.Parameters" />
+}
+
+
+@code {
+
+    [Parameter]
+    public WidgetDef? WidgetDef { get; set; }
+}

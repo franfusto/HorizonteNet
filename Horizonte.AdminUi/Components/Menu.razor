@@ -1,0 +1,76 @@
+@using Horizonte
+@inject IHGesCom Gescom
+@inject HGuiSession GuiSession
+@inject IHContext HContext
+
+<RadzenPanelMenu Click="Onlicked" Style="width:300px" Multiple="@true">
+    
+    @foreach (var masteritem in _groups)
+    {
+        if (_hGruiMenu.Items.Where(x => x.ParentId == masteritem.Id).Count() > 0)
+        {
+            <RadzenPanelMenuItem Value="@(masteritem.Component)" Icon="@(masteritem.Icon)" Text="@(masteritem.Caption)">
+                @foreach (var item in _hGruiMenu.Items.Where(x => x.ParentId == masteritem.Id))
+                {
+                    <RadzenPanelMenuItem Value="@(item.Component)" Icon="@(item.Icon)" Text="@(item.Caption)"/>
+                    
+                }
+            </RadzenPanelMenuItem>
+        }
+        else
+        {
+            <RadzenPanelMenuItem Value="@(masteritem.Component)" Icon="@(masteritem.Icon)" Text="@(masteritem.Caption)"/>
+            
+        }
+        
+    }
+    
+
+
+    <RadzenPanelMenuItem Icon="power_settings_new" Text="Aplicación">
+        @if (GuiSession.ProtectApp)
+        {
+            <RadzenPanelMenuItem Click="LogOut" Icon="logout" Text="Cerrar sesión"/>
+        }
+        <RadzenPanelMenuItem Click="Reboot" Icon="restart_alt" Text="Reiniciar"/>
+        <RadzenPanelMenuItem Click="ShutDown" Icon="power_settings_circle" Text="Apagar"/>
+    </RadzenPanelMenuItem>
+</RadzenPanelMenu>
+
+@code
+{
+    [Parameter] public EventCallback<MenuItemEventArgs> OnSelected { get; set; }
+
+    private HGuiMenu _hGruiMenu = new();
+    private List<HGuiMenuItem> _groups;
+    protected override void OnInitialized()
+    {
+        _hGruiMenu =  HContext.Get<HGuiMenu>() ?? new HGuiMenu();
+        _groups = _hGruiMenu.Items.Where(x=>x.ParentId==0).ToList();
+
+    }
+    
+    private async Task LogOut()
+    {
+        GuiSession.LogOut();
+        await InvokeAsync(StateHasChanged);
+    }
+    void ShutDown()
+    {
+        Gescom.RunCommand("Horizonte_Quit");
+    }
+
+    void Reboot()
+    {
+        Gescom.RunCommand("Horizonte_Reboot");
+    }
+    
+    void Onlicked(MenuItemEventArgs args)
+    {
+        OnSelected.InvokeAsync(args);
+    }
+
+
+
+
+}

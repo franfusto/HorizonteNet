@@ -1,0 +1,92 @@
+@using Horizonte
+@using log4net
+@using log4net.Appender
+@using log4net.Repository.Hierarchy
+@using log4net.Core
+@inject IHGesCom Gescom
+
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Start" Gap="20">
+    <RadzenButton Variant="Variant.Outlined" Text="Recargar" Click="async () => { await Refresh(); }"></RadzenButton>
+    <RadzenButton Variant="Variant.Outlined" Text="Limpiar" Click="@Clear"></RadzenButton>
+    <RadzenCheckBox TValue="bool" Value=@isEnabled Change="Callback" Name="CheckBox2"/>
+    <RadzenLabel Text="Log en memoria activo" Component="CheckBox2"/>
+</RadzenStack>
+<br/>
+<br/>
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced"
+                AllowGrouping="true" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left"
+                Data="@_events" TItem="LoggingEvent" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" ShowPagingSummary="true"
+                IsLoading=@isLoading Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <Columns>
+        <RadzenDataGridColumn Width="200px" Property="@nameof(LoggingEvent.LoggerName)" Title="Logger"/>
+        <RadzenDataGridColumn Width="400px" Property="@nameof(LoggingEvent.MessageObject)" Title="Message"/>
+    </Columns>
+</RadzenDataGrid>
+
+
+@code {
+
+    MemoryAppender? _logappender;
+    LoggingEvent[] _events = Array.Empty<LoggingEvent>();
+    RadzenDataGrid<LoggingEvent> _eventsGrid;
+    bool isLoading = false;
+    bool isEnabled;
+
+    private void IsEnabled()
+    {
+    }
+
+    private void Iniciar()
+    {
+        Gescom.RunCommand("MemoryLog_Enable");
+    }
+
+    private void Detener()
+    {
+        Gescom.RunCommand("MemoryLog_Disable");
+    }
+
+    private void Clear()
+    {
+        Gescom.RunCommand("MemoryLog_Clear");
+        Refresh();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await ShowLoading();
+
+        _events = Gescom.RunCommand<LoggingEvent[]>("MemoryLog_GetLog") ?? Array.Empty<LoggingEvent>();
+        isEnabled = Gescom.RunCommand<bool>("MemoryLog_IsEnabled", null);
+    }
+
+
+    async Task ShowLoading()
+    {
+        isLoading = true;
+        await Task.Yield();
+        isLoading = false;
+    }
+
+    async Task Refresh()
+    {
+        isLoading = true;
+        await Task.Yield();
+        _events = Gescom.RunCommand<LoggingEvent[]>("MemoryLog_GetLog") ?? Array.Empty<LoggingEvent>();
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private void Callback(bool obj)
+    {
+        isEnabled = obj;
+        if (obj) Iniciar();
+        else Detener();
+    }
+
+}

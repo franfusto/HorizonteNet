@@ -1,0 +1,79 @@
+using Horizonte;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+
+namespace Horizonte.Samples.ServiceApp;
+
+public class WsWorker : BackgroundService, IHorizonteBackgroundService
+{
+    public string ServiceName { get; set; } = "Web Service Worker";
+    public bool IsRunning { get; set; }
+    public bool RunOnStart { get; set; }
+   
+    private WebApplication? _app;
+    private readonly IHorizonteEnv? _env;
+    private ILogger? _log;
+    private IHGesCom? _gesCom;
+    private IHContext? _context;
+    private ServiceConfig _config = new();
+    
+    public WsWorker(IHorizonteEnv env, string serviceName, bool runOnStart)
+    {
+        _env = env;
+        //Horizonte.Samples.ServiceApp.WsWorker
+        ServiceName = serviceName;
+        RunOnStart = runOnStart;
+    }
+
+    //https://medium.com/@mayoorakasri20/building-a-minimal-web-api-with-asp-net-core-and-net-8-c2df508b0c8a
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls(_config.Url);
+        if (_config.EnableSwagger)
+        {
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Web Service", Description = "Sample web service worker", Version = "v1"
+                });
+            });
+        }
+        _app = builder.Build();
+        if (_config.EnableSwagger)
+        {
+            _app.UseSwagger();
+            _app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sample web service worker API V1");
+            });
+        }
+        _app.MapGet("/", () => "Hello World!");
+        _app.MapGet("/time", () => DateTime.Now);
+        _app.MapGet("/workers", () => _gesCom?.RunCommandAsync("Workers_GetServicesRunning"));
+        _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
+        IsRunning = true;
+        return _app.RunAsync(stoppingToken);
+    }
+
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        _log = _env?.GetService<ILogger<WsWorker>>();
+        _gesCom = _env?.GetService<IHGesCom>();
+        _context = _env?.GetService<IHContext>();
+        _config = _context?.Get<ServiceConfig>() ?? new ServiceConfig();
+        
+        _log?.LogInformation("Starting Web Service Worker");
+        return base.StartAsync(cancellationToken);  
+    }
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        _log?.LogInformation("Ending Web Service Worker");
+        IsRunning = false;
+        return _app?.StopAsync(cancellationToken) ?? Task.CompletedTask;
+    }
+}

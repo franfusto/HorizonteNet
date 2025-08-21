@@ -1,0 +1,85 @@
+@using System.Globalization
+@using PanelModulo = Horizonte.AdminUi.PanelModulo
+@inject ILogger<PanelModulo> _logger;
+@if (_isLoading)
+{
+    <RadzenButton Text=@($"{_infoText} Cancel") Click="@CancelRepoFile"/>
+}
+else
+{
+    <InputFile @ref="_inputFile" OnChange="UploadFile" single/>
+}
+<style>
+    input[type=file] {
+        width: 500px;
+        background-color: transparent;
+        border: none;
+        text-decoration: none;
+        padding: 5px 5px;
+        margin: 5px 5px;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+
+    [Parameter] public EventCallback<Tuple<string, byte[]>> OnMultipleOfThree { get; set; }
+
+    private const int Buffersize = 1024 * 100 * 1000;
+    private long _maxFileSize = 1024 * 150 * 10000;
+    private bool _isLoading;
+    private bool _isCanceled;
+    private string _infoText = string.Empty;
+    InputFile? _inputFile;
+
+    private void CancelRepoFile()
+    {
+        _infoText = "...";
+        _isCanceled = true;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs eventArgs)
+    {
+        _isLoading = true;
+        _isCanceled = false;
+        _infoText = string.Empty;
+
+        try
+        {
+            var trustedFileName = Path.GetRandomFileName();
+            var realFileName = eventArgs.File.Name;
+            _logger.LogInformation($"Iniciando carga de archivo >> {realFileName}");
+
+            var safepath = "./tmp/" + trustedFileName;
+            if (!Directory.Exists("./tmp")) Directory.CreateDirectory("./tmp");
+
+            await using FileStream writeStream = new(safepath, FileMode.Create);
+            using var readStream = eventArgs.File.OpenReadStream(_maxFileSize);
+            var bytesRead = 0;
+            var totalRead = 0;
+            var buffer = new byte[Buffersize];
+
+            while ((bytesRead = await readStream.ReadAsync(buffer)) != 0)
+            {
+                if (_isCanceled) break;
+                totalRead += bytesRead;
+                await writeStream.WriteAsync(buffer, 0, bytesRead);
+                _infoText = (System.Math.Round((decimal.Divide(totalRead, eventArgs.File.Size) * 100), 0)).ToString(CultureInfo.InvariantCulture) + "%";
+                StateHasChanged();
+            }
+
+            //deberiamos trabajar con el stream en vez de cargar to.do el archivo en un array de bits.....
+            var localcontent = await File.ReadAllBytesAsync(safepath);
+            await OnMultipleOfThree.InvokeAsync(new Tuple<string, byte[]>(realFileName, localcontent));
+            await Task.Delay(500);
+            File.Delete(safepath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.ToString());
+        }
+
+        _isLoading = false;
+    }
+
+}

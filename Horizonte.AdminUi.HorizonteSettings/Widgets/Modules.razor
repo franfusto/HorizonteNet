@@ -1,0 +1,51 @@
+@inject IHContext Context
+@inject DialogService DialogService
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Módulos"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+</RadzenCard>
+    <br/>
+
+    <ModulesGrid ModuleSettings="_modules" @ref="_modulesGrid"/>
+    <NugetServersGrid NugetServersSettings="_nugetServers" @ref="_nugetServersGrid"/>
+    <NugetFoldersGrid NugetFolderSettings="_nugetFolders" @ref="_nugetFoldersGrid"/>
+
+@code {
+    
+    private ModulesSettings _modulesSettings = new ModulesSettings();
+    private ModulesGrid _modulesGrid = new();
+    private List<ModulesSettingsItem> _modules = new();
+    private NugetServersGrid _nugetServersGrid = new();
+    private List<NugetServerItem> _nugetServers = new ();
+    private NugetFoldersGrid _nugetFoldersGrid = new();
+    private List<NugetFolderItem> _nugetFolders = new ();
+    
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Update()
+    {
+        _modulesSettings.List = _modulesGrid.ModuleSettings;
+        _modulesSettings.NugetServers = _nugetServersGrid.NugetServersSettings;
+        _modulesSettings.NugetFolders = _nugetFoldersGrid.NugetFolderSettings;
+        Context.Update<ModulesSettings>(_modulesSettings);
+    }
+
+    private void Get()
+    {
+        _modulesSettings = Context.Get<ModulesSettings>() ?? new ModulesSettings();
+        _modules = _modulesSettings.List;
+        _nugetServers = _modulesSettings.NugetServers;
+        _nugetFolders = _modulesSettings.NugetFolders;
+    }
+
+
+}

@@ -1,0 +1,105 @@
+@inject IHGesCom GesCom
+@inject ILogger<PageContainer> Logger;
+
+<RadzenTabs @ref="_tabs" RenderMode="TabRenderMode.Client">
+    <Tabs>
+        @foreach (var item in _elementItems)
+        {
+            <RadzenTabsItem Text="@item.Name" Selected="@item.Selected">
+
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start"
+                             JustifyContent="JustifyContent.SpaceBetween">
+
+                    @if (item.Type != null)
+                    {
+                        <RadzenStack style="width: 100%" Orientation="Orientation.Vertical">
+                            @CreateDynamicComponent(@item.Type)
+                        </RadzenStack>
+                    }
+                    <RadzenButton Icon="close" Click="() => OnCloseClick(item.Id)" ButtonStyle="ButtonStyle.Primary"
+                                  Size="ButtonSize.Small" class="rz-border-radius-10 rz-shadow-4"/>
+                </RadzenStack>
+
+            </RadzenTabsItem>
+        }
+    </Tabs>
+</RadzenTabs>
+
+@code {
+    RadzenTabs? _tabs;
+    private List<PageItemItem> _elementItems = new List<PageItemItem>();
+
+    private void ClearSelected()
+    {
+        foreach (var item in _elementItems)
+        {
+            item.Selected = false;
+        }
+    }
+
+
+    RenderFragment? CreateDynamicComponent(Type type)
+    {
+        WidgetDef widgetDef = new WidgetDef()
+        {
+            Type = type,
+            Parameters = null
+        };
+        return GesCom.RunCommand<RenderFragment>("HorizonteGui_RenderWidget", [widgetDef]);
+    }
+
+    private void OnCloseClick(int itemid)
+    {
+        var element = _elementItems.Find(x => x.Id == itemid);
+        if (element != null) _elementItems.Remove(element);
+        ClearSelected();
+        if (_elementItems.Count > 0) _elementItems.LastOrDefault()!.Selected = true;
+    }
+
+    public void AddPage(MenuItemEventArgs args)
+    {
+        try
+        {
+            if (args.Value == null) return;
+
+            ClearSelected();
+
+            var curtype = (GesCom.RunCommand((string)args.Value) as WidgetDef)?.Type;
+            if (curtype == null) return;
+
+            var element = _elementItems.FirstOrDefault(x => x.Type == curtype);
+            if (element != null)
+            {
+                element.Selected = true;
+                InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            // var type = Type.GetType(args.Value.ToString() ?? string.Empty);
+            var rndid = new Random().Next(999999);
+            if (curtype != null) _elementItems.Add(new PageItemItem(rndid, args.Text, curtype, true));
+            InvokeAsync(StateHasChanged);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e.ToString());
+        }
+    }
+
+    public class PageItemItem
+    {
+        public int Id { get; init; }
+        public string Name { get; init; }
+        public Type? Type { get; init; }
+        public bool Selected { get; set; }
+
+        public PageItemItem(int id, string name, Type? type, bool selected)
+        {
+            Id = id;
+            Name = name;
+            Type = type;
+            Selected = selected;
+        }
+    }
+
+}

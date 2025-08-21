@@ -1,0 +1,154 @@
+{
+  "ModulesSettings": {
+    "List": [
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.AdminUi",
+        "ModuleVersion": "1.0.0",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
+        "ModuleVersion": "1.0.0",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      }
+    ],
+    "NugetServers": [
+      {
+        "Server": "www.nuget.org/api/v2",
+        "Name": "Nuget.org",
+        "Order": 2,
+        "Version": 2,
+        "Active": true
+      },
+      {
+        "Server": "http://localhost:5555/v3",
+        "Name": "Local BaGet",
+        "Order": 1,
+        "Version": 3,
+        "Active": true
+      }
+    ],
+    "NugetFolders": [
+      {
+        "Folder": "packages",
+        "Name": "Horizonte",
+        "Order": 0,
+        "InstallFolder": true,
+        "Active": true
+      }
+    ]
+  },
+  "Log4NetSettings": {
+    "RepoConversionPattern": "[%thread]  %-5p %d %5rms %-22.22c{2} %-18.18M - %m%n",
+    "RootLevel": "All",
+    "EnableFileAppender": true,
+    "EnableConsoleAppender": true,
+    "FileAppenderFileName": "horizonte.log",
+    "FileAppenderMaxSizeRollBackups": 10,
+    "FileAppenderMaximumFileSize": "2MB",
+    "FileAppenderRollingMode": 1,
+    "FileAppenderStaticLogFileName": true
+  },
+  "WorkerSettings": {
+    "List": [
+      {
+        "WorkerType": "Horizonte.AdminUi.Worker,Horizonte.AdminUi",
+        "RunOnStart": true,
+        "ServiceName": "HorizonteNet GUI",
+        "Order": 1
+      },
+      {
+        "WorkerType": "Horizonte.FakeWorker,Horizonte",
+        "RunOnStart": false,
+        "ServiceName": "Fake Worker Contador",
+        "Order": 2
+      },
+      {
+        "WorkerType": "Horizonte.StartEndWorker,Horizonte",
+        "RunOnStart": false,
+        "ServiceName": "StartEnd Worker",
+        "Order": 3
+      }
+    ]
+  },
+  "SECommandsSettings": {
+    "StartCommands": [
+      {
+        "CommandName": "cmd",
+        "Active": true
+      }
+    ],
+    "EndCommands": [
+      {
+        "CommandName": "cmd",
+        "Active": true
+      }
+    ]
+  },
+  "HGuiSettings": {
+    "ProtectApp": false,
+    "AppPassword": "admin",
+    "AppTitle": "Horizonte Net",
+    "DefaultTheme": "material",
+    "HomePageComponent": "HorizonteGui.Components.Elements.StartPage",
+    "HomePageName": "Horizonte Net",
+    "CustomMenuItems": [
+      {
+        "Icon": "",
+        "Caption": "Start",
+        "Component": "HorizonteGui.Components.Elements.StartPage"
+      }
+    ]
+  },
+  "HGuiMenu": {
+    "Caption": "Test",
+    "Items": [
+      {
+        "Id": 1,
+        "ParentId": 0,
+        "Icon": "view_module",
+        "Caption": "Módulos",
+        "Component": "HorizonteConfig_Modules"
+      },
+      {
+        "Id": 2,
+        "ParentId": 0,
+        "Icon": "tab_move",
+        "Caption": "Comandos",
+        "Component": "HorizonteConfig_Commands"
+      },
+      {
+        "Id": 6,
+        "ParentId": 0,
+        "Icon": "home",
+        "Caption": "Service Workers",
+        "Component": "HorizonteConfig_Workers"
+      },
+      {
+        "Id": 7,
+        "ParentId": 0,
+        "Icon": "settings_system_daydream",
+        "Caption": "Registro",
+        "Component": "HorizonteConfig_Log"
+      },
+      {
+        "Id": 8,
+        "ParentId": 0,
+        "Icon": "settings_system_daydream",
+        "Caption": "Contexto",
+        "Component": "HorizonteConfig_ViewContext"
+      },
+      {
+        "Id": 9,
+        "ParentId": 0,
+        "Icon": "home",
+        "Caption": "Configuración",
+        "Component": "HorizonteGui_ConfigPage"
+      }
+    ]
+  }
+}

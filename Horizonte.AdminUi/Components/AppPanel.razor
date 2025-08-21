@@ -1,0 +1,30 @@
+@inject IHGesCom GesCom
+<RadzenStack Orientation="Orientation.Vertical">
+    @foreach (var item in _configtypes)
+    {
+        <Widget WidgetDef=@item></Widget>
+    }
+</RadzenStack>
+
+@code {
+
+    private readonly List<WidgetDef> _configtypes = new List<WidgetDef>();
+    protected override void OnInitialized()
+    {
+        var listcomm = GesCom.GetRoleCommands("configpage");
+        foreach (var comname in listcomm)
+        {
+            try
+            {
+                if (GesCom.RunCommand(comname.CommandName) is WidgetDef widgetdef) _configtypes.Add(widgetdef);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+        base.OnInitialized();   
+    }
+
+
+}

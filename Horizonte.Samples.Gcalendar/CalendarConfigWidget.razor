@@ -1,0 +1,49 @@
+@inject IHContext Context
+<RadzenCard style="width: 100%" >
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Google Calendar"></RadzenText>
+        <div>
+            <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
+            <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small"
+                          Click="Update"></RadzenButton>
+        </div>
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <div>
+            <RadzenText Text="Id de la calendario"/>
+            <RadzenTextBox @bind-value="_calConfig.CalendarId"/>
+        </div>
+        <div>
+            <RadzenText Text="Id de cliente"/>
+            <RadzenTextBox @bind-value="@_calConfig.ClientId"/>
+        </div>
+        <div>
+            <RadzenText Text="Secreto de cliente"/>
+            <RadzenTextBox @bind-value="@_calConfig.ClientSecret"/>
+        </div>
+        <div>
+            <RadzenText Text="Nombre de usuario"/>
+            <RadzenTextBox @bind-value="@_calConfig.UserName"/>
+        </div>
+
+    </RadzenStack>
+    <br/>
+</RadzenCard>
+
+@code {
+    private GCalConfig _calConfig = new GCalConfig();
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+    private void Get()
+    {
+        _calConfig = Context.Get<GCalConfig>() ?? new GCalConfig();
+    }
+    private void Update()
+    {
+        Context.Update(_calConfig);
+    }
+}

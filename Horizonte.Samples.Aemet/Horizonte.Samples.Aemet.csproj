@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <FileVersion>1.0.0</FileVersion>
+        <OutputType>Library</OutputType>
+        <Title>AEMET sample module</Title>
+        <Authors>franfusto@gmail.com</Authors>
+        <Description>Example module for Horizonte.Net, which provides access to the AEMET meteorological service.
+Service key is required</Description>
+        <Copyright>MIT</Copyright>
+        <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="Polly" Version="8.5.2" />
+      <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
+      <PackageReference Include="RestSharp" Version="112.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+</Project>

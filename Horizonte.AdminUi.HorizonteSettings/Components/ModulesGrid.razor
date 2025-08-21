@@ -1,0 +1,120 @@
+@inject IHContext Context
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
+                    AllowSorting="true" 
+                    EditMode="DataGridEditMode.Single" Data="ModuleSettings" TItem="ModulesSettingsItem"
+                    RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow"  >
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenText TextStyle="TextStyle.Subtitle1"> Módulos</RadzenText>
+                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow"
+                              Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+            </RadzenStack>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleName)" Title="Name">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.ModuleName"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleVersion)" Title="Version">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.ModuleVersion"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Path)" Title="Path">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Path"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.LoadAdditionalDlls)" Title="Additional Dlls">
+                <EditTemplate Context="item">
+                    <RadzenCheckBox @bind-Value="item.LoadAdditionalDlls"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Active)" Title="Activo">
+                <EditTemplate Context="item">
+                    <RadzenCheckBox @bind-Value="item.Active"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
+                                  Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="item">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => EditRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                  Click="@((args) => CancelEdit(item))">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                  Click="@(args => DeleteRow(item))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+
+    [Parameter] public List<ModulesSettingsItem> ModuleSettings { get; set; } = new List<ModulesSettingsItem>();
+    private RadzenDataGrid<ModulesSettingsItem> _grid = new RadzenDataGrid<ModulesSettingsItem>();
+
+    async Task InsertRow()
+    {
+        var item = new ModulesSettingsItem()
+        {
+            ModuleName = "modname",
+            ModuleVersion = "1.0.0"
+        };
+        await _grid.InsertRow(item);
+    }
+
+
+    void OnUpdateRow(ModulesSettingsItem item)
+    {
+        _grid.Reload();
+    }
+
+    void OnCreateRow(ModulesSettingsItem item)
+    {
+        ModuleSettings.Add(item);
+    }
+
+    async Task EditRow(ModulesSettingsItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(ModulesSettingsItem item)
+    {
+        await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(ModulesSettingsItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(ModulesSettingsItem item)
+    {
+        var selitem = ModuleSettings.FirstOrDefault(x => (x.ModuleName == item.ModuleName) && (x.ModuleVersion == item.ModuleVersion));
+        if (selitem != null) ModuleSettings.Remove(selitem);
+        await _grid.Reload();
+    }
+
+}
