@@ -43,5 +43,7 @@
       <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\ICON-LICENSE" />
       <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\README.md" />
       <_ContentIncludedByDefault Remove="wwwroot\css\site.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\blazor.web.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\images\favicon.png" />
     </ItemGroup>
 </Project>

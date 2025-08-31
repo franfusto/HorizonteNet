@@ -39,10 +39,19 @@ public class HAssemblyManager : IhAssemblyManager
         foreach (var folderItem in _settings.NugetFolders.OrderBy(x => x.Order))
         {
             if (!folderItem.Active) continue;
+            if (folderItem.InstallFolder)
+            {
+                if (!Directory.Exists(folderItem.Folder))
+                {
+                    Directory.CreateDirectory(folderItem.Folder);
+                }
+
+                _installFolder = folderItem.Folder;
+            }
+
             if (Directory.Exists(folderItem.Folder))
             {
                 _searchPaths.Add(folderItem.Folder);
-                if (folderItem.InstallFolder) _installFolder = folderItem.Folder;
             }
         }
     }
@@ -84,7 +93,6 @@ public class HAssemblyManager : IhAssemblyManager
         // Devolver null si no se pudo resolver
         return null;
     }
-
 
 
     private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string PackageDirectory)
@@ -168,7 +176,6 @@ public class HAssemblyManager : IhAssemblyManager
                         // Si encontramos una coincidencia exacta, terminamos el proceso
                         break;
                     }
-
                 }
                 else
                 {

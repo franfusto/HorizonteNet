@@ -13,18 +13,30 @@
 
  
     <ItemGroup>
+      <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
-    <ItemGroup>
-        <None Include="Assets\**" CopyToOutputDirectory="Always" />
-    </ItemGroup>
-
+ 
     <ItemGroup>
       <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\" />
+      <Folder Include="wwwroot\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="wwwroot\app.css">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\blazor.web.js">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\MainLayout.css">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+
 
 </Project>

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Reflection;
 using Horizonte;
 using Horizonte.AdminUi.Components;
+using Horizonte.Extension.AspNetCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Radzen;
@@ -39,19 +40,20 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
             {
                 ApplicationName = "Horizonte.AdminUi",
                 ContentRootPath = dir,
-                WebRootPath = Path.Combine(dir, "Assets")
+                WebRootPath = Path.Combine(dir, "wwwroot")
             });
         builder.Services.AddSingleton(_env);
         if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
         if (_log != null) builder.Services.AddSingleton(_log);
         if (_context != null) builder.Services.AddSingleton(_context);
        // if (_modManager != null) builder.Services.AddSingleton(_modManager);
-
+       
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
         builder.Services.AddScoped<HGuiSession>();
         _app = builder.Build();
+       _app.UseHorizonteStaticFiles();
         _app.UseAntiforgery();
         _app.UseStaticFiles();
 

@@ -3,7 +3,7 @@
 @inject HGuiSession GuiSession
 @inject IHContext HContext
 
-<RadzenPanelMenu Click="Onlicked" Style="width:300px" Multiple="@true">
+<RadzenPanelMenu Click="Onlicked" Style="width:300px" Multiple="@false">
     
     @foreach (var masteritem in _groups)
     {
@@ -27,7 +27,7 @@
     
 
 
-    <RadzenPanelMenuItem Icon="power_settings_new" Text="Aplicación">
+    <RadzenPanelMenuItem Expanded="@false" Icon="power_settings_new" Text="Aplicación">
         @if (GuiSession.ProtectApp)
         {
             <RadzenPanelMenuItem Click="LogOut" Icon="logout" Text="Cerrar sesión"/>
@@ -35,7 +35,10 @@
         <RadzenPanelMenuItem Click="Reboot" Icon="restart_alt" Text="Reiniciar"/>
         <RadzenPanelMenuItem Click="ShutDown" Icon="power_settings_circle" Text="Apagar"/>
     </RadzenPanelMenuItem>
+    
 </RadzenPanelMenu>
+
+
 
 @code
 {

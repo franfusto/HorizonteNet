@@ -7,15 +7,15 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <base href="/"/>
-    <link rel="stylesheet" href="app.css"/>
-    <link rel="stylesheet" href="MainLayout.css"/>
+    <link rel="stylesheet" href="/_content/horizonte.adminui/app.css"/>
+    <link rel="stylesheet" href="/_content/horizonte.adminui/MainLayout.css"/>
     <HeadOutlet @rendermode="InteractiveServer"/>
     <RadzenTheme Theme="@_themedef" @rendermode="InteractiveServer"/>
 </head>
 
 <body>
 <Routes @rendermode="InteractiveServer"/>
-<script src="blazor.web.js"></script>
+<script src="/_content/horizonte.adminui/blazor.web.js"></script>
 <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 <script>
     window.saveAsFile = (filename, content) => {

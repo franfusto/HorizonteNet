@@ -17,7 +17,7 @@ public class StaticFileRegistry
     /// con las rutas absolutas correspondientes de archivos registrados.
     /// Este diccionario funciona como una caché para la búsqueda rápida de archivos estáticos.
     /// </summary>
-    private ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>();
+    private static ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>();
 
 
     /// <summary>
@@ -28,7 +28,8 @@ public class StaticFileRegistry
     /// los recursos estáticos en diferentes módulos o directorios. Sirve como prefijo estándar durante el
     /// registro y acceso a directorios específicos, tales como "Content" o "staticwebassets", dentro del sistema.
     /// </remarks>
-    private const string StaticWebAssetsPath = "/_staticwebassets/";
+    
+    private const string StaticWebAssetsPath = "/_content/";
 
     /// <summary>
     /// Clase que gestiona el registro y recuperación de archivos estáticos dentro del entorno definido.
