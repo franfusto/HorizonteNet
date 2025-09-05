@@ -68,6 +68,7 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     {
         _log?.LogInformation("Finalizando RazorApp");
         IsRunning = false;
+        app?.DisposeAsync();
         return base.StopAsync(cancellationToken);
     }
 
