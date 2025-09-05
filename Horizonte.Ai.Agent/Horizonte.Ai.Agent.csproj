@@ -9,6 +9,7 @@
         <!--
         -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
