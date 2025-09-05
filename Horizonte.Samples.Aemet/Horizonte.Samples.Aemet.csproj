@@ -13,6 +13,7 @@ Service key is required</Description>
         <Copyright>MIT</Copyright>
         <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
         <AssemblyVersion>1.0.0</AssemblyVersion>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
