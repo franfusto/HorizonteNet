@@ -101,11 +101,13 @@ public class HAssemblyManager : IhAssemblyManager
         try
         {
             // Obtenemos la lista de archivos .dll en el directorio del paquete
-            var list = Directory.EnumerateFiles(PackageDirectory, "*.dll", SearchOption.AllDirectories).ToList();
+            var list = Directory.EnumerateFiles(PackageDirectory, "*.dll", SearchOption.AllDirectories)
+                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\") ) .ToList();
 
 
             foreach (var dllPath in list)
             {
+                Console.WriteLine($"procesando: {dllPath}");
                 // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
 
@@ -113,6 +115,10 @@ public class HAssemblyManager : IhAssemblyManager
                 var version = pathSegments[pathSegments.Length - 4];
                 var framework = pathSegments[pathSegments.Length - 2];
 
+                // fix preview packages
+                version=version.Replace("-beta", "");
+                if (version.Contains("-preview")) version = version.Split("-")[0] ;
+                    
                 // Añadimos la información a la lista
                 result.Add(new NugetPackageVersionInformation
                 {
@@ -143,7 +149,7 @@ public class HAssemblyManager : IhAssemblyManager
             frameworkSolicitado,
             "netstandard2.1",
             "netstandard2.0",
-            "net9.0",
+           // "net9.0",
             "net8.0",
             "net7.0",
             "net6.0"
