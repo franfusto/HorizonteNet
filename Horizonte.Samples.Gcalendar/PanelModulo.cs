@@ -58,9 +58,25 @@ public class PanelModulo
     [HorizonteCommand("Calendar_UpdateEvent", "Actualizar evento del calendario")]
     public async Task<bool> UpdateEvent(CalendarEvent NewCalendarEvent, string CurrentEventId) =>  _calendarService?.UpdateEvent(NewCalendarEvent, CurrentEventId).Result ?? false;
 
-    [HorizonteCommand("FechaHoraActual", "Obtiene la fecha y hora actual en formato ISO 8601")]
+    [HorizonteCommand("Calendar_FechaHoraActual", "Obtiene la fecha y hora actual en formato ISO 8601")]
     public DateTime FechaHoraActual() => DateTime.Now;
 
-   
+
+    [HorizonteCommand("Calendar_Test")]
+    public async Task<string> Test()
+    {
+        try
+        {
+            var events = await _calendarService!.GetEvents(DateTime.Now.AddMonths(-3), DateTime.Now);
+            var result =System.Text.Json.JsonSerializer.Serialize(events);
+            return result;
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+    }
+    
+    
 }
 
