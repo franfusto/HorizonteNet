@@ -5,10 +5,10 @@ namespace Horizonte;
 /// <summary>
 /// Clase abstracta que define el modelo para gestionar ensamblados en la aplicación.
 /// </summary>
-public abstract class IhAssemblyManager
+public interface  IhAssemblyManager
 {
     /// <summary>
     /// 
     /// </summary>
-    public List<Assembly> Assemblies { get;  set; } 
+    public List<Assembly> Assemblies { get;   } 
 }

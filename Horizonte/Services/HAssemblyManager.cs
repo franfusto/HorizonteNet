@@ -13,9 +13,8 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly ModulesSettings _settings;
     private List<string> _searchPaths = new List<string>();
     private readonly HorizonteEnv _environment;
-    public new List<Assembly> Assemblies;
     private string _installFolder = String.Empty;
-
+    public List<Assembly> Assemblies => AppDomain.CurrentDomain.GetAssemblies().ToList();
 
     public HAssemblyManager(ModulesSettings settings, HorizonteEnv environment)
     {
@@ -23,7 +22,7 @@ public class HAssemblyManager : IhAssemblyManager
         _environment = environment;
         SetUpAssemblyPaths();
         AppDomain.CurrentDomain.AssemblyResolve += ResolveAssemblyFromNuGetPackages;
-        Assemblies = LoadModulesFromEnvironment();
+        LoadModulesFromEnvironment();
     }
 
     private void SetUpAssemblyPaths()
@@ -107,7 +106,8 @@ public class HAssemblyManager : IhAssemblyManager
 
             foreach (var dllPath in list)
             {
-                Console.WriteLine($"procesando: {dllPath}");
+                //Console.WriteLine($"procesando: {dllPath}");
+                
                 // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
 
@@ -297,11 +297,10 @@ public class HAssemblyManager : IhAssemblyManager
     /// y los módulos activos. También asegura que el directorio de módulos existe.
     /// </summary>
     /// <returns>El arreglo de ensamblados cargados en el dominio de la aplicación.</returns>
-    private List<Assembly> LoadModulesFromEnvironment()
+    private void LoadModulesFromEnvironment()
     {
         try
         {
-            List<Assembly> result = new List<Assembly>();
             // Itera sobre los módulos activos en la configuración.
             foreach (var moduleItem in _settings.List.Where(item => item.Active))
             {
@@ -315,13 +314,11 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             // Retorna todos los ensamblados actualmente cargados en el dominio de la aplicación.
-            return result;
         }
         catch (Exception exception)
         {
             // Manejo básico de errores; imprime el error y retorna un arreglo vacío.
             Console.WriteLine(exception);
-            return new List<Assembly>();
         }
     }
 
@@ -401,4 +398,6 @@ public class HAssemblyManager : IhAssemblyManager
                               Environment.NewLine + e);
         }
     }
+
+   
 }
