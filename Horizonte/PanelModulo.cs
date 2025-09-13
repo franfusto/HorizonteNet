@@ -209,6 +209,19 @@ public class PanelModulo
             .ToList() ?? new();
     }
 
+    [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene la lista de Workers disponibles en el sistema")]
+    public List<Type> Workers_GetAvailablesServices()
+    {
+        var assemblymanager = _env?.HHost.Services.GetService<IhAssemblyManager>();
+        if (assemblymanager == null) return new List<Type>();
+
+        var types = assemblymanager.Assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t => typeof(IHorizonteBackgroundService).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .ToList();
+
+        return types;
+    }
 
     /// <summary>
     /// Determina si el servicio en segundo plano especificado está actualmente en ejecución.
