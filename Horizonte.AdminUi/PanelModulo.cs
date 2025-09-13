@@ -32,8 +32,12 @@ public class PanelModulo
 
     [HorizonteCommand("HorizonteGui_ConfigPage", "Aplicación")]
     public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(AppPanel), Parameters = null };
+    
+    [HorizonteRole("configpage")]
+    [HorizonteCommand("HorizonteGui_MenuEditor", "Menu Editor")]
+    public WidgetDef MenuEditor() => new WidgetDef() { Type = typeof(MenuEditor), Parameters = null };
 
-    [HorizonteRole("widget")]
+    [HorizonteRole("configpage")]
     [HorizonteCommand("HorizonteGui_NetConfig", "")]
     public WidgetDef NetConfig() => new WidgetDef() { Type = typeof(NetConfig), Parameters = null };
 
