@@ -1,4 +1,5 @@
 @inject IHContext Context
+@inject  DialogService DialogService
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
         <RadzenText TextStyle="TextStyle.DisplayH5" Text="Workers"></RadzenText>
@@ -13,7 +14,10 @@
                         EditMode="DataGridEditMode.Single" Data="_workerlist" TItem="WorkerSettingsItem"
                         RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
             <HeaderTemplate>
-                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+                    <RadzenButton Variant="Variant.Outlined" Icon="search" ButtonStyle="ButtonStyle.Primary" Click="@FindWorkers" Size="ButtonSize.ExtraSmall" />
+                </RadzenStack>
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(WorkerSettingsItem.Order)" Title="Order">
@@ -88,7 +92,21 @@
         _workerlist = _workerSettings.List;
     }
 
-
+    private async Task FindWorkers()
+    {
+        WorkerSettingsItem? result = await DialogService.OpenAsync<FindWorkers>($"Workers Disponibles",
+            null,
+            new DialogOptions() 
+            {
+                Resizable = true, 
+                Draggable = true,
+            });
+        if (result==null) return;
+        if(_workerlist.Find(x=> Type.GetType(x.WorkerType) == Type.GetType(result.WorkerType)) !=null ) return;
+        _workerlist.Add(result);
+        await _grid.Reload();
+    }
+    
     async Task InsertRow()
     {
         var item = new WorkerSettingsItem()

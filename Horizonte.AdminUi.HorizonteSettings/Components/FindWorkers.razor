@@ -1,0 +1,41 @@
+@using System.Reflection
+@inject DialogService DialogService
+@inject IHGesCom HGesCom
+
+@foreach (Type item in _list)
+{
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+        <RadzenButton Click="@(()=>Add(item))" Text="@item.FullName" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Success" Icon="add"/>
+        <br/>
+    </RadzenStack>
+}
+<br/>
+<RadzenButton Click="@Close" ButtonStyle="ButtonStyle.Danger" Text="Cerrar" Icon="close"/>
+
+@code {
+
+    private List<Type>? _list = new();
+
+    private void Close()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Add(Type type)
+    {
+        var item = new WorkerSettingsItem()
+        {
+            WorkerType = $"{type.FullName}, {type.Assembly}",
+            RunOnStart = false,
+            ServiceName = type.Name
+        };
+
+        DialogService.Close(item);
+    }
+
+    protected override void OnInitialized()
+    {
+        _list = HGesCom.RunCommand<List<Type>>("Workers_GetAvailablesServices");
+    }
+
+}

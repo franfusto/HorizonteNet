@@ -1,0 +1,42 @@
+@using System.Reflection
+@inject DialogService DialogService
+@inject IHGesCom HGesCom
+
+@foreach (HGesCom.RoleListItem item in _list)
+{
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+        <RadzenButton Click="@(()=>Add(item))" Text="@item.CommandName" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Success" Icon="add"/>
+        <br/>
+    </RadzenStack>
+}
+<br/>
+<RadzenButton Click="@Close" ButtonStyle="ButtonStyle.Danger" Text="Cerrar" Icon="close"/>
+
+@code {
+
+    private List<HGesCom.RoleListItem>? _list = new();
+
+    private void Close()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Add(HGesCom.RoleListItem selRole)
+    {
+        HGuiMenuItem item = new()
+        {
+            Caption = ""  ,
+            Component = selRole.CommandName,
+            Icon = "",
+            Id = 0,
+            ParentId = 0
+        };
+        DialogService.Close(item);
+    }
+
+    protected override void OnInitialized()
+    {
+         _list = HGesCom.GetRoleCommands("widget");
+    }
+
+}

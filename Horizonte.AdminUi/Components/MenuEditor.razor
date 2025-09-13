@@ -1,7 +1,8 @@
 @inject IHContext Context
+@inject  DialogService DialogService
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Comandos de inicio"></RadzenText>
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Opciones del menú"></RadzenText>
         <div>
             <RadzenButton Variant="Variant.Outlined" Icon="sync" Size="ButtonSize.Small" Click="Get"></RadzenButton>
             <RadzenButton Text="Grabar" Variant="Variant.Outlined" Icon="save" Size="ButtonSize.Small" Click="Update"></RadzenButton>
@@ -13,7 +14,10 @@
                         EditMode="DataGridEditMode.Single" Data="_entrylist" TItem="HGuiMenuItem"
                         RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" >
             <HeaderTemplate>
-                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary"  Click="@InsertRow" Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+                    <RadzenButton Variant="Variant.Outlined" Icon="search" Click="@FindWidgets" Size="ButtonSize.ExtraSmall"></RadzenButton>
+                </RadzenStack>
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(HGuiMenuItem.Id)" Title="ID">
@@ -99,7 +103,19 @@
         Context.Update<HGuiMenu>(_hGruiMenu);
     }
 
-
+    private async Task FindWidgets()
+    {
+        HGuiMenuItem? result = await DialogService.OpenAsync<FindMenuItem>($"Widgets Disponibles",
+            null,
+            new DialogOptions() 
+            {
+                Resizable = true, 
+                Draggable = true,
+            });
+        if (result==null) return;
+        _entrylist.Add(result);
+        await _grid.Reload();
+    }
 
     async Task InsertRow()
     {
