@@ -106,7 +106,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             foreach (var dllPath in list)
             {
-                //Console.WriteLine($"procesando: {dllPath}");
+               // Console.WriteLine($"procesando: {dllPath}");
                 
                 // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
@@ -118,7 +118,8 @@ public class HAssemblyManager : IhAssemblyManager
                 // fix preview packages
                 version=version.Replace("-beta", "");
                 if (version.Contains("-preview")) version = version.Split("-")[0] ;
-                    
+                if(dllPath.Contains("/buildTransitive/")) continue;                    
+                if(dllPath.Contains("/build/")) continue;                    
                 // Añadimos la información a la lista
                 result.Add(new NugetPackageVersionInformation
                 {
