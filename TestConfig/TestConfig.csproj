@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\HorizonteNet\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\HorizonteNet\Horizonte\Horizonte.csproj" />
+        <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
+    </ItemGroup>
+
+</Project>

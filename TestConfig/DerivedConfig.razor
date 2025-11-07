@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Components.Rendering
+@inherits Template
+
+@((RenderTreeBuilder builder) => base.BuildRenderTree(builder))
+<h3>DerivedConfig</h3>
+@header
+<RadzenButton Text="clic" Click="@saveConfig"></RadzenButton>
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        base.header = "Set base header from derived";
+        return base.OnInitializedAsync();
+    }
+
+    private void Save()
+    {
+        
+    }
+}
