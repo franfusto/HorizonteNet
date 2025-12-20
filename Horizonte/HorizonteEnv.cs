@@ -25,7 +25,8 @@ public class HorizonteEnv : IHorizonteEnv
     public string RootPath { get; private set; }
     public string Contextname { get; private set; }
     public StaticFileRegistry StaticFileRegistry { get; set; }
-    
+   // public UnmanagedDllResolver UnmanagedDllResolver { get; set; }
+
     private HostApplicationBuilder? _builder { get; set; }
     private readonly string[] _args;
     private HContext _context;
@@ -50,6 +51,10 @@ public class HorizonteEnv : IHorizonteEnv
         _args = appargs;
         Contextname = contextname;
         StaticFileRegistry = new(this);
+        //UnmanagedDllResolver = new(this);
+        // Registrar el resolver de DLLs no manejadas
+        //UnmanagedDllResolver.Register();
+
         Stage1(); // Cargar contexto
         Stage2(); // Cargar ensamblados
         Stage3(); // Cargar moóulos 
@@ -74,6 +79,15 @@ public class HorizonteEnv : IHorizonteEnv
 
 
 
+    /// <summary>
+    /// Registra mapeos personalizados de DLLs no manejadas desde un diccionario.
+    /// Este método permite a los módulos registrar sus propias ubicaciones de DLLs nativas.
+    /// </summary>
+    /// <param name="mappings">Diccionario con rutas virtuales como claves y rutas reales como valores</param>
+    public void RegisterUnmanagedDllMappings(Dictionary<string, string> mappings)
+    {
+        //UnmanagedDllResolver.RegisterMappings(mappings);
+    }
 
 
     
@@ -148,7 +162,9 @@ public class HorizonteEnv : IHorizonteEnv
         {
             await service.StopAsync(new CancellationToken());
         }
-        
+        // Desregistrar el resolver de DLLs no manejadas
+        //UnmanagedDllResolver.Unregister();
+
         await HHost.StopAsync(new CancellationToken());
     }
 
