@@ -3,7 +3,6 @@ using Horizonte;
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Horizonte;
@@ -27,15 +26,15 @@ public class HContext : IHContext
     /// <param name="defaultSerializerOptions">
     /// Opciones de serialización predeterminadas. Si se omiten, se usan las opciones por defecto.
     /// </param>
-    /// <param name="userDirectory">
-    /// Directorio del usuario. Si no se especifica, se utiliza la carpeta personal del sistema.
-    /// </param>
-    public HContext(string? contextName = null, JsonSerializerOptions? defaultSerializerOptions = null,
-        string? userDirectory = null)
+    public HContext(string? contextName = null, JsonSerializerOptions? defaultSerializerOptions = null)
     {
         _contextName = contextName ?? _contextName;
         _serializerOptions = defaultSerializerOptions ?? new JsonSerializerOptions();
-        _userDirectory = userDirectory ?? Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        _userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrEmpty(_userDirectory))
+        {
+            _userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        }
     }
 
     /// <summary>
@@ -76,6 +75,50 @@ public class HContext : IHContext
         return (contextName ?? _contextName) + ".json";
     }
 
+    /// <summary>
+    /// Obtiene el directorio de sobrescrituras locales para el contexto especificado.
+    /// Crea el directorio si no existe.
+    /// </summary>
+    /// <param name="contextName">Nombre del contexto. Si es nulo, utiliza el predeterminado.</param>
+    /// <returns>La ruta completa al directorio de sobrescrituras locales.</returns>
+    private string GetLocalOverridesDir(string? contextName = null)
+    {
+        string localOverridesDir = Path.Combine(_userDirectory!, "." + (contextName ?? _contextName), "localoverrides");
+        if (!Directory.Exists(localOverridesDir))
+        {
+            Directory.CreateDirectory(localOverridesDir);
+        }
+
+        return localOverridesDir;
+    }
+
+    /// <summary>
+    /// Obtiene la ruta del archivo de sobrescritura local para un tipo específico y contexto.
+    /// </summary>
+    /// <typeparam name="T">El tipo asociado con el archivo de sobrescritura.</typeparam>
+    /// <param name="contextName">Nombre del contexto. Si es nulo, utiliza el predeterminado.</param>
+    /// <returns>La ruta completa al archivo JSON de sobrescritura local.</returns>
+    private string GetLocalOverrideFilePath<T>(string? contextName = null)
+    {
+        return Path.Combine(GetLocalOverridesDir(contextName), typeof(T).Name + ".json");
+    }
+
+    /// <summary>
+    /// Determina el origen de los datos para la sección del tipo especificado.
+    /// Comprueba si existe un archivo de sobrescritura local antes de recurrir al contexto general.
+    /// </summary>
+    /// <typeparam name="T">El tipo de la sección a consultar.</typeparam>
+    /// <param name="contextname">Nombre del contexto opcional.</param>
+    /// <returns>El origen de la sección: <see cref="SectionSource.LocalOverride"/> o <see cref="SectionSource.Context"/>.</returns>
+    public SectionSource Source<T>(string? contextname = null)
+    {
+        lock (_fileLock)
+        {
+            var localOverridePath = GetLocalOverrideFilePath<T>(contextname);
+            return File.Exists(localOverridePath) ? SectionSource.LocalOverride : SectionSource.Context;
+        }
+    }
+
 
     /// <summary>
     /// Recupera un objeto del tipo especificado desde el archivo de contexto, utilizando el
@@ -98,9 +141,11 @@ public class HContext : IHContext
         {
             lock (_fileLock)
             {
-                contextname = contextname ?? _contextName;
-                var jsonFilePath = GetJsonFilePath<T>(contextname);
-                return JsonFileHelper.TryGet(jsonFilePath, typeof(T).Name, out T? value, _serializerOptions)
+                var filePath = Source<T>(contextname) == SectionSource.LocalOverride
+                    ? GetLocalOverrideFilePath<T>(contextname)
+                    : GetJsonFilePath<T>(contextname ?? _contextName);
+
+                return JsonFileHelper.TryGet(filePath, typeof(T).Name, out T? value, _serializerOptions)
                     ? value
                     : default(T);
             }
@@ -133,9 +178,12 @@ public class HContext : IHContext
         {
             lock (_fileLock)
             {
-                if (contextname == null) contextname = _contextName;
+                var filePath = Source<T>(contextname) == SectionSource.LocalOverride
+                    ? GetLocalOverrideFilePath<T>(contextname)
+                    : GetJsonFilePath<T>(contextname ?? _contextName);
+
                 JsonFileHelper.AddOrUpdateSection(
-                    jsonFilePath: GetJsonFilePath<T>(contextname),
+                    jsonFilePath: filePath,
                     sectionName: typeof(T).Name,
                     updateAction: update,
                     serializerOptions: _serializerOptions);
@@ -170,9 +218,12 @@ public class HContext : IHContext
         {
             lock (_fileLock)
             {
-                if (contextname == null) contextname = _contextName;
+                var filePath = Source<T>(contextname) == SectionSource.LocalOverride
+                    ? GetLocalOverrideFilePath<T>(contextname)
+                    : GetJsonFilePath<T>(contextname ?? _contextName);
+
                 JsonFileHelper.AddOrUpdateSection(
-                    jsonFilePath: GetJsonFilePath<T>(contextname),
+                    jsonFilePath: filePath,
                     sectionName: typeof(T).Name,
                     value: newvalue,
                     serializerOptions: _serializerOptions);
@@ -211,24 +262,14 @@ public class HContext : IHContext
             });
 
         /// <summary>
-        /// Agrega o actualiza una sección en el archivo JSON especificado, utilizando una acción de actualización proporcionada
-        /// o reemplazando la sección con un nuevo valor. Dependiendo de la operación especificada, este método permite
-        /// actualizar datos existentes o crear nuevas secciones en la estructura JSON.
+        /// Intenta actualizar una sección existente en el archivo JSON utilizando una acción.
+        /// Si la sección existe, se recupera, se aplica la acción y se vuelve a guardar.
         /// </summary>
-        /// <param name="jsonFilePath">
-        /// Ruta del archivo JSON a modificar. Si el archivo no existe, será creado.
-        /// </param>
-        /// <param name="sectionName">
-        /// Nombre de la sección que se agregará o actualizará en el archivo JSON. Corresponde al nombre de la propiedad
-        /// dentro del documento JSON que contiene los datos de la sección.
-        /// </param>
-        /// <param name="updateAction">
-        /// Acción opcional que permite modificar los datos existentes de la sección. Si se especifica, la acción modifica
-        /// la sección existente o inicializa un nuevo valor si la sección no existe actualmente.
-        /// </param>
-        /// <param name="serializerOptions">
-        /// Opciones para la serialización y deserialización JSON. Si no se proporcionan, se usan opciones predeterminadas.
-        /// </param>
+        /// <typeparam name="T">El tipo de la sección a actualizar.</typeparam>
+        /// <param name="jsonFilePath">Ruta del archivo JSON.</param>
+        /// <param name="sectionName">Nombre de la sección (propiedad) en el JSON.</param>
+        /// <param name="updateAction">Acción para modificar el valor existente.</param>
+        /// <param name="serializerOptions">Opciones de serialización.</param>
         public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName,
             Action<T>? updateAction = null, JsonSerializerOptions? serializerOptions = null)
         {
@@ -241,22 +282,15 @@ public class HContext : IHContext
         }
 
         /// <summary>
-        /// Actualiza o agrega una sección específica dentro de un archivo JSON, ya sea combinando o reemplazando
-        /// los datos de la sección con el valor proporcionado. Si la sección no existe, se crea.
+        /// Agrega o reemplaza una sección específica en el archivo JSON con el valor proporcionado.
+        /// Si la sección ya existe, se sobrescribe completamente con el nuevo valor.
+        /// Si no existe, se añade una nueva propiedad al objeto raíz del JSON.
         /// </summary>
-        /// <param name="jsonFilePath">
-        /// La ruta del archivo JSON donde se actualizará o agregará la sección.
-        /// </param>
-        /// <param name="sectionName">
-        /// El nombre de la sección en el archivo JSON que se actualizará o creará.
-        /// </param>
-        /// <param name="value">
-        /// El nuevo valor que se establecerá para la sección especificada. Los datos existentes se reemplazarán con este valor.
-        /// </param>
-        /// <param name="serializerOptions">
-        /// Opciones de serialización opcionales para personalizar la serialización del valor. Si no se especifican,
-        /// se usarán las opciones predeterminadas.
-        /// </param>
+        /// <typeparam name="T">El tipo de la sección a guardar.</typeparam>
+        /// <param name="jsonFilePath">Ruta del archivo JSON.</param>
+        /// <param name="sectionName">Nombre de la sección (propiedad) en el JSON.</param>
+        /// <param name="value">El valor a establecer para la sección.</param>
+        /// <param name="serializerOptions">Opciones de serialización.</param>
         public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value,
             JsonSerializerOptions? serializerOptions = null)
         {
