@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Horizonte.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,7 @@ public class HorizonteEnv : IHorizonteEnv
     private HostApplicationBuilder? _builder { get; set; }
     private readonly string[] _args;
     private HContext _context;
+    private HCredManager _credManager;
     private ModulesSettings _modulesSettings;
     private WorkerSettings _workerSettings;
     private Log4NetSettings _log4NetSettings;
@@ -190,7 +192,15 @@ public class HorizonteEnv : IHorizonteEnv
             Directory.SetCurrentDirectory(RootPath);
 
             //creamos contexto y obtenemos configuraciones
-            _context = new HContext(Contextname);
+            _context = new HContext(Contextname,new JsonSerializerOptions(){IncludeFields = true});
+            
+            // Usamos un logger temporal para el HCredManager en Stage 1
+            var loggerFactory = LoggerFactory.Create(builder => {
+                builder.AddConsole();
+            });
+            var logger = loggerFactory.CreateLogger<HCredManager>();
+            
+            _credManager = new HCredManager(logger);
             _modulesSettings = _context.Get<ModulesSettings>() ?? new ModulesSettings();
             _log4NetSettings = _context.Get<Log4NetSettings>() ?? new Log4NetSettings();
             _workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
@@ -263,8 +273,10 @@ public class HorizonteEnv : IHorizonteEnv
 
             //contexto
             _builder.Configuration.Sources.Clear();
-            _context = new HContext(Contextname);
             _builder.Services.AddSingleton<IHContext>(_context);
+            
+            //gestor de credenciales
+            _builder.Services.AddSingleton<IHCredManager>(_credManager);
 
             //ensamblados
             if (_assemblyManager != null) _builder.Services.AddSingleton(_assemblyManager);

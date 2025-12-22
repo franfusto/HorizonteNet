@@ -18,6 +18,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
     private IHGesCom? _gesCom;
     private WebApplication _app;
     private IHContext? _context;
+    private IHCredManager? _credManager;
     //private IHModManager? _modManager;
 
     public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
@@ -46,6 +47,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
         if (_log != null) builder.Services.AddSingleton(_log);
         if (_context != null) builder.Services.AddSingleton(_context);
+        if(_credManager != null) builder.Services.AddSingleton(_credManager);
        // if (_modManager != null) builder.Services.AddSingleton(_modManager);
        
         builder.Services.AddRazorComponents()
@@ -69,6 +71,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         _log = _env?.HHost.Services.GetService<ILogger<Worker>>();
         _gesCom = _env?.HHost.Services.GetService<IHGesCom>();
         _context = _env?.HHost.Services.GetService<IHContext>();
+        _credManager = _env?.HHost.Services.GetService<IHCredManager>();
         //_modManager = _env?.HHost.Services.GetService<IHModManager>();
         _log?.LogInformation("Starting Horizonte.AdminUi.Worker");
         IsRunning = true;

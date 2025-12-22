@@ -20,7 +20,8 @@ public class PanelModulo
     private ILogger<PanelModulo>? _logger;
     private AemetConfig? _config;
     private PrediccionesEspecificasApi? _prediccionesEspecificasApi = new PrediccionesEspecificasApi();
-
+    private IHCredManager? _credManager;
+    
     private PrediccionesNormalizadasTextoApi?
         _prediccionesNormalizadasTextoApi = new PrediccionesNormalizadasTextoApi();
 
@@ -38,6 +39,7 @@ public class PanelModulo
     {
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         var context = _env.Value.GetService<IHContext>();
+        _credManager = _env.Value.GetService<IHCredManager>();
         _config = context?.Get<AemetConfig>() ?? new AemetConfig();
         ConfigureApi();
         _logger?.LogInformation("Módulo Aemet Inciciado");
@@ -198,8 +200,8 @@ public class PanelModulo
         {
             if (_config == null) return;
             var apiconfig = new Configuration();
-            apiconfig.BasePath = _config.BaseUrl;
-            apiconfig.AddApiKey("api_key", _config.ApiKey);
+            apiconfig.BasePath = _credManager?.GetCredential(_config.BaseUrl) ?? string.Empty;
+            apiconfig.AddApiKey("api_key", _credManager?.GetCredential(_config.ApiKey) ?? string.Empty );
             _prediccionesEspecificasApi = new PrediccionesEspecificasApi(apiconfig);
             _prediccionesNormalizadasTextoApi = new PrediccionesNormalizadasTextoApi(apiconfig);
         }

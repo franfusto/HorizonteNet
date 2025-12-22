@@ -65,6 +65,10 @@ public class PanelModulo
     [HorizonteRole("configpage")]
     [HorizonteCommand("HorizonteConfig_WorkersConfig", "")]
     public WidgetDef WorkersConfig() => new WidgetDef() { Type = typeof(WorkersConfig), Parameters = null };
+               
+    [HorizonteRole("configpage")]
+    [HorizonteCommand("HorizonteConfig_CredentialsManager", "")]
+    public WidgetDef CredentialsManager() => new WidgetDef() { Type = typeof(CredentialsManager), Parameters = null };
            
 
     
