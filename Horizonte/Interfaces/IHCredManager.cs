@@ -24,4 +24,10 @@ public interface IHCredManager
     /// <param name="key">La clave de la credencial.</param>
     /// <param name="value">El valor a asignar.</param>
     public void SetCredential(string key, string value);
+
+    /// <summary>
+    /// Elimina una credencial específica.
+    /// </summary>
+    /// <param name="key">La clave de la credencial a eliminar.</param>
+    public void DeleteCredential(string key);
 }

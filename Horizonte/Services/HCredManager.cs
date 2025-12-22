@@ -315,4 +315,41 @@ public class HCredManager : IHCredManager
 
         SaveCollectionValue(item);
     }
+
+    /// <summary>
+    /// Elimina una credencial de la memoria y del almacenamiento persistente.
+    /// </summary>
+    /// <param name="key">Clave de la credencial a eliminar.</param>
+    public void DeleteCredential(string key)
+    {
+        if (_credentials.TryRemove(key, out var item))
+        {
+            if (item.Type == CredentialType.Environment)
+            {
+                try
+                {
+                    Environment.SetEnvironmentVariable(EnvPrefix + item.Key, null);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al eliminar variable de entorno {Key}", item.Key);
+                }
+            }
+            else
+            {
+                try
+                {
+                    var dict = ReadSecretsDict();
+                    if (dict != null && dict.Remove(item.Key))
+                    {
+                        WriteSecretsDict(dict);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al eliminar el secreto {Key} en {Path}", item.Key, _secretsFilePath);
+                }
+            }
+        }
+    }
 }
