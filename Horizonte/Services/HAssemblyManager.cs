@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Xml.Linq;
 using log4net.Core;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
@@ -12,13 +13,15 @@ public class HAssemblyManager : IhAssemblyManager
 {
     private readonly ModulesSettings _settings;
     private List<string> _searchPaths = new List<string>();
+    private readonly SymLinkScafolder _linkScafolder;
     private readonly HorizonteEnv _environment;
     private string _installFolder = String.Empty;
     public List<Assembly> Assemblies => AppDomain.CurrentDomain.GetAssemblies().ToList();
 
-    public HAssemblyManager(ModulesSettings settings, HorizonteEnv environment)
+    public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
     {
         _settings = settings;
+        _linkScafolder = linkScafolder;
         _environment = environment;
         SetUpAssemblyPaths();
         AppDomain.CurrentDomain.AssemblyResolve += ResolveAssemblyFromNuGetPackages;
@@ -81,6 +84,21 @@ public class HAssemblyManager : IhAssemblyManager
 
             //registras assets
             _environment.StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
+
+            // Procesar archivos .targets / .props para crear enlaces simbólicos
+            try
+            {
+                var symLinks = GetContentMappingsFromPackage(resAssemblyPath);
+                if (symLinks.Any())
+                {
+                    _linkScafolder.BuildScafolder(symLinks);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing MSBuild targets for symlinks: {ex.Message}");
+            }
+
             // Cargar y devolver el ensamblado seleccionado
             return Assembly.LoadFrom(resAssemblyPath);
         }
@@ -398,6 +416,134 @@ public class HAssemblyManager : IhAssemblyManager
             Console.WriteLine($"Error on load additional dll from module: {modulePath}" +
                               Environment.NewLine + e);
         }
+    }
+
+    private List<SymLinkDef> GetContentMappingsFromPackage(string resAssemblyPath)
+    {
+        var mappings = new List<SymLinkDef>();
+        try
+        {
+            // resAssemblyPath: [ruta nuget packages]/[nombre del paquete]/[version del paquete]/lib/[framework]/[ensamblado].dll
+            // Subir tres directorios desde el archivo resAssemblyPath para obtener el path del paquete (ej: /.../porcupine/3.0.10/)
+            var libDir = Directory.GetParent(resAssemblyPath); // [framework]
+            var pkgVersionDir = libDir?.Parent;               // lib
+            var packagePath = pkgVersionDir?.Parent?.FullName; // [version del paquete]
+            
+            if (string.IsNullOrEmpty(packagePath)) return mappings;
+
+            // Determinar el framework a partir de la ruta del ensamblado
+            var framework = libDir?.Name ?? "net8.0";
+
+            // 1. Localizar la carpeta de construcción (preferiblemente buildTransitive)
+            string buildDir = Path.Combine(packagePath, "buildTransitive", framework);
+            if (!Directory.Exists(buildDir))
+            {
+                buildDir = Path.Combine(packagePath, "build", framework);
+                if (!Directory.Exists(buildDir)) return mappings;
+            }
+
+            // 2. Buscar archivos de definición de MSBuild (.targets o .props)
+            var definitionFiles = Directory.GetFiles(buildDir, "*.targets")
+                .Concat(Directory.GetFiles(buildDir, "*.props"));
+
+            XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+
+            foreach (var defFile in definitionFiles)
+            {
+                var doc = XDocument.Load(defFile);
+
+                // Buscamos elementos <Content> que tengan <CopyToOutputDirectory>
+                var contentItems = doc.Descendants(ns + "Content")
+                    .Where(c => c.Element(ns + "CopyToOutputDirectory") != null);
+
+                foreach (var item in contentItems)
+                {
+                    string include = item.Attribute("Include")?.Value ?? "";
+                    string linkTemplate = item.Element(ns + "Link")?.Value ?? "";
+
+                    if (string.IsNullOrEmpty(include)) continue;
+
+                    // Resolver la variable $(MSBuildThisFileDirectory) que apunta a la carpeta del .targets
+                    string targetsFolder = buildDir.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                    string resolvedInclude = include.Replace("$(MSBuildThisFileDirectory)", targetsFolder);
+
+                    // Normalizar la ruta para resolver ".." y separadores correctos del sistema
+                    resolvedInclude = Path.GetFullPath(resolvedInclude.Replace('\\', Path.DirectorySeparatorChar));
+
+                    if (resolvedInclude.Contains('*'))
+                    {
+                        // --- CASO CON COMODINES (Ej: resources\**) ---
+                        string baseDir = resolvedInclude.Split('*')[0];
+                        if (!Directory.Exists(baseDir)) continue;
+
+                        var files = Directory.GetFiles(baseDir, "*", SearchOption.AllDirectories);
+                        foreach (var file in files)
+                        {
+                            string relativePath = Path.GetRelativePath(baseDir, file);
+                            string recursiveDir = Path.GetDirectoryName(relativePath) ?? "";
+                            if (!string.IsNullOrEmpty(recursiveDir))
+                                recursiveDir += Path.DirectorySeparatorChar;
+
+                            // Reemplazar placeholders de MSBuild en el Link
+                            string finalDest = linkTemplate
+                                .Replace("%(RecursiveDir)", recursiveDir)
+                                .Replace("%(Filename)", Path.GetFileNameWithoutExtension(file))
+                                .Replace("%(Extension)", Path.GetExtension(file))
+                                .Replace('\\', Path.DirectorySeparatorChar);
+
+                            if (string.IsNullOrEmpty(finalDest))
+                                finalDest = relativePath;
+
+                            mappings.Add(new SymLinkDef
+                            {
+                                Source = file,
+                                Destination = finalDest,
+                                IsDirecory = false,
+                                HardCoded = false
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // --- CASO ARCHIVO INDIVIDUAL ---
+                        if (File.Exists(resolvedInclude))
+                        {
+                            string finalDest = !string.IsNullOrEmpty(linkTemplate)
+                                ? linkTemplate.Replace('\\', Path.DirectorySeparatorChar)
+                                : Path.GetFileName(resolvedInclude);
+
+                            mappings.Add(new SymLinkDef
+                            {
+                                Source = resolvedInclude,
+                                Destination = finalDest,
+                                IsDirecory = false,
+                                HardCoded = false
+                            });
+                        }
+                        else if (Directory.Exists(resolvedInclude))
+                        {
+                             string finalDest = !string.IsNullOrEmpty(linkTemplate)
+                                ? linkTemplate.Replace('\\', Path.DirectorySeparatorChar)
+                                : Path.GetFileName(resolvedInclude.TrimEnd(Path.DirectorySeparatorChar));
+
+                            mappings.Add(new SymLinkDef
+                            {
+                                Source = resolvedInclude,
+                                Destination = finalDest,
+                                IsDirecory = true,
+                                HardCoded = false
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error extracting content mappings: {ex.Message}");
+        }
+
+        return mappings;
     }
 
    

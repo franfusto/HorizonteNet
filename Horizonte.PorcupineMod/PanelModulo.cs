@@ -18,8 +18,6 @@ public class PanelModulo
     {
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         var context = _env.Value.GetService<IHContext>();
-        //_config = context?.Get<AemetConfig>() ?? new AemetConfig();
-        //ConfigureApi();
         _logger?.LogInformation("Módulo Porcupine Inciciado");
         return true;
     }

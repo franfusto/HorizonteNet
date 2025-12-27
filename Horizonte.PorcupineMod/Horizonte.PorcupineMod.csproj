@@ -10,7 +10,7 @@
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="PvRecorder" Version="1.2.5"/>
+        <PackageReference Include="PvRecorder" Version="1.2.10"/>
         <PackageReference Include="Porcupine" Version="3.0.7"/>
         <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
     </ItemGroup>

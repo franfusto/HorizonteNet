@@ -16,10 +16,10 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     private IHContext? _context;
     private PorcupineConfig _config = new();
     private CancellationTokenSource? _cancellationTokenSource;
-    private const string ACCESS_KEY = "kRHUj6tTbXE7PjdqznCLPF7ZVEnOVES/ZWSxY2foqO8A9gXcickl8Q==";
     private Porcupine _porcupine;
     private PvRecorder _recorder;
-
+    private IHCredManager? _credManager;
+    
     public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
     {
         _env = env;
@@ -44,16 +44,19 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
                         switch (keywordIndex)
                         {
                             case 0:
-                                Console.WriteLine("Alexa");
+                                Console.WriteLine("ALEXA");
                                 break;
                             case 1:
-                                Console.WriteLine("IsGrasshopper");
+                                Console.WriteLine("JARVIS");
                                 break;
                             case 2:
-                                Console.WriteLine("IsBumblebee");
+                                Console.WriteLine("HEY_GOOGLE");
                                 break;
                             case 3:
-                                Console.WriteLine("IsBlueberry");
+                                Console.WriteLine("HEY_SIRI");
+                                break;
+                            default:
+                                Console.WriteLine("Unknown:" + keywordIndex);
                                 break;
                         }
                     }
@@ -78,19 +81,20 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
             _gesCom = _env?.GetService<IHGesCom>();
             _context = _env?.GetService<IHContext>();
             _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
-
+            _credManager = _env?.GetService<IHCredManager>();
             _log?.LogInformation("Starting Service Porcupine");
             IsRunning = true;
 
             List<BuiltInKeyword> commands = new List<BuiltInKeyword>
             {
                 BuiltInKeyword.ALEXA,
-                BuiltInKeyword.GRASSHOPPER,
-                BuiltInKeyword.BUMBLEBEE,
-                BuiltInKeyword.JARVIS
+                BuiltInKeyword.JARVIS,
+                BuiltInKeyword.HEY_GOOGLE,
+                BuiltInKeyword.HEY_SIRI
+                
             };
-
-            _porcupine = Porcupine.FromBuiltInKeywords(ACCESS_KEY, commands);
+            var _key = _credManager?.GetCredential(_config.AccessKey) ?? string.Empty;
+            _porcupine = Porcupine.FromBuiltInKeywords(_key, commands);
             //_porcupine = Porcupine.FromKeywordPaths(ACCESS_KEY, GetKeywordPaths(),null, null);
 
             _recorder = PvRecorder.Create(_porcupine.FrameLength);

@@ -33,6 +33,8 @@ public class HorizonteEnv : IHorizonteEnv
     private HContext _context;
     private HCredManager _credManager;
     private ModulesSettings _modulesSettings;
+    private SymLinkScafolder _linkScafolder;
+    private SymLinkSettings _linkSettings;
     private WorkerSettings _workerSettings;
     private Log4NetSettings _log4NetSettings;
     private IHGesCom? _gescom;
@@ -58,6 +60,7 @@ public class HorizonteEnv : IHorizonteEnv
         //UnmanagedDllResolver.Register();
 
         Stage1(); // Cargar contexto
+        Stage2_pre(); // Crear andamio de enlace simbolicos
         Stage2(); // Cargar ensamblados
         Stage3(); // Cargar moóulos 
         
@@ -166,7 +169,10 @@ public class HorizonteEnv : IHorizonteEnv
         }
         // Desregistrar el resolver de DLLs no manejadas
         //UnmanagedDllResolver.Unregister();
-
+        
+        //eliminamos andamio de enlaces simbolicos
+        _linkScafolder.CleanScafolder();
+        
         await HHost.StopAsync(new CancellationToken());
     }
 
@@ -211,7 +217,22 @@ public class HorizonteEnv : IHorizonteEnv
             Console.WriteLine(e);
         }
     }
-
+    private void Stage2_pre()
+    {
+        Console.WriteLine("******** STAGE 2_pre - CREATE SYMLINK SCAFOLDER **********");
+        try
+        {
+            _linkScafolder = new SymLinkScafolder();
+            _linkSettings = _context.Get<SymLinkSettings>() ??  new SymLinkSettings() ;
+            _linkScafolder.CleanScafolder();
+            _linkScafolder.BuildScafolder(_linkSettings.SymLinkDefs);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        
+    }
     //stage 2 - cargar ensamblados
 
     /// <summary>
@@ -224,7 +245,7 @@ public class HorizonteEnv : IHorizonteEnv
         Console.WriteLine("******** STAGE 2 - LOAD ASSEMBLIES **********");
         try
         {
-            _assemblyManager = new HAssemblyManager(_modulesSettings,this);
+            _assemblyManager = new HAssemblyManager(_modulesSettings, _linkScafolder, this);
             //Assemblies = _assemblyManager.Assemblies;
         }
         catch (Exception e)
@@ -233,7 +254,10 @@ public class HorizonteEnv : IHorizonteEnv
         }
     }
 
-    //stage 2 - cargar módulos
+
+ 
+
+    //stage 3 - cargar módulos
     /// <summary>
     /// Maneja la carga e inicialización de los módulos dentro del entorno de la aplicación modular.
     /// Esta etapa es responsable de preparar e integrar todos los módulos necesarios para asegurar
