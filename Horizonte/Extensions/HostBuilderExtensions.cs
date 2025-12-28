@@ -27,50 +27,8 @@ public static class HostBuilderExtensions
     {
         Log4NetSettings logsettings = context.Get<Log4NetSettings>()  ?? new Log4NetSettings() ;
         builder.Logging.ClearProviders();
-        ConfigureDefaultsLog4Net(logsettings);
+        logsettings.Configure();
         builder.Logging.AddLog4Net(new Log4NetProviderOptions() { ExternalConfigurationSetup = true });
-    }
-
-    /// <summary>
-    /// Configura los ajustes predeterminados para el registro con Log4Net basado en la instancia proporcionada de Log4NetSettings.
-    /// </summary>
-    /// <param name="settings">La instancia de Log4NetSettings que contiene la configuración para los apéndices (appenders), niveles de registro y patrones de Log4Net.</param>
-    private static void ConfigureDefaultsLog4Net(Log4NetSettings settings)
-    {
-        var hierarchy = (Hierarchy)LogManager.GetRepository();
-        var patternLayout = new PatternLayout();
-        patternLayout.ConversionPattern = settings.RepoConversionPattern;
-        patternLayout.ActivateOptions();
-        if (settings.EnableFileAppender)
-        {
-            var roller = new RollingFileAppender
-            {
-                AppendToFile = true,
-                File = settings.FileAppenderFileName,
-                Layout = patternLayout,
-                MaxSizeRollBackups = settings.FileAppenderMaxSizeRollBackups,
-                MaximumFileSize = "10MB",///////////////////////// desde configueracion
-                RollingStyle = RollingFileAppender.RollingMode.Size, ///////////////////////// desde configueracion
-                StaticLogFileName = settings.FileAppenderStaticLogFileName
-            };
-            roller.ActivateOptions();
-            
-            hierarchy.Root.AddAppender(roller);
-        }
-        if (settings.EnableConsoleAppender)
-        {
-            var console = new ConsoleAppender
-            {
-                Layout = patternLayout
-            };
-            console.ActivateOptions();
-            hierarchy.Root.AddAppender(console);
-        }
-        var memory = new MemoryAppender();
-        memory.ActivateOptions();
-        hierarchy.Root.AddAppender(memory);
-        hierarchy.Root.Level = Level.All; ////////////////////////////////////////////////////////// obtener desde config
-        hierarchy.Configured = true;
     }
 
 
@@ -99,12 +57,12 @@ public static class HostBuilderExtensions
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    LogManager.GetLogger(typeof(HostBuilderExtensions)).Error(e);
                 }
             }
             else
             {
-                Console.WriteLine($"Type '{workeritem.WorkerType}' no encontrado ");
+                LogManager.GetLogger(typeof(HostBuilderExtensions)).Error($"Type '{workeritem.WorkerType}' no encontrado ");
             }
         }
 

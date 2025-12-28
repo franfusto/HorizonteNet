@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using log4net;
 
 
 namespace Horizonte;
@@ -20,6 +21,7 @@ namespace Horizonte;
 /// </remarks>
 public class HGesCom : IHGesCom
 {
+    private static readonly ILog Log = LogManager.GetLogger(typeof(HGesCom));
     /// <summary>
     /// Representa un elemento en la lista de comandos específicos de un rol.
     /// </summary>
@@ -99,13 +101,13 @@ public class HGesCom : IHGesCom
                         object? modInstance;
                         try
                         {
-                            Console.WriteLine($">>>> Loading modules from '{modtype.FullName}'");
+                            Log.Info($">>>> Loading modules from '{modtype.FullName}'");
 
                             modInstance = Activator.CreateInstance(modtype, enviorment);
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("Error al crear instancia: " + modtype.FullName);
+                            Log.Error("Error al crear instancia: " + modtype.FullName, e);
                             continue;
                         }
 

@@ -45,7 +45,15 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
             });
         builder.Services.AddSingleton(_env);
         if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
-        if (_log != null) builder.Services.AddSingleton(_log);
+        if (_log != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+            builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+            builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+            //builder.Logging.SetMinimumLevel(LogLevel.Error);
+            builder.Services.AddSingleton(_log);
+        }
         if (_context != null) builder.Services.AddSingleton(_context);
         if(_credManager != null) builder.Services.AddSingleton(_credManager);
        // if (_modManager != null) builder.Services.AddSingleton(_modManager);

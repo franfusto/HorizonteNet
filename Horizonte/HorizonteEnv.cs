@@ -6,11 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-//using Newtonsoft.Json;
-using Horizonte;
+using log4net;
 using log4net.Appender;
 using log4net.Core;
 using Microsoft.Extensions.Logging;
+using ILogger = log4net.ILog;
 
 namespace Horizonte;
 
@@ -41,6 +41,7 @@ public class HorizonteEnv : IHorizonteEnv
     private IhAssemblyManager? _assemblyManager;
     private List<BackgroundService> _startServicesList = new();
     private CancellationToken _cts = new CancellationToken();
+    private ILogger _startlogger;
 
     //public List<Assembly> Assemblies { get; set; }
     /// <summary>
@@ -55,10 +56,8 @@ public class HorizonteEnv : IHorizonteEnv
         _args = appargs;
         Contextname = contextname;
         StaticFileRegistry = new(this);
-        //UnmanagedDllResolver = new(this);
-        // Registrar el resolver de DLLs no manejadas
-        //UnmanagedDllResolver.Register();
 
+        Stage0(); // Registro de inicio
         Stage1(); // Cargar contexto
         Stage2_pre(); // Crear andamio de enlace simbolicos
         Stage2(); // Cargar ensamblados
@@ -84,17 +83,6 @@ public class HorizonteEnv : IHorizonteEnv
 
 
 
-    /// <summary>
-    /// Registra mapeos personalizados de DLLs no manejadas desde un diccionario.
-    /// Este método permite a los módulos registrar sus propias ubicaciones de DLLs nativas.
-    /// </summary>
-    /// <param name="mappings">Diccionario con rutas virtuales como claves y rutas reales como valores</param>
-    public void RegisterUnmanagedDllMappings(Dictionary<string, string> mappings)
-    {
-        //UnmanagedDllResolver.RegisterMappings(mappings);
-    }
-
-
     
     // ********* SERVICES *********
 
@@ -114,7 +102,7 @@ public class HorizonteEnv : IHorizonteEnv
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
             return default;
         }
     }
@@ -167,8 +155,6 @@ public class HorizonteEnv : IHorizonteEnv
         {
             await service.StopAsync(new CancellationToken());
         }
-        // Desregistrar el resolver de DLLs no manejadas
-        //UnmanagedDllResolver.Unregister();
         
         //eliminamos andamio de enlaces simbolicos
         _linkScafolder.CleanScafolder();
@@ -178,6 +164,32 @@ public class HorizonteEnv : IHorizonteEnv
 
     
     // ********* STAGES *********
+    
+    // stage 0 - crear logger para registro del arranque del entorno modular
+    private void Stage0()
+    {
+        try
+        {
+            new Log4NetSettings()
+            {
+                EnableConsoleAppender = true,
+                EnableFileAppender = true,
+                FileAppenderFileName = "start.log",
+                FileAppenderMaxSizeRollBackups = 1,
+                FileAppenderMaximumFileSize = "10MB",
+                FileAppenderRollingMode = 1,
+                FileAppenderStaticLogFileName = true,
+            }.Configure();
+
+            _startlogger = LogManager.GetLogger(typeof(HorizonteEnv));
+            _startlogger.Info("******** STAGE 0 - INIT START LOGGER **********");
+
+        }
+        catch (Exception e)
+        {
+            _startlogger.Error(e);
+        }
+    }
 
     //stage 1 - cargar contexto
     
@@ -191,7 +203,7 @@ public class HorizonteEnv : IHorizonteEnv
     {
         try
         {
-            Console.WriteLine("******** STAGE 1 - LOAD CONTEXT **********");
+            _startlogger.Info("******** STAGE 1 - LOAD CONTEXT **********");
 
             //establecemos ruta de trabajo
             RootPath = System.IO.Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])!;
@@ -200,26 +212,24 @@ public class HorizonteEnv : IHorizonteEnv
             //creamos contexto y obtenemos configuraciones
             _context = new HContext(Contextname,new JsonSerializerOptions(){IncludeFields = true});
             
-            // Usamos un logger temporal para el HCredManager en Stage 1
-            var loggerFactory = LoggerFactory.Create(builder => {
-                builder.AddConsole();
-            });
-            var logger = loggerFactory.CreateLogger<HCredManager>();
-            
-            _credManager = new HCredManager(logger);
             _modulesSettings = _context.Get<ModulesSettings>() ?? new ModulesSettings();
-            _log4NetSettings = _context.Get<Log4NetSettings>() ?? new Log4NetSettings();
             _workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
+            _log4NetSettings = _context.Get<Log4NetSettings>() ?? new Log4NetSettings();
+
+            _log4NetSettings.Configure();
+            
+
+            _credManager = new HCredManager(_startlogger);
 
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
     private void Stage2_pre()
     {
-        Console.WriteLine("******** STAGE 2_pre - CREATE SYMLINK SCAFOLDER **********");
+        _startlogger.Info("******** STAGE 2_pre - CREATE SYMLINK SCAFOLDER **********");
         try
         {
             _linkScafolder = new SymLinkScafolder();
@@ -229,7 +239,7 @@ public class HorizonteEnv : IHorizonteEnv
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
         
     }
@@ -242,7 +252,7 @@ public class HorizonteEnv : IHorizonteEnv
     /// </summary>
     private void Stage2()
     {
-        Console.WriteLine("******** STAGE 2 - LOAD ASSEMBLIES **********");
+        _startlogger.Info("******** STAGE 2 - LOAD ASSEMBLIES **********");
         try
         {
             _assemblyManager = new HAssemblyManager(_modulesSettings, _linkScafolder, this);
@@ -250,7 +260,7 @@ public class HorizonteEnv : IHorizonteEnv
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -265,14 +275,14 @@ public class HorizonteEnv : IHorizonteEnv
     /// </summary>
     private void Stage3()
     {
-        Console.WriteLine("******** STAGE 3 - LOAD MODULES **********");
+        _startlogger.Info("******** STAGE 3 - LOAD MODULES **********");
         try
         {
             _gescom = new HGesCom(this);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -291,7 +301,7 @@ public class HorizonteEnv : IHorizonteEnv
     {
         try
         {
-            Console.WriteLine("******** STAGE 4 - CREATE HHOST **********");
+            _startlogger.Info("******** STAGE 4 - CREATE HHOST **********");
             //creamos host
             _builder = Host.CreateEmptyApplicationBuilder(null);
 
@@ -328,7 +338,7 @@ public class HorizonteEnv : IHorizonteEnv
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -341,14 +351,14 @@ public class HorizonteEnv : IHorizonteEnv
     /// </summary>
     private void Stage5()
     {
-        Console.WriteLine("******** STAGE 6 - INITIALIZE MODULES **********");
+        _startlogger.Info("******** STAGE 5 - INITIALIZE MODULES **********");
         try
         {
             _gescom?.InitzializeModules();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -361,14 +371,14 @@ public class HorizonteEnv : IHorizonteEnv
     /// </summary>
     private void Stage6()
     {
-        Console.WriteLine("******** STAGE 6 -  WORKERS **********");
+        _startlogger.Info("******** STAGE 6 - WORKERS **********");
         try
         {
             RunOnStartWorkers();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -386,7 +396,7 @@ public class HorizonteEnv : IHorizonteEnv
     /// </remarks>
     private void Stage7()
     {
-        Console.WriteLine("******** STAGE 8 - RUN HOST **********");
+        _startlogger.Info("******** STAGE 7 - RUN HOST **********");
         try
         {
             
@@ -394,7 +404,7 @@ public class HorizonteEnv : IHorizonteEnv
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _startlogger.Error(e);
         }
     }
 
@@ -432,7 +442,7 @@ public class HorizonteEnv : IHorizonteEnv
             if (hserv == null) return;
             if (hserv.RunOnStart)
             {
-                Console.WriteLine("Iniciando Worker: " + hserv.ServiceName);
+                _startlogger.Info("Iniciando Worker: " + hserv.ServiceName);
                 worker.StartAsync(CancellationToken.None); // aqui podemos leer la configuración y crear los servicios que se pasan
             }
         }

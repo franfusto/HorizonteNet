@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.NetworkInformation;
+using log4net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -12,6 +13,7 @@ namespace Horizonte;
 /// </summary>
 public class StaticFileRegistry
 {
+    private static readonly ILog Log = LogManager.GetLogger(typeof(StaticFileRegistry));
     /// <summary>
     /// Almacena un diccionario concurrente que asocia rutas relativas en minúsculas
     /// con las rutas absolutas correspondientes de archivos registrados.
@@ -72,7 +74,7 @@ public class StaticFileRegistry
 
         if (contentDir != null && Directory.Exists(contentDir))
         {
-            Console.WriteLine($"Directory Content not found: {contentDir}");
+            Log.Info($"Directory Content found: {contentDir}");
             RegisterDirectory(contentDir, prefix);
         }
 
@@ -82,7 +84,7 @@ public class StaticFileRegistry
 
         if (staticWebAssetsDir != null && Directory.Exists(staticWebAssetsDir))
         {
-            Console.WriteLine ($"Found staticwebassets folder: {staticWebAssetsDir}");
+            Log.Info ($"Found staticwebassets folder: {staticWebAssetsDir}");
             RegisterDirectory(staticWebAssetsDir, prefix);
         }
     }
@@ -100,7 +102,7 @@ public class StaticFileRegistry
 
         if (string.IsNullOrWhiteSpace(dllPath) || !File.Exists(dllPath))
         {
-            Console.WriteLine($"The provided DLL file path is not valid: {dllPath}");
+            Log.Error($"The provided DLL file path is not valid: {dllPath}");
             return;
         }
 
@@ -115,7 +117,7 @@ public class StaticFileRegistry
             if (Directory.Exists(potentialPath))
             {
                 wwwRootPath = potentialPath;
-                Console.WriteLine
+                Log.Info
                     ($"Found wwwroot folder: {wwwRootPath}");
                 RegisterDirectory(wwwRootPath, prefix);
                 break;
@@ -179,7 +181,7 @@ public class StaticFileRegistry
     {
         if (!Directory.Exists(path))
         {
-            Console.WriteLine($"El directorio especificado no existe: {path}");
+            Log.Error($"El directorio especificado no existe: {path}");
             return;
         }
 

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Xml.Linq;
+using log4net;
 using log4net.Core;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
@@ -11,6 +12,7 @@ namespace Horizonte;
 
 public class HAssemblyManager : IhAssemblyManager
 {
+    private static readonly ILog Log = LogManager.GetLogger(typeof(HAssemblyManager));
     private readonly ModulesSettings _settings;
     private List<string> _searchPaths = new List<string>();
     private readonly SymLinkScafolder _linkScafolder;
@@ -63,7 +65,7 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            Console.WriteLine("Resolving assembly: " + args.Name);
+            Log.Info("Resolving assembly: " + args.Name);
             var assemblyName = new AssemblyName(args.Name);
             string? resAssemblyPath = null;
             //try load from local directory
@@ -78,7 +80,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (resAssemblyPath == null)
             {
-                Console.WriteLine($"Could not resolve assembly: {args.Name}");
+                Log.Error($"Could not resolve assembly: {args.Name}");
                 return null;
             }
 
@@ -96,7 +98,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing MSBuild targets for symlinks: {ex.Message}");
+                Log.Error($"Error processing MSBuild targets for symlinks: {ex.Message}");
             }
 
             // Cargar y devolver el ensamblado seleccionado
@@ -104,7 +106,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error trying to resolve assembly from repository: {ex.Message}");
+            Log.Error($"Error trying to resolve assembly from repository: {ex.Message}");
         }
 
         // Devolver null si no se pudo resolver
@@ -150,7 +152,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Log.Error(e);
         }
 
         return result;
@@ -270,13 +272,13 @@ public class HAssemblyManager : IhAssemblyManager
                         return;
                 }
 
-                Console.WriteLine($"Downloading package '{packageName}', versión '{version}' from {nugetDownloadUrl}");
+                Log.Info($"Downloading package '{packageName}', versión '{version}' from {nugetDownloadUrl}");
                 // Descargar el paquete .nupkg
                 using var httpClient = new HttpClient();
                 using var response = httpClient.GetAsync(nugetDownloadUrl).Result;
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"Error downloading package {packageName}: {response.StatusCode}");
+                    Log.Error($"Error downloading package {packageName}: {response.StatusCode}");
                     continue;
                 }
 
@@ -287,7 +289,7 @@ public class HAssemblyManager : IhAssemblyManager
                     response.Content.CopyToAsync(fileStream).Wait();
                 }
 
-                Console.WriteLine($"Package downloaded successfully: {packageFileName}");
+                Log.Info($"Package downloaded successfully: {packageFileName}");
                 // Extraer el contenido del paquete
                 string targetDirectory = Path.Combine(_installFolder, packageName.ToLower(), version);
                 if (!Directory.Exists(targetDirectory))
@@ -296,7 +298,7 @@ public class HAssemblyManager : IhAssemblyManager
                 }
 
                 System.IO.Compression.ZipFile.ExtractToDirectory(packageFileName, targetDirectory, true);
-                Console.WriteLine($"Package successfully extracted in: {targetDirectory}");
+                Log.Info($"Package successfully extracted in: {targetDirectory}");
 
                 // Borrar el archivo temporal
                 if (File.Exists(packageFileName))
@@ -306,7 +308,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error downloading and extracting package from repository: {ex.Message}");
+            Log.Error($"Error downloading and extracting package from repository: {ex.Message}");
         }
     }
 
@@ -337,7 +339,7 @@ public class HAssemblyManager : IhAssemblyManager
         catch (Exception exception)
         {
             // Manejo básico de errores; imprime el error y retorna un arreglo vacío.
-            Console.WriteLine(exception);
+            Log.Error(exception);
         }
     }
 
@@ -352,7 +354,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             if (File.Exists(moduleItem.Path))
             {
-                Console.WriteLine($"Loading module from: {moduleItem.Path}");
+                Log.Info($"Loading module from: {moduleItem.Path}");
 
 
                 // Carga el ensamblado desde la ruta especificada.
@@ -371,13 +373,13 @@ public class HAssemblyManager : IhAssemblyManager
                 if (nugetassembly != null)
                     Assembly.LoadFrom(nugetassembly.Location);
                 else
-                    Console.WriteLine($"Can't find: {moduleItem.Path}");
+                    Log.Error($"Can't find: {moduleItem.Path}");
             }
         }
         catch (Exception exception)
         {
             // Manejo de errores al intentar cargar un módulo.
-            Console.WriteLine($"Error on loading {moduleItem.ModuleName}: {exception}");
+            Log.Error($"Error on loading {moduleItem.ModuleName}: {exception}");
         }
     }
 
@@ -402,18 +404,18 @@ public class HAssemblyManager : IhAssemblyManager
                     {
                         // Si no, lo carga
                         Assembly.LoadFrom(dllFile);
-                        Console.WriteLine($"--Loading additional dll: {dllFile}");
+                        Log.Info($"--Loading additional dll: {dllFile}");
                     }
                     else
                     {
-                        // Console.WriteLine($">>>Ensamblado adicionales ya cargado: {dllFile}");
+                        // Log.Info($">>>Ensamblado adicionales ya cargado: {dllFile}");
                     }
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error on load additional dll from module: {modulePath}" +
+            Log.Error($"Error on load additional dll from module: {modulePath}" +
                               Environment.NewLine + e);
         }
     }
@@ -540,7 +542,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error extracting content mappings: {ex.Message}");
+            Log.Error($"Error extracting content mappings: {ex.Message}");
         }
 
         return mappings;

@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-
+using log4net;
+using log4net.Core;
+using ILogger = log4net.ILog;
 namespace Horizonte;
 
 /// <summary>
@@ -47,7 +48,7 @@ public class CredentialItem
 /// </summary>
 public class HCredManager : IHCredManager
 {
-    private readonly ILogger<HCredManager> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Prefijo utilizado para identificar variables de entorno pertenecientes a Horizonte.
@@ -78,7 +79,7 @@ public class HCredManager : IHCredManager
     /// Inicializa una nueva instancia de <see cref="HCredManager"/>.
     /// </summary>
     /// <param name="logger">Servicio de logging para registrar errores.</param>
-    public HCredManager(ILogger<HCredManager> logger)
+    public HCredManager(ILogger logger)
     {
         _logger = logger;
         _secretsFilePath = EnsureSecretsFileExists();
@@ -161,7 +162,7 @@ public class HCredManager : IHCredManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al cargar variables de entorno");
+            _logger.Error( "Error al cargar variables de entorno",ex);
         }
     }
 
@@ -189,7 +190,7 @@ public class HCredManager : IHCredManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al cargar el archivo de secretos en {Path}", _secretsFilePath);
+            _logger.Error( $"Error al cargar el archivo de secretos en {_secretsFilePath}", ex);
         }
     }
 
@@ -240,7 +241,7 @@ public class HCredManager : IHCredManager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al establecer variable de entorno {Key}", item.Key);
+                _logger.Error( $"Error al establecer variable de entorno {item.Key}", ex);
             }
         }
         else
@@ -253,7 +254,7 @@ public class HCredManager : IHCredManager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al guardar el secreto {Key} en {Path}", item.Key, _secretsFilePath);
+                _logger.Error($"Error al guardar el secreto {item.Key} en {_secretsFilePath}",ex);
             }
         }
     }
@@ -332,7 +333,7 @@ public class HCredManager : IHCredManager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error al eliminar variable de entorno {Key}", item.Key);
+                    _logger.Error($"Error al eliminar variable de entorno {item.Key}", ex);
                 }
             }
             else
@@ -347,7 +348,7 @@ public class HCredManager : IHCredManager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error al eliminar el secreto {Key} en {Path}", item.Key, _secretsFilePath);
+                    _logger.Error($"Error al eliminar el secreto {item.Key} en {_secretsFilePath}", ex);
                 }
             }
         }

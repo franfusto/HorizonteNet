@@ -1,10 +1,12 @@
 using System.IO;
 using System.Text;
+using log4net;
 
 namespace Horizonte;
 
 public class SymLinkScafolder :ISymLinkScafolder
 {
+    private static readonly ILog Log = LogManager.GetLogger(typeof(SymLinkScafolder));
     private List<SymLinkDef> _symLinkDefs = new List<SymLinkDef>();
     
     public void CleanScafolder()
@@ -13,7 +15,7 @@ public class SymLinkScafolder :ISymLinkScafolder
         {
             if (IsAnotherInstanceRunning())
             {
-                Console.WriteLine("Otra instancia de la aplicación está en ejecución. Se mantiene el andamio de enlaces simbólicos.");
+                Log.Info("Otra instancia de la aplicación está en ejecución. Se mantiene el andamio de enlaces simbólicos.");
                 return;
             }
 
@@ -23,7 +25,7 @@ public class SymLinkScafolder :ISymLinkScafolder
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Log.Error(e);
         }
     }
 
@@ -51,7 +53,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error eliminando enlace simbólico (archivo) {file.FullName}: {e.Message}");
+                    Log.Error($"Error eliminando enlace simbólico (archivo) {file.FullName}: {e.Message}");
                 }
             }
         }
@@ -67,7 +69,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error eliminando enlace simbólico (directorio) {subDir.FullName}: {e.Message}");
+                    Log.Error($"Error eliminando enlace simbólico (directorio) {subDir.FullName}: {e.Message}");
                 }
             }
             else
@@ -86,7 +88,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error eliminando directorio vacío {subDir.FullName}: {e.Message}");
+                    Log.Error($"Error eliminando directorio vacío {subDir.FullName}: {e.Message}");
                 }
             }
         }
@@ -98,7 +100,7 @@ public class SymLinkScafolder :ISymLinkScafolder
         {
             if (IsAnotherInstanceRunning())
             {
-                Console.WriteLine("Otra instancia de la aplicación está en ejecución. Se asume que el andamio de enlaces simbólicos ya está construido.");
+                Log.Info("Otra instancia de la aplicación está en ejecución. Se asume que el andamio de enlaces simbólicos ya está construido.");
                 return;
             }
 
@@ -111,7 +113,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                     // Validar que el destino sea relativo y no salga del directorio actual
                     if (Path.IsPathRooted(symLinkDef.Destination))
                     {
-                        Console.WriteLine($"Error: El destino debe ser una ruta relativa: {symLinkDef.Destination}");
+                        Log.Error($"Error: El destino debe ser una ruta relativa: {symLinkDef.Destination}");
                         continue;
                     }
 
@@ -119,7 +121,7 @@ public class SymLinkScafolder :ISymLinkScafolder
 
                     if (!fullDestinationPath.StartsWith(currentDirectory, StringComparison.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine($"Error: El destino está fuera del directorio actual: {symLinkDef.Destination}");
+                        Log.Error($"Error: El destino está fuera del directorio actual: {symLinkDef.Destination}");
                         continue;
                     }
 
@@ -148,17 +150,17 @@ public class SymLinkScafolder :ISymLinkScafolder
                     }
 
                     _symLinkDefs.Add(symLinkDef);
-                    Console.WriteLine($"Creado enlace simbólico: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                    Log.Info($"Creado enlace simbólico: {symLinkDef.Destination} -> {symLinkDef.Source}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error creando enlace simbólico {symLinkDef.Destination}: {ex.Message}");
+                    Log.Error($"Error creando enlace simbólico {symLinkDef.Destination}: {ex.Message}");
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Log.Error(e);
         }
     }
 

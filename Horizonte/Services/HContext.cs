@@ -4,11 +4,13 @@ using System;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
+using log4net;
 
 namespace Horizonte;
 
 public class HContext : IHContext
 {
+    private static readonly ILog Log = LogManager.GetLogger(typeof(HContext));
     private readonly string _contextName = "horizonte";
     private JsonSerializerOptions _serializerOptions = new();
     private static readonly object _fileLock = new();
@@ -152,7 +154,7 @@ public class HContext : IHContext
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error al obtener datos del archivo de contexto: {e.Message}");
+            Log.Error($"Error al obtener datos del archivo de contexto: {e.Message}");
             return default(T);
         }
     }
@@ -191,7 +193,7 @@ public class HContext : IHContext
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error al actualizar los datos del archivo de contexto: {e.Message}");
+            Log.Error($"Error al actualizar los datos del archivo de contexto: {e.Message}");
         }
     }
 
@@ -231,7 +233,7 @@ public class HContext : IHContext
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error al actualizar los datos del archivo de contexto: {e.Message}");
+            Log.Error($"Error al actualizar los datos del archivo de contexto: {e.Message}");
         }
     }
 
