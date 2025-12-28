@@ -10,7 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\HorizonteNet\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
       <ProjectReference Include="..\..\HorizonteNet\Horizonte\Horizonte.csproj" />
-        <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
+        <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
 
 </Project>

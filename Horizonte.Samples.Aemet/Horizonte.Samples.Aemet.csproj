@@ -27,7 +27,7 @@ Service key is required</Description>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Polly" Version="8.5.2" />
-      <PackageReference Include="Radzen.Blazor" Version="7.1.5" />
+      <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
       <PackageReference Include="RestSharp" Version="112.1.0" />
     </ItemGroup>
 
