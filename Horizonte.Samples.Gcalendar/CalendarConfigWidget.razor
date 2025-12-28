@@ -12,19 +12,19 @@
     <RadzenStack Orientation="Orientation.Vertical">
         <div>
             <RadzenText Text="Id de la calendario"/>
-            <RadzenTextBox @bind-value="_calConfig.CalendarId"/>
+            <CredentialSelector  @bind-value="_calConfig.CalendarId"/>
         </div>
         <div>
             <RadzenText Text="Id de cliente"/>
-            <RadzenTextBox @bind-value="@_calConfig.ClientId"/>
+            <CredentialSelector @bind-value="@_calConfig.ClientId"/>
         </div>
         <div>
             <RadzenText Text="Secreto de cliente"/>
-            <RadzenTextBox @bind-value="@_calConfig.ClientSecret"/>
+            <CredentialSelector @bind-value="@_calConfig.ClientSecret"/>
         </div>
         <div>
             <RadzenText Text="Nombre de usuario"/>
-            <RadzenTextBox @bind-value="@_calConfig.UserName"/>
+            <CredentialSelector @bind-value="@_calConfig.UserName"/>
         </div>
 
     </RadzenStack>

@@ -1,4 +1,5 @@
-﻿@using Horizonte
+﻿@using AdminUi.Components
+@using Horizonte
 @inject IHContext Context
 <RadzenCard style="width: 100%" >
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
@@ -13,11 +14,11 @@
     <RadzenStack Orientation="Orientation.Vertical">
         <div>
             <RadzenText Text="Url del servicio"/>
-            <RadzenTextBox @bind-value="_aemetConfig.BaseUrl"/>
+            <CredentialSelector @bind-value="_aemetConfig.BaseUrl"/>
         </div>
         <div>
             <RadzenText Text="API Key"/>
-            <RadzenTextBox @bind-value="_aemetConfig.ApiKey"/>
+            <CredentialSelector @bind-value="_aemetConfig.ApiKey"/>
         </div>
        
     </RadzenStack>

@@ -15,7 +15,7 @@ public class PanelModulo
     private ILogger<PanelModulo>? _logger;
     private Lazy<IHorizonteEnv> _env;
     private GmapsConfig _config;
-
+    private IHCredManager? _credManager;
     public PanelModulo(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
@@ -28,6 +28,7 @@ public class PanelModulo
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         var context = _env.Value.GetService<IHContext>();
         _config = context?.Get<GmapsConfig>() ?? new GmapsConfig();
+        _credManager = _env.Value.GetService<IHCredManager>();
         _logger?.LogInformation("Módulo Gmaps Inciciado");
         
         
@@ -42,7 +43,7 @@ public class PanelModulo
             var directionservice = new GoogleApi.GoogleMaps.DirectionsApi();
             var req = new DirectionsRequest
             {
-                Key = _config.ApiKey,                                             
+                Key = _credManager?.GetCredential(_config.ApiKey) ?? string.Empty ,                                             
                 Origin = new LocationEx(new Address(startAddress)),
                 Destination = new LocationEx(new Address(endAddress))
             };

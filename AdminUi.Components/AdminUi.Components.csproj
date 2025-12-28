@@ -4,22 +4,24 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <OutputType>Library</OutputType>
-        
     </PropertyGroup>
 
 
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
 
-  
     <ItemGroup>
-      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
-      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-    </ItemGroup>  
-    <ItemGroup>
-        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746"   />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.22" />
         <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
 
 </Project>

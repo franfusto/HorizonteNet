@@ -21,6 +21,7 @@ Service key is required</Description>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
 

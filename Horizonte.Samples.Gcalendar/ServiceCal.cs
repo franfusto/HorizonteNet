@@ -12,11 +12,13 @@ public class ServiceCal
     private ILogger<PanelModulo>? _logger;
     private CalendarService? _service;
     private UserCredential? _credential;
-
-    public ServiceCal(GCalConfig gCalConfig, ILogger<PanelModulo>? logger)
+    private IHCredManager? _credManager;
+    private string calendarid = string.Empty;
+    public ServiceCal(GCalConfig gCalConfig, ILogger<PanelModulo>? logger, IHCredManager credManager)
     {
         _config = gCalConfig;
         _logger = logger;
+        _credManager = credManager;
         GetService().Wait();
     }
 
@@ -25,14 +27,15 @@ public class ServiceCal
         try
         {
             _logger?.LogInformation("Google Calendar getService");
+            calendarid =  _credManager?.GetCredential(_config.CalendarId) ?? string.Empty;
             _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 new ClientSecrets
                 {
-                    ClientId = _config.ClientId,
-                    ClientSecret = _config.ClientSecret,
+                    ClientId =  _credManager?.GetCredential(_config.ClientId) ?? string.Empty ,
+                    ClientSecret =  _credManager?.GetCredential(_config.ClientSecret) ?? string.Empty,
                 },
                 new[] { "https://www.googleapis.com/auth/calendar" },
-                _config.UserName,
+                _credManager?.GetCredential(_config.UserName) ?? string.Empty,
                 CancellationToken.None);
             _service = new CalendarService(new BaseClientService.Initializer()
             {
@@ -52,7 +55,7 @@ public class ServiceCal
         try
         {
             _logger?.LogInformation("Google Calendar getEvents");
-            var query = _service?.Events.List(_config.CalendarId);
+            var query = _service?.Events.List(calendarid);
             if (query != null)
             {
                 query.TimeMin = start;
@@ -105,7 +108,7 @@ public class ServiceCal
                 },
             };
 
-            await _service?.Events.Insert(newEvent, _config.CalendarId).ExecuteAsync()!;
+            await _service?.Events.Insert(newEvent, calendarid).ExecuteAsync()!;
             return true;
         }
         catch (Exception e)
@@ -122,7 +125,7 @@ public class ServiceCal
             _logger?.LogInformation("Google Calendar DeleteEvent");
             if (_service?.Events != null)
             {
-                await _service.Events.Delete(_config.CalendarId, eventId).ExecuteAsync();
+                await _service.Events.Delete(calendarid, eventId).ExecuteAsync();
             }
         }
         catch (Exception e)

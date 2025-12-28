@@ -1,3 +1,4 @@
+
 @using Horizonte.PorcupineMod
 @inject IHContext Context
 <RadzenCard style="width: 100%" >
@@ -13,7 +14,7 @@
     <RadzenStack Orientation="Orientation.Vertical">
         <div>
             <RadzenText Text="AccessKey"/>
-            <RadzenTextBox @bind-value="@_config.AccessKey"/>
+            <CredentialSelector @bind-value="@_config.AccessKey"/>
         </div>
         
 
