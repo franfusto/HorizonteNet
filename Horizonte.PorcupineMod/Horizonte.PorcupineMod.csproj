@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
@@ -11,8 +11,8 @@
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="PvRecorder" Version="1.2.10"/>
-        <PackageReference Include="Porcupine" Version="3.0.7"/>
+        <PackageReference Include="PvRecorder" Version="1.2.13" />
+        <PackageReference Include="Porcupine" Version="4.0.1" />
         <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
     <ItemGroup>

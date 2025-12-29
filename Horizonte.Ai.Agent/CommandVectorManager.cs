@@ -16,9 +16,9 @@ public class CommandVectorManager
     // Constantes y campos privados
     private const string VectorCollectionName = "commands";
     private const string CacheFilePath = "cache_commands.json";
-    private List<CommandVectorRecord> _commandDefinitions = new();
+    //private List<CommandVectorRecord> _commandDefinitions = new();
     private List<ActiveCommandDefinition> _activeCommands = new();
-    private IVectorStoreRecordCollection<int, CommandVectorRecord>? _commandVectorCollection;
+    //private IVectorStoreRecordCollection<int, CommandVectorRecord>? _commandVectorCollection;
 
     public CommandVectorManager(IHGesCom commandManager, ILogger logService, OpenAIClient openAiClient)
     {
@@ -147,7 +147,7 @@ public class CommandVectorManager
         }
     }
 
-
+/*
     
     public List<CommandVectorRecord> DeserializeCacheFromFile()
     {
@@ -169,7 +169,7 @@ public class CommandVectorManager
         }
 
     }
-
+*/
     public async Task PopulateVectorStorageAsync()
     {
         try
@@ -200,6 +200,7 @@ public class CommandVectorManager
         try
         {
             string textResult = string.Empty;
+            /*
             var query = await GenerateEmbeddingsFromTextAsync(queryText, cancellationToken);
             var searchResults = await _commandVectorCollection!.VectorizedSearchAsync(query, new() { Top = 5 });
             
@@ -209,7 +210,7 @@ public class CommandVectorManager
                 textResult += item.Record.Definition + Environment.NewLine;
             }
             _logService.LogInformation("Búsqueda completada, resultados encontrados.");
-
+*/
             return textResult;
 
         }
@@ -268,7 +269,7 @@ public class CommandVectorManager
     }
 }
 
-
+/*
 public class CommandVectorRecord
 {
     [VectorStoreRecordKey]
@@ -281,7 +282,7 @@ public class CommandVectorRecord
     [VectorStoreRecordVector(1536)]
     public ReadOnlyMemory<float> Embedding { get; set; }
 }
-
+*/
 public class ActiveCommandDefinition
 {
     public string Name { get; set; } = null!;

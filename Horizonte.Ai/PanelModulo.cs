@@ -27,12 +27,12 @@ public class PanelModulo
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         _credManager = _env.Value.GetService<IHCredManager>();
         var context = _env.Value.GetService<IHContext>();
-        Test();
+       // Test();
         return true;
     }
 
     [HorizonteCommand("Horizonte.Ai.Test")]
-    public void Test()
+    public string Test()
     {
         _logger?.LogInformation("Test");
         try
@@ -45,12 +45,14 @@ public class PanelModulo
                 .CreateAIAgent(instructions: "Eres bueno contando chistes", name: "Joker");
 
             var result =  agent.RunAsync("Cuentame un chiste de piratas.").Result;
+            return result.ToString();
             Console.WriteLine(result);
         }
         catch (Exception e)
         {
             _logger?.LogError(e.ToString());
         }
+        return "fail";
     }
 
 }

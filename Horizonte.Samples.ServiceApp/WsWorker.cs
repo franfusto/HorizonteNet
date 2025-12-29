@@ -1,7 +1,7 @@
 using Horizonte;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+//using Microsoft.OpenApi.Models;
 
 namespace Horizonte.Samples.ServiceApp;
 
@@ -36,10 +36,10 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Web Service", Description = "Sample web service worker", Version = "v1"
-                });
+                //c.SwaggerDoc("v1", new OpenApiInfo
+                //{
+                   // Title = "Web Service", Description = "Sample web service worker", Version = "v1"
+                //});
             });
         }
         _app = builder.Build();

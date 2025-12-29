@@ -4,7 +4,6 @@ using System.Xml.Linq;
 using log4net;
 using log4net.Core;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.DependencyModel;
 
 
