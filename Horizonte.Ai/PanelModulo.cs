@@ -14,7 +14,7 @@ public class PanelModulo
     private Lazy<IHorizonteEnv> _env;
     private ILogger<PanelModulo>? _logger;
     private IHCredManager? _credManager;
-    
+    private AIAgent _agent;
     public PanelModulo(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
@@ -27,26 +27,29 @@ public class PanelModulo
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         _credManager = _env.Value.GetService<IHCredManager>();
         var context = _env.Value.GetService<IHContext>();
-       // Test();
+        
+        var apiKey = _credManager?.GetCredential("openai.key") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
+        var model = "gpt-4o-mini";
+         _agent = new OpenAIClient(
+                apiKey)
+            .GetChatClient(model)
+            .CreateAIAgent(instructions: "Eres bueno contando chistes", name: "Joker");
+        
+        Test();
         return true;
     }
 
     [HorizonteCommand("Horizonte.Ai.Test")]
-    public string Test()
+    public async Task<string> Test()
     {
         _logger?.LogInformation("Test");
         try
         {
-            var apiKey = _credManager?.GetCredential("openai.key") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
-            var model = "gpt-4o-mini";
-            AIAgent agent = new OpenAIClient(
-                    apiKey)
-                .GetChatClient(model)
-                .CreateAIAgent(instructions: "Eres bueno contando chistes", name: "Joker");
 
-            var result =  agent.RunAsync("Cuentame un chiste de piratas.").Result;
-            return result.ToString();
+
+            var result = await _agent.RunAsync("Cuentame un chiste de piratas.");
             Console.WriteLine(result);
+            return result.ToString();
         }
         catch (Exception e)
         {

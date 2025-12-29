@@ -11,19 +11,18 @@
     </ItemGroup>
 
     
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
+      <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251219.1" />
+        <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.1.1" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+        <PackageReference Include="OpenAI" Version="2.8.0" />
+    </ItemGroup>
      <!--
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
-      <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251125.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.1.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.0-preview.1.25608.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
-        <PackageReference Include="OpenAI" Version="2.8.0" />
         <PackageReference Include="System.Memory.Data" Version="10.0.1" />
-    </ItemGroup>
--->
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
@@ -49,5 +48,6 @@
         <PackageReference Include="System.Threading.Channels" Version="10.0.1" />
     </ItemGroup>
     
+-->
     
 </Project>

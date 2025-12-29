@@ -31,11 +31,12 @@
 
     <ItemGroup>
       <Content Remove="horizonte.default.json" />
-      <Content Include="bin\Debug\net8.0\horizonte.json" />
+      <Content Include="bin\Debug\net10.0\horizonte.json" />
       <EmbeddedResource Include="horizonte.default.json">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </EmbeddedResource>
     </ItemGroup>
+
 
     <!--
         Horizonte.Ai requiere de paquetes que están en versión preview.... HAssemblyManger no carga las versiones correctas
@@ -63,5 +64,6 @@
         <PackageReference Include="System.Text.Json" Version="10.0.1" />
         <PackageReference Include="System.Threading.Channels" Version="10.0.1" />
     </ItemGroup>
+
       -->
 </Project>

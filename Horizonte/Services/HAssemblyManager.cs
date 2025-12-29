@@ -125,7 +125,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             foreach (var dllPath in list)
             {
-               // Console.WriteLine($"procesando: {dllPath}");
+                //Console.WriteLine($"procesando: {dllPath}");
                 
                 // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
@@ -135,10 +135,17 @@ public class HAssemblyManager : IhAssemblyManager
                 var framework = pathSegments[pathSegments.Length - 2];
 
                 // fix preview packages
-                version=version.Replace("-beta", "");
+                //version=version.Replace("-beta", "");
+                if (version.Contains("-beta")) version = version.Split("-")[0] ;
+                if (version.Contains("-alpha")) version = version.Split("-")[0] ;
                 if (version.Contains("-preview")) version = version.Split("-")[0] ;
                 if(dllPath.Contains("/buildTransitive/")) continue;                    
-                if(dllPath.Contains("/build/")) continue;                    
+                if(dllPath.Contains("/build/")) continue;     
+                // Filtramos para quedarnos solo con los 3 primeros números (Major.Minor.Build)
+                if (Version.TryParse(version, out var parsedVersion))
+                {
+                    version = $"{parsedVersion.Major}.{parsedVersion.Minor}.{(parsedVersion.Build != -1 ? parsedVersion.Build : 0)}";
+                }
                 // Añadimos la información a la lista
                 result.Add(new NugetPackageVersionInformation
                 {
@@ -167,9 +174,10 @@ public class HAssemblyManager : IhAssemblyManager
         var prioridadFrameworks = new List<string>
         {
             frameworkSolicitado,
-            "netstandard2.1",
-            "netstandard2.0",
-           // "net9.0",
+            //"netstandard2.1",
+            //"netstandard2.0",
+            "net10.0",
+            "net9.0",
             "net8.0",
             "net7.0",
             "net6.0"
@@ -234,7 +242,7 @@ public class HAssemblyManager : IhAssemblyManager
             if (!directoriopaquete.Any()) continue;
             var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
             var versionSeleccionada =
-                SelectedVersion(assemblyName.Version, "net8.0", versionList, exactmatch); //// obtener net8.0 en runtime
+                SelectedVersion(assemblyName.Version, "net10.0", versionList, exactmatch); //// obtener net10.0 en runtime
             if (versionSeleccionada == null) continue;
             return versionSeleccionada.DllPath;
         }
@@ -249,12 +257,18 @@ public class HAssemblyManager : IhAssemblyManager
         if (assemblyName.Version == null) return;
         var packageName = assemblyName.Name;
         var version = assemblyName.Version.ToString();
+        // Filtramos para quedarnos solo con los 3 primeros números (Major.Minor.Build)
+        if (Version.TryParse(version, out var parsedVersion))
+        {
+            version = $"{parsedVersion.Major}.{parsedVersion.Minor}.{(parsedVersion.Build != -1 ? parsedVersion.Build : 0)}";
+        }
         var nugetDownloadUrl = string.Empty;
         var packageFileName = Path.Combine(Path.GetTempPath(), $"{packageName}.{version}.nupkg");
         try
         {
             foreach (var nugetServer in _settings.NugetServers.OrderBy(x => x.Order))
             {
+                
                 //url de descarga
                 if (!nugetServer.Active) continue;
                 switch (nugetServer.Version)
@@ -433,7 +447,7 @@ public class HAssemblyManager : IhAssemblyManager
             if (string.IsNullOrEmpty(packagePath)) return mappings;
 
             // Determinar el framework a partir de la ruta del ensamblado
-            var framework = libDir?.Name ?? "net8.0";
+            var framework = libDir?.Name ?? "net10.0";
 
             // 1. Localizar la carpeta de construcción (preferiblemente buildTransitive)
             string buildDir = Path.Combine(packagePath, "buildTransitive", framework);
