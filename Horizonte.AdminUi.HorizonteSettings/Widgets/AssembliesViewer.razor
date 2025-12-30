@@ -1,0 +1,208 @@
+@using System.Reflection
+@using System.Xml.Linq
+@using System.IO
+
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="height: 100%">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 40%; height: 100%">
+        <RadzenText TextStyle="TextStyle.H5" Text="Explorador de Ensamblados" />
+        
+        <RadzenTextBox Placeholder="Filtrar por nombre de ensamblado..." @oninput="@(args => OnSearchChange(args.Value?.ToString() ?? ""))" Style="width: 100%" />
+        
+        <RadzenTree Data="@filteredTreeItems" Style="width: 100%; height: 600px; overflow: auto;" Change="@OnTreeSelectionChange">
+            <RadzenTreeLevel Text="@(item => ((TreeItem)item).Text)" ChildrenProperty="Children" HasChildren="@(item => ((TreeItem)item).Children.Any())">
+                <Template>
+                    <RadzenIcon Icon="@(((TreeItem)context.Value).Icon)" />
+                    @((context.Value as TreeItem)?.Text)
+                </Template>
+            </RadzenTreeLevel>
+        </RadzenTree>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 60%; height: 100%; border-left: 1px solid #e6ecef; padding-left: 1rem; overflow: auto;">
+        <RadzenText TextStyle="TextStyle.H5" Text="Información" />
+        <RadzenCard>
+            <RadzenMarkdown>
+                @((MarkupString)selectedInfo)
+            </RadzenMarkdown>
+        </RadzenCard>
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    List<TreeItem> treeItems = new();
+    List<TreeItem> filteredTreeItems = new();
+    string searchTerm = "";
+    TreeItem? selectedItem;
+    string selectedInfo = "*Seleccione un elemento para ver su información.*";
+
+    protected override void OnInitialized()
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        
+        foreach (var assembly in assemblies.OrderBy(a => a.GetName().Name))
+        {
+            var name = assembly.GetName();
+            var assemblyNode = new TreeItem { Text = $"{name.Name} ({name.Version})", Icon = "folder", Assembly = assembly };
+            
+            try 
+            {
+                var types = assembly.GetTypes()
+                    .GroupBy(t => t.Namespace ?? "<Sin Namespace>")
+                    .OrderBy(g => g.Key);
+
+                foreach (var nsGroup in types)
+                {
+                    var nsNode = new TreeItem { Text = nsGroup.Key, Icon = "folder_open" };
+                    foreach (var type in nsGroup.OrderBy(t => t.Name))
+                    {
+                        nsNode.Children.Add(new TreeItem { Text = type.Name, Icon = "description", Type = type, Assembly = assembly });
+                    }
+                    assemblyNode.Children.Add(nsNode);
+                }
+            }
+            catch (ReflectionTypeLoadException)
+            {
+                assemblyNode.Children.Add(new TreeItem { Text = "Error al cargar tipos", Icon = "error" });
+            }
+
+            treeItems.Add(assemblyNode);
+        }
+        
+        filteredTreeItems = treeItems;
+        base.OnInitialized();
+    }
+
+    void OnSearchChange(string value)
+    {
+        searchTerm = value;
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredTreeItems = treeItems;
+        }
+        else
+        {
+            filteredTreeItems = treeItems
+                .Where(i => i.Text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    void OnTreeSelectionChange(TreeEventArgs args)
+    {
+        selectedItem = args.Value as TreeItem;
+        selectedInfo = "*Seleccione un elemento para ver su información.*";
+
+        if (selectedItem?.Assembly != null)
+        {
+            try
+            {
+                var assemblyPath = selectedItem.Assembly.Location;
+                if (!string.IsNullOrEmpty(assemblyPath))
+                {
+                    var xmlPath = Path.ChangeExtension(assemblyPath, ".xml");
+                    if (File.Exists(xmlPath))
+                    {
+                        var doc = XDocument.Load(xmlPath);
+                        if (selectedItem.Type != null)
+                        {
+                            var sb = new System.Text.StringBuilder();
+                            var typeName = selectedItem.Type.FullName;
+                            var memberName = "T:" + typeName;
+                            var typeSummary = doc.Descendants("member")
+                                .FirstOrDefault(m => m.Attribute("name")?.Value == memberName)
+                                ?.Element("summary")?.Value?.Trim();
+
+                            sb.AppendLine($"### {selectedItem.Type.Name}");
+                            if (!string.IsNullOrEmpty(typeSummary))
+                            {
+                                sb.AppendLine(typeSummary);
+                                sb.AppendLine();
+                            }
+
+                            // Métodos
+                            var methods = selectedItem.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
+                            if (methods.Any())
+                            {
+                                sb.AppendLine("#### Métodos");
+                                foreach (var method in methods.OrderBy(m => m.Name))
+                                {
+                                    var methodParams = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                                    var methodSignature = $"{method.Name}({methodParams})";
+                                    
+                                    // Construir nombre del miembro para XML (simplificado, para sobrecargas complejas podría fallar)
+                                    var xmlMethodName = $"M:{typeName}.{method.Name}";
+                                    var methodParamsList = method.GetParameters();
+                                    if (methodParamsList.Any())
+                                    {
+                                        var paramTypes = string.Join(",", methodParamsList.Select(p => p.ParameterType.FullName?.Replace("+", ".") ?? p.ParameterType.Name));
+                                        xmlMethodName += $"({paramTypes})";
+                                    }
+
+                                    var methodMember = doc.Descendants("member")
+                                        .FirstOrDefault(m => m.Attribute("name")?.Value.StartsWith($"M:{typeName}.{method.Name}") == true);
+                                    
+                                    // Si hay sobrecargas, el match exacto es mejor
+                                    var exactMatch = doc.Descendants("member")
+                                        .FirstOrDefault(m => m.Attribute("name")?.Value == xmlMethodName);
+                                    
+                                    if (exactMatch != null) methodMember = exactMatch;
+
+                                    var methodSummary = methodMember?.Element("summary")?.Value?.Trim();
+                                    
+                                    sb.AppendLine($"- **{methodSignature}**");
+                                    if (!string.IsNullOrEmpty(methodSummary))
+                                    {
+                                        sb.AppendLine($"  - *{methodSummary}*");
+                                    }
+
+                                    var paramsDoc = methodMember?.Elements("param");
+                                    if (paramsDoc != null && paramsDoc.Any())
+                                    {
+                                        foreach (var pDoc in paramsDoc)
+                                        {
+                                            var pName = pDoc.Attribute("name")?.Value;
+                                            var pText = pDoc.Value.Trim();
+                                            sb.AppendLine($"    - `{pName}`: {pText}");
+                                        }
+                                    }
+                                }
+                            }
+
+                            selectedInfo = sb.ToString();
+                        }
+                        else
+                        {
+                            // Es un ensamblado
+                            var assemblyName = selectedItem.Assembly.GetName().Name;
+                            selectedInfo = $"### Ensamblado: {assemblyName}\n\n**Ubicación:** `{assemblyPath}`";
+                        }
+                    }
+                    else
+                    {
+                        if (selectedItem.Type != null)
+                        {
+                            selectedInfo = $"### Tipo: {selectedItem.Type.FullName}\n\n(No se encontró archivo de documentación XML en `{xmlPath}`)";
+                        }
+                        else
+                        {
+                            selectedInfo = $"### Ensamblado: {selectedItem.Assembly.GetName().Name}\n\n**Ubicación:** `{assemblyPath}`\n\n(No se encontró archivo de documentación XML)";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                selectedInfo = $"**Error al cargar información:** {ex.Message}";
+            }
+        }
+    }
+
+    class TreeItem
+    {
+        public string Text { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public List<TreeItem> Children { get; set; } = new();
+        public Assembly? Assembly { get; set; }
+        public Type? Type { get; set; }
+    }
+}

@@ -70,7 +70,9 @@ public class PanelModulo
     [HorizonteCommand("HorizonteConfig_CredentialsManager", "")]
     public WidgetDef CredentialsManager() => new WidgetDef() { Type = typeof(CredentialsManager), Parameters = null };
            
-
+    [HorizonteCommand("HorizonteConfig_AssembliesViewer", "")]
+    public WidgetDef AssembliesViewer() => new WidgetDef() { Type = typeof(AssembliesViewer), Parameters = null };
+           
     
     
 }

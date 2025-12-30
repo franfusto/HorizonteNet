@@ -35,7 +35,7 @@ public class PanelModulo
             .GetChatClient(model)
             .CreateAIAgent(instructions: "Eres bueno contando chistes", name: "Joker");
         
-        Test();
+        //Test();
         return true;
     }
 

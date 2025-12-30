@@ -1,4 +1,5 @@
 using System.Diagnostics.Eventing.Reader;
+using System.Reflection;
 using System.Text.Json;
 using log4net;
 using log4net.Appender;
@@ -412,7 +413,6 @@ public class PanelModulo
             {
                 string line = assembly.Location + "=>  " + assembly.FullName ;
                 _logger?.LogInformation(line);
-                result += line;
             }
         }
         catch (Exception e)
