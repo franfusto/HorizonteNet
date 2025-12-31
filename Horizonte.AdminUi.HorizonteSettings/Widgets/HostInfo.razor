@@ -1,0 +1,78 @@
+@using System.Runtime.InteropServices
+@using System.Diagnostics
+@using System.IO
+
+<RadzenText TextStyle="TextStyle.H5" Text="Información del Host" Class="rz-mb-4" />
+
+<RadzenStack Gap="1.5rem">
+    <RadzenRow>
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-mb-4">
+                    <RadzenIcon Icon="settings" />
+                    <RadzenText TextStyle="TextStyle.H6" Text="Sistema Operativo" TagName="TagName.H5" Class="rz-m-0" />
+                </RadzenStack>
+                
+                <RadzenStack Gap="0.5rem">
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Descripción:</b> @RuntimeInformation.OSDescription</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Arquitectura:</b> @RuntimeInformation.OSArchitecture</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Framework:</b> @RuntimeInformation.FrameworkDescription</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Nombre del Host:</b> @Environment.MachineName</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-mb-4">
+                    <RadzenIcon Icon="memory" />
+                    <RadzenText TextStyle="TextStyle.H6" Text="Memoria y Procesador" TagName="TagName.H5" Class="rz-m-0" />
+                </RadzenStack>
+
+                <RadzenStack Gap="0.5rem">
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Procesadores lógicos:</b> @Environment.ProcessorCount</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Memoria usada por la App:</b> @FormatBytes(Process.GetCurrentProcess().WorkingSet64)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2"><b>Memoria gestionada (GC):</b> @FormatBytes(GC.GetTotalMemory(false))</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-mb-4">
+            <RadzenIcon Icon="storage" />
+            <RadzenText TextStyle="TextStyle.H6" Text="Unidades de Disco" TagName="TagName.H5" Class="rz-m-0" />
+        </RadzenStack>
+
+        <RadzenDataGrid Data="@DriveInfo.GetDrives().Where(d => d.IsReady)" TItem="DriveInfo" Density="Density.Compact">
+            <Columns>
+                <RadzenDataGridColumn TItem="DriveInfo" Property="Name" Title="Nombre" />
+                <RadzenDataGridColumn TItem="DriveInfo" Property="DriveType" Title="Tipo" />
+                <RadzenDataGridColumn TItem="DriveInfo" Property="DriveFormat" Title="Formato" />
+                <RadzenDataGridColumn TItem="DriveInfo" Title="Espacio Libre">
+                    <Template Context="drive">
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="DriveInfo" Title="Tamaño Total">
+                    <Template Context="drive">
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private string FormatBytes(long bytes)
+    {
+        string[] Suffix = { "B", "KB", "MB", "GB", "TB" };
+        int i;
+        double dblSByte = bytes;
+        for (i = 0; i < Suffix.Length && dblSByte >= 1024; i++)
+        {
+            dblSByte = dblSByte / 1024.0;
+        }
+
+        return $"{dblSByte:0.##} {Suffix[i]}";
+    }
+}

@@ -73,6 +73,14 @@ public class PanelModulo
     [HorizonteCommand("HorizonteConfig_AssembliesViewer", "")]
     public WidgetDef AssembliesViewer() => new WidgetDef() { Type = typeof(AssembliesViewer), Parameters = null };
            
+               
+    [HorizonteCommand("HorizonteConfig_AppFilesViewer", "")]
+    public WidgetDef AppFilesViewer() => new WidgetDef() { Type = typeof(AppFilesViewer), Parameters = null };
+           
+                   
+    [HorizonteCommand("HorizonteConfig_HostInfo", "")]
+    public WidgetDef HostInfo() => new WidgetDef() { Type = typeof(HostInfo), Parameters = null };
+           
     
     
 }

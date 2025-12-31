@@ -326,6 +326,9 @@ public class HorizonteEnv : IHorizonteEnv
 
             //gestor de commandos
             if (_gescom != null) _builder.Services.AddSingleton(_gescom);
+            
+            //scafolder
+            if(_linkScafolder != null!) _builder.Services.AddSingleton<ISymLinkScafolder>(_linkScafolder);
 
             //gestión de módulos
             //_builder.Services.AddSingleton<IHModManager, HModManager>();

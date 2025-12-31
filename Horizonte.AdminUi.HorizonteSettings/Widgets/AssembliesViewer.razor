@@ -4,22 +4,29 @@
 
 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="height: 100%">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 40%; height: 100%">
-        <RadzenText TextStyle="TextStyle.H5" Text="Explorador de Ensamblados" />
-        
-        <RadzenTextBox Placeholder="Filtrar por nombre de ensamblado..." @oninput="@(args => OnSearchChange(args.Value?.ToString() ?? ""))" Style="width: 100%" />
-        
-        <RadzenTree Data="@filteredTreeItems" Style="width: 100%; height: 600px; overflow: auto;" Change="@OnTreeSelectionChange">
-            <RadzenTreeLevel Text="@(item => ((TreeItem)item).Text)" ChildrenProperty="Children" HasChildren="@(item => ((TreeItem)item).Children.Any())">
-                <Template>
-                    <RadzenIcon Icon="@(((TreeItem)context.Value).Icon)" />
-                    @((context.Value as TreeItem)?.Text)
-                </Template>
-            </RadzenTreeLevel>
-        </RadzenTree>
+        <RadzenText TextStyle="TextStyle.H5" Text="Explorador de Ensamblados"/>
+
+        <RadzenTextBox Placeholder="Filtrar por nombre de ensamblado..."
+                       @oninput="@(args => OnSearchChange(args.Value?.ToString() ?? ""))" Style="width: 100%"/>
+        <RadzenCard>
+
+            <RadzenTree Data="@filteredTreeItems" Style="width: 100%; height: 600px; overflow: auto;"
+                        Change="@OnTreeSelectionChange">
+                <RadzenTreeLevel Text="@(item => ((TreeItem)item).Text)" ChildrenProperty="Children"
+                                 HasChildren="@(item => ((TreeItem)item).Children.Any())">
+                    <Template>
+                        <RadzenIcon Icon="@(((TreeItem)context.Value).Icon)"/>
+                        @((context.Value as TreeItem)?.Text)
+                    </Template>
+                </RadzenTreeLevel>
+            </RadzenTree>
+        </RadzenCard>
+
     </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 60%; height: 100%; border-left: 1px solid #e6ecef; padding-left: 1rem; overflow: auto;">
-        <RadzenText TextStyle="TextStyle.H5" Text="Información" />
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem"
+                 Style="width: 60%; height: 100%; border-left: 1px solid #e6ecef; padding-left: 1rem; overflow: auto;">
+        <RadzenText TextStyle="TextStyle.H5" Text="Información"/>
         <RadzenCard>
             <RadzenMarkdown>
                 @((MarkupString)selectedInfo)
@@ -38,13 +45,13 @@
     protected override void OnInitialized()
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        
+
         foreach (var assembly in assemblies.OrderBy(a => a.GetName().Name))
         {
             var name = assembly.GetName();
             var assemblyNode = new TreeItem { Text = $"{name.Name} ({name.Version})", Icon = "folder", Assembly = assembly };
-            
-            try 
+
+            try
             {
                 var types = assembly.GetTypes()
                     .GroupBy(t => t.Namespace ?? "<Sin Namespace>")
@@ -57,6 +64,7 @@
                     {
                         nsNode.Children.Add(new TreeItem { Text = type.Name, Icon = "description", Type = type, Assembly = assembly });
                     }
+
                     assemblyNode.Children.Add(nsNode);
                 }
             }
@@ -67,7 +75,7 @@
 
             treeItems.Add(assemblyNode);
         }
-        
+
         filteredTreeItems = treeItems;
         base.OnInitialized();
     }
@@ -128,7 +136,7 @@
                                 {
                                     var methodParams = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
                                     var methodSignature = $"{method.Name}({methodParams})";
-                                    
+
                                     // Construir nombre del miembro para XML (simplificado, para sobrecargas complejas podría fallar)
                                     var xmlMethodName = $"M:{typeName}.{method.Name}";
                                     var methodParamsList = method.GetParameters();
@@ -140,15 +148,15 @@
 
                                     var methodMember = doc.Descendants("member")
                                         .FirstOrDefault(m => m.Attribute("name")?.Value.StartsWith($"M:{typeName}.{method.Name}") == true);
-                                    
+
                                     // Si hay sobrecargas, el match exacto es mejor
                                     var exactMatch = doc.Descendants("member")
                                         .FirstOrDefault(m => m.Attribute("name")?.Value == xmlMethodName);
-                                    
+
                                     if (exactMatch != null) methodMember = exactMatch;
 
                                     var methodSummary = methodMember?.Element("summary")?.Value?.Trim();
-                                    
+
                                     sb.AppendLine($"- **{methodSignature}**");
                                     if (!string.IsNullOrEmpty(methodSummary))
                                     {
@@ -205,4 +213,5 @@
         public Assembly? Assembly { get; set; }
         public Type? Type { get; set; }
     }
+
 }

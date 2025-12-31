@@ -1,0 +1,149 @@
+@inject ISymLinkScafolder symlinkscafoler
+@inject IHorizonteEnv environment
+
+<RadzenText TextStyle="TextStyle.H5" Text="Sistema de archivos"/>
+
+<RadzenStack Gap="1rem">
+    <RadzenText TextStyle="TextStyle.Subtitle2" Text="Filtrar por tipo de archivo:"/>
+    <RadzenCheckBoxList @bind-Value=@_selectedFilters TValue="FsItemType" Change=@OnFilterChange>
+        <Items>
+            <RadzenCheckBoxListItem Text="Ensamblados" Value="FsItemType.assemblies"/>
+            <RadzenCheckBoxListItem Text="Enlaces simbólicos" Value="FsItemType.scafolder"/>
+            <RadzenCheckBoxListItem Text="Contenido web" Value="FsItemType.webcontent"/>
+            <RadzenCheckBoxListItem Text="Archivos aplicación" Value="FsItemType.appfiles"/>
+        </Items>
+    </RadzenCheckBoxList>
+    <RadzenCard>
+
+        <RadzenTree Data="@_fsTree" Style="width: 100%; height: 600px; overflow: auto;">
+            <RadzenTreeLevel Text="@(node => ((FsNode)node).Name)" ChildrenProperty="Children"
+                             HasChildren="@(node => ((FsNode)node).Children.Any())">
+                <Template>
+                    @{
+                        var node = context.Value as FsNode;
+                    }
+                    <RadzenIcon Icon="@node?.Icon"/>
+                    @node?.Name
+                </Template>
+            </RadzenTreeLevel>
+        </RadzenTree>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    List<string> _assembliesfilelist = new List<string>();
+    List<string> _scafolderfilelist = new List<string>();
+    List<string> _webcontentfilelist = new List<string>();
+    List<string> _appfileslist = new List<string>();
+    List<FsNode> _fsTree = new List<FsNode>();
+    IEnumerable<FsItemType> _selectedFilters = Enum.GetValues<FsItemType>().Where(v => v != FsItemType.directory);
+    string _appPRootPath = Directory.GetCurrentDirectory();
+    protected override void OnInitialized()
+    {
+        GetFileSystemData();
+        BuildTree();
+        base.OnInitialized();
+    }
+
+    private void OnFilterChange(IEnumerable<FsItemType> values)
+    {
+        BuildTree();
+    }
+
+    private void GetFileSystemData()
+    {
+        _appPRootPath = environment.RootPath;
+        // mas tarde enlazaremos los datos correctos, de momento cargamos algunos datos de ejemplos
+        _assembliesfilelist = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !string.IsNullOrEmpty(a.Location))
+            .Select(a => a.Location)
+            .ToList();
+
+        _scafolderfilelist = symlinkscafoler.GetScafolder()
+            .Select(s => Path.Combine(_appPRootPath, s.Destination))
+            .ToList();
+
+       
+        _webcontentfilelist = environment.StaticFileRegistry.Files.
+            Select(x => Path.Combine(_appPRootPath,  x.Key.TrimStart('/').TrimStart('\\'))).ToList();
+        
+        _appfileslist = Directory.EnumerateFileSystemEntries(_appPRootPath,
+                "*", SearchOption.AllDirectories)
+            .ToList();
+    }
+
+    private void BuildTree()
+    {
+        _fsTree.Clear();
+        var root = new FsNode { Name = "Root", itemType = FsItemType.directory };
+
+        if (_selectedFilters.Contains(FsItemType.assemblies))
+            AddNodes(root, _assembliesfilelist, FsItemType.assemblies, "extension");
+
+        if (_selectedFilters.Contains(FsItemType.scafolder))
+            AddNodes(root, _scafolderfilelist, FsItemType.scafolder, "link");
+
+        if (_selectedFilters.Contains(FsItemType.webcontent))
+            AddNodes(root, _webcontentfilelist, FsItemType.webcontent, "public");
+
+        if (_selectedFilters.Contains(FsItemType.appfiles))
+            AddNodes(root, _appfileslist, FsItemType.appfiles, "description");
+
+        _fsTree = root.Children;
+    }
+
+    private void AddNodes(FsNode root, List<string> paths, FsItemType type, string icon)
+    {
+        foreach (var path in paths)
+        {
+            var parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var currentNode = root;
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                var isLast = i == parts.Length - 1;
+
+                var existingNode = currentNode.Children.FirstOrDefault(n => n.Name == part);
+                if (existingNode == null)
+                {
+                    var newNode = new FsNode
+                    {
+                        Name = part,
+                        Path = string.Join("/", parts.Take(i + 1)),
+                        itemType = isLast ? type : FsItemType.directory,
+                        Icon = isLast ? icon : "folder",
+                    };
+                    currentNode.Children.Add(newNode);
+                    currentNode = newNode;
+                }
+                else
+                {
+                    currentNode = existingNode;
+                }
+            }
+        }
+    }
+
+
+
+    private class FsNode
+    {
+        public FsItemType itemType { get; set; } = FsItemType.directory;
+        public string Path { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = "folder";
+        //public string Color { get; set; } = "#000000";
+        public List<FsNode> Children { get; set; } = new();
+    }
+
+    private enum FsItemType
+    {
+        directory,
+        assemblies,
+        scafolder,
+        webcontent,
+        appfiles
+    }
+
+}

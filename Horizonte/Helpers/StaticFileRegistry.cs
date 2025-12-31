@@ -42,6 +42,12 @@ public class StaticFileRegistry
     {
     }
 
+
+    public ConcurrentDictionary<string, string> Files
+    {
+        get => _files;
+    }
+
     /// Registra los directorios de contenido estático y de recursos web estáticos dentro
     /// del directorio que corresponde al paquete especificado.
     /// Este método busca subdirectorios específicos en el directorio base del paquete, tales como
