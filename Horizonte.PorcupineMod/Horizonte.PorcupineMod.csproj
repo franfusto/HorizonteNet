@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="PvRecorder" Version="1.2.13" />
         <PackageReference Include="Porcupine" Version="4.0.1" />
-        <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="wwwroot\" />

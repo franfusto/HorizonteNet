@@ -8,12 +8,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Horizonte.Extension.Ai\Horizonte.Extension.Ai.csproj" />
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
-    </ItemGroup>
+
    
     
 </Project>

@@ -21,7 +21,6 @@
 
     <ItemGroup>
         <PackageReference Include="GoogleApi" Version="5.8.11" />
-        <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
 
 

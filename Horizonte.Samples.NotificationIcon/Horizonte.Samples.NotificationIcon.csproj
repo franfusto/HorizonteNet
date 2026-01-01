@@ -8,11 +8,11 @@
 
     <ItemGroup>
       <PackageReference Include="GtkSharp" Version="3.24.24.95" />
-      <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
 
     <ItemGroup>

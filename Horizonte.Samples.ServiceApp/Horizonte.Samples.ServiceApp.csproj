@@ -1,24 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
 
     <ItemGroup>
-        <SupportedPlatform Include="browser"/>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
     </ItemGroup>
 

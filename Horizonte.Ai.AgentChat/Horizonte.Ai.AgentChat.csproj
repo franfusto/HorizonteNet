@@ -7,13 +7,6 @@
     </PropertyGroup>
 
 
-    <ItemGroup>
-        <SupportedPlatform Include="browser"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1"/>
-    </ItemGroup>
 
     <ItemGroup>
       <Folder Include="wwwroot\" />
@@ -22,12 +15,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Horizonte.Extension.Ai\Horizonte.Extension.Ai.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="Radzen.Blazor">
-        <HintPath>..\..\..\..\f.fuster\.nuget\packages\radzen.blazor\8.4.2\lib\net10.0\Radzen.Blazor.dll</HintPath>
-      </Reference>
-    </ItemGroup>
+
 
 </Project>

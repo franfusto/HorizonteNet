@@ -1,31 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <!--
         -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <DoNotCopyLocalIfInGac>true</DoNotCopyLocalIfInGac>
-        <TargetFramework>net10.0</TargetFramework>
-        <Authors>franfusto</Authors>
-        <Company>Konek</Company>
-        <Product>Horizonte</Product>
-        <PackageId>Horizonte</PackageId>
-        <Title>Horizonte</Title>
         <Description>Entorno modular para .NET 8 basado en Blazor y Radzen. Núcleo reutilizable para apps y servicios.</Description>
         <PackageTags>horizonte;blazor;radzen;modular;net8;framework</PackageTags>
-        <RepositoryUrl>https://github.com/franfusto/HorizonteNet</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
-        <RepositoryType>git</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
-        <Version>1.0.0</Version>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

@@ -1,28 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <FileVersion>1.0.0</FileVersion>
         <OutputType>Library</OutputType>
         <Title>AEMET sample module</Title>
-        <Authors>franfusto@gmail.com</Authors>
-        <Description>Example module for Horizonte.Net, which provides access to the AEMET meteorological service.
-Service key is required</Description>
-        <Copyright>MIT</Copyright>
-        <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <Description>Example module for Horizonte.Net, which provides access to the AEMET meteorological service. Service key is required</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DebugType>embedded</DebugType>
-    </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
 
     <ItemGroup>
