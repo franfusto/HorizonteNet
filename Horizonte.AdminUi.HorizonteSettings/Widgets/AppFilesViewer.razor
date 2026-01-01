@@ -53,7 +53,6 @@
     private void GetFileSystemData()
     {
         _appPRootPath = environment.RootPath;
-        // mas tarde enlazaremos los datos correctos, de momento cargamos algunos datos de ejemplos
         _assembliesfilelist = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !string.IsNullOrEmpty(a.Location))
             .Select(a => a.Location)

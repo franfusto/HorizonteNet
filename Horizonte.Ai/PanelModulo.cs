@@ -1,4 +1,5 @@
-﻿using Microsoft.Agents.AI;
+﻿using Horizonte.Ai.Widgets;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -57,5 +58,10 @@ public class PanelModulo
         }
         return "fail";
     }
+    
+    [HorizonteRole("configpage")]
+    [HorizonteCommand("Horizonte.Ai", "Widget de configuración del módulo Horizonte.Ai")]
+    public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigWidget), Parameters = null };
+    
 
 }
