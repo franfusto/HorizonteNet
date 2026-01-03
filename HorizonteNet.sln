@@ -37,6 +37,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{7D38025E-F8F9-4394-922C-9637E3240E38}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConfig", "TestConfig\TestConfig.csproj", "{28A6D14E-9980-4487-B3D6-EF4DA47FE6F7}"
@@ -52,6 +53,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Ai.AgentChat", "Horizonte.Ai.AgentChat\Horizonte.Ai.AgentChat.csproj", "{76CE05C4-95EF-47B3-9D2F-2E1E1138CCD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.Ai", "Horizonte.Extension.Ai\Horizonte.Extension.Ai.csproj", "{BABAF4C6-7FCC-469F-A960-5A6564E3F59C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Ai.Agent", "Horizonte.Ai.Agent\Horizonte.Ai.Agent.csproj", "{17258D11-C96E-4BD5-B7A7-AACE3479698F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -143,6 +146,10 @@ Global
 		{BABAF4C6-7FCC-469F-A960-5A6564E3F59C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BABAF4C6-7FCC-469F-A960-5A6564E3F59C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BABAF4C6-7FCC-469F-A960-5A6564E3F59C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BFD716E4-FBFA-44A6-B509-B909E458E4B2} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
@@ -163,5 +170,6 @@ Global
 		{F3CEBB45-4FBC-43BA-943A-8488CE36B47B} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
 		{312D1952-0054-4F03-9EE2-C054F9513F6C} = {04D49CEB-28E5-458B-89F6-C981E32E2F46}
 		{76CE05C4-95EF-47B3-9D2F-2E1E1138CCD4} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
+		{17258D11-C96E-4BD5-B7A7-AACE3479698F} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
 	EndGlobalSection
 EndGlobal

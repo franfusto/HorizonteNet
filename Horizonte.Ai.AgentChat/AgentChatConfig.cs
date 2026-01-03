@@ -4,6 +4,6 @@ namespace Horizonte.Ai.AgentChat;
 
 public class AgentChatConfig
 {
-    public List<AiClientDef>  ClientList { get; set; }
+    public string DefaultAgentId { get; set; } = "default_agent_id";
     
 }

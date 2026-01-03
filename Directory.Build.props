@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <!-- Metadatos comunes para todos los paquetes NuGet -->
+    <Authors>franfusto</Authors>
+    <Company></Company>
+    <Product>HorizonteNet</Product>
+    <RepositoryUrl>https://github.com/franfusto/HorizonteNet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Configuración de compilación común -->
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- Configuración para empaquetado -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>false</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+
+</Project>

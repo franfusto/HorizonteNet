@@ -14,8 +14,9 @@ public class PanelModulo
 {
     private Lazy<IHorizonteEnv> _env;
     private ILogger<PanelModulo>? _logger;
-    private IHCredManager? _credManager;
-    private AIAgent _agent;
+  //  private IHCredManager? _credManager;
+    private AgentService _agentService;
+    
     public PanelModulo(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
@@ -26,42 +27,25 @@ public class PanelModulo
     public bool Init()
     {
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        _credManager = _env.Value.GetService<IHCredManager>();
-        var context = _env.Value.GetService<IHContext>();
-        
-        var apiKey = _credManager?.GetCredential("openai.key") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
-        var model = "gpt-4o-mini";
-         _agent = new OpenAIClient(
-                apiKey)
-            .GetChatClient(model)
-            .CreateAIAgent(instructions: "Eres bueno contando chistes", name: "Joker");
-        
-        //Test();
+//        _credManager = _env.Value.GetService<IHCredManager>();
+//        var context = _env.Value.GetService<IHContext>();
+        _agentService = new AgentService(_env.Value);
         return true;
     }
 
-    [HorizonteCommand("Horizonte.Ai.Test")]
-    public async Task<string> Test()
-    {
-        _logger?.LogInformation("Test");
-        try
-        {
-
-
-            var result = await _agent.RunAsync("Cuentame un chiste de piratas.");
-            Console.WriteLine(result);
-            return result.ToString();
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e.ToString());
-        }
-        return "fail";
-    }
     
     [HorizonteRole("configpage")]
-    [HorizonteCommand("Horizonte.Ai", "Widget de configuración del módulo Horizonte.Ai")]
+    [HorizonteCommand("Horizonte.Ai_ConfigPage", "Widget de configuración del módulo Horizonte.Ai")]
     public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigWidget), Parameters = null };
+
+    [HorizonteCommand("Horizonte.Ai_GetAgent")]
+    public AIAgent GetAgent(string agentid)
+    {
+        return _agentService.BuildAgent(agentid);
+    }
+    
+
+    
     
 
 }

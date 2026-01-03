@@ -15,10 +15,10 @@ public class CommandVectorManager
 
     // Constantes y campos privados
     private const string VectorCollectionName = "commands";
-    private const string CacheFilePath = "cache_commands.json";
-    //private List<CommandVectorRecord> _commandDefinitions = new();
+    private const string CacheFilePath = "cache_commands.csv";
+    private List<CommandVectorRecord> _commandDefinitions = new();
     private List<ActiveCommandDefinition> _activeCommands = new();
-    //private IVectorStoreRecordCollection<int, CommandVectorRecord>? _commandVectorCollection;
+    private Microsoft.Extensions.VectorData.IVectorStoreRecordCollection<int, CommandVectorRecord>? _commandVectorCollection;
 
     public CommandVectorManager(IHGesCom commandManager, ILogger logService, OpenAIClient openAiClient)
     {
@@ -30,12 +30,39 @@ public class CommandVectorManager
 
     }
 
+    private void TestSerializer()
+    {
+        try
+        {
+            _commandDefinitions = new List<CommandVectorRecord>();
+            _commandDefinitions.Add(new CommandVectorRecord()
+            {
+                Id = 1,
+                Definition = "xx" ,
+                Embedding = new ReadOnlyMemory<float>(),
+                Name = "xxwww"
+                
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
     // Método público principal
     private async Task InitializeManagerAsync()
     {
         try
         {
+            
             _logService.LogInformation("Iniciando proceso de inicialización del administrador...");
+            
+            ////
+            //TestSerializer();
+            //SerializeCache();
+            /////
+            
             await LoadCacheFromFile();
             await LoadActiveCommandDefinitions();
             await ValidateCacheConsistencyAsync();
@@ -111,9 +138,26 @@ public class CommandVectorManager
     {
         try
         {
-            _logService.LogInformation("Serializando el cache de comandos en disco...");
-            string fileContent = JsonSerializer.Serialize(_commandDefinitions, JsonSerializerOptions);
-            File.WriteAllText(CacheFilePath, fileContent);
+            _logService.LogInformation("Serializando el cache de comandos en formato CSV...");
+                
+            var csvBuilder = new System.Text.StringBuilder();
+            // Encabezados
+            csvBuilder.AppendLine("Id;Name;Definition;Embedding");
+
+            foreach (var record in _commandDefinitions)
+            {
+                // Convertimos el ReadOnlyMemory<float> a formato [v1,v2,v3...]
+                var embeddingArray = record.Embedding.ToArray();
+                string embeddingString = $"[{string.Join(",", embeddingArray)}]";
+
+                // Escapamos los campos de texto por si contienen puntos y coma o comillas
+                string safeName = record.Name?.Replace("\"", "\"\"") ?? "";
+                string safeDefinition = record.Definition?.Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", "") ?? "";
+
+                csvBuilder.AppendLine($"{record.Id};\"{safeName}\";\"{safeDefinition}\";\"{embeddingString}\"");
+            }
+
+            File.WriteAllText(CacheFilePath, csvBuilder.ToString());
         }
         catch (Exception e)
         {
@@ -134,7 +178,7 @@ public class CommandVectorManager
                 {
                     Name = command.Name,
                     Definition = command.Definition,
-                    Embedding = await GenerateEmbeddingsFromTextAsync(command.Definition, CancellationToken.None)
+                    Embedding = await GenerateEmbeddingsFromTextAsync($"{command.Name} => {command.Definition}", CancellationToken.None)
                 });
                 _logService.LogInformation("Comando {CommandName} añadido o actualizado en el cache.", command.Name);
 
@@ -147,29 +191,62 @@ public class CommandVectorManager
         }
     }
 
-/*
     
-    public List<CommandVectorRecord> DeserializeCacheFromFile()
-    {
-        try
+        public List<CommandVectorRecord> DeserializeCacheFromFile()
         {
-            _logService.LogInformation("Deserializando el cache de comandos desde disco...");
-            string fileContent = File.ReadAllText(CacheFilePath);
-            return JsonSerializer.Deserialize<List<CommandVectorRecord>>(fileContent) ?? new List<CommandVectorRecord>();
-        }
-        catch (JsonException e)
-        {
-            _logService.LogError(e, "Formato de JSON no válido en el archivo de cache.");
-            return new List<CommandVectorRecord>();
-        }
-        catch (Exception e)
-        {
-            _logService.LogError(e, "Error general al deserializar el archivo de cache.");
-            return new List<CommandVectorRecord>();
-        }
+            try
+            {
+                string csvPath = CacheFilePath.Replace(".json", ".csv");
+                if (!File.Exists(csvPath)) return new List<CommandVectorRecord>();
 
-    }
-*/
+                _logService.LogInformation("Deserializando el cache de comandos desde CSV...");
+                
+                var records = new List<CommandVectorRecord>();
+                var lines = File.ReadAllLines(csvPath);
+
+                // Saltamos el encabezado (Id;Name;Definition;Embedding)
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    // Separamos por ';' teniendo en cuenta que los campos están entre comillas
+                    // Una forma simple si no hay ';' dentro de las comillas, sino usar un parser más robusto
+                    var parts = line.Split(';');
+                    if (parts.Length < 4) continue;
+
+                    var record = new CommandVectorRecord();
+                    
+                    // 1. Id
+                    if (int.TryParse(parts[0], out int id)) record.Id = id;
+
+                    // 2. Name (limpiamos comillas)
+                    record.Name = parts[1].Trim('"').Replace("\"\"", "\"");
+
+                    // 3. Definition (limpiamos comillas)
+                    record.Definition = parts[2].Trim('"').Replace("\"\"", "\"");
+
+                    // 4. Embedding (formato [1,2,3...])
+                    string embRaw = parts[3].Trim('"').Trim('[', ']');
+                    if (!string.IsNullOrEmpty(embRaw))
+                    {
+                        var floatArray = embRaw.Split(',')
+                            .Select(s => float.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float f) ? f : 0f)
+                            .ToArray();
+                        record.Embedding = new ReadOnlyMemory<float>(floatArray);
+                    }
+
+                    records.Add(record);
+                }
+
+                return records;
+            }
+            catch (Exception e)
+            {
+                _logService.LogError(e, "Error al deserializar el archivo CSV de cache.");
+                return new List<CommandVectorRecord>();
+            }
+        }
     public async Task PopulateVectorStorageAsync()
     {
         try
@@ -178,7 +255,8 @@ public class CommandVectorManager
 
             var vectorStore = new InMemoryVectorStore();
             await vectorStore.GetCollection<int, CommandVectorRecord>(VectorCollectionName)
-                .CreateCollectionIfNotExistsAsync();
+               // .EnsureCollectionExistsAsync();
+                 .CreateCollectionIfNotExistsAsync();
 
             _commandVectorCollection = vectorStore.GetCollection<int, CommandVectorRecord>(VectorCollectionName);
             for (int i = 0; i < _commandDefinitions.Count; i++)
@@ -200,17 +278,15 @@ public class CommandVectorManager
         try
         {
             string textResult = string.Empty;
-            /*
             var query = await GenerateEmbeddingsFromTextAsync(queryText, cancellationToken);
-            var searchResults = await _commandVectorCollection!.VectorizedSearchAsync(query, new() { Top = 5 });
+            var searchResults =await _commandVectorCollection!.VectorizedSearchAsync(query,new(){Top = 5});// SearchAsync(query, 5);
             
-        foreach (var item in searchResults.Results.ToBlockingEnumerable())
+            foreach (var item in searchResults.Results.ToBlockingEnumerable())
             {
                 _logService.LogInformation("Comando encontrado: {CommandName}", item.Record.Name);
                 textResult += item.Record.Definition + Environment.NewLine;
             }
             _logService.LogInformation("Búsqueda completada, resultados encontrados.");
-*/
             return textResult;
 
         }
@@ -221,19 +297,43 @@ public class CommandVectorManager
 
         }
     }
+    public async Task<string?> SearchCommandInVectorStoreAsync222(string catalog, string queryText, CancellationToken cancellationToken)
+    {
+        _logService.LogInformation("Buscando comandos en la base de datos vectorial para la consulta: {QueryText}.", queryText);
+        try
+        {
+            string textResult = string.Empty;
+            var query = await GenerateEmbeddingsFromTextAsync(queryText, cancellationToken);
+            var searchResults = await _commandVectorCollection!.VectorizedSearchAsync(query, new() { Top = 5 });
+            
+            foreach (var item in searchResults.Results.ToBlockingEnumerable())
+            {
+                _logService.LogInformation("Comando encontrado: {CommandName}", item.Record.Name);
+                textResult += item.Record.Definition + Environment.NewLine;
+            }
+            _logService.LogInformation("Búsqueda completada, resultados encontrados.");
 
+            return textResult;
+
+        }
+        catch (Exception e)
+        {
+            _logService.LogError(e, "Error al realizar la búsqueda en la base de datos vectorial.");
+            return null;
+
+        }
+    }
     private string GenerateCommandJson(HCommand command)
     {
         var definition = GetCommandDefinition(command);
-        return JsonSerializer.Serialize(definition, JsonSerializerOptions);
+         return JsonSerializer.Serialize(definition, JsonSerializerOptions);
+        return string.Empty;
     }
-
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = false,
         IncludeFields = true
     };
-
     private CommandDefinition GetCommandDefinition(HCommand command)
     {
         var definition = new CommandDefinition
@@ -269,20 +369,26 @@ public class CommandVectorManager
     }
 }
 
-/*
 public class CommandVectorRecord
 {
-    [VectorStoreRecordKey]
+   //[VectorStoreKey]
+   [VectorStoreRecordKey]
     public int Id { get; set; }
+    
+    //[VectorStoreData]
     [VectorStoreRecordData]
     public string Name { get; set; } = null!;
+    
+    //[VectorStoreData]
     [VectorStoreRecordData]
     public string Definition { get; set; } = null!;
+    
+    //[VectorStoreData]
+    //[VectorStoreVector(1536)]
     [VectorStoreRecordData]
     [VectorStoreRecordVector(1536)]
     public ReadOnlyMemory<float> Embedding { get; set; }
 }
-*/
 public class ActiveCommandDefinition
 {
     public string Name { get; set; } = null!;

@@ -1,0 +1,36 @@
+@using Microsoft.Agents.AI
+@inject IHGesCom GesCom
+
+<RadzenText Text="Agente IA" TextStyle="TextStyle.H5"/>
+ <RadzenCard>
+     
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenStack Orientation="Orientation.Horizontal">
+        <RadzenTextBox @bind-Value="@_input"> </RadzenTextBox>
+        <RadzenButton Click="Send"></RadzenButton>
+    </RadzenStack>
+    <RadzenTextArea @bind-Value="@_output"></RadzenTextArea>
+</RadzenStack>
+ </RadzenCard>
+
+
+@code
+{
+    AIAgent _agent;
+    string _input = string.Empty;
+    string _output = string.Empty;
+    protected override void OnInitialized()
+    {
+       _agent = GesCom.RunCommand("Horizonte.Ai_GetAgent") as AIAgent;
+        base.OnInitialized();
+    }
+
+    private async Task Send()
+    {
+        var result = await _agent.RunAsync(_input);
+        Console.WriteLine(result);
+        _output = result.Text;
+    }
+
+
+}

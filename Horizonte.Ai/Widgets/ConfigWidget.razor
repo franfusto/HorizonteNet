@@ -1,5 +1,54 @@
-<h3>ConfigWidget</h3>
+@using AdminUi.Components
+@using Horizonte
+@using Horizonte.Extension.Ai.Entities
+@using System.Text.Json
+@using Radzen
+@using Radzen.Blazor
+@inject IHContext Context
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Horizonte.Ai"></RadzenText>
+        <div>
+            <RadzenButton Icon="refresh" Variant="Variant.Outlined" Click="Get"></RadzenButton>
+        </div>
+    </RadzenStack>
+
+    
+    <div style="max-width: 600px; white-space: pre-wrap; white-space: -moz-pre-wrap;white-space: -o-pre-wrap;word-wrap: break-word; ">
+        @_jsonContent
+    </div>
+</RadzenCard>
 
 @code {
     
+    AiConfig _aiconfig = new();
+    string _jsonContent = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Get()
+    {
+        _aiconfig = Context.Get<AiConfig>() ?? new AiConfig();
+        SerializeConfig();
+    }
+
+    private void SerializeConfig()
+    {
+        _jsonContent = JsonSerializer.Serialize(_aiconfig, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+    }
+
+    private void Update()
+    {
+        Context.Update(_aiconfig);
+    }
+
 }
