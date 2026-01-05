@@ -336,6 +336,17 @@ public class HGesCom : IHGesCom
         if (method == null) return false;
         return method.IsAsync;
     }
+
+    /// <summary>
+    /// Comprueba si existe un comando dada su clave.
+    /// </summary>
+    /// <param name="commandKey">La clave del comando a comprobar.</param>
+    /// <returns>True si el comando existe, False en caso contrario.</returns>
+    public bool ExistCommand(string commandKey)
+    {
+        return _commandList.ContainsKey(commandKey);
+    }
+
     public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
     {
         try

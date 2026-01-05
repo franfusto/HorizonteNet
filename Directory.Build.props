@@ -8,6 +8,7 @@
     <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>10.0.0</Version>
     
     <!-- Configuración de compilación común -->
     <TargetFramework>net10.0</TargetFramework>

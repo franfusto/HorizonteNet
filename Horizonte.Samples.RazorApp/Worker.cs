@@ -43,6 +43,15 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
         });
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
+        if (_log != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+            //builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+            //builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Services.AddSingleton(_log);
+        }
         builder.Services.AddSingleton<WeatherForecastService>();
         builder.Services.AddHorizonteLegacyServices(_env); //-> Add Horizonte services
         builder.Services.AddRadzenComponents();

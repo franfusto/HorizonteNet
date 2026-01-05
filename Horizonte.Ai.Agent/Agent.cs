@@ -108,14 +108,19 @@ public class Agent
         return new OpenAIClient(new ApiKeyCredential(_config.ApiKey), clientOptions);
     }
 
-    private async void ConfigureKernel(OpenAIClient client)
+    private void ConfigureKernel(OpenAIClient client)
     {
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddLogging(loggingBuilder =>
+        if (_logger != null)
         {
-            loggingBuilder.AddConsole();
-            loggingBuilder.SetMinimumLevel(LogLevel.Information);
-        });
+            builder.Services.AddLogging(l =>
+            {
+                l.ClearProviders();
+                l.AddProvider(new ExistingLoggerProvider(_logger));
+                l.SetMinimumLevel(_config.LogLevel);
+            });
+            builder.Services.AddSingleton(_logger);
+        }
         _kernel = builder
             .AddOpenAIChatCompletion(_config.ModelId, client)
             .AddOpenAITextEmbeddingGeneration( _config.EmbeddingModelId ?? "text-embedding-3-small", client) 

@@ -31,6 +31,15 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls(_config.Url);
+        if (_log != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+           // builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+           // builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Services.AddSingleton(_log);
+        }
         if (_config.EnableSwagger)
         {
             builder.Services.AddEndpointsApiExplorer();

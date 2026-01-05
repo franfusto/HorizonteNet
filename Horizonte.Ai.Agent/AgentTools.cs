@@ -42,10 +42,12 @@ public class AgentTools
         try
         {
             // Registrar los parámetros de entrada
-            _logger.LogTrace(
+            _logger.LogInformation(
                 "Ejecutando RunCommand con los siguientes parámetros: CommandName = {CommandName}, Args = {Args}",
                 commandName, args != null ? string.Join(", ", args) : "null");
 
+            //
+            if(!_gesCom.ExistCommand(commandName)) throw new ArgumentException($"Nombre del comando: {commandName} >> not found");
             // Ejecutar la acción principal
             object? result = null;
             if (_gesCom.IsAsyncCommand(commandName))
@@ -75,6 +77,7 @@ public class AgentTools
     [Description("Consulta la base de datos vectorial")]
     public  Task<string?> QueryVerctorStore([Description("Nombre del catálogo")]string catalog, [Description("Consulta")] string query)
     {
+        _logger.LogInformation($"Consulta la base de datos vectorial: {catalog} =>  {query}");
         return _commandVectorManager.SearchCommandInVectorStoreAsync(catalog, query, CancellationToken.None);
     }
 

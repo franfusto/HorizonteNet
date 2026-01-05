@@ -74,6 +74,13 @@ public interface IHGesCom
     public bool IsAsyncCommand(string commandKey);
     
     /// <summary>
+    /// Comprueba si existe un comando dada su clave.
+    /// </summary>
+    /// <param name="commandKey">La clave del comando a comprobar.</param>
+    /// <returns>True si el comando existe, False en caso contrario.</returns>
+    public bool ExistCommand(string commandKey);
+
+    /// <summary>
     /// Recupera una lista de comandos disponibles.
     /// </summary>
     /// <returns>

@@ -210,7 +210,7 @@ public class PanelModulo
             .ToList() ?? new();
     }
 
-    [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene la lista de Workers disponibles en el sistema")]
+    [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
     public List<Type> Workers_GetAvailablesServices()
     {
         var assemblymanager = _env?.HHost.Services.GetService<IhAssemblyManager>();
