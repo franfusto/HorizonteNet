@@ -57,6 +57,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.Ai", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Ai.Agent", "Horizonte.Ai.Agent\Horizonte.Ai.Agent.csproj", "{17258D11-C96E-4BD5-B7A7-AACE3479698F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Scripts", "Horizonte.Scripts\Horizonte.Scripts.csproj", "{D65BB4CF-E77A-4264-9DC0-E314E59C7152}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extensions.Interactive", "Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj", "{1EB4F586-27A6-4698-9A42-6D4D9162CC99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +155,14 @@ Global
 		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17258D11-C96E-4BD5-B7A7-AACE3479698F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D65BB4CF-E77A-4264-9DC0-E314E59C7152}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D65BB4CF-E77A-4264-9DC0-E314E59C7152}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D65BB4CF-E77A-4264-9DC0-E314E59C7152}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D65BB4CF-E77A-4264-9DC0-E314E59C7152}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EB4F586-27A6-4698-9A42-6D4D9162CC99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB4F586-27A6-4698-9A42-6D4D9162CC99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EB4F586-27A6-4698-9A42-6D4D9162CC99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EB4F586-27A6-4698-9A42-6D4D9162CC99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BFD716E4-FBFA-44A6-B509-B909E458E4B2} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
@@ -172,5 +184,6 @@ Global
 		{312D1952-0054-4F03-9EE2-C054F9513F6C} = {04D49CEB-28E5-458B-89F6-C981E32E2F46}
 		{76CE05C4-95EF-47B3-9D2F-2E1E1138CCD4} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
 		{17258D11-C96E-4BD5-B7A7-AACE3479698F} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
+		{D65BB4CF-E77A-4264-9DC0-E314E59C7152} = {D8589999-8B45-4482-8ABE-1FF77D5618E2}
 	EndGlobalSection
 EndGlobal

@@ -32,6 +32,11 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="BlazorMonaco" Version="3.4.0" />
+    </ItemGroup>
+
+
 
 
 </Project>

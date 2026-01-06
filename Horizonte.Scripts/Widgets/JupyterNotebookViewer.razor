@@ -1,0 +1,81 @@
+@using Microsoft.DotNet.Interactive.Documents.Jupyter
+@using Microsoft.DotNet.Interactive.Documents
+@using Horizonte.Scripts.Components
+@using System.Text
+@using System.Text.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Class="rz-p-4">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H1">Visor de Jupyter Notebook</RadzenText>
+        @if (Notebook != null)
+        {
+            <RadzenButton Text="Descargar .ipynb" Icon="get_app" Click="@DownloadNotebook" ButtonStyle="ButtonStyle.Primary" />
+        }
+    </RadzenStack>
+
+    @if (Notebook != null)
+    {
+        <RadzenCard>
+            
+        <RadzenStack Gap="1rem">
+            @foreach (var element in Notebook.Elements)
+            {
+                    <RadzenStack Gap="0.5rem">
+
+                        @if (element is InteractiveDocumentElement cellElement)
+                        {
+               
+                            @if (cellElement.KernelName=="markdown")
+                            {
+                                <MarkDownEditor Cell="cellElement" />
+                            }
+                            else
+                            {
+                                <CodeEditor Cell="cellElement" />
+                            }
+                        }
+                    </RadzenStack>
+            }
+        </RadzenStack>
+        </RadzenCard>
+    }
+    else
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true" Variant="Variant.Flat" Shade="Shade.Lighter">
+            Cargando notebook...
+        </RadzenAlert>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter] public InteractiveDocument? Notebook { get; set; }
+
+
+
+
+    private async Task DownloadNotebook()
+    {
+        if (Notebook == null) return;
+
+        try
+        {
+            // Intentamos usar la serialización genérica de InteractiveDocument
+            // dado que el analizador no reconoce métodos de extensión de Jupyter.
+            string contentString = JsonSerializer.Serialize(Notebook, new JsonSerializerOptions { WriteIndented = true });
+            
+            var fileName = "notebook_editado.ipynb";
+            byte[] bytes = Encoding.UTF8.GetBytes(contentString);
+            await JSRuntime.InvokeAsync<object>(
+                "saveAsFile",
+                fileName,
+                Convert.ToBase64String(bytes)
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error al descargar: {e.Message}");
+        }
+    }
+}

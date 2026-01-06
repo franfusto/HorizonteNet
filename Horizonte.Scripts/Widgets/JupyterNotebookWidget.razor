@@ -1,0 +1,45 @@
+@using Microsoft.DotNet.Interactive.Documents
+@inject IHContext Context
+<h3>JupyterNotebookWidget</h3>
+
+@code {
+    NotebookConfig _config = new();
+
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
+
+    private void Get()
+    {
+        _config = Context.Get<NotebookConfig>() ?? new NotebookConfig();
+    }
+
+    private void Update()
+    {
+        Context.Update(_config);
+    }
+    
+    private async Task<InteractiveDocument?> LoadNotebook()
+    {
+        try
+        {
+            using HttpClient Http = new HttpClient();
+            // Usar una URL raw de GitHub para que sea descargable
+            var url = "https://raw.githubusercontent.com/dotnet/interactive/refs/heads/main/samples/notebooks/csharp/Docs/Displaying-output.ipynb";
+            var response = await Http.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            
+            var content = await response.Content.ReadAsStringAsync();
+            return Microsoft.DotNet.Interactive.Documents.Jupyter.Notebook.Parse(content);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
+
+
+}

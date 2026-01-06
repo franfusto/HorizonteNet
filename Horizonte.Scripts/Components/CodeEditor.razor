@@ -1,0 +1,20 @@
+@using Microsoft.DotNet.Interactive.Documents
+@using BlazorMonaco
+@using BlazorMonaco.Editor
+@using BlazorMonaco.Languages
+<RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="5" />
+@***
+<MonacoEditor Language="Language.CSharp" />
+<StandaloneCodeEditor />
+***@
+@code {
+    [Parameter]
+    public InteractiveDocumentElement Cell { get; set; } = null!;
+    private string Codigo = @"public class Test
+{
+    public void Run()
+    {
+        Console.WriteLine(""Hola"");
+    }
+}";
+}

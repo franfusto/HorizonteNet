@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Radzen;
 using Radzen.Blazor;
 using Horizonte.Extensions;
-
+using BlazorMonaco;
 namespace Horizonte.AdminUi;
 
 public sealed class Worker : BackgroundService, IHorizonteBackgroundService
@@ -46,6 +46,10 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
             });
         builder.Services.AddSingleton(_env);
         if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
+        
+        /////////////////
+       // builder.Services.addmo AddBlazorMonacoComponents();
+        /////////////////
         if (_log != null)
         {
             builder.Logging.ClearProviders();

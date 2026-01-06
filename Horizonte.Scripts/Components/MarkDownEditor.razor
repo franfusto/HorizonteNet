@@ -1,0 +1,37 @@
+@using Microsoft.DotNet.Interactive.Documents
+
+<RadzenStack Gap="0.5rem">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Icon="@(_isEditing ? "check" : "edit")" 
+                      Text="@(_isEditing ? "Finalizar edición" : "")" 
+                      ButtonStyle="@(_isEditing ? ButtonStyle.Success : ButtonStyle.Secondary)"
+                      Variant="Variant.Flat" 
+                      Size="ButtonSize.Small" 
+                      Click="ToggleEdit" />
+    </RadzenStack>
+
+    @if (_isEditing)
+    {
+        <RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="10" />
+    }
+    else
+    {
+        <div @onclick="ToggleEdit" class="markdown-preview" >
+            <RadzenMarkdown>
+                @((MarkupString)Cell.Contents)
+            </RadzenMarkdown>
+        </div>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public InteractiveDocumentElement Cell { get; set; } = null!;
+
+    private bool _isEditing = false;
+
+    private void ToggleEdit()
+    {
+        _isEditing = !_isEditing;
+    }
+}
