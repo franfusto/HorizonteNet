@@ -5,56 +5,88 @@
 @using System.Text.Json
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Class="rz-p-4">
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H1">Visor de Jupyter Notebook</RadzenText>
-        @if (Notebook != null)
-        {
-            <RadzenButton Text="Descargar .ipynb" Icon="get_app" Click="@DownloadNotebook" ButtonStyle="ButtonStyle.Primary" />
-        }
-    </RadzenStack>
-
-    @if (Notebook != null)
-    {
+@inject IHContext Context
+@if (Notebook != null)
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Class="rz-p-4">
         <RadzenCard>
-            
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                         JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H1">Visor de Jupyter Notebook</RadzenText>
+                @if (Notebook != null)
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenDropDown TValue="KernelItem" Data="@_kernelConfig?.KernelItems" TextProperty="Name" @bind-Value="@_selectedKernel" Placeholder="Kernel" Style="width: 200px;" />
+                        <RadzenButton Icon="play_arrow" Click="@(() => LoadKernel(_selectedKernel))" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Tooltip="Cargar Kernel" Disabled="@(_selectedKernel == null)" />
+                        <RadzenButton Text="" Icon="get_app" Click="@DownloadNotebook"
+                                      ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"/>
+                    </RadzenStack>
+                }
+            </RadzenStack>
+        </RadzenCard>
+
         <RadzenStack Gap="1rem">
             @foreach (var element in Notebook.Elements)
             {
-                    <RadzenStack Gap="0.5rem">
+                <RadzenStack Gap="0.5rem">
 
-                        @if (element is InteractiveDocumentElement cellElement)
+                    @if (element is InteractiveDocumentElement cellElement)
+                    {
+                        @if (cellElement.KernelName == "markdown")
                         {
-               
-                            @if (cellElement.KernelName=="markdown")
-                            {
-                                <MarkDownEditor Cell="cellElement" />
-                            }
-                            else
-                            {
-                                <CodeEditor Cell="cellElement" />
-                            }
+                            <MarkDownEditor Cell="cellElement"/>
                         }
-                    </RadzenStack>
+                        else
+                        {
+                            <CodeEditor Cell="cellElement"/>
+                        }
+                    }
+                </RadzenStack>
             }
         </RadzenStack>
-        </RadzenCard>
-    }
-    else
-    {
+    </RadzenStack>
+}
+else
+{
+    <RadzenStack Class="rz-p-4">
         <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true" Variant="Variant.Flat" Shade="Shade.Lighter">
-            Cargando notebook...
+            @if (IsLoading)
+            {
+                <text>Cargando notebook...</text>
+            }
+            else
+            {
+                <text>Seleccione un documento para visualizar</text>
+            }
         </RadzenAlert>
-    }
-</RadzenStack>
+    </RadzenStack>
+}
 
 @code {
     [Parameter] public InteractiveDocument? Notebook { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
 
+    private KernelConfig? _kernelConfig;
+    private KernelItem? _selectedKernel;
 
+    protected override void OnInitialized()
+    {
+        Get();
+        base.OnInitialized();
+    }
 
+    private void Get()
+    {
+        _kernelConfig = Context.Get<KernelConfig>() ?? new KernelConfig();
+    }
 
+    private async Task LoadKernel(KernelItem? kernelItem)
+    {
+        if (kernelItem == null) return;
+        // Lógica para cargar el kernel
+    }
+    
     private async Task DownloadNotebook()
     {
         if (Notebook == null) return;
@@ -64,7 +96,7 @@
             // Intentamos usar la serialización genérica de InteractiveDocument
             // dado que el analizador no reconoce métodos de extensión de Jupyter.
             string contentString = JsonSerializer.Serialize(Notebook, new JsonSerializerOptions { WriteIndented = true });
-            
+
             var fileName = "notebook_editado.ipynb";
             byte[] bytes = Encoding.UTF8.GetBytes(contentString);
             await JSRuntime.InvokeAsync<object>(
@@ -78,4 +110,5 @@
             Console.WriteLine($"Error al descargar: {e.Message}");
         }
     }
+
 }

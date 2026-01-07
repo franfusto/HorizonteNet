@@ -1,9 +1,29 @@
 @using Microsoft.DotNet.Interactive.Documents
 @inject IHContext Context
-<h3>JupyterNotebookWidget</h3>
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Class="rz-p-4">
+    <RadzenCard Style="width: 350px; min-width: 350px;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                <RadzenButton Icon="refresh" Click="@Get" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary" Tooltip="Actualizar" />
+                <RadzenButton Icon="save" Click="@Update" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Primary" Tooltip="Grabar" />
+            </RadzenStack>
+
+            <RadzenTree Change="@OnTreeChange" Data="@_config.Sources" Style="height: 600px; overflow: auto;">
+                <RadzenTreeLevel TextProperty="Name" ChildrenProperty="Items" />
+                <RadzenTreeLevel TextProperty="ItemId" HasChildren="@(n => false)" />
+            </RadzenTree>
+        </RadzenStack>
+    </RadzenCard>
+    <RadzenCard Style="flex-grow: 1;">
+        <JupyterNotebookViewer Notebook="@_selectedNotebook" IsLoading="@_isLoading"></JupyterNotebookViewer>
+    </RadzenCard>
+</RadzenStack>
+
 
 @code {
     NotebookConfig _config = new();
+    InteractiveDocument? _selectedNotebook;
+    bool _isLoading;
 
     protected override void OnInitialized()
     {
@@ -20,17 +40,37 @@
     {
         Context.Update(_config);
     }
-    
-    private async Task<InteractiveDocument?> LoadNotebook()
+
+    private async Task OnTreeChange(TreeEventArgs args)
+    {
+        if (args.Value is NotebookItem notebookItem)
+        {
+            if (notebookItem.Document == null && !string.IsNullOrEmpty(notebookItem.ItemPath))
+            {
+                _isLoading = true;
+                StateHasChanged();
+                notebookItem.Document = await LoadNotebook(notebookItem);
+                _isLoading = false;
+            }
+
+            _selectedNotebook = notebookItem.Document;
+        }
+        else
+        {
+            _selectedNotebook = null;
+        }
+    }
+
+    private async Task<InteractiveDocument?> LoadNotebook(NotebookItem notebookItem)
     {
         try
         {
             using HttpClient Http = new HttpClient();
             // Usar una URL raw de GitHub para que sea descargable
-            var url = "https://raw.githubusercontent.com/dotnet/interactive/refs/heads/main/samples/notebooks/csharp/Docs/Displaying-output.ipynb";
+            var url = notebookItem.ItemPath;
             var response = await Http.GetAsync(url);
             response.EnsureSuccessStatusCode();
-            
+
             var content = await response.Content.ReadAsStringAsync();
             return Microsoft.DotNet.Interactive.Documents.Jupyter.Notebook.Parse(content);
         }
@@ -40,6 +80,5 @@
             return null;
         }
     }
-
 
 }

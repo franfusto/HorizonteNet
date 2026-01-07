@@ -23,25 +23,25 @@ public class NotebookConfig
 
         Sources[0].Items.Add(new NotebookItem()
         {
-            Docuement = null,
+            Document = null,
             ItemId = "SampleNotebook01",
             ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/01-What%20are%20Notebooks.ipynb"
         });
         Sources[0].Items.Add(new NotebookItem()
         {
-            Docuement = null,
+            Document = null,
             ItemId = "SampleNotebook02",
             ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/02-Code%20Cells.ipynb"
         });
         Sources[0].Items.Add(new NotebookItem()
         {
-            Docuement = null,
+            Document = null,
             ItemId = "SampleNotebook03",
             ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/03-Markdown%20Cells.ipynb"
         });
         Sources[0].Items.Add(new NotebookItem()
         {
-            Docuement = null,
+            Document = null,
             ItemId = "SampleNotebook04",
         });
     }
@@ -59,7 +59,7 @@ public class NotebookItem
 {
     public string ItemId { get; set; }
     public string ItemPath { get; set; }
-    public InteractiveDocument? Docuement { get; set; }
+    public InteractiveDocument? Document { get; set; }
 }
 
 public enum NotebookSourceType
