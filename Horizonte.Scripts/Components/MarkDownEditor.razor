@@ -4,8 +4,8 @@
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
         <RadzenButton Icon="@(_isEditing ? "check" : "edit")" 
                       Text="@(_isEditing ? "Finalizar edición" : "")" 
-                      ButtonStyle="@(_isEditing ? ButtonStyle.Success : ButtonStyle.Secondary)"
-                      Variant="Variant.Flat" 
+                      ButtonStyle="@(_isEditing ? ButtonStyle.Success : ButtonStyle.Primary)"
+                      Variant="Variant.Outlined" 
                       Size="ButtonSize.Small" 
                       Click="ToggleEdit" />
     </RadzenStack>

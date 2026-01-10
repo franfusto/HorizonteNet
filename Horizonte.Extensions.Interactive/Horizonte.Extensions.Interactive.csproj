@@ -10,4 +10,8 @@
       <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.25323.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+
 </Project>

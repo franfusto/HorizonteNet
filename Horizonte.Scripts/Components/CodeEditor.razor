@@ -2,7 +2,23 @@
 @using BlazorMonaco
 @using BlazorMonaco.Editor
 @using BlazorMonaco.Languages
+
+
+
+<RadzenStack Gap="0.5rem">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Icon="play_arrow" 
+                      ButtonStyle="ButtonStyle.Primary"
+                      Variant="Variant.Outlined" 
+                      Size="ButtonSize.Small" />
+    </RadzenStack>
+
 <RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="5" />
+
+</RadzenStack>
+
+
+
 @***
 <MonacoEditor Language="Language.CSharp" />
 <StandaloneCodeEditor />
