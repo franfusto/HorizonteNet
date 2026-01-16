@@ -60,7 +60,7 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
 
-    private Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
+    public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
     {
         try
         {

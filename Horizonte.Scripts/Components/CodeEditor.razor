@@ -10,7 +10,9 @@
         <RadzenButton Icon="play_arrow" 
                       ButtonStyle="ButtonStyle.Primary"
                       Variant="Variant.Outlined" 
-                      Size="ButtonSize.Small" />
+                      Size="ButtonSize.Small" 
+                      Disabled="@Disabled"
+                      Click="@OnRun" />
     </RadzenStack>
 
 <RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="5" />
@@ -26,6 +28,12 @@
 @code {
     [Parameter]
     public InteractiveDocumentElement Cell { get; set; } = null!;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public EventCallback OnRun { get; set; }
     private string Codigo = @"public class Test
 {
     public void Run()

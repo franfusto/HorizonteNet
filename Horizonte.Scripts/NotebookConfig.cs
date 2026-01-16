@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Interactive.Documents.Jupyter;
 using Microsoft.DotNet.Interactive.Documents;
 
@@ -16,8 +17,8 @@ public class NotebookConfig
     {
         Sources.Add(new NotebookSource()
         {
-            Type = NotebookSourceType.localDirectory,
-            Name =  "LocalDirectory",
+            Type = NotebookSourceType.webitems,
+            Name =  "Web Notebooks",
             Items = new List<NotebookItem>()
         });
 
@@ -44,6 +45,14 @@ public class NotebookConfig
             Document = null,
             ItemId = "SampleNotebook04",
         });
+        
+        Sources.Add(new NotebookSource()
+        {
+            Type = NotebookSourceType.localDirectory,
+            Name =  "Local Notebooks",
+            Items = new List<NotebookItem>(),
+            SourcePath = "~/.horizonte/notebooks"
+        });
     }
 }
 
@@ -59,11 +68,12 @@ public class NotebookItem
 {
     public string ItemId { get; set; }
     public string ItemPath { get; set; }
+    [JsonIgnore]
     public InteractiveDocument? Document { get; set; }
 }
 
 public enum NotebookSourceType
 {
     localDirectory,
-    web
+    webitems
 }

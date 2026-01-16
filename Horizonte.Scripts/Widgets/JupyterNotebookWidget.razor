@@ -1,24 +1,21 @@
 @using Microsoft.DotNet.Interactive.Documents
+@using System.Text.Json
+@using Microsoft.JSInterop
 @inject IHContext Context
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
 
 
 
 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Class="rz-p-4">
     <RadzenCard Style="width: 350px; min-width: 350px;">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-                <RadzenButton Icon="refresh" Click="@Get" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary" Tooltip="Actualizar" />
-                <RadzenButton Icon="save" Click="@Update" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Primary" Tooltip="Grabar" />
-            </RadzenStack>
-
-            <RadzenTree Change="@OnTreeChange" Data="@_config.Sources" Style="height: 600px; overflow: auto;">
-                <RadzenTreeLevel TextProperty="Name" ChildrenProperty="Items" />
-                <RadzenTreeLevel TextProperty="ItemId" HasChildren="@(n => false)" />
-            </RadzenTree>
-        </RadzenStack>
+        <RadzenTree Change="@OnTreeChange" Data="@_config.Sources" Style="height: 600px; overflow: auto;">
+            <RadzenTreeLevel TextProperty="Name" ChildrenProperty="Items"/>
+            <RadzenTreeLevel TextProperty="ItemId" HasChildren="@(n => false)"/>
+        </RadzenTree>
     </RadzenCard>
     <RadzenCard Style="flex-grow: 1;">
-        <JupyterNotebookViewer Notebook="@_selectedNotebook" IsLoading="@_isLoading"></JupyterNotebookViewer>
+        <JupyterNotebookViewer Notebook="@_selectedNotebook" IsLoading="@_isLoading" OnSaveRequest="@OnSaveRequest"></JupyterNotebookViewer>
     </RadzenCard>
 </RadzenStack>
 
@@ -37,11 +34,33 @@
     private void Get()
     {
         _config = Context.Get<NotebookConfig>() ?? new NotebookConfig();
-    }
+        foreach (var source in _config.Sources.Where(s => s.Type == NotebookSourceType.localDirectory))
+        {
+            if (string.IsNullOrEmpty(source.SourcePath)) continue;
 
-    private void Update()
-    {
-        Context.Update(_config);
+            var path = source.SourcePath;
+            if (path.StartsWith("~"))
+            {
+                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                path = Path.Combine(home, path.Substring(2));
+            }
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            var files = Directory.GetFiles(path, "*.ipynb");
+            source.Items.Clear();
+            foreach (var file in files)
+            {
+                source.Items.Add(new NotebookItem
+                {
+                    ItemId = Path.GetFileName(file),
+                    ItemPath = file
+                });
+            }
+        }
     }
 
     private async Task OnTreeChange(TreeEventArgs args)
@@ -64,17 +83,63 @@
         }
     }
 
+    private async Task OnSaveRequest(InteractiveDocument notebook)
+    {
+        var fileName = await JSRuntime.InvokeAsync<string>("prompt", "Nombre del archivo", "nuevo_notebook.ipynb");
+
+        if (string.IsNullOrEmpty(fileName)) return;
+
+        if (!fileName.EndsWith(".ipynb", StringComparison.OrdinalIgnoreCase))
+        {
+            fileName += ".ipynb";
+        }
+
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var targetDir = Path.Combine(home, ".horizonte", "notebooks");
+
+        if (!Directory.Exists(targetDir))
+        {
+            Directory.CreateDirectory(targetDir);
+        }
+
+        var filePath = Path.Combine(targetDir, fileName);
+
+        try
+        {
+            var content = Microsoft.DotNet.Interactive.Documents.Jupyter.Notebook.ToJupyterJson(notebook);
+            await File.WriteAllTextAsync(filePath, content);
+            
+            // Refrescamos la lista de archivos
+            Get();
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error al guardar el notebook: {e.Message}");
+            await DialogService.Alert($"Error al guardar: {e.Message}", "Error");
+        }
+    }
+
     private async Task<InteractiveDocument?> LoadNotebook(NotebookItem notebookItem)
     {
         try
         {
-            using HttpClient Http = new HttpClient();
-            // Usar una URL raw de GitHub para que sea descargable
-            var url = notebookItem.ItemPath;
-            var response = await Http.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+            string content;
+            if (notebookItem.ItemPath.StartsWith("http"))
+            {
+                using HttpClient Http = new HttpClient();
+                // Usar una URL raw de GitHub para que sea descargable
+                var url = notebookItem.ItemPath;
+                var response = await Http.GetAsync(url);
+                response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
+                content = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                content = await File.ReadAllTextAsync(notebookItem.ItemPath);
+            }
+
             return Microsoft.DotNet.Interactive.Documents.Jupyter.Notebook.Parse(content);
         }
         catch (Exception e)

@@ -26,6 +26,19 @@
         link.click();
         document.body.removeChild(link);
     };
+    
+    window.fixMarkdownLinks = () => {
+        const containers = document.querySelectorAll('.markdown-container');
+        containers.forEach(container => {
+            const links = container.querySelectorAll('a');
+            links.forEach(link => {
+                if (!link.getAttribute('target')) {
+                    link.setAttribute('target', '_blank');
+                    link.setAttribute('rel', 'noopener noreferrer');
+                }
+            });
+        });
+    };
 </script>
 <script src="_content/BlazorMonaco/jsInterop.js"></script>
 <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>

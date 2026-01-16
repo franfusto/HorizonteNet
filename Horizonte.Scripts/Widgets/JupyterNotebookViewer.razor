@@ -9,12 +9,14 @@
 @using Microsoft.Extensions.Logging
 @using Microsoft.JSInterop
 @using System.Linq
+@using Blazor.Monaco
 @using Microsoft.DotNet.Interactive
 @using Microsoft.DotNet.Interactive.Formatting
 @inject IJSRuntime JSRuntime
 @inject IHContext Context
 @inject IHorizonteEnv env
 @inject ILogger log
+@inject DialogService DialogService
 
 <style>
     .markdown-container h1 {
@@ -39,6 +41,28 @@
     /* Ajuste de márgenes para que no ocupe tanto espacio */
     .markdown-container p {
         margin-bottom: 0.5rem;
+    }
+
+    .cell-container {
+        position: relative;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    .cell-handle {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .output-card-container {
+        margin-top: 0.5rem;
     }
 </style>
 
@@ -68,11 +92,11 @@
                             <RadzenButton Icon="get_app" Click="@DownloadNotebook"
                                           ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"/>
                             <RadzenButton Icon="save_as" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                          Click="RunAll"/>
+                                          Click="SaveAs"/>
                             <RadzenButton Icon="cleaning_services" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                          Click="RunAll"/>
+                                          Click="CleanOutput" Disabled="@(!_isKernelLoaded)"/>
                             <RadzenButton Icon="fast_forward" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                          Click="RunAll"/>
+                                          Click="RunAll" Disabled="@(!_isKernelLoaded)"/>
                         </RadzenStack>
                     </RadzenStack>
                 }
@@ -82,33 +106,51 @@
         <RadzenStack Gap="1rem">
             @foreach (var element in Notebook.Elements)
             {
-                <RadzenStack Gap="0.5rem">
-
-                    @if (element is InteractiveDocumentElement cellElement)
-                    {
-                        @if (cellElement.KernelName == "markdown")
+                <div class="cell-container rz-border-radius rz-border-primary-lighter rz-background-color-base rz-shadow-1">
+                        @if (element is InteractiveDocumentElement cellElement)
                         {
-                            <div class="markdown-container">
-                                <MarkDownEditor Cell="cellElement"/>
+                            <div class="cell-handle rz-border-color-lighter-bottom">
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                                    <RadzenButton Icon="arrow_upward" Size="ButtonSize.ExtraSmall" Variant="Variant.Outlined" 
+                                                  Click="@(() => MoveUp(cellElement))" Tooltip="Subir" />
+                                    <RadzenButton Icon="arrow_downward" Size="ButtonSize.ExtraSmall" Variant="Variant.Outlined" 
+                                                  Click="@(() => MoveDown(cellElement))" Tooltip="Bajar" />
+                                    <RadzenButton Icon="code_blocks" Size="ButtonSize.ExtraSmall" Variant="Variant.Outlined" 
+                                                  ButtonStyle="ButtonStyle.Primary" Click="@(() => InsertCell(cellElement, true))" 
+                                                  Tooltip="Insertar bloque de cóigo" />
+                                    <RadzenButton Icon="markdown" Size="ButtonSize.ExtraSmall" Variant="Variant.Outlined" 
+                                                  ButtonStyle="ButtonStyle.Primary" Click="@(() => InsertCell(cellElement, false))" 
+                                                  Tooltip="Insertar markdown" />
+                                    <RadzenButton Icon="delete" Size="ButtonSize.ExtraSmall" Variant="Variant.Outlined" 
+                                                  ButtonStyle="ButtonStyle.Primary" Click="@(async () => await DeleteCell(cellElement))" Tooltip="Borrar" />
+                                </RadzenStack>
                             </div>
-                        }
-                        else
-                        {
-                            <CodeEditor Cell="cellElement"/>
-                            @if (cellElement.Outputs != null && cellElement.Outputs.Any())
-                            {
-                                <div class="outputs">
-                                    @foreach (var output in cellElement.Outputs)
+
+                            <RadzenStack Gap="0.5rem">
+                                @if (cellElement.KernelName == "markdown")
+                                {
+                                    <div class="markdown-container">
+                                        <MarkDownEditor Cell="cellElement"/>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <CodeEditor Cell="cellElement" Disabled="@(!_isKernelLoaded)" OnRun="@(() => RunCell(cellElement))"/>
+                                    @if (cellElement.Outputs != null && cellElement.Outputs.Any())
                                     {
-                                        <RadzenCard>
-                                            @((MarkupString)output.ToDisplayString())
-                                        </RadzenCard>
+                                        <div class="outputs">
+                                            @foreach (var output in cellElement.Outputs)
+                                            {
+                                                <RadzenCard class="rz-background-color-background rz-border-color-lighter rz-p-2 rz-mt-2">
+                                                    @((MarkupString)output.ToDisplayString())
+                                                </RadzenCard>
+                                            }
+                                        </div>
                                     }
-                                </div>
-                            }
+                                }
+                            </RadzenStack>
                         }
-                    }
-                </RadzenStack>
+                </div>
             }
         </RadzenStack>
     </RadzenStack>
@@ -134,11 +176,19 @@ else
 @code {
     [Parameter] public InteractiveDocument? Notebook { get; set; }
     [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback<InteractiveDocument> OnSaveRequest { get; set; }
 
     private KernelConfig? _kernelConfig;
     private KernelItem? _selectedKernel;
     private InteractiveDocumentElement? _currentCell;
     private CompositeKernel? _kernel;
+    private bool _isKernelLoaded;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("fixMarkdownLinks");
+        await base.OnAfterRenderAsync(firstRender);
+    }
 
     // page 
     protected override void OnInitialized()
@@ -163,14 +213,16 @@ else
     private async Task LoadKernel(KernelItem? kernelItem)
     {
         if (kernelItem == null) return;
+        _isKernelLoaded = false;
         if(_kernel!=null)
         {
             _kernel.Dispose();
         }
         var options = new KernelOptions();
-        _kernel = options.BuildKernel(env);
+        _kernel = await options.BuildKernelAsync(env);
 
         _kernel.KernelEvents.Subscribe(OnKernelEvent);
+        _isKernelLoaded = true;
     }
 
     private void OnKernelEvent(KernelEvent evt)
@@ -205,6 +257,8 @@ else
             case CommandFailed failed:
                 AddOutput("text/plain", failed.Message);
                 break;
+                
+
         }
     }
 
@@ -227,7 +281,7 @@ else
 
         try
         {
-            string contentString = JsonSerializer.Serialize(Notebook, new JsonSerializerOptions { WriteIndented = true });
+            string contentString = Microsoft.DotNet.Interactive.Documents.Jupyter.Notebook.ToJupyterJson(Notebook);
 
             var fileName = "notebook_editado.ipynb";
             byte[] bytes = Encoding.UTF8.GetBytes(contentString);
@@ -242,37 +296,110 @@ else
             Console.WriteLine($"Error al descargar: {e.Message}");
         }
     }
+    private async Task RunCell(InteractiveDocumentElement codeCell)
+    {
+        if (!_isKernelLoaded || _kernel == null) return;
+
+        codeCell.Outputs.Clear();
+        _currentCell = codeCell;
+
+        await InvokeAsync(StateHasChanged);
+
+        var command = new SubmitCode(codeCell.Contents, codeCell.KernelName);
+
+        await _kernel.SendAsync(command);
+        
+        _currentCell = null;
+    }
+
     private async Task RunAll()
     {
+        if (Notebook == null) return;
 
         foreach (var element in Notebook.Elements)
         {
-            if (element is InteractiveDocumentElement codeCell &&
-                codeCell.KernelName == "csharp")
+            if (element is InteractiveDocumentElement codeCell)
             {
-                codeCell.Outputs.Clear();
-                _currentCell = codeCell;
-
-                await InvokeAsync(StateHasChanged);
-
-                var command = new SubmitCode(codeCell.Contents);
-
-                await _kernel!.SendAsync(command);
+                await RunCell(codeCell);
             }
         }
-
-        _currentCell = null;
     }
 
     private async Task CleanOutput()
     {
-        
+        if (Notebook == null) return;
+
+        foreach (var element in Notebook.Elements)
+        {
+            if (element is InteractiveDocumentElement codeCell)
+            {
+                codeCell.Outputs.Clear();
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SaveAs()
     {
-        
+        if (Notebook != null)
+        {
+            await OnSaveRequest.InvokeAsync(Notebook);
+        }
     }
 
+    private void MoveUp(InteractiveDocumentElement element)
+    {
+        if (Notebook == null) return;
+        var index = Notebook.Elements.IndexOf(element);
+        if (index > 0)
+        {
+            Notebook.Elements.RemoveAt(index);
+            Notebook.Elements.Insert(index - 1, element);
+            StateHasChanged();
+        }
+    }
 
+    private void MoveDown(InteractiveDocumentElement element)
+    {
+        if (Notebook == null) return;
+        var index = Notebook.Elements.IndexOf(element);
+        if (index < Notebook.Elements.Count - 1)
+        {
+            Notebook.Elements.RemoveAt(index);
+            Notebook.Elements.Insert(index + 1, element);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteCell(InteractiveDocumentElement element)
+    {
+        if (Notebook == null) return;
+        
+        var confirm = await DialogService.Confirm("¿Está seguro de que desea eliminar esta celda?", "Confirmar eliminación", new ConfirmOptions() { OkButtonText = "Sí", CancelButtonText = "No" });
+        
+        if (confirm == true)
+        {
+            Notebook.Elements.Remove(element);
+            StateHasChanged();
+        }
+    }
+
+    private void InsertCell(InteractiveDocumentElement currentElement, bool codecell)
+    {
+        if (Notebook == null) return;
+        var index = Notebook.Elements.IndexOf(currentElement);
+        InteractiveDocumentElement newCell;
+        
+        if (codecell)
+        {
+            newCell = new InteractiveDocumentElement("", "csharp");
+        }
+        else
+        {
+            newCell = new InteractiveDocumentElement("", "markdown");
+        }
+            Notebook.Elements.Insert(index + 1 , newCell);
+        StateHasChanged();
+    }
 }
