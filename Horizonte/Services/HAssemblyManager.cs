@@ -174,8 +174,8 @@ public class HAssemblyManager : IhAssemblyManager
         var prioridadFrameworks = new List<string>
         {
             frameworkSolicitado,
-            //"netstandard2.1",
-            //"netstandard2.0",
+            "netstandard2.1",
+            "netstandard2.0",
             "net10.0",
             "net9.0",
             "net8.0",

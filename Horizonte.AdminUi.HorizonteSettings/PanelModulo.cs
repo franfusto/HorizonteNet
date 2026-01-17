@@ -48,7 +48,11 @@ public class PanelModulo
     
     [HorizonteRole("widget")]
     [HorizonteCommand("HorizonteConfig_Log", "este widget permite ver el registro de la aplicación")]
-    public WidgetDef Log() => new WidgetDef() { Type = typeof(Log), Parameters = null };    
+    public WidgetDef Log() => new WidgetDef() { Type = typeof(Log), Parameters = null }; 
+    
+    [HorizonteRole("widget")]
+    [HorizonteCommand("HorizonteConfig_AssembliesMap", "")]
+    public WidgetDef AssembliesMap() => new WidgetDef() { Type = typeof(AssembliesMap), Parameters = null };    
     
     //config
     
@@ -71,12 +75,15 @@ public class PanelModulo
     public WidgetDef CredentialsManager() => new WidgetDef() { Type = typeof(CredentialsManager), Parameters = null };
            
     [HorizonteCommand("HorizonteConfig_AssembliesViewer", "")]
-    public WidgetDef AssembliesViewer() => new WidgetDef() { Type = typeof(AssembliesViewer), Parameters = null };
+    public WidgetDef AssembliesViewer() => new WidgetDef() { Type = typeof(AssembliesWidget), Parameters = null };
            
                
     [HorizonteCommand("HorizonteConfig_AppFilesViewer", "")]
     public WidgetDef AppFilesViewer() => new WidgetDef() { Type = typeof(AppFilesViewer), Parameters = null };
            
+    [HorizonteRole("widget")]
+    [HorizonteCommand("HorizonteConfig_Assemblies", "este widget permite ver los ensamblados cargados y su mapa de dependencias")]
+    public WidgetDef Assemblies() => new WidgetDef() { Type = typeof(AssembliesWidget), Parameters = null };
                    
     [HorizonteCommand("HorizonteConfig_HostInfo", "")]
     public WidgetDef HostInfo() => new WidgetDef() { Type = typeof(HostInfo), Parameters = null };

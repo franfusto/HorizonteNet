@@ -1,0 +1,312 @@
+@using System.Reflection
+@using Blazor.Diagrams
+@using Blazor.Diagrams.Core.Anchors
+@using Blazor.Diagrams.Core.Models
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
+@using Blazor.Diagrams.Options
+@using Blazor.Diagrams.Core.Geometry
+@using Blazor.Diagrams.Components
+@using Blazor.Diagrams.Components.Widgets
+@using Radzen.Blazor
+@using Point = Blazor.Diagrams.Core.Geometry.Point
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start">
+    <div class="controls-container" style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+
+        <RadzenLabel Text="Depth:"/>
+        <RadzenNumeric @bind-Value="MaxDepth" TValue="int" Min="1" Max="10" Style="width: 80px;"/>
+
+        <RadzenLabel Text="Start Assembly:"/>
+        <RadzenTextBox @bind-Value="StartAssemblyName" Placeholder="Start assembly (default Horizonte)..."
+                       Style="width: 250px;"/>
+
+        <RadzenLabel Text="Filter:"/>
+        <RadzenTextBox @bind-Value="FilterText" Placeholder="Search assembly..." Style="width: 200px;"/>
+    </div>
+    <RadzenButton Text="Load" Click="Callback" Disabled="_isLoading"></RadzenButton>
+
+    @if (_isLoading)
+    {
+        <RadzenText Text="Cargando..." Style="margin-top: 10px; font-weight: bold;" />
+    }
+</RadzenStack>
+
+@if (Diagram != null)
+{
+    <div class="diagram-container">
+        <CascadingValue Value="Diagram" IsFixed="true">
+            <DiagramCanvas>
+                <Widgets>
+                    <NavigatorWidget Width="200" Height="120"
+                                     Class="navigator-widget"
+                                     Style="bottom: 15px; right: 15px;"/>
+                </Widgets>
+            </DiagramCanvas>
+        </CascadingValue>
+    </div>
+}
+----
+<style>
+    .diagram-container {
+        width: 100%;
+        height: 900px;
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-background-color);
+    }
+
+    /* Personalización de los nodos del diagrama para que coincidan con Radzen */
+    .diagram-container .default-node {
+        background-color: var(--rz-base-background-color) !important;
+        border-color: var(--rz-primary) !important;
+        color: var(--rz-text-color) !important;
+        border-radius: var(--rz-border-radius);
+    }
+
+    .diagram-container .default-node .title {
+        color: var(--rz-text-color) !important;
+    }
+
+    .diagram-container .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+    
+    .diagram-container .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+
+    /* Selectores adicionales para asegurar que el color se aplique */
+    .diagram-container svg.diagram-svg .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+
+    .diagram-container svg.diagram-svg .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+    .diagram-container .navigator-widget {
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-base-background-color);
+        position: absolute;
+    }
+</style>
+
+@code {
+    private bool _isLoading = false;
+    private BlazorDiagram? Diagram { get; set; } = null!;
+    private int MaxDepth { get; set; } = 3;
+    private string StartAssemblyName { get; set; } = "LinuxApp";
+    private string FilterText { get; set; } = "Horizonte";
+
+    protected override void OnInitialized()
+    {
+        var options = new BlazorDiagramOptions
+        {
+            AllowMultiSelection = true,
+            Zoom =
+            {
+                Enabled = true,
+            },
+            Links =
+            {
+                DefaultRouter = new NormalRouter(),
+                DefaultPathGenerator = new SmoothPathGenerator()
+            },
+        };
+        Diagram = new BlazorDiagram(options);
+    }
+
+    private async Task Callback(MouseEventArgs obj)
+    {
+        _isLoading = true;
+        ClearDiagram();
+        await InvokeAsync(StateHasChanged);
+        
+        // Damos un pequeño respiro para que el UI se actualice
+        await Task.Delay(1);
+
+        try
+        {
+
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            GenerateDiagram(assemblies);
+        }
+        finally
+        {
+            _isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void ClearDiagram()
+    {
+        if (Diagram == null) return;
+        Diagram.Links.Clear();
+        Diagram.Nodes.Clear();
+    }
+
+    private void GenerateDiagram(Assembly[] assemblies)
+    {
+        if (Diagram == null) return;
+
+        var effectiveStartName = string.IsNullOrWhiteSpace(StartAssemblyName) ? "Horizonte" : StartAssemblyName;
+
+        // Empezamos por el ensamblado de inicio si existe, si no por los que cumplan el filtro
+        var startAssemblies = assemblies.Where(a => (a.GetName().Name ?? "").Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        var filters = string.IsNullOrWhiteSpace(FilterText)
+            ? Array.Empty<string>()
+            : FilterText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // 1. Añadimos el ensamblado de inicio y sus dependencias
+        double currentY = 50;
+        if (startAssemblies.Any())
+        {
+            foreach (var startApp in startAssemblies)
+            {
+                AddNodesAndLinks(startApp, 0, 50, ref currentY);
+            }
+        }
+
+        // 2. Añadimos todos los demás que cumplan el filtro y no estén ya en el diagrama
+        foreach (var assembly in assemblies)
+        {
+            var name = assembly.GetName().Name ?? assembly.FullName;
+            var version = assembly.GetName().Version?.ToString() ?? "0.0.0.0";
+            var nodeTitle = $"{name}-{version}";
+
+            // Si ya está en el diagrama, lo saltamos
+            if (Diagram.Nodes.Any(n => n.Title == nodeTitle)) continue;
+
+            // Si no cumple el filtro, lo saltamos
+            if (filters.Any() && !filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase))) continue;
+
+            AddNodesAndLinks(assembly, 0, 50, ref currentY);
+        }
+    }
+
+    private void AddNodesAndLinks(Assembly assembly, int depth, double x, ref double y)
+    {
+        if (depth > MaxDepth) return;
+        if (Diagram == null) return;
+
+        var name = assembly.GetName().Name ?? assembly.FullName;
+        var version = assembly.GetName().Version?.ToString() ?? "0.0.0.0";
+        var nodeTitle = $"{name}-{version}";
+
+        var effectiveStartName = string.IsNullOrWhiteSpace(StartAssemblyName) ? "Horizonte" : StartAssemblyName;
+
+        var filters = string.IsNullOrWhiteSpace(FilterText)
+            ? Array.Empty<string>()
+            : FilterText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        bool matchesFilter = !filters.Any() || filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+        bool isStartAssembly = name.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
+
+        if (!matchesFilter && !isStartAssembly)
+            return;
+
+        NodeModel sourceNode;
+        if (Diagram.Nodes.FirstOrDefault(n => n.Title == nodeTitle) is NodeModel existingNode)
+        {
+            sourceNode = existingNode;
+        }
+        else
+        {
+            sourceNode = Diagram.Nodes.Add(new NodeModel(position: new Point(x, y))
+            {
+                Title = nodeTitle
+            });
+            y += 100;
+        }
+
+        if (depth < MaxDepth)
+        {
+            foreach (var refName in assembly.GetReferencedAssemblies())
+            {
+                var targetAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => (a.GetName().Name ?? a.FullName) == (refName.Name ?? refName.FullName));
+
+                if (targetAssembly != null)
+                {
+                    var targetName = targetAssembly.GetName().Name ?? targetAssembly.FullName;
+                    var targetVersion = targetAssembly.GetName().Version?.ToString() ?? "0.0.0.0";
+                    var targetNodeTitle = $"{targetName}-{targetVersion}";
+
+                    bool targetMatchesFilter = !filters.Any() || filters.Any(f => targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
+                    bool targetIsStartAssembly = targetName.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
+
+                    if (!targetMatchesFilter && !targetIsStartAssembly)
+                        continue;
+
+                    NodeModel targetNode = Diagram.Nodes.FirstOrDefault(n => n.Title == targetNodeTitle) as NodeModel;
+                    if (targetNode == null)
+                    {
+                        targetNode = Diagram.Nodes.Add(new NodeModel(position: new Point(x + 300, y))
+                        {
+                            Title = targetNodeTitle
+                        });
+                        y += 100;
+                    }
+
+                    // Evitar duplicar links
+                    if (!Diagram.Links.Any(l => (l.Source as ShapeIntersectionAnchor)?.Model == sourceNode && (l.Target as ShapeIntersectionAnchor)?.Model == targetNode))
+                    {
+                        var link = Diagram.Links.Add(new LinkModel(new ShapeIntersectionAnchor(sourceNode), new ShapeIntersectionAnchor(targetNode)));
+                        link.TargetMarker = LinkMarker.Arrow;
+                    }
+
+                    AddNodesAndLinks(targetAssembly, depth + 1, x + 300, ref y);
+                }
+            }
+        }
+    }
+
+    private void EjemploRepresentacionNodos()
+    {
+        //ejemplo para crear dos nodos y conectar el nodo uno con el nodo dos
+        //definimos las opciones del diagrama y lo creamos
+        var options = new BlazorDiagramOptions
+        {
+            AllowMultiSelection = true,
+            Zoom =
+            {
+                Enabled = true,
+            },
+            Links =
+            {
+                DefaultRouter = new NormalRouter(),
+                DefaultPathGenerator = new SmoothPathGenerator()
+            },
+        };
+        Diagram = new BlazorDiagram(options);
+
+        //creamos el nodo de origen
+        var firstNode = Diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
+        {
+            Title = "Node 1"
+        });
+
+        //añadimos segundo nodo
+        var secondNode = Diagram.Nodes.Add(new NodeModel(position: new Point(200, 100))
+        {
+            Title = "Node 2"
+        });
+        var leftPort = secondNode.AddPort(PortAlignment.Left);
+        var rightPort = secondNode.AddPort(PortAlignment.Right);
+
+        //definimos las anclas
+        // The connection point will be the intersection of
+        // a line going from the target to the center of the source
+        var sourceAnchor = new ShapeIntersectionAnchor(firstNode);
+        // The connection point will be the port's position
+        var targetAnchor = new SinglePortAnchor(leftPort);
+        // añadimos link
+        var link = Diagram.Links.Add(new LinkModel(sourceAnchor, targetAnchor));
+        link.SourceMarker = LinkMarker.Circle;
+        link.TargetMarker = LinkMarker.Arrow;
+        InvokeAsync(StateHasChanged);
+    }
+
+}
