@@ -23,6 +23,9 @@
 
         <RadzenLabel Text="Filter:"/>
         <RadzenTextBox @bind-Value="FilterText" Placeholder="Search assembly..." Style="width: 200px;"/>
+
+        <RadzenLabel Text="Hide:"/>
+        <RadzenTextBox @bind-Value="HideText" Placeholder="Hide assembly..." Style="width: 200px;"/>
     </div>
     <RadzenButton Text="Load" Click="Callback" Disabled="_isLoading"></RadzenButton>
 
@@ -98,6 +101,7 @@
     private int MaxDepth { get; set; } = 3;
     private string StartAssemblyName { get; set; } = "LinuxApp";
     private string FilterText { get; set; } = "Horizonte";
+    private string HideText { get; set; } = "";
 
     protected override void OnInitialized()
     {
@@ -159,6 +163,10 @@
             ? Array.Empty<string>()
             : FilterText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+        var hideFilters = string.IsNullOrWhiteSpace(HideText)
+            ? Array.Empty<string>()
+            : HideText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
         // 1. Añadimos el ensamblado de inicio y sus dependencias
         double currentY = 50;
         if (startAssemblies.Any())
@@ -179,8 +187,15 @@
             // Si ya está en el diagrama, lo saltamos
             if (Diagram.Nodes.Any(n => n.Title == nodeTitle)) continue;
 
-            // Si no cumple el filtro, lo saltamos
-            if (filters.Any() && !filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase))) continue;
+            // Lógica de filtrado
+            bool matchesFilter = !filters.Any() || filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+            bool matchesHide = hideFilters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+            
+            // FilterText tiene preferencia: si coincide con FilterText, se muestra siempre.
+            // Si FilterText está vacío, se muestra si no coincide con HideText.
+            bool shouldShow = filters.Any() ? matchesFilter : !matchesHide;
+
+            if (!shouldShow) continue;
 
             AddNodesAndLinks(assembly, 0, 50, ref currentY);
         }
@@ -192,8 +207,7 @@
         if (Diagram == null) return;
 
         var name = assembly.GetName().Name ?? assembly.FullName;
-        var version = assembly.GetName().Version?.ToString() ?? "0.0.0.0";
-        var nodeTitle = $"{name}-{version}";
+        var nodeTitle = $"{name}.dll";
 
         var effectiveStartName = string.IsNullOrWhiteSpace(StartAssemblyName) ? "Horizonte" : StartAssemblyName;
 
@@ -201,10 +215,20 @@
             ? Array.Empty<string>()
             : FilterText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+        var hideFilters = string.IsNullOrWhiteSpace(HideText)
+            ? Array.Empty<string>()
+            : HideText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
         bool matchesFilter = !filters.Any() || filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+        bool matchesHide = hideFilters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+
+        // FilterText tiene preferencia: si coincide con FilterText, se muestra siempre.
+        // Si FilterText está vacío, se muestra si no coincide con HideText.
+        bool shouldShow = filters.Any() ? matchesFilter : !matchesHide;
+        
         bool isStartAssembly = name.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
 
-        if (!matchesFilter && !isStartAssembly)
+        if (!shouldShow && !isStartAssembly)
             return;
 
         NodeModel sourceNode;
@@ -218,6 +242,10 @@
             {
                 Title = nodeTitle
             });
+            sourceNode.AddPort(PortAlignment.Left);
+            sourceNode.AddPort(PortAlignment.Right);
+            sourceNode.AddPort(PortAlignment.Top);
+            sourceNode.AddPort(PortAlignment.Bottom);
             y += 100;
         }
 
@@ -231,13 +259,16 @@
                 if (targetAssembly != null)
                 {
                     var targetName = targetAssembly.GetName().Name ?? targetAssembly.FullName;
-                    var targetVersion = targetAssembly.GetName().Version?.ToString() ?? "0.0.0.0";
-                    var targetNodeTitle = $"{targetName}-{targetVersion}";
+                    var targetNodeTitle = $"{targetName}.dll";
 
                     bool targetMatchesFilter = !filters.Any() || filters.Any(f => targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
+                    bool targetMatchesHide = hideFilters.Any(f => targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
+                    
+                    bool targetShouldShow = filters.Any() ? targetMatchesFilter : !targetMatchesHide;
+                    
                     bool targetIsStartAssembly = targetName.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
 
-                    if (!targetMatchesFilter && !targetIsStartAssembly)
+                    if (!targetShouldShow && !targetIsStartAssembly)
                         continue;
 
                     NodeModel targetNode = Diagram.Nodes.FirstOrDefault(n => n.Title == targetNodeTitle) as NodeModel;
@@ -247,6 +278,10 @@
                         {
                             Title = targetNodeTitle
                         });
+                        targetNode.AddPort(PortAlignment.Left);
+                        targetNode.AddPort(PortAlignment.Right);
+                        targetNode.AddPort(PortAlignment.Top);
+                        targetNode.AddPort(PortAlignment.Bottom);
                         y += 100;
                     }
 
@@ -263,50 +298,5 @@
         }
     }
 
-    private void EjemploRepresentacionNodos()
-    {
-        //ejemplo para crear dos nodos y conectar el nodo uno con el nodo dos
-        //definimos las opciones del diagrama y lo creamos
-        var options = new BlazorDiagramOptions
-        {
-            AllowMultiSelection = true,
-            Zoom =
-            {
-                Enabled = true,
-            },
-            Links =
-            {
-                DefaultRouter = new NormalRouter(),
-                DefaultPathGenerator = new SmoothPathGenerator()
-            },
-        };
-        Diagram = new BlazorDiagram(options);
-
-        //creamos el nodo de origen
-        var firstNode = Diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
-        {
-            Title = "Node 1"
-        });
-
-        //añadimos segundo nodo
-        var secondNode = Diagram.Nodes.Add(new NodeModel(position: new Point(200, 100))
-        {
-            Title = "Node 2"
-        });
-        var leftPort = secondNode.AddPort(PortAlignment.Left);
-        var rightPort = secondNode.AddPort(PortAlignment.Right);
-
-        //definimos las anclas
-        // The connection point will be the intersection of
-        // a line going from the target to the center of the source
-        var sourceAnchor = new ShapeIntersectionAnchor(firstNode);
-        // The connection point will be the port's position
-        var targetAnchor = new SinglePortAnchor(leftPort);
-        // añadimos link
-        var link = Diagram.Links.Add(new LinkModel(sourceAnchor, targetAnchor));
-        link.SourceMarker = LinkMarker.Circle;
-        link.TargetMarker = LinkMarker.Arrow;
-        InvokeAsync(StateHasChanged);
-    }
 
 }
