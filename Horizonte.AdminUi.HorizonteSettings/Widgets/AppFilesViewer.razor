@@ -1,34 +1,117 @@
 @inject ISymLinkScafolder symlinkscafoler
 @inject IHorizonteEnv environment
+@using Blazor.Diagrams
+@using Blazor.Diagrams.Core.Anchors
+@using Blazor.Diagrams.Core.Models
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
+@using Blazor.Diagrams.Options
+@using Blazor.Diagrams.Core.Geometry
+@using Blazor.Diagrams.Components
+@using Blazor.Diagrams.Components.Widgets
+@using Point = Blazor.Diagrams.Core.Geometry.Point
 
 <RadzenText TextStyle="TextStyle.H5" Text="Sistema de archivos"/>
 
 <RadzenStack Gap="1rem">
-    <RadzenText TextStyle="TextStyle.Subtitle2" Text="Filtrar por tipo de archivo:"/>
-    <RadzenCheckBoxList @bind-Value=@_selectedFilters TValue="FsItemType" Change=@OnFilterChange>
-        <Items>
-            <RadzenCheckBoxListItem Text="Ensamblados" Value="FsItemType.assemblies"/>
-            <RadzenCheckBoxListItem Text="Enlaces simbólicos" Value="FsItemType.scafolder"/>
-            <RadzenCheckBoxListItem Text="Contenido web" Value="FsItemType.webcontent"/>
-            <RadzenCheckBoxListItem Text="Archivos aplicación" Value="FsItemType.appfiles"/>
-        </Items>
-    </RadzenCheckBoxList>
-    <RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+        <RadzenText TextStyle="TextStyle.Subtitle2" Text="Filtrar por tipo de archivo:" Style="margin-bottom: 0;"/>
+        <RadzenCheckBoxList @bind-Value=@_selectedFilters TValue="FsItemType" Change=@OnFilterChange>
+            <Items>
+                <RadzenCheckBoxListItem Text="Ensamblados" Value="FsItemType.assemblies"/>
+                <RadzenCheckBoxListItem Text="Enlaces simbólicos" Value="FsItemType.scafolder"/>
+                <RadzenCheckBoxListItem Text="Contenido web" Value="FsItemType.webcontent"/>
+                <RadzenCheckBoxListItem Text="Archivos aplicación" Value="FsItemType.appfiles"/>
+            </Items>
+        </RadzenCheckBoxList>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="margin-left: auto;">
+            <RadzenLabel Text="Vista:"/>
+            <RadzenSelectBar @bind-Value="@_isDiagramView" TValue="bool" Change="@OnViewChange">
+                <Items>
+                    <RadzenSelectBarItem Text="Lista" Value="false" />
+                    <RadzenSelectBarItem Text="Diagrama" Value="true" />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenStack>
+    </RadzenStack>
 
-        <RadzenTree Data="@_fsTree" Style="width: 100%; height: 600px; overflow: auto;">
-            <RadzenTreeLevel Text="@(node => ((FsNode)node).Name)" ChildrenProperty="Children"
-                             HasChildren="@(node => ((FsNode)node).Children.Any())">
-                <Template>
-                    @{
-                        var node = context.Value as FsNode;
-                    }
-                    <RadzenIcon Icon="@node?.Icon"/>
-                    @node?.Name
-                </Template>
-            </RadzenTreeLevel>
-        </RadzenTree>
+    <RadzenCard>
+        @if (!_isDiagramView)
+        {
+            <RadzenTree Data="@_fsTree" Style="width: 100%; height: calc(100vh - 250px); overflow: auto;">
+                <RadzenTreeLevel Text="@(node => ((FsNode)node).Name)" ChildrenProperty="Children"
+                                 HasChildren="@(node => ((FsNode)node).Children.Any())">
+                    <Template>
+                        @{
+                            var node = context.Value as FsNode;
+                        }
+                        <RadzenIcon Icon="@node?.Icon"/>
+                        @node?.Name
+                    </Template>
+                </RadzenTreeLevel>
+            </RadzenTree>
+        }
+        else
+        {
+            <div class="diagram-container">
+                <CascadingValue Value="Diagram" IsFixed="true">
+                    <DiagramCanvas>
+                        <Widgets>
+                            <NavigatorWidget Width="200" Height="120"
+                                             Class="navigator-widget"
+                                             Style="bottom: 15px; right: 15px;"/>
+                        </Widgets>
+                    </DiagramCanvas>
+                </CascadingValue>
+            </div>
+        }
     </RadzenCard>
 </RadzenStack>
+
+<style>
+    .diagram-container {
+        width: 100%;
+        height: calc(100vh - 250px);
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-background-color);
+    }
+
+    /* Personalización de los nodos del diagrama para que coincidan con Radzen */
+    .diagram-container .default-node {
+        background-color: var(--rz-base-background-color) !important;
+        border-color: var(--rz-primary) !important;
+        color: var(--rz-text-color) !important;
+        border-radius: var(--rz-border-radius);
+    }
+
+    .diagram-container .default-node .title {
+        color: var(--rz-text-color) !important;
+    }
+
+    .diagram-container .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+
+    .diagram-container .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+
+    /* Selectores adicionales para asegurar que el color se aplique */
+    .diagram-container svg.diagram-svg .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+
+    .diagram-container svg.diagram-svg .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+    .diagram-container .navigator-widget {
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-base-background-color);
+        position: absolute;
+    }
+</style>
 
 @code {
     List<string> _assembliesfilelist = new List<string>();
@@ -38,16 +121,51 @@
     List<FsNode> _fsTree = new List<FsNode>();
     IEnumerable<FsItemType> _selectedFilters = Enum.GetValues<FsItemType>().Where(v => v != FsItemType.directory);
     string _appPRootPath = Directory.GetCurrentDirectory();
+
+    private bool _isDiagramView = false;
+    private BlazorDiagram? Diagram { get; set; }
+
     protected override void OnInitialized()
     {
         GetFileSystemData();
         BuildTree();
+        InitializeDiagram();
         base.OnInitialized();
+    }
+
+    private void InitializeDiagram()
+    {
+        var options = new BlazorDiagramOptions
+        {
+            AllowMultiSelection = true,
+            Zoom =
+            {
+                Enabled = true,
+            },
+            Links =
+            {
+                DefaultRouter = new NormalRouter(),
+                DefaultPathGenerator = new SmoothPathGenerator()
+            },
+        };
+        Diagram = new BlazorDiagram(options);
     }
 
     private void OnFilterChange(IEnumerable<FsItemType> values)
     {
         BuildTree();
+        if (_isDiagramView)
+        {
+            GenerateDiagram();
+        }
+    }
+
+    private void OnViewChange(bool value)
+    {
+        if (value)
+        {
+            GenerateDiagram();
+        }
     }
 
     private void GetFileSystemData()
@@ -62,10 +180,10 @@
             .Select(s => Path.Combine(_appPRootPath, s.Destination))
             .ToList();
 
-       
+
         _webcontentfilelist = environment.StaticFileRegistry.Files.
             Select(x => Path.Combine(_appPRootPath,  x.Key.TrimStart('/').TrimStart('\\'))).ToList();
-        
+
         _appfileslist = Directory.EnumerateFileSystemEntries(_appPRootPath,
                 "*", SearchOption.AllDirectories)
             .ToList();
@@ -124,7 +242,50 @@
         }
     }
 
+    private void GenerateDiagram()
+    {
+        if (Diagram == null) return;
 
+        Diagram.Nodes.Clear();
+        Diagram.Links.Clear();
+
+        double currentX = 50;
+        double currentY = 50;
+
+        foreach (var node in _fsTree)
+        {
+            AddFsNodeToDiagram(node, null, ref currentX, ref currentY, 0);
+        }
+    }
+
+    private void AddFsNodeToDiagram(FsNode node, NodeModel? parentNode, ref double x, ref double y, int depth)
+    {
+        var nodeTitle = node.Name;
+        var diagramNode = Diagram!.Nodes.Add(new NodeModel(position: new Point(x, y))
+        {
+            Title = nodeTitle
+        });
+
+        if (parentNode != null)
+        {
+            var link = Diagram.Links.Add(new LinkModel(new ShapeIntersectionAnchor(parentNode), new ShapeIntersectionAnchor(diagramNode)));
+            link.TargetMarker = LinkMarker.Arrow;
+        }
+
+        if (node.Children.Any())
+        {
+            double childX = x + 250;
+            foreach (var child in node.Children)
+            {
+                AddFsNodeToDiagram(child, diagramNode, ref childX, ref y, depth + 1);
+                y += 60;
+            }
+        }
+        else
+        {
+            // y += 60; // Increment y for leaf nodes if they are not incremented by children
+        }
+    }
 
     private class FsNode
     {
