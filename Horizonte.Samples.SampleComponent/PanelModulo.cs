@@ -29,6 +29,7 @@ public class PanelModulo
     {
         _logger =_env.GetService<ILogger<PanelModulo>>();
        _logger?.LogInformation("Módulo 2 Inciciado");
+      
        return true;
        
     }

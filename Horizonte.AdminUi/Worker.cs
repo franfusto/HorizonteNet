@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reflection;
+using Blazor.Monaco;
 using Horizonte;
 using Horizonte.AdminUi.Components;
 using Horizonte.Extension.AspNetCore;
@@ -67,6 +68,13 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
+        //builder.Services.AddBlazorMonacoComponents();
+        builder.Services.AddBlazorMonacoComponents(config =>
+        {
+            //Change this to specify your own CDN. Must be a full URL. 
+            config.MonacoLoaderUrl = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.js";
+        });
+        
         builder.Services.AddScoped<HGuiSession>();
         _app = builder.Build();
        _app.UseHorizonteStaticFiles();

@@ -108,6 +108,7 @@ public static class Extensions
             //aqui hay que implementar la función display para integrarla con el Widget...
             await csharpKernel.SendAsync(new SubmitCode("void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x);"));
 
+            //Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display();
             var kernel = new CompositeKernel
             {
                 csharpKernel

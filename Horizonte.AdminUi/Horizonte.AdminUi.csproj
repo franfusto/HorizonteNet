@@ -11,6 +11,7 @@
       <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <PackageReference Include="Blazor.Monaco" Version="0.2.0" />
     </ItemGroup>
     
  

@@ -137,6 +137,8 @@ public class HorizonteStaticFileMiddelware
         FileInfo? fileInfo = _env.StaticFileRegistry.GetFile(subPath.Value);
         if (fileInfo != null)
         {
+            context.Response.ContentType = contentType;
+            context.Response.ContentLength = fileInfo.Length;
             var sendFile = context.Response.HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             await sendFile.SendFileAsync(fileInfo.FullName, 0, fileInfo.Length, default);
         }

@@ -1,6 +1,7 @@
+@using Blazor.Monaco
 @using Microsoft.DotNet.Interactive.Documents
-
-
+@using  Microsoft.AspNetCore.Components.Web
+ 
 
 
 <RadzenStack Gap="0.5rem">
@@ -13,16 +14,17 @@
                       Click="@OnRun" />
     </RadzenStack>
 
+
 <RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="5" />
+@***
+    <MonacoEditor 
+        Language="Language.CSharp"
+        ScriptContent="@Cell.Contents"/>
+
+***@
 
 </RadzenStack>
 
-
-
-@***
-<MonacoEditor Language="Language.CSharp" />
-<StandaloneCodeEditor />
-***@
 @code {
     [Parameter]
     public InteractiveDocumentElement Cell { get; set; } = null!;

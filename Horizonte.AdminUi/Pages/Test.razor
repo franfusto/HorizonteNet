@@ -1,0 +1,17 @@
+﻿@page "/test"
+@using Blazor.Monaco
+@using Horizonte.AdminUi.Components
+@inject HGuiSession GuiSession
+@inject IHContext Context;
+test
+<MonacoEditor 
+    ElementId="editor-id" 
+    ScriptContent=""/>
+@code
+{
+    private string _header = string.Empty;
+    protected override void OnInitialized()
+    {
+    }
+
+}
