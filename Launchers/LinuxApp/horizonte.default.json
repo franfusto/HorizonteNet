@@ -4,14 +4,14 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
-        "ModuleVersion": "1.0.0",
+        "ModuleVersion": "10.0.0",
         "Path": "",
         "LoadAdditionalDlls": false
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "1.0.0",
+        "ModuleVersion": "10.0.0",
         "Path": "",
         "LoadAdditionalDlls": false
       }

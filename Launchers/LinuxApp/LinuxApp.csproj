@@ -15,15 +15,17 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
-
+<!--
     <ItemGroup>
-
         <ProjectReference Include="..\..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
-        
-        
         <ProjectReference Include="..\..\Horizonte\Horizonte.csproj"/>
+        
     </ItemGroup>
-
+    <ItemGroup>
+      <PackageReference Include="Horizonte.AdminUi" Version="10.0.0-beta" />
+      <PackageReference Include="Horizonte.AdminUi.HorizonteSettings" Version="10.0.0-beta" />
+    </ItemGroup>
+-->
     <ItemGroup>
       <Content Remove="horizonte.default.json" />
       <Content Include="bin\Debug\net10.0\horizonte.json" />
@@ -31,34 +33,10 @@
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </EmbeddedResource>
     </ItemGroup>
-
-
-    <!--
-        Horizonte.Ai requiere de paquetes que están en versión preview.... HAssemblyManger no carga las versiones correctas
-        forzamos la carga de paquetes con la version correcta aqui... esto debe ir fuera
     <ItemGroup>
-        <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
-        <PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-preview.251219.1" />
-        <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251219.1" />
-        <PackageReference Include="Microsoft.Extensions.AI" Version="10.1.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.1.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.7.0" />
-        <PackageReference Include="OpenAI" Version="2.8.0" />
-        <PackageReference Include="System.ClientModel" Version="1.8.1" />
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.1" />
-        <PackageReference Include="System.IO.Pipelines" Version="10.0.1" />
-        <PackageReference Include="System.Memory.Data" Version="10.0.1" />
-        <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.1" />
-        <PackageReference Include="System.Numerics.Tensors" Version="10.0.1" />
-        <PackageReference Include="System.Text.Encodings.Web" Version="10.0.1" />
-        <PackageReference Include="System.Text.Json" Version="10.0.1" />
-        <PackageReference Include="System.Threading.Channels" Version="10.0.1" />
+      <ProjectReference Include="..\..\Horizonte\Horizonte.csproj" />
     </ItemGroup>
 
-      -->
+
+   
 </Project>
