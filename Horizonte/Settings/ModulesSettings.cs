@@ -24,17 +24,11 @@ public class ModulesSettings
 
         this.NugetServers.Add(new NugetServerItem()
         {
-            Server = "localhost",
+            Server = "https://www.nuget.org/api/v2",
             Name = "Nuget.org",
             Version = 2,
-            Order = 0
-        });
-        this.NugetServers.Add(new NugetServerItem()
-        {
-            Server = "localhost",
-            Name = "Nuget.org",
-            Version = 2,
-            Order = 0
+            Order = 0,
+            Active = true
         });
     }
     

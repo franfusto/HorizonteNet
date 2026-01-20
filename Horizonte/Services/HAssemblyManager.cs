@@ -65,16 +65,15 @@ public class HAssemblyManager : IhAssemblyManager
         try
         {
             Log.Info("Resolving assembly: " + args.Name);
-            var assemblyName = new AssemblyName(args.Name);
             string? resAssemblyPath = null;
             //try load from local directory
-            resAssemblyPath = ResolveNugetFromLocalDirectory(assemblyName, true);
+            resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, true);
             if (resAssemblyPath == null)
             {
                 // try download and install 
-                DownloadAndExtractPackageFromNuGet(assemblyName);
+                DownloadAndExtractPackageFromNuGet(args.Name);
                 //try load from local directory, now approx version
-                resAssemblyPath = ResolveNugetFromLocalDirectory(assemblyName, false);
+                resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, false);
             }
 
             if (resAssemblyPath == null)
@@ -113,6 +112,99 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
 
+
+
+    private string GetRequestedFramework()
+    {
+        var frameworkName = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+        // FrameworkDescription suele ser ".NET 10.0.0" o similar.
+        // AppContext.TargetFrameworkName suele ser ".NETCoreApp,Version=v10.0"
+        var targetFramework = AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName;
+        
+        if (string.IsNullOrEmpty(targetFramework))
+        {
+            // Fallback si no está disponible
+            return "net10.0";
+        }
+
+        // ".NETCoreApp,Version=v10.0" -> "net10.0"
+        var parts = targetFramework.Split(',');
+        if (parts.Length > 1 && parts[1].Trim().StartsWith("Version=v"))
+        {
+            var version = parts[1].Trim().Substring("Version=v".Length);
+            if (parts[0].Contains(".NETCoreApp"))
+            {
+                return $"net{version}";
+            }
+            if (parts[0].Contains(".NETStandard"))
+            {
+                return $"netstandard{version}";
+            }
+        }
+        
+        return "net10.0";
+    }
+
+    private (string Name, string Version) ParseAssemblyName(string assemblyFullName)
+    {
+        string name = assemblyFullName.Split(',')[0].Trim();
+        string version = string.Empty;
+        var parts = assemblyFullName.Split(',');
+        foreach (var part in parts)
+        {
+            if (part.Trim().StartsWith("Version="))
+            {
+                version = part.Trim().Substring("Version=".Length);
+                break;
+            }
+        }
+        return (name, version);
+    }
+
+    private string? ResolveNugetFromLocalDirectory(string assemblyFullName, bool exactmatch = true)
+    {
+        var (name, version) = ParseAssemblyName(assemblyFullName);
+        if (string.IsNullOrEmpty(name)) return null;
+        if (string.IsNullOrEmpty(version)) return null;
+
+        string frameworkSolicitado = GetRequestedFramework();
+
+        foreach (var searchPath in _searchPaths)
+        {
+            var directoriopaquete = Directory.GetDirectories(searchPath, name.ToLower());
+            if (!directoriopaquete.Any()) continue;
+
+            if (exactmatch)
+            {
+                // Buscar directamente en el directorio con el nombre completo (package/version)
+                var pathConVersion = Path.Combine(directoriopaquete.First(), version);
+                if (Directory.Exists(pathConVersion))
+                {
+                    var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
+                    var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, true);
+                    if (versionSeleccionada != null) return versionSeleccionada.DllPath;
+                }
+            }
+            else
+            {
+                var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
+                var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, false);
+                if (versionSeleccionada != null) return versionSeleccionada.DllPath;
+            }
+        }
+
+        return null;
+    }
+
+    private class NugetPackageVersionInformation
+    {
+        public string PackageId { get; set; } = string.Empty;
+        public string VersionString { get; set; } = string.Empty;
+        public Version Version { get; set; } = new Version(0, 0, 0);
+        public string Framework { get; set; } = string.Empty;
+        public string DllPath { get; set; } = string.Empty;
+    }
+
     private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string PackageDirectory)
     {
         var result = new List<NugetPackageVersionInformation>();
@@ -120,40 +212,34 @@ public class HAssemblyManager : IhAssemblyManager
         {
             // Obtenemos la lista de archivos .dll en el directorio del paquete
             var list = Directory.EnumerateFiles(PackageDirectory, "*.dll", SearchOption.AllDirectories)
-                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\") ) .ToList();
-
+                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\")).ToList();
 
             foreach (var dllPath in list)
             {
-                //Console.WriteLine($"procesando: {dllPath}");
-                
                 // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
 
                 var packageId = pathSegments[pathSegments.Length - 5];
-                var version = pathSegments[pathSegments.Length - 4];
+                var versionRaw = pathSegments[pathSegments.Length - 4];
                 var framework = pathSegments[pathSegments.Length - 2];
 
-                // fix preview packages
-                //version=version.Replace("-beta", "");
-                if (version.Contains("-beta")) version = version.Split("-")[0] ;
-                if (version.Contains("-alpha")) version = version.Split("-")[0] ;
-                if (version.Contains("-preview")) version = version.Split("-")[0] ;
-                if(dllPath.Contains("/buildTransitive/")) continue;                    
-                if(dllPath.Contains("/build/")) continue;     
-                // Filtramos para quedarnos solo con los 3 primeros números (Major.Minor.Build)
-                if (Version.TryParse(version, out var parsedVersion))
+                if (dllPath.Contains("/buildTransitive/") || dllPath.Contains(@"\buildTransitive\")) continue;
+                if (dllPath.Contains("/build/") || dllPath.Contains(@"\build\")) continue;
+
+                string versionForParsing = versionRaw;
+                if (versionForParsing.Contains("-")) versionForParsing = versionForParsing.Split("-")[0];
+
+                if (Version.TryParse(versionForParsing, out var parsedVersion))
                 {
-                    version = $"{parsedVersion.Major}.{parsedVersion.Minor}.{(parsedVersion.Build != -1 ? parsedVersion.Build : 0)}";
+                    result.Add(new NugetPackageVersionInformation
+                    {
+                        PackageId = packageId,
+                        VersionString = versionRaw,
+                        Version = parsedVersion,
+                        Framework = framework,
+                        DllPath = dllPath
+                    });
                 }
-                // Añadimos la información a la lista
-                result.Add(new NugetPackageVersionInformation
-                {
-                    PackageId = packageId,
-                    Version = Version.Parse(version),
-                    Framework = framework,
-                    DllPath = dllPath
-                });
             }
         }
         catch (Exception e)
@@ -165,12 +251,11 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
     private NugetPackageVersionInformation? SelectedVersion(
-        Version versionSolicitada,
+        string versionSolicitadaRaw,
         string frameworkSolicitado,
         List<NugetPackageVersionInformation> versionesDisponibles,
         bool exactmatch)
     {
-        // Definimos un orden de prioridad para los frameworks
         var prioridadFrameworks = new List<string>
         {
             frameworkSolicitado,
@@ -183,146 +268,315 @@ public class HAssemblyManager : IhAssemblyManager
             "net6.0"
         };
 
-        NugetPackageVersionInformation? mejorCoincidencia = null;
-
-        // Filtrar por framework siguiendo el orden de prioridad
-        foreach (var framework in prioridadFrameworks)
+        if (exactmatch)
         {
-            // Buscar las versiones disponibles dentro del framework actual iterado
-            var versionesFiltradas = versionesDisponibles
-                .Where(info => info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(x => x.Version)
-                .ToList();
-
-            if (versionesFiltradas.Any())
+            foreach (var framework in prioridadFrameworks)
             {
-                if (exactmatch)
-                {
-                    // Buscar una coincidencia exacta de versión
-                    mejorCoincidencia = versionesFiltradas
-                        .FirstOrDefault(info =>
-                            info.Version.Major == versionSolicitada.Major &&
-                            info.Version.Minor == versionSolicitada.Minor &&
-                            info.Version.Build == versionSolicitada.Build);
-
-                    if (mejorCoincidencia != null)
-                    {
-                        // Si encontramos una coincidencia exacta, terminamos el proceso
-                        break;
-                    }
-                }
-                else
-                {
-                    // Si encontramos al menos una coincidencia para este framework, seleccionamos la mejor versión
-                    mejorCoincidencia = versionesFiltradas
-                                            .OrderBy(info => info.Version) // Ordenamos las versiones de menor a mayor
-                                            .FirstOrDefault(info =>
-                                                info.Version >=
-                                                versionSolicitada) // Preferimos versiones mayores o iguales a la solicitada
-                                        ?? versionesFiltradas
-                                            .Last(); // Si no hay mayor o igual, tomamos la más reciente disponible
-
-                    // Si encontramos una coincidencia válida, terminamos aquí
-                    break;
-                }
+                var encontrada = versionesDisponibles.FirstOrDefault(info =>
+                    info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase) &&
+                    info.VersionString.Equals(versionSolicitadaRaw, StringComparison.OrdinalIgnoreCase));
+                if (encontrada != null) return encontrada;
             }
+            return null;
         }
 
-        return mejorCoincidencia;
-    }
+        // Heurística para no exactmatch
+        string vParsable = versionSolicitadaRaw;
+        if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
+        if (!Version.TryParse(vParsable, out var vS)) return null;
 
-
-    private string? ResolveNugetFromLocalDirectory(AssemblyName assemblyName, bool exactmatch = true)
-    {
-        if (string.IsNullOrEmpty(assemblyName.Name)) return null;
-        if (assemblyName.Version == null) return null;
-        foreach (var searchPath in _searchPaths)
+        foreach (var framework in prioridadFrameworks)
         {
-            var directoriopaquete = Directory.GetDirectories(searchPath, assemblyName.Name.ToLower());
-            if (!directoriopaquete.Any()) continue;
-            var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
-            var versionSeleccionada =
-                SelectedVersion(assemblyName.Version, "net10.0", versionList, exactmatch); //// obtener net10.0 en runtime
-            if (versionSeleccionada == null) continue;
-            return versionSeleccionada.DllPath;
+            var versionesFiltradas = versionesDisponibles
+                .Where(info => info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!versionesFiltradas.Any()) continue;
+
+            // Intentar 1.0.0 (Exacta Major.Minor.Build)
+            var match = versionesFiltradas.FirstOrDefault(info =>
+                info.Version.Major == vS.Major && info.Version.Minor == vS.Minor && info.Version.Build == vS.Build);
+            if (match != null) return match;
+
+            // Intentar 1.0.? (Superior más cercana en el mismo Major.Minor)
+            match = versionesFiltradas
+                .Where(info => info.Version.Major == vS.Major && info.Version.Minor == vS.Minor)
+                .OrderBy(info => info.Version)
+                .FirstOrDefault(info => info.Version >= vS);
+            if (match != null) return match;
+
+            // Intentar 1.? (Superior más cercana en el mismo Major)
+            match = versionesFiltradas
+                .Where(info => info.Version.Major == vS.Major)
+                .OrderBy(info => info.Version)
+                .FirstOrDefault(info => info.Version >= vS);
+            if (match != null) return match;
+
+            // Si no, la más reciente de ese framework
+            return versionesFiltradas.OrderByDescending(info => info.Version).First();
         }
 
         return null;
     }
 
 
-    private void DownloadAndExtractPackageFromNuGet(AssemblyName assemblyName)
+    private void DownloadAndExtractPackageFromNuGet(string assemblyFullName)
     {
-        if (string.IsNullOrEmpty(assemblyName.Name)) return;
-        if (assemblyName.Version == null) return;
-        var packageName = assemblyName.Name;
-        var version = assemblyName.Version.ToString();
-        // Filtramos para quedarnos solo con los 3 primeros números (Major.Minor.Build)
-        if (Version.TryParse(version, out var parsedVersion))
+        var (packageName, version) = ParseAssemblyName(assemblyFullName);
+        if (string.IsNullOrEmpty(packageName)) return;
+        if (string.IsNullOrEmpty(version)) return;
+
+        var packageFileName = ResolveNugetFromRemoteServer(packageName, version);
+
+        if (string.IsNullOrEmpty(packageFileName)) return;
+
+        try
         {
-            version = $"{parsedVersion.Major}.{parsedVersion.Minor}.{(parsedVersion.Build != -1 ? parsedVersion.Build : 0)}";
+            // Extraer el contenido del paquete
+            string targetDirectory = Path.Combine(_installFolder, packageName.ToLower(), version);
+            if (!Directory.Exists(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+
+            System.IO.Compression.ZipFile.ExtractToDirectory(packageFileName, targetDirectory, true);
+            Log.Info($"Package successfully extracted in: {targetDirectory}");
+
+            // Borrar el archivo temporal
+            if (File.Exists(packageFileName))
+                File.Delete(packageFileName);
         }
-        var nugetDownloadUrl = string.Empty;
+        catch (Exception ex)
+        {
+            Log.Error($"Error extracting package from repository: {ex.Message}");
+        }
+    }
+
+    private string? ResolveNugetFromRemoteServer(string packageName, string version)
+    {
+        foreach (var nugetServer in _settings.NugetServers.OrderBy(x => x.Order))
+        {
+            if (!nugetServer.Active) continue;
+
+            // 1. Intentar descarga directa (Exact Match)
+            var directUrl = GetDownloadUrl(nugetServer, packageName, version);
+            Log.Info($"Trying direct download of '{packageName}' version '{version}' from {directUrl}");
+            var result = DownloadPackage(directUrl, packageName, version);
+            if (result != null) return result;
+
+            // 2. Si falla, intentar normalizar la versión (ej. 1.0.0.0 -> 1.0.0)
+            if (version.EndsWith(".0"))
+            {
+                var normalizedVersion = version.Substring(0, version.Length - 2);
+                while (normalizedVersion.EndsWith(".0")) normalizedVersion = normalizedVersion.Substring(0, normalizedVersion.Length - 2);
+                
+                var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
+                Log.Info($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
+                result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
+                if (result != null) return result;
+            }
+
+            // 3. Si falla, aplicar heurística consultando versiones al servidor
+            Log.Info($"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
+            var availableVersions = GetRemotePackageVersions(nugetServer, packageName);
+            if (!availableVersions.Any()) continue;
+
+            var bestVersion = SelectBestRemoteVersion(version, availableVersions);
+            if (bestVersion != null && bestVersion != version)
+            {
+                var heuristicUrl = GetDownloadUrl(nugetServer, packageName, bestVersion);
+                Log.Info($"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
+                result = DownloadPackage(heuristicUrl, packageName, bestVersion);
+                if (result != null) return result;
+            }
+        }
+
+        return null;
+    }
+
+    private string GetDownloadUrl(NugetServerItem server, string packageName, string version)
+    {
+        switch (server.Version)
+        {
+            case 1:
+            case 2:
+                return Path.Combine(server.Server, "package", packageName, version);
+            case 3:
+                // Nota: V3 suele requerir una estructura más compleja.
+                // Usamos una ruta común para el recurso FlatContainer que es lo que espera BaGet y NuGet.org para descargas directas.
+                // server.Server suele ser la base de la API V3 o el service index.
+                var baseDownloadUrl = server.Server;
+                if (baseDownloadUrl.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseDownloadUrl = baseDownloadUrl.Substring(0, baseDownloadUrl.Length - 10).TrimEnd('/');
+                }
+                
+                // Si la URL no contiene 'package' y no es nuget.org, intentamos añadirlo como fallback común para BaGet
+                if (!baseDownloadUrl.Contains("/package", StringComparison.OrdinalIgnoreCase) && 
+                    !baseDownloadUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseDownloadUrl = baseDownloadUrl.TrimEnd('/') + "/package";
+                }
+
+                return $"{baseDownloadUrl.TrimEnd('/')}/{packageName.ToLower()}/{version}/{packageName.ToLower()}.{version}.nupkg";
+            default:
+                return string.Empty;
+        }
+    }
+
+    private string? DownloadPackage(string url, string packageName, string version)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
         var packageFileName = Path.Combine(Path.GetTempPath(), $"{packageName}.{version}.nupkg");
         try
         {
-            foreach (var nugetServer in _settings.NugetServers.OrderBy(x => x.Order))
+            using var httpClient = new HttpClient();
+            using var response = httpClient.GetAsync(url).Result;
+            if (!response.IsSuccessStatusCode) return null;
+
+            using (var fileStream = new FileStream(packageFileName, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                
-                //url de descarga
-                if (!nugetServer.Active) continue;
-                switch (nugetServer.Version)
+                response.Content.CopyToAsync(fileStream).Wait();
+            }
+
+            Log.Info($"Package downloaded successfully: {packageFileName}");
+            return packageFileName;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Error downloading package from {url}: {ex.Message}");
+            return null;
+        }
+    }
+
+    private List<string> GetRemotePackageVersions(NugetServerItem server, string packageName)
+    {
+        var versions = new List<string>();
+        try
+        {
+            using var httpClient = new HttpClient();
+            if (server.Version <= 2)
+            {
+                // NuGet V2: FindPackagesById
+                // Usualmente: {server.Server}/FindPackagesById()?id='{packageName}'
+                // Pero basándonos en el código previo, server.Server parece ser la base para /package/
+                // Intentamos una ruta común para OData
+                var url = $"{server.Server.Replace("/package", "")}/FindPackagesById()?id='{packageName}'";
+                var response = httpClient.GetStringAsync(url).Result;
+                var doc = XDocument.Parse(response);
+                XNamespace m = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
+                XNamespace d = "http://schemas.microsoft.com/ado/2007/08/dataservices";
+                versions = doc.Descendants(m + "properties")
+                              .Select(p => p.Element(d + "Version")?.Value)
+                              .Where(v => v != null)
+                              .Cast<string>()
+                              .ToList();
+            }
+            else if (server.Version == 3)
+            {
+                // NuGet V3: Registration Resource
+                var serviceIndexUrl = server.Server;
+                if (!serviceIndexUrl.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
                 {
-                    case 1:
-                    case 2:
-                        nugetDownloadUrl = Path.Combine(nugetServer.Server, "package", packageName, version);
-                        break;
-                    case 3:
-                        nugetDownloadUrl = Path.Combine(nugetServer.Server, "package", packageName, version) + "/" +
-                                           packageName + "." + version + ".nupkg";
-                        break;
-                    default:
-                        return;
+                    serviceIndexUrl = serviceIndexUrl.TrimEnd('/') + "/index.json";
                 }
 
-                Log.Info($"Downloading package '{packageName}', versión '{version}' from {nugetDownloadUrl}");
-                // Descargar el paquete .nupkg
-                using var httpClient = new HttpClient();
-                using var response = httpClient.GetAsync(nugetDownloadUrl).Result;
-                if (!response.IsSuccessStatusCode)
+                string? registrationUrl = null;
+                if (serviceIndexUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
                 {
-                    Log.Error($"Error downloading package {packageName}: {response.StatusCode}");
-                    continue;
+                    registrationUrl = "https://api.nuget.org/v3/registration5-semver1";
+                }
+                else
+                {
+                    try
+                    {
+                        var serviceIndexResponse = httpClient.GetStringAsync(serviceIndexUrl).Result;
+                        // Buscamos "@type": "RegistrationsBaseUrl" o similar
+                        var regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse, "\"@id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"");
+                        if (!regMatch.Success)
+                        {
+                            regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse, "\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"[^}]*\"@id\"\\s*:\\s*\"([^\"]+)\"");
+                            if (regMatch.Success && regMatch.Groups.Count > 2)
+                            {
+                                registrationUrl = regMatch.Groups[2].Value;
+                            }
+                        }
+                        else if (regMatch.Groups.Count > 1)
+                        {
+                            registrationUrl = regMatch.Groups[1].Value;
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback heurístico para BaGet: si el server es .../v3, la registración suele estar en .../v3/registration
+                        registrationUrl = server.Server.TrimEnd('/');
+                        if (registrationUrl.EndsWith("/index.json", StringComparison.OrdinalIgnoreCase))
+                            registrationUrl = registrationUrl.Substring(0, registrationUrl.Length - 11);
+                        
+                        if (!registrationUrl.EndsWith("/registration", StringComparison.OrdinalIgnoreCase))
+                            registrationUrl += "/registration";
+                    }
                 }
 
-                // Guardar el archivo descargado
-                using (var fileStream =
-                       new FileStream(packageFileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                if (registrationUrl != null)
                 {
-                    response.Content.CopyToAsync(fileStream).Wait();
+                    var url = $"{registrationUrl.TrimEnd('/')}/{packageName.ToLower()}/index.json";
+                    var response = httpClient.GetStringAsync(url).Result;
+                    var matches = System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    {
+                        if (match.Groups.Count > 1)
+                            versions.Add(match.Groups[1].Value);
+                    }
                 }
-
-                Log.Info($"Package downloaded successfully: {packageFileName}");
-                // Extraer el contenido del paquete
-                string targetDirectory = Path.Combine(_installFolder, packageName.ToLower(), version);
-                if (!Directory.Exists(targetDirectory))
-                {
-                    Directory.CreateDirectory(targetDirectory);
-                }
-
-                System.IO.Compression.ZipFile.ExtractToDirectory(packageFileName, targetDirectory, true);
-                Log.Info($"Package successfully extracted in: {targetDirectory}");
-
-                // Borrar el archivo temporal
-                if (File.Exists(packageFileName))
-                    File.Delete(packageFileName);
-                break;
             }
         }
         catch (Exception ex)
         {
-            Log.Error($"Error downloading and extracting package from repository: {ex.Message}");
+            Log.Error($"Error fetching versions for {packageName} from {server.Name}: {ex.Message}");
         }
+        return versions.Distinct().ToList();
+    }
+
+    private string? SelectBestRemoteVersion(string versionSolicitadaRaw, List<string> versionesDisponibles)
+    {
+        if (!versionesDisponibles.Any()) return null;
+
+        // Convertimos a una estructura similar a la local para reusar lógica si fuera posible, 
+        // pero aquí solo tenemos la versión, no el framework.
+        
+        string vParsable = versionSolicitadaRaw;
+        if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
+        if (!Version.TryParse(vParsable, out var vS)) return null;
+
+        var parsedVersions = versionesDisponibles.Select(v => {
+            string vp = v;
+            if (vp.Contains("-")) vp = vp.Split("-")[0];
+            Version.TryParse(vp, out var ver);
+            return new { Raw = v, Parsed = ver ?? new Version(0,0,0) };
+        }).ToList();
+
+        // 1. Intentar Exacta Major.Minor.Build
+        var match = parsedVersions.FirstOrDefault(v => 
+            v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor && v.Parsed.Build == vS.Build);
+        if (match != null) return match.Raw;
+
+        // 2. Superior más cercana en el mismo Major.Minor
+        match = parsedVersions
+            .Where(v => v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor)
+            .OrderBy(v => v.Parsed)
+            .FirstOrDefault(v => v.Parsed >= vS);
+        if (match != null) return match.Raw;
+
+        // 3. Superior más cercana en el mismo Major
+        match = parsedVersions
+            .Where(v => v.Parsed.Major == vS.Major)
+            .OrderBy(v => v.Parsed)
+            .FirstOrDefault(v => v.Parsed >= vS);
+        if (match != null) return match.Raw;
+
+        // 4. La más reciente
+        return parsedVersions.OrderByDescending(v => v.Parsed).FirstOrDefault()?.Raw;
     }
 
 
