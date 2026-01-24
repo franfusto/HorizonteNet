@@ -4,21 +4,56 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
-        "ModuleVersion": "10.0.0",
+        "ModuleVersion": "10.0.0-beta",
         "Path": "",
         "LoadAdditionalDlls": false
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.0",
+        "ModuleVersion": "10.0.0-beta",
         "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.PorcupineMod",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": false,
+        "ModuleName": "Horizonte.Ai.Agent",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Scripts",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "z.blazor.diagrams.core",
+        "ModuleVersion": "3.0.4",
+        "Path": null,
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Z.Blazor.Diagrams",
+        "ModuleVersion": "3.0.4",
+        "Path": null,
         "LoadAdditionalDlls": false
       }
     ],
     "NugetServers": [
       {
-        "Server": "www.nuget.org/api/v2",
+        "Server": "http://www.nuget.org/api/v2",
         "Name": "Nuget.org",
         "Order": 2,
         "Version": 2,
@@ -148,6 +183,55 @@
         "Icon": "home",
         "Caption": "Configuración",
         "Component": "HorizonteGui_ConfigPage"
+      },
+      {
+        "Id": 11,
+        "ParentId": 10,
+        "Icon": "manufacturing",
+        "Caption": "Ensamblados",
+        "Component": "HorizonteConfig_AssembliesViewer"
+      },
+      {
+        "Id": 12,
+        "ParentId": 10,
+        "Icon": "folder_data",
+        "Caption": "Sistema de archivos",
+        "Component": "HorizonteConfig_AppFilesViewer"
+      },
+      {
+        "Id": 10,
+        "ParentId": 0,
+        "Icon": "wysiwyg",
+        "Caption": "Sistema",
+        "Component": ""
+      },
+      {
+        "Id": 13,
+        "ParentId": 10,
+        "Icon": "host",
+        "Caption": "Host",
+        "Component": "HorizonteConfig_HostInfo"
+      },
+      {
+        "Id": 14,
+        "ParentId": 0,
+        "Icon": "smart_toy",
+        "Caption": "Agente",
+        "Component": "AgentH_Agent"
+      },
+      {
+        "Id": 15,
+        "ParentId": 0,
+        "Icon": "menu_book",
+        "Caption": "NoteBooks",
+        "Component": "Scripts_JupyterNotebookWidget"
+      },
+      {
+        "Id": 16,
+        "ParentId": 0,
+        "Icon": "script",
+        "Caption": "Scripts",
+        "Component": "Scripts_ScriptsViewerWidget"
       }
     ]
   }

@@ -27,7 +27,6 @@ public static class HostBuilderExtensions
     {
         Log4NetSettings logsettings = context.Get<Log4NetSettings>()  ?? new Log4NetSettings() ;
         builder.Logging.ClearProviders();
-        logsettings.Configure();
         builder.Logging.AddLog4Net(new Log4NetProviderOptions() { ExternalConfigurationSetup = true });
     }
 

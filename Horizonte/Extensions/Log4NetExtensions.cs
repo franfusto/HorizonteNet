@@ -1,3 +1,6 @@
+using System.Net;
+using Gelf4Net.Appender;
+using Gelf4Net.Layout;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
@@ -14,8 +17,29 @@ public static class Log4NetExtensions
         var patternLayout = new PatternLayout();
         patternLayout.ConversionPattern = settings.RepoConversionPattern;
         patternLayout.ActivateOptions();
-        
-        hierarchy.Root.RemoveAllAppenders(); 
+
+        if (settings.EnableGelfAppender)
+        {
+            var gelfLayout = new GelfLayout
+            {
+                Facility = settings.GelfFacility,
+                IncludeLocationInformation = settings.GelfIncludeLocationInformation,
+                SendTimeStampAsString = settings.GelfSendTimeStampAsString,
+                AdditionalFields = $"app:{settings.GelfApplicationName},version:1.0,Environment:{settings.GelfEnvironment},Level:%level"
+            };
+            gelfLayout.ActivateOptions();
+
+            var gelfAppender = new AsyncGelfUdpAppender
+            {
+                Layout = gelfLayout,
+                RemoteAddress = IPAddress.Parse(settings.GelfRemoteHostName),
+                RemotePort = settings.GelfRemotePort,
+                BufferSize = settings.GelfBufferSize,
+                Threads = settings.GelfThreads
+            };
+            gelfAppender.ActivateOptions();
+            hierarchy.Root.AddAppender(gelfAppender);
+        }
 
         if (settings.EnableFileAppender)
         {

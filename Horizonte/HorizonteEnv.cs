@@ -170,6 +170,7 @@ public class HorizonteEnv : IHorizonteEnv
     {
         try
         {
+            /*
             new Log4NetSettings()
             {
                 EnableConsoleAppender = true,
@@ -179,7 +180,7 @@ public class HorizonteEnv : IHorizonteEnv
                 FileAppenderMaximumFileSize = "10MB",
                 FileAppenderRollingMode = 1,
                 FileAppenderStaticLogFileName = true,
-            }.Configure();
+            }.Configure();*/
 
             _startlogger = LogManager.GetLogger(typeof(HorizonteEnv));
             _startlogger.Info("******** STAGE 0 - INIT START LOGGER **********");
@@ -216,7 +217,7 @@ public class HorizonteEnv : IHorizonteEnv
             _workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
             _log4NetSettings = _context.Get<Log4NetSettings>() ?? new Log4NetSettings();
 
-            _log4NetSettings.Configure();
+            _log4NetSettings.Configure();//////fuera de aqui.....
             
 
             _credManager = new HCredManager(_startlogger);

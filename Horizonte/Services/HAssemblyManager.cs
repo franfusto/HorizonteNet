@@ -327,7 +327,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.IsNullOrEmpty(version)) return;
 
         var packageFileName = ResolveNugetFromRemoteServer(packageName, version);
-
+        
         if (string.IsNullOrEmpty(packageFileName)) return;
 
         try
@@ -367,13 +367,15 @@ public class HAssemblyManager : IhAssemblyManager
             // 2. Si falla, intentar normalizar la versión (ej. 1.0.0.0 -> 1.0.0)
             if (version.EndsWith(".0"))
             {
-                var normalizedVersion = version.Substring(0, version.Length - 2);
-                while (normalizedVersion.EndsWith(".0")) normalizedVersion = normalizedVersion.Substring(0, normalizedVersion.Length - 2);
-                
-                var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
-                Log.Info($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
-                result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
-                if (result != null) return result;
+                var parts = version.Split('.');
+                if (parts.Length > 3)
+                {
+                    var normalizedVersion = string.Join(".", parts.Take(3));
+                    var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
+                    Log.Info($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
+                    result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
+                    if (result != null) return result;
+                }
             }
 
             // 3. Si falla, aplicar heurística consultando versiones al servidor
@@ -521,12 +523,20 @@ public class HAssemblyManager : IhAssemblyManager
                 if (registrationUrl != null)
                 {
                     var url = $"{registrationUrl.TrimEnd('/')}/{packageName.ToLower()}/index.json";
-                    var response = httpClient.GetStringAsync(url).Result;
-                    var matches = System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    using var responseMessage = httpClient.GetAsync(url).Result;
+                    if (responseMessage.IsSuccessStatusCode)
                     {
-                        if (match.Groups.Count > 1)
-                            versions.Add(match.Groups[1].Value);
+                        var response = responseMessage.Content.ReadAsStringAsync().Result;
+                        var matches = System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                        foreach (System.Text.RegularExpressions.Match match in matches)
+                        {
+                            if (match.Groups.Count > 1)
+                                versions.Add(match.Groups[1].Value);
+                        }
+                    }
+                    else
+                    {
+                        Log.Warn($"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
                     }
                 }
             }
@@ -542,9 +552,6 @@ public class HAssemblyManager : IhAssemblyManager
     {
         if (!versionesDisponibles.Any()) return null;
 
-        // Convertimos a una estructura similar a la local para reusar lógica si fuera posible, 
-        // pero aquí solo tenemos la versión, no el framework.
-        
         string vParsable = versionSolicitadaRaw;
         if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
         if (!Version.TryParse(vParsable, out var vS)) return null;
@@ -575,7 +582,19 @@ public class HAssemblyManager : IhAssemblyManager
             .FirstOrDefault(v => v.Parsed >= vS);
         if (match != null) return match.Raw;
 
-        // 4. La más reciente
+        // 4. Si es una versión 1.0.0.0, intentar buscar 1.0.0 exactamente
+        if (versionSolicitadaRaw.EndsWith(".0"))
+        {
+            var parts = versionSolicitadaRaw.Split('.');
+            if (parts.Length > 3)
+            {
+                var v3 = string.Join(".", parts.Take(3));
+                var match3 = parsedVersions.FirstOrDefault(v => v.Raw == v3);
+                if (match3 != null) return match3.Raw;
+            }
+        }
+
+        // 5. La más reciente
         return parsedVersions.OrderByDescending(v => v.Parsed).FirstOrDefault()?.Raw;
     }
 

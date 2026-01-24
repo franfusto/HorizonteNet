@@ -27,6 +27,7 @@
       <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="Gelf4Net" Version="3.0.1.2" />
       <PackageReference Include="System.Text.Json" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />

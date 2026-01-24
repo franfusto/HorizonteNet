@@ -15,5 +15,16 @@ public class Log4NetSettings
     public string FileAppenderMaximumFileSize { get; set; } = "2MB";
     public int FileAppenderRollingMode { get; set; } = 1;
     public bool FileAppenderStaticLogFileName { get; set; } = true;
+
+    public bool EnableGelfAppender { get; set; } = true;
+    public string GelfRemoteHostName { get; set; } = "127.0.0.1";
+    public int GelfRemotePort { get; set; } = 12201;
+    public string GelfApplicationName { get; set; } = "Horizonte";
+    public string GelfEnvironment { get; set; } = "dev";
+    public int GelfBufferSize { get; set; } = 2000;
+    public int GelfThreads { get; set; } = 2;
+    public string GelfFacility { get; set; } = "Horizonte";
+    public bool GelfIncludeLocationInformation { get; set; } = true;
+    public bool GelfSendTimeStampAsString { get; set; } = true;
 }
 
