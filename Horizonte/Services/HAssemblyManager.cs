@@ -68,6 +68,14 @@ public class HAssemblyManager : IhAssemblyManager
             string? resAssemblyPath = null;
             //try load from local directory
             resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, true);
+            //
+            if (resAssemblyPath == null)
+            {
+                resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, false);
+                
+            }
+
+            //
             if (resAssemblyPath == null)
             {
                 // try download and install 
@@ -259,13 +267,13 @@ public class HAssemblyManager : IhAssemblyManager
         var prioridadFrameworks = new List<string>
         {
             frameworkSolicitado,
-            "netstandard2.1",
-            "netstandard2.0",
             "net10.0",
             "net9.0",
             "net8.0",
             "net7.0",
-            "net6.0"
+            "net6.0",
+            "netstandard2.1",
+            "netstandard2.0",
         };
 
         if (exactmatch)

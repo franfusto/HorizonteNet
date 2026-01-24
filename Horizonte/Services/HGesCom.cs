@@ -84,13 +84,37 @@ public class HGesCom : IHGesCom
         try
         {
             var enviorment = _env.Value;
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var processedAssemblies = new HashSet<string>();
+            var assembliesToProcess = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
+            
+            Console.WriteLine("----------------------" + assembliesToProcess.Count);
             //llenamos diccionario de commandos
-            foreach (var assembly in assemblies)
+            var cnt = 0;
+            while (assembliesToProcess.Count > 0)
             {
-                //Console.WriteLine($"*** Processing assembly '{assembly.FullName}'");
-                var modulostypes = (from type in assembly.GetTypes()
-                    where Attribute.IsDefined(type, typeof(HorizonteModule))
+                var assembly = assembliesToProcess.Dequeue();
+                if (processedAssemblies.Contains(assembly.FullName!)) continue;
+                processedAssemblies.Add(assembly.FullName!);
+
+                Console.WriteLine($"****** Processing assembly '{assembly.FullName}' {cnt++}");
+                
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    types = ex.Types.Where(t => t != null).ToArray()!;
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName}: {e.Message}");
+                    continue;
+                }
+
+                var modulostypes = (from type in types
+                    where Attribute.IsDefined(type, typeof(HorizonteModule)) 
                     select type).ToList();
 
                 foreach (var modtype in modulostypes)
@@ -123,6 +147,16 @@ public class HGesCom : IHGesCom
                     catch (Exception e)
                     {
                         _log?.LogError(e.ToString());
+                    }
+                }
+
+                // Verificar si se cargaron nuevos ensamblados durante el procesamiento
+                var currentAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var currentAssembly in currentAssemblies)
+                {
+                    if (!processedAssemblies.Contains(currentAssembly.FullName!))
+                    {
+                        assembliesToProcess.Enqueue(currentAssembly);
                     }
                 }
             }
