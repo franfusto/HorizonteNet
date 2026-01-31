@@ -87,7 +87,7 @@ public class HGesCom : IHGesCom
             var processedAssemblies = new HashSet<string>();
             var assembliesToProcess = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
             
-            Console.WriteLine("----------------------" + assembliesToProcess.Count);
+            //Console.WriteLine("----------------------" + assembliesToProcess.Count);
             //llenamos diccionario de commandos
             var cnt = 0;
             while (assembliesToProcess.Count > 0)
@@ -96,7 +96,7 @@ public class HGesCom : IHGesCom
                 if (processedAssemblies.Contains(assembly.FullName!)) continue;
                 processedAssemblies.Add(assembly.FullName!);
 
-                Console.WriteLine($"****** Processing assembly '{assembly.FullName}' {cnt++}");
+                //Console.WriteLine($"****** Processing assembly '{assembly.FullName}' {cnt++}");
                 
                 Type[] types;
                 try
