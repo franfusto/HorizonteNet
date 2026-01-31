@@ -15,6 +15,7 @@
     <NugetServersGrid NugetServersSettings="_nugetServers" @ref="_nugetServersGrid"/>
     <NugetFoldersGrid NugetFolderSettings="_nugetFolders" @ref="_nugetFoldersGrid"/>
     <FrameworkPrioritiesGrid FrameworkPriorities="_frameworkPriorities" @ref="_frameworkPrioritiesGrid"/>
+    <ForcedPackagesGrid ForcedPackages="_forcedPackages" @ref="_forcedPackagesGrid"/>
 
 @code {
     
@@ -27,6 +28,8 @@
     private List<NugetFolderItem> _nugetFolders = new ();
     private FrameworkPrioritiesGrid _frameworkPrioritiesGrid = new();
     private List<string> _frameworkPriorities = new();
+    private ForcedPackagesGrid _forcedPackagesGrid = new();
+    private List<ForcedPackageItem> _forcedPackages = new();
     
     protected override void OnInitialized()
     {
@@ -40,6 +43,7 @@
         _modulesSettings.NugetServers = _nugetServersGrid.NugetServersSettings;
         _modulesSettings.NugetFolders = _nugetFoldersGrid.NugetFolderSettings;
         _modulesSettings.FrameworkPriorities = _frameworkPrioritiesGrid.FrameworkPriorities;
+        _modulesSettings.ForcedPackages = _forcedPackagesGrid.ForcedPackages;
         Context.Update<ModulesSettings>(_modulesSettings);
     }
 
@@ -50,6 +54,7 @@
         _nugetServers = _modulesSettings.NugetServers;
         _nugetFolders = _modulesSettings.NugetFolders;
         _frameworkPriorities = _modulesSettings.FrameworkPriorities;
+        _forcedPackages = _modulesSettings.ForcedPackages;
     }
 
 

@@ -1,0 +1,151 @@
+@inject IHContext Context
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
+                    AllowSorting="false" 
+                    EditMode="DataGridEditMode.Single" Data="ForcedPackages" TItem="ForcedPackageItem"
+                    RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow"  >
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Forzar Carga de Paquetes</RadzenText>
+                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow"
+                              Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+            </RadzenStack>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.PackageId)" Title="Paquete NuGet">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.PackageId" Style="width: 100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.Version)" Title="Versión">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Version" Style="width: 100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.Framework)" Title="Framework">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Framework" Style="width: 100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
+                                  Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="item">
+                    <RadzenButton Icon="arrow_upward" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => MoveUp(item))"
+                                  Disabled="@IsFirst(item)"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton Icon="arrow_downward" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => MoveDown(item))"
+                                  Disabled="@IsLast(item)"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => EditRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                  Click="@((args) => CancelEdit(item))">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                  Click="@(args => DeleteRow(item))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+
+    [Parameter] public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
+    
+    private RadzenDataGrid<ForcedPackageItem> _grid = new RadzenDataGrid<ForcedPackageItem>();
+
+    async Task InsertRow()
+    {
+        var item = new ForcedPackageItem()
+        {
+            PackageId = "Nombre.Paquete",
+            Version = "1.0.0",
+            Framework = "net10.0"
+        };
+        await _grid.InsertRow(item);
+    }
+
+    void OnUpdateRow(ForcedPackageItem item)
+    {
+        _grid.Reload();
+    }
+
+    void OnCreateRow(ForcedPackageItem item)
+    {
+        ForcedPackages.Add(item);
+    }
+
+    async Task EditRow(ForcedPackageItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(ForcedPackageItem item)
+    {
+        await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(ForcedPackageItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(ForcedPackageItem item)
+    {
+        ForcedPackages.Remove(item);
+        await _grid.Reload();
+    }
+
+    private void MoveUp(ForcedPackageItem item)
+    {
+        var index = ForcedPackages.IndexOf(item);
+        if (index > 0)
+        {
+            ForcedPackages.RemoveAt(index);
+            ForcedPackages.Insert(index - 1, item);
+            _grid.Reload();
+        }
+    }
+
+    private void MoveDown(ForcedPackageItem item)
+    {
+        var index = ForcedPackages.IndexOf(item);
+        if (index < ForcedPackages.Count - 1)
+        {
+            ForcedPackages.RemoveAt(index);
+            ForcedPackages.Insert(index + 1, item);
+            _grid.Reload();
+        }
+    }
+
+    private bool IsFirst(ForcedPackageItem item)
+    {
+        return ForcedPackages.IndexOf(item) == 0;
+    }
+
+    private bool IsLast(ForcedPackageItem item)
+    {
+        return ForcedPackages.IndexOf(item) == ForcedPackages.Count - 1;
+    }
+}

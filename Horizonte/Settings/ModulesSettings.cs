@@ -47,6 +47,14 @@ public class ModulesSettings
     public List<NugetServerItem> NugetServers { get; set; } = new List<NugetServerItem>();
     public List<NugetFolderItem> NugetFolders { get; set; } = new List<NugetFolderItem>();
     public List<string> FrameworkPriorities { get; set; } = new List<string>();
+    public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
+}
+
+public class ForcedPackageItem
+{
+    public string PackageId { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public string Framework { get; set; } = string.Empty;
 }
 
 public class ModulesSettingsItem
