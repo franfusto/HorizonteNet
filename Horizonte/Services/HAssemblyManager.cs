@@ -66,12 +66,15 @@ public class HAssemblyManager : IhAssemblyManager
         {
             Log.Info("Resolving assembly: " + args.Name);
             string? resAssemblyPath = null;
+            
+            var (name, version) = ParseAssemblyName(args.Name);
+            
             //try load from local directory
-            resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, true);
+            resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, true);
             //
             if (resAssemblyPath == null)
             {
-                resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, false);
+                resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
                 
             }
 
@@ -79,9 +82,9 @@ public class HAssemblyManager : IhAssemblyManager
             if (resAssemblyPath == null)
             {
                 // try download and install 
-                DownloadAndExtractPackageFromNuGet(args.Name);
+                DownloadAndExtractPackage(name, version);
                 //try load from local directory, now approx version
-                resAssemblyPath = ResolveNugetFromLocalDirectory(args.Name, false);
+                resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
             }
 
             if (resAssemblyPath == null)
@@ -169,13 +172,13 @@ public class HAssemblyManager : IhAssemblyManager
         return (name, version);
     }
 
-    private string? ResolveNugetFromLocalDirectory(string assemblyFullName, bool exactmatch = true)
+    private string? ResolveNugetFromLocalDirectory(string name, string version, string? framework = null, bool exactmatch = true)
     {
-        var (name, version) = ParseAssemblyName(assemblyFullName);
         if (string.IsNullOrEmpty(name)) return null;
         if (string.IsNullOrEmpty(version)) return null;
 
-        string frameworkSolicitado = GetRequestedFramework();
+        string frameworkSolicitado = framework ?? GetRequestedFramework();
+        bool exactFramework = !string.IsNullOrEmpty(framework);
 
         foreach (var searchPath in _searchPaths)
         {
@@ -189,14 +192,14 @@ public class HAssemblyManager : IhAssemblyManager
                 if (Directory.Exists(pathConVersion))
                 {
                     var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
-                    var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, true);
+                    var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, true, exactFramework);
                     if (versionSeleccionada != null) return versionSeleccionada.DllPath;
                 }
             }
             else
             {
                 var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
-                var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, false);
+                var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, false, exactFramework);
                 if (versionSeleccionada != null) return versionSeleccionada.DllPath;
             }
         }
@@ -262,10 +265,12 @@ public class HAssemblyManager : IhAssemblyManager
         string versionSolicitadaRaw,
         string frameworkSolicitado,
         List<NugetPackageVersionInformation> versionesDisponibles,
-        bool exactmatch)
+        bool exactmatch,
+        bool exactFramework = false)
     {
         var prioridadFrameworks = new List<string> { frameworkSolicitado };
-        prioridadFrameworks.AddRange(_settings.FrameworkPriorities);
+        if (!exactFramework)
+            prioridadFrameworks.AddRange(_settings.FrameworkPriorities);
 
         if (exactmatch)
         {
@@ -319,9 +324,8 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
 
-    private void DownloadAndExtractPackageFromNuGet(string assemblyFullName)
+    private void DownloadAndExtractPackage(string packageName, string version)
     {
-        var (packageName, version) = ParseAssemblyName(assemblyFullName);
         if (string.IsNullOrEmpty(packageName)) return;
         if (string.IsNullOrEmpty(version)) return;
 
@@ -607,6 +611,9 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
+            //Primero cargamos los paquetes forzados
+            LoadForecedPackages(_settings.ForcedPackages);
+            
             // Itera sobre los módulos activos en la configuración.
             foreach (var moduleItem in _settings.List.Where(item => item.Active))
             {
@@ -628,6 +635,59 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
+    private void LoadForecedPackages(List<ForcedPackageItem> ForcedPackages)
+    {
+        foreach (var package in ForcedPackages)
+        {
+            try
+            {
+                Log.Info($"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
+                
+                // Intentar resolver localmente con versión y framework exactos
+                var dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
+                
+                if (dllPath == null)
+                {
+                    // Intentar descargar si no se encuentra localmente
+                    DownloadAndExtractPackage(package.PackageId, package.Version);
+                    // Volver a intentar resolver después de la descarga
+                    dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
+                }
+
+                if (dllPath != null)
+                {
+                    Log.Info($"Forced package {package.PackageId} resolved to: {dllPath}");
+                    Assembly.LoadFrom(dllPath);
+                    
+                    // Registrar assets del paquete
+                    _environment.StaticFileRegistry.RegisterPackageDirectory(dllPath);
+
+                    // Procesar archivos .targets / .props para crear enlaces simbólicos
+                    try
+                    {
+                        var symLinks = GetContentMappingsFromPackage(dllPath);
+                        if (symLinks.Any())
+                        {
+                            _linkScafolder.BuildScafolder(symLinks);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Log.Error($"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error loading forced package {package.PackageId}: {ex.Message}");
+            }
+        }
+    }
+    
 
     /// <summary>
     /// Carga un ensamblado individual del módulo especificado y registra sus activos y documentación.
