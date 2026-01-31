@@ -1,0 +1,162 @@
+@inject IHContext Context
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
+                    AllowSorting="false" 
+                    EditMode="DataGridEditMode.Single" Data="_localPriorities" TItem="FrameworkPriorityItem"
+                    RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow"  >
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Prioridad de Frameworks</RadzenText>
+                <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow"
+                              Size="ButtonSize.ExtraSmall" Text="Añadir"/>
+            </RadzenStack>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(FrameworkPriorityItem.Framework)" Title="Framework">
+                <EditTemplate Context="item">
+                    <RadzenTextBox @bind-Value="item.Framework" Style="width: 100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
+                                  Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="item">
+                    <RadzenButton Icon="arrow_upward" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => MoveUp(item))"
+                                  Disabled="@IsFirst(item)"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton Icon="arrow_downward" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => MoveDown(item))"
+                                  Disabled="@IsLast(item)"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => EditRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" Click="@(args => DeleteRow(item))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" aria-label="Save" Click="@((args) => SaveRow(item))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Cancel"
+                                  Click="@((args) => CancelEdit(item))">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" aria-label="Delete"
+                                  Click="@(args => DeleteRow(item))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+
+    [Parameter] public List<string> FrameworkPriorities { get; set; } = new List<string>();
+    
+    public class FrameworkPriorityItem
+    {
+        public string Framework { get; set; } = string.Empty;
+    }
+
+    private RadzenDataGrid<FrameworkPriorityItem> _grid = new RadzenDataGrid<FrameworkPriorityItem>();
+    private List<FrameworkPriorityItem> _localPriorities = new();
+    
+    protected override void OnParametersSet()
+    {
+        _localPriorities = FrameworkPriorities.Select(x => new FrameworkPriorityItem { Framework = x }).ToList();
+        base.OnParametersSet();
+    }
+
+    private void Sync()
+    {
+        FrameworkPriorities.Clear();
+        FrameworkPriorities.AddRange(_localPriorities.Select(x => x.Framework));
+    }
+
+    async Task InsertRow()
+    {
+        var item = new FrameworkPriorityItem()
+        {
+            Framework = "net"
+        };
+        await _grid.InsertRow(item);
+    }
+
+    void OnUpdateRow(FrameworkPriorityItem item)
+    {
+        Sync();
+        _grid.Reload();
+    }
+
+    void OnCreateRow(FrameworkPriorityItem item)
+    {
+        _localPriorities.Add(item);
+        Sync();
+    }
+
+    async Task EditRow(FrameworkPriorityItem item)
+    {
+        await _grid.EditRow(item);
+    }
+
+    async Task SaveRow(FrameworkPriorityItem item)
+    {
+        await _grid.UpdateRow(item);
+    }
+
+    void CancelEdit(FrameworkPriorityItem item)
+    {
+        _grid.CancelEditRow(item);
+        _grid.Reload();
+    }
+
+    async Task DeleteRow(FrameworkPriorityItem item)
+    {
+        _localPriorities.Remove(item);
+        Sync();
+        await _grid.Reload();
+    }
+
+    private void MoveUp(FrameworkPriorityItem item)
+    {
+        var index = _localPriorities.IndexOf(item);
+        if (index > 0)
+        {
+            _localPriorities.RemoveAt(index);
+            _localPriorities.Insert(index - 1, item);
+            Sync();
+            _grid.Reload();
+        }
+    }
+
+    private void MoveDown(FrameworkPriorityItem item)
+    {
+        var index = _localPriorities.IndexOf(item);
+        if (index < _localPriorities.Count - 1)
+        {
+            _localPriorities.RemoveAt(index);
+            _localPriorities.Insert(index + 1, item);
+            Sync();
+            _grid.Reload();
+        }
+    }
+
+    private bool IsFirst(FrameworkPriorityItem item)
+    {
+        return _localPriorities.IndexOf(item) == 0;
+    }
+
+    private bool IsLast(FrameworkPriorityItem item)
+    {
+        return _localPriorities.IndexOf(item) == _localPriorities.Count - 1;
+    }
+}

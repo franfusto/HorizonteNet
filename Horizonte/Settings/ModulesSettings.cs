@@ -30,11 +30,23 @@ public class ModulesSettings
             Order = 0,
             Active = true
         });
+
+        this.FrameworkPriorities = new List<string>
+        {
+            "net10.0",
+            "net9.0",
+            "net8.0",
+            "net7.0",
+            "net6.0",
+            "netstandard2.1",
+            "netstandard2.0",
+        };
     }
     
     public List<ModulesSettingsItem> List { get; set; } = [];
     public List<NugetServerItem> NugetServers { get; set; } = new List<NugetServerItem>();
     public List<NugetFolderItem> NugetFolders { get; set; } = new List<NugetFolderItem>();
+    public List<string> FrameworkPriorities { get; set; } = new List<string>();
 }
 
 public class ModulesSettingsItem

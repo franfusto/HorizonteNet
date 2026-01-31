@@ -264,17 +264,8 @@ public class HAssemblyManager : IhAssemblyManager
         List<NugetPackageVersionInformation> versionesDisponibles,
         bool exactmatch)
     {
-        var prioridadFrameworks = new List<string>
-        {
-            frameworkSolicitado,
-            "net10.0",
-            "net9.0",
-            "net8.0",
-            "net7.0",
-            "net6.0",
-            "netstandard2.1",
-            "netstandard2.0",
-        };
+        var prioridadFrameworks = new List<string> { frameworkSolicitado };
+        prioridadFrameworks.AddRange(_settings.FrameworkPriorities);
 
         if (exactmatch)
         {
