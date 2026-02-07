@@ -15,18 +15,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
-<!--
-    <ItemGroup>
-        <ProjectReference Include="..\..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
-        <ProjectReference Include="..\..\Horizonte\Horizonte.csproj"/>
-        
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Horizonte.AdminUi" Version="10.0.0-beta" />
-      <PackageReference Include="Horizonte.AdminUi.HorizonteSettings" Version="10.0.0-beta" />
-    </ItemGroup>
-      <ProjectReference Include="..\..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
--->
+
     <ItemGroup>
       <Content Remove="horizonte.default.json" />
       <Content Include="bin\Debug\net10.0\horizonte.json" />

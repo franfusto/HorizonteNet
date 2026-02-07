@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using Horizonte;
 using Microsoft.DotNet.Interactive;
@@ -46,8 +47,15 @@ public static class Extensions
                                     //si el ensamblado esta embedido en el ejecutable...no tiene localización
                                     if (string.IsNullOrEmpty(assembly.Location))
                                     {
-                                        var location = assemblyManager.ResolveAssemblyDllPath(packageName,version) ;
-                                        csharpKernel.AddAssemblyReferences(new[] { location });
+                                        var location = assemblyManager.ResolveAssemblyDllPath(packageName,version);
+                                        if (!string.IsNullOrEmpty(location))
+                                        {
+                                            // Asegurar que la ruta sea absoluta y normalizada
+                                            var absolutePath = Path.IsPathRooted(location) 
+                                                ? Path.GetFullPath(location) 
+                                                : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), location));
+                                            csharpKernel.AddAssemblyReferences(new[] { absolutePath });
+                                        }
                                     }
                                     else
                                     {
@@ -89,12 +97,14 @@ public static class Extensions
                         if (pathMatch.Success)
                         {
                             var dllPath = pathMatch.Groups[1].Value.Trim();
-                            // Si la ruta no es absoluta, podríamos intentar resolverla relativa al RootPath, 
-                            // pero el ejemplo del usuario es una ruta absoluta.
+                            // Si la ruta no es absoluta, resolverla relativa al directorio actual
+                            var absoluteDllPath = Path.IsPathRooted(dllPath) 
+                                ? Path.GetFullPath(dllPath) 
+                                : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), dllPath));
                             
-                            if (File.Exists(dllPath))
+                            if (File.Exists(absoluteDllPath))
                             {
-                                csharpKernel.AddAssemblyReferences(new[] { dllPath });
+                                csharpKernel.AddAssemblyReferences(new[] { absoluteDllPath });
                                 intercepted = true;
                                 continue;
                             }
@@ -129,18 +139,22 @@ public static class Extensions
                 await next(command, context);
             });
 
-            //csharpKernel.AddAssemblyReferences(new[] {"/home/Datos/KONEK/HorizonteNet/Launchers/LinuxApp/bin/Release/net10.0/linux-x64/publish/packages/horizonte/10.0.0-beta/lib/net10.0/Horizonte.dll" });
-            await csharpKernel.SendAsync(new SubmitCode("#r \"nuget:Horizonte,10.0.0-beta\""));
+            // Obtener la versión del ensamblado Horizonte actualmente cargado
+            var horizonteAssembly = typeof(IHorizonteEnv).Assembly;
+            var horizonteVersion = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
+            AssemblyNameInfo currenthorzonte = new AssemblyNameInfo("Horizonte", new Version(horizonteVersion));
+            await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:{currenthorzonte.Name},{currenthorzonte.Version}\""));
             // Asegurar que el namespace esté disponible
             await csharpKernel.SendAsync(new SubmitCode("using Horizonte;"));
             
             // Inyectar el entorno modular
-            //await csharpKernel.SetValueAsync("env", env, typeof(IHorizonteEnv));
+            await csharpKernel.SetValueAsync("env", env, typeof(IHorizonteEnv));
 
             //aqui hay que implementar la función display para integrarla con el Widget...
-            //await csharpKernel.SendAsync(new SubmitCode("void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x);"));
+            await csharpKernel.SendAsync(new SubmitCode("static void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x, \"text/plain\");"));
+            
+            static void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x, "text/plain");
 
-            //Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display();
             var kernel = new CompositeKernel
             {
                 csharpKernel
