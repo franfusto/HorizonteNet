@@ -123,6 +123,20 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
 
+    public string? ResolveAssemblyDllPath(string packageName, string version)
+    {
+        // Intentar resolver localmente con versión exacta primero
+        var path = ResolveNugetFromLocalDirectory(packageName, version, null, true);
+        if (path == null)
+        {
+            // Intentar con coincidencia aproximada si falla la exacta
+            path = ResolveNugetFromLocalDirectory(packageName, version, null, false);
+        }
+
+        return path;
+    }
+
+
 
 
     private string GetRequestedFramework()

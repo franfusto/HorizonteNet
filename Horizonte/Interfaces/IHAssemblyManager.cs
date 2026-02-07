@@ -13,4 +13,5 @@ public interface IhAssemblyManager
     public List<Assembly> Assemblies { get; }
 
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args);
+    public string? ResolveAssemblyDllPath(string packageName, string version);
 }

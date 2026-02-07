@@ -36,7 +36,8 @@
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
 
 
-
+<!--
+    -->    
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="5.0.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="5.0.0" />

@@ -36,7 +36,6 @@ public static class Extensions
                         {
                             var packageName = nugetMatch.Groups[1].Value.Trim();
                             var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0"; // Versión por defecto si no se especifica
-
                             var assemblyManager = env.GetService<IhAssemblyManager>();
                             if (assemblyManager != null)
                             {
@@ -44,11 +43,45 @@ public static class Extensions
                                 var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
                                 if (assembly != null)
                                 {
-                                    csharpKernel.AddAssemblyReferences(new[] { assembly.Location });
+                                    //si el ensamblado esta embedido en el ejecutable...no tiene localización
+                                    if (string.IsNullOrEmpty(assembly.Location))
+                                    {
+                                        var location = assemblyManager.ResolveAssemblyDllPath(packageName,version) ;
+                                        csharpKernel.AddAssemblyReferences(new[] { location });
+                                    }
+                                    else
+                                    {
+                                        csharpKernel.AddAssemblyReferences(new[] { assembly.Location });
+                                    }
                                     intercepted = true;
                                     continue; // No añadir esta línea al código final si se manejó aquí
                                 }
                             }
+/*
+                            var assemblyManager = env.GetService<IhAssemblyManager>();
+                            if (assemblyManager != null)
+                            {
+                                var args = new ResolveEventArgs($"{packageName}, Version={version}");
+                                var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
+                                if (assembly != null)
+                                {
+                                    // Usar reflexión para añadir el Assembly directamente
+                                    var scriptOptionsField = typeof(CSharpKernel).GetField("_scriptOptions", 
+                                        BindingFlags.Instance | BindingFlags.NonPublic);
+        
+                                    if (scriptOptionsField != null)
+                                    {
+                                        var scriptOptions = (Microsoft.CodeAnalysis.Scripting.ScriptOptions)scriptOptionsField.GetValue(csharpKernel);
+                                        scriptOptions = scriptOptions.AddReferences(assembly);
+                                        scriptOptionsField.SetValue(csharpKernel, scriptOptions);
+            
+                                        intercepted = true;
+                                        continue;
+                                    }
+                                }
+                            }
+                            */
+                            
                         }
 
                         // Caso 2: #r "ruta/al/dll" (directo)
@@ -96,17 +129,16 @@ public static class Extensions
                 await next(command, context);
             });
 
-            // Añadir referencia al ensamblado que contiene IHorizonteEnv
-            csharpKernel.AddAssemblyReferences(new[] { typeof(IHorizonteEnv).Assembly.Location });
-
-            // Inyectar el entorno modular
-            await csharpKernel.SetValueAsync("env", env, typeof(IHorizonteEnv));
-
+            //csharpKernel.AddAssemblyReferences(new[] {"/home/Datos/KONEK/HorizonteNet/Launchers/LinuxApp/bin/Release/net10.0/linux-x64/publish/packages/horizonte/10.0.0-beta/lib/net10.0/Horizonte.dll" });
+            await csharpKernel.SendAsync(new SubmitCode("#r \"nuget:Horizonte,10.0.0-beta\""));
             // Asegurar que el namespace esté disponible
             await csharpKernel.SendAsync(new SubmitCode("using Horizonte;"));
+            
+            // Inyectar el entorno modular
+            //await csharpKernel.SetValueAsync("env", env, typeof(IHorizonteEnv));
 
             //aqui hay que implementar la función display para integrarla con el Widget...
-            await csharpKernel.SendAsync(new SubmitCode("void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x);"));
+            //await csharpKernel.SendAsync(new SubmitCode("void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x);"));
 
             //Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display();
             var kernel = new CompositeKernel

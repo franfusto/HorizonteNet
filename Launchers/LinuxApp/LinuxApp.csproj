@@ -25,6 +25,7 @@
       <PackageReference Include="Horizonte.AdminUi" Version="10.0.0-beta" />
       <PackageReference Include="Horizonte.AdminUi.HorizonteSettings" Version="10.0.0-beta" />
     </ItemGroup>
+      <ProjectReference Include="..\..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
 -->
     <ItemGroup>
       <Content Remove="horizonte.default.json" />

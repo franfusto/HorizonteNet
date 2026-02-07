@@ -23,8 +23,43 @@
         "LoadAdditionalDlls": false
       },
       {
+        "Active": true,
+        "ModuleName": "Horizonte.Samples.Aemet",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
         "Active": false,
-        "ModuleName": "Horizonte.Ai.Agent",
+        "ModuleName": "Horizonte.Samples.Gcalendar",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Samples.Gmaps",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": false,
+        "ModuleName": "NotificationIcon",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Samples.RazorApp",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Samples.ServiceApp",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
         "LoadAdditionalDlls": false
@@ -34,20 +69,6 @@
         "ModuleName": "Horizonte.Scripts",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
-      },
-      {
-        "Active": true,
-        "ModuleName": "z.blazor.diagrams.core",
-        "ModuleVersion": "3.0.4",
-        "Path": null,
-        "LoadAdditionalDlls": false
-      },
-      {
-        "Active": true,
-        "ModuleName": "Z.Blazor.Diagrams",
-        "ModuleVersion": "3.0.4",
-        "Path": null,
         "LoadAdditionalDlls": false
       }
     ],
@@ -74,6 +95,37 @@
         "Order": 0,
         "InstallFolder": true,
         "Active": true
+      }
+    ],
+    "FrameworkPriorities": [
+      "net10.0",
+      "netstandard2.1",
+      "netstandard2.0",
+      "net9.0",
+      "net8.0",
+      "net7.0",
+      "net6.0"
+    ],
+    "ForcedPackages": [
+      {
+        "PackageId": "Porcupine",
+        "Version": "4.0.1",
+        "Framework": "net6.0"
+      },
+      {
+        "PackageId": "pvrecorder",
+        "Version": "1.2.13.0",
+        "Framework": "net8.0"
+      },
+      {
+        "PackageId": "Z.Blazor.Diagrams.Core",
+        "Version": "3.0.4",
+        "Framework": "net6.0"
+      },
+      {
+        "PackageId": "Z.Blazor.Diagrams",
+        "Version": "3.0.4",
+        "Framework": "net6.0"
       }
     ]
   },
@@ -107,6 +159,24 @@
         "RunOnStart": false,
         "ServiceName": "StartEnd Worker",
         "Order": 3
+      },
+      {
+        "WorkerType": "Horizonte.PorcupineMod.Worker, Horizonte.PorcupineMod, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "RunOnStart": false,
+        "ServiceName": "PorcupineMod",
+        "Order": 0
+      },
+      {
+        "WorkerType": "Horizonte.Samples.RazorApp.BlazorWorker, Horizonte.Samples.RazorApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "RunOnStart": false,
+        "ServiceName": "BlazorWorker",
+        "Order": 0
+      },
+      {
+        "WorkerType": "Horizonte.Samples.ServiceApp.WsWorker, Horizonte.Samples.ServiceApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "RunOnStart": false,
+        "ServiceName": "WsWorker",
+        "Order": 0
       }
     ]
   },
@@ -128,7 +198,7 @@
     "ProtectApp": false,
     "AppPassword": "admin",
     "AppTitle": "Horizonte Net",
-    "DefaultTheme": "material",
+    "DefaultTheme": "material-dark",
     "HomePageComponent": "HorizonteGui.Components.Elements.StartPage",
     "HomePageName": "Horizonte Net",
     "CustomMenuItems": [
@@ -213,13 +283,6 @@
         "Component": "HorizonteConfig_HostInfo"
       },
       {
-        "Id": 14,
-        "ParentId": 0,
-        "Icon": "smart_toy",
-        "Caption": "Agente",
-        "Component": "AgentH_Agent"
-      },
-      {
         "Id": 15,
         "ParentId": 0,
         "Icon": "menu_book",
@@ -232,6 +295,52 @@
         "Icon": "script",
         "Caption": "Scripts",
         "Component": "Scripts_ScriptsViewerWidget"
+      }
+    ]
+  },
+  "PorcupineConfig": {
+    "AccessKey": "porcupine_key"
+  },
+  "GCalConfig": {
+    "ClientId": "gcalendar.calendarid",
+    "ClientSecret": "gcalendar.clientsecret",
+    "CalendarId": "gcalendar.calendarid",
+    "UserName": "gcalendar.username"
+  },
+  "GmapsConfig": {
+    "ApiKey": "gmaps.apikey"
+  },
+
+  "NotebookConfig": {
+    "Sources": [
+      {
+        "Name": "Web Notebooks",
+        "SourcePath": null,
+        "Type": 1,
+        "Items": [
+          {
+            "ItemId": "SampleNotebook01",
+            "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/01-What%20are%20Notebooks.ipynb"
+          },
+          {
+            "ItemId": "SampleNotebook02",
+            "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/02-Code%20Cells.ipynb"
+          },
+          {
+            "ItemId": "SampleNotebook03",
+            "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/03-Markdown%20Cells.ipynb"
+          },
+          {
+            "ItemId": "SampleNotebook04",
+            "ItemPath": null
+          }
+        ]
+      },
+      {
+        "Name": "Local Notebooks",
+        "SourcePath": "~/.horizonte/notebooks",
+        "Type": 0,
+        "Items": []
       }
     ]
   }
