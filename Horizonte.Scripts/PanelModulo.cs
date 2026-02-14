@@ -10,6 +10,10 @@ public class PanelModulo
     private ILogger<PanelModulo>? _logger;
     private Lazy<IHorizonteEnv> _env;
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="env"></param>
     public PanelModulo(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
@@ -22,19 +26,17 @@ public class PanelModulo
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         var context = _env.Value.GetService<IHContext>();
         _logger?.LogInformation("Módulo Scripts Inciciado");
-        
-        
         return true;
     }
     
     [HorizonteRole("widget")]
     [HorizonteCommand("Scripts_JupyterNotebookViewer","pruebas iniciales")]
     public WidgetDef JupyterNotebookViewer()  => new WidgetDef() { Type = typeof(JupyterNotebookViewer), Parameters = null };    
-    
+    /*
     [HorizonteRole("widget")]
     [HorizonteCommand("Scripts_ScriptsViewer","pruebas iniciales")]
     public WidgetDef ScriptsViewer()  => new WidgetDef() { Type = typeof(ScriptsViewer), Parameters = null };
-    
+    */
     [HorizonteRole("widget")]
     [HorizonteCommand("Scripts_JupyterNotebookWidget","pruebas iniciales")]
     public WidgetDef JupyterNotebookWidget()  => new WidgetDef() { Type = typeof(JupyterNotebookWidget), Parameters = null };    

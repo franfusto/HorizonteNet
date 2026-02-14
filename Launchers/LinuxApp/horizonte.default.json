@@ -126,6 +126,11 @@
         "PackageId": "Z.Blazor.Diagrams",
         "Version": "3.0.4",
         "Framework": "net6.0"
+      },
+      {
+        "PackageId": "BlazorMonaco",
+        "Version": "3.4.0",
+        "Framework": "net10.0"
       }
     ]
   },

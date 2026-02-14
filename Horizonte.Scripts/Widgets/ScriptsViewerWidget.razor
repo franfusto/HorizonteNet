@@ -1,5 +1,52 @@
-<h3>ScriptsViewerWidget</h3>
+@using Horizonte.Extensions.Interactive
+@using Radzen
+@using Radzen.Blazor
+@inject IHContext Context
+@inject DialogService DialogService
+
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Class="rz-p-4" Style="height: 100%;">
+    <RadzenCard Style="width: 300px; min-width: 300px; display: flex; flex-direction: column;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Class="rz-mb-4">
+            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">Scripts</RadzenText>
+            <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnAddScript" Tooltip="Añadir nuevo script" />
+        </RadzenStack>
+        
+        <RadzenTree Change="@OnTreeChange" Data="@_config.Scripts" Style="flex-grow: 1; overflow: auto;">
+            <RadzenTreeLevel TextProperty="Name" HasChildren="@(n => false)" />
+        </RadzenTree>
+    </RadzenCard>
+
+    <RadzenCard Style="flex-grow: 1; display: flex; flex-direction: column;">
+        <ScriptsViewer Script="@_selectedScript" OnScriptDeleted="@OnScriptDeleted" />
+    </RadzenCard>
+</RadzenStack>
 
 @code {
-    
+    private ScriptsConfig _config = new();
+    private ScriptDef? _selectedScript;
+
+    protected override void OnInitialized()
+    {
+        _config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
+        base.OnInitialized();
+    }
+
+    private void OnTreeChange(TreeEventArgs args)
+    {
+        _selectedScript = args.Value as ScriptDef;
+    }
+
+    private void OnAddScript()
+    {
+        var newScript = new ScriptDef { Name = "Nuevo Script" };
+        newScript.CodeText = "// Escribe tu código aquí";
+        _config.Scripts.Add(newScript);
+        _selectedScript = newScript;
+    }
+
+    private void OnScriptDeleted()
+    {
+        _selectedScript = null;
+        StateHasChanged();
+    }
 }

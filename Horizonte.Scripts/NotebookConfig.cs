@@ -4,13 +4,22 @@ using Microsoft.DotNet.Interactive.Documents;
 
 namespace Horizonte.Scripts;
 
+/// <summary>
+/// 
+/// </summary>
 public class NotebookConfig
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public NotebookConfig()
     {
         AddContentSample();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public List<NotebookSource> Sources { get; set; } = new List<NotebookSource>();
 
     private void AddContentSample()
@@ -56,9 +65,18 @@ public class NotebookConfig
     }
 }
 
+/// <summary>
+/// 
+/// </summary>
 public class NotebookSource
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public string Name { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public string SourcePath { get; set; }
     public NotebookSourceType Type { get; set; }
     public List<NotebookItem> Items { get; set; } = new List<NotebookItem>();

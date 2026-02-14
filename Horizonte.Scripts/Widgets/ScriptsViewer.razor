@@ -1,5 +1,137 @@
-<h3>ScriptsViewer</h3>
+@using Horizonte.Extensions.Interactive
+@using Radzen
+@using Radzen.Blazor
+@inject IHContext Context
+@inject DialogService DialogService
+@using BlazorMonaco
+@using BlazorMonaco.Editor
+@using BlazorMonaco.Languages
+
+
+<style>
+    #my-editor-id { /* applies to a specific editor instance */
+        height: 600px;
+    }
+
+    .my-editor-class { /* applies to all editor instances with this class */
+        height: 600px;
+    }
+
+    .monaco-editor-container { /* applies to all editor instances */
+        height: 600px;
+    }
+</style>
+@if (Script != null)
+{
+    <RadzenStack Gap="1rem" Style="flex-grow: 1;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">Editar Script: @Script.Name</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnSave" Tooltip="Guardar cambios" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDelete" Tooltip="Eliminar script" />
+                </RadzenStack>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Icon="build" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnCompile" Tooltip="Compilar script" />
+                <RadzenButton Icon="upload" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnLoad" Tooltip="Cargar" />
+                <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDownload" Tooltip="Descargar" />
+            </RadzenStack>
+        </RadzenStack>
+
+        <RadzenRow>
+            <RadzenColumn Size="8">
+                <RadzenFormField Text="Nombre" Style="width: 100%;">
+                    <RadzenTextBox @bind-Value="@Script.Name" Style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="4" Class="rz-display-flex rz-align-items-center">
+                <RadzenCheckBox @bind-Value="@Script.LoadOnStart" Name="LoadOnStart" />
+                <RadzenLabel Text="Cargar al inicio" Component="LoadOnStart" Class="rz-ms-2" />
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenFormField Text="Código" Style="flex-grow: 1; display: flex; flex-direction: column;">
+            <StandaloneCodeEditor Id="my-editor-id" CssClass="my-editor-class" ConstructionOptions="EditorConstructionOptions" />
+            
+        </RadzenFormField>
+    </RadzenStack>
+}
+else
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+        <RadzenText TextStyle="TextStyle.Subtitle1">Seleccione un script para editar o cree uno nuevo.</RadzenText>
+    </div>
+}
 
 @code {
-    
+    [Parameter]
+    public ScriptDef? Script { get; set; }
+
+    [Parameter]
+    public EventCallback OnScriptDeleted { get; set; }
+
+    private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Language = "csharp",
+            Value = "using System",
+            Theme = "vs-dark"
+        };
+    }
+    private async Task OnSave()
+    {
+        try
+        {
+            var config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
+            // Note: Since Script is a reference to an item in config.Scripts, 
+            // updating the config should save the changes.
+            // However, we need to make sure we are updating the right config instance.
+            Context.Update(config);
+            await DialogService.Alert("Script guardado correctamente", "Éxito");
+        }
+        catch (Exception ex)
+        {
+            await DialogService.Alert($"Error al guardar: {ex.Message}", "Error");
+        }
+    }
+
+    private async Task OnDelete()
+    {
+        if (Script != null)
+        {
+            var confirm = await DialogService.Confirm($"¿Estás seguro de que quieres eliminar el script '{Script.Name}'?", "Confirmar");
+            if (confirm == true)
+            {
+                var config = Context.Get<ScriptsConfig>();
+                if (config != null)
+                {
+                    var scriptToRemove = config.Scripts.FirstOrDefault(s => s.Name == Script.Name);
+                    if (scriptToRemove != null)
+                    {
+                        config.Scripts.Remove(scriptToRemove);
+                        Context.Update(config);
+                        await OnScriptDeleted.InvokeAsync();
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task OnCompile()
+    {
+        await Task.CompletedTask;
+    }
+
+    private async Task OnLoad()
+    {
+        await Task.CompletedTask;
+    }
+
+    private async Task OnDownload()
+    {
+        await Task.CompletedTask;
+    }
 }

@@ -217,7 +217,7 @@ else
         {
             _kernel.Dispose();
         }
-        var options = new KernelOptions();
+        var options = new KernelOptions(); // sacar de configuración
         _kernel = await options.BuildKernelAsync(env);
 
         _kernel.KernelEvents.Subscribe(OnKernelEvent);

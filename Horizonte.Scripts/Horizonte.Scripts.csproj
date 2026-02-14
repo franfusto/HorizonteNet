@@ -21,17 +21,12 @@
       <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-<!--
-        <PackageReference Include="Blazor.Monaco" Version="0.2.0" />
         
-        <PackageReference Include="Microsoft.DotNet.Interactive" Version="1.0.0-beta.26071.1" />
-        <PackageReference Include="Microsoft.DotNet.Interactive.Documents" Version="1.0.0-beta.26071.1" />
-        <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.26071.1" />
-    -->    
+    </ItemGroup>
 
 
-
-        
+    <ItemGroup>
+      <PackageReference Include="BlazorMonaco" Version="3.4.0" />
     </ItemGroup>
 
 </Project>
