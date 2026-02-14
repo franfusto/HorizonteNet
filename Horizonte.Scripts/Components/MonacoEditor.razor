@@ -1,0 +1,145 @@
+@implements IAsyncDisposable
+@using BlazorMonaco.Editor
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<StandaloneCodeEditor
+    Id="@_id"
+    ConstructionOptions="@(_ => _options)"
+    @ref="_editorRef"
+    OnDidInit="@OnEditorInit"
+    OnDidChangeModelContent="@(_ => OnContentChanged())" />
+
+@code {
+    private readonly string _id = "editor-" + Guid.NewGuid().ToString("N");
+    private StandaloneEditorConstructionOptions _options = new();
+    private StandaloneCodeEditor? _editorRef;
+    private bool _rendered;
+    private bool _disposed;
+    private string? _lastValue;
+    private const int MinHeight = 100;
+    private const int LineHeight = 19; // Default Monaco line height
+
+    [Parameter] public string Language { get; set; } = "csharp";
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string? Theme { get; set; } = "vs-dark";
+
+    protected override void OnInitialized()
+    {
+        _options = new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Language = Language,
+            Theme = Theme,
+            Value = Value,
+            ScrollBeyondLastLine = false,
+            WordWrap = "on",
+            Scrollbar = new EditorScrollbarOptions
+            {
+                Vertical = "hidden",
+                Horizontal = "hidden",
+                AlwaysConsumeMouseWheel = false
+            },
+            OverviewRulerLanes = 0,
+            HideCursorInOverviewRuler = true,
+            OverviewRulerBorder = false,
+            RenderLineHighlight = "none"
+        };
+        _lastValue = Value;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _rendered = true;
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task OnEditorInit()
+    {
+        await UpdateEditorHeight();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_disposed && _rendered && _editorRef != null && Value != _lastValue)
+        {
+            try
+            {
+                _lastValue = Value;
+                await _editorRef.SetValue(Value ?? "");
+                await UpdateEditorHeight();
+            }
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+            {
+                // Ignore JS interop errors during disposal or disconnection
+            }
+        }
+    }
+
+    private async Task OnContentChanged()
+    {
+        if (_disposed || _editorRef == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var newValue = await _editorRef.GetValue();
+            if (newValue != Value)
+            {
+                _lastValue = newValue;
+                Value = newValue;
+                await ValueChanged.InvokeAsync(Value);
+            }
+            await UpdateEditorHeight();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            // Ignore JS interop errors during disposal or disconnection
+        }
+    }
+
+    private async Task UpdateEditorHeight()
+    {
+        if (_disposed || _editorRef == null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Use JavaScript to get the content height and update the container
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                (function() {{
+                    var container = document.getElementById('{_id}');
+                    if (container && window.monaco) {{
+                        var editor = monaco.editor.getEditors().find(e => e.getContainerDomNode() === container || e.getContainerDomNode()?.parentElement === container);
+                        if (editor) {{
+                            var contentHeight = Math.max(editor.getContentHeight(), {MinHeight});
+                            container.style.height = contentHeight + 'px';
+                            editor.layout();
+                        }}
+                    }}
+                }})();
+            ");
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            // Ignore JS interop errors during disposal or disconnection
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        // The StandaloneCodeEditor itself might need disposal if it holds resources, 
+        // but usually, BlazorMonaco handles its own lifecycle.
+        // We set _disposed to prevent further JS calls from our side.
+        await Task.CompletedTask;
+    }
+}

@@ -6,21 +6,9 @@
 @using BlazorMonaco
 @using BlazorMonaco.Editor
 @using BlazorMonaco.Languages
+@using Horizonte.Scripts.Components
 
 
-<style>
-    #my-editor-id { /* applies to a specific editor instance */
-        height: 600px;
-    }
-
-    .my-editor-class { /* applies to all editor instances with this class */
-        height: 600px;
-    }
-
-    .monaco-editor-container { /* applies to all editor instances */
-        height: 600px;
-    }
-</style>
 @if (Script != null)
 {
     <RadzenStack Gap="1rem" Style="flex-grow: 1;">
@@ -51,10 +39,10 @@
             </RadzenColumn>
         </RadzenRow>
 
-        <RadzenFormField Text="Código" Style="flex-grow: 1; display: flex; flex-direction: column;">
-            <StandaloneCodeEditor Id="my-editor-id" CssClass="my-editor-class" ConstructionOptions="EditorConstructionOptions" />
-            
-        </RadzenFormField>
+        <br/>
+        
+        <MonacoEditor @bind-Value="@Script.CodeText" Language="csharp" />
+
     </RadzenStack>
 }
 else
@@ -71,25 +59,31 @@ else
     [Parameter]
     public EventCallback OnScriptDeleted { get; set; }
 
-    private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
-    {
-        return new StandaloneEditorConstructionOptions
-        {
-            AutomaticLayout = true,
-            Language = "csharp",
-            Value = "using System",
-            Theme = "vs-dark"
-        };
-    }
+    [Parameter]
+    public EventCallback OnScriptSaved { get; set; }
+
     private async Task OnSave()
     {
         try
         {
+            if (Script == null) return;
+
             var config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
-            // Note: Since Script is a reference to an item in config.Scripts, 
-            // updating the config should save the changes.
-            // However, we need to make sure we are updating the right config instance.
+            
+            var existingScript = config.Scripts.FirstOrDefault(s => s.Name == Script.Name);
+            if (existingScript != null)
+            {
+                existingScript.Code = Script.Code;
+                existingScript.LoadOnStart = Script.LoadOnStart;
+                existingScript.Id = Script.Id;
+            }
+            else
+            {
+                config.Scripts.Add(Script);
+            }
+
             Context.Update(config);
+            await OnScriptSaved.InvokeAsync();
             await DialogService.Alert("Script guardado correctamente", "Éxito");
         }
         catch (Exception ex)

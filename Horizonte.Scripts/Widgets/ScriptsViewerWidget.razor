@@ -17,7 +17,7 @@
     </RadzenCard>
 
     <RadzenCard Style="flex-grow: 1; display: flex; flex-direction: column;">
-        <ScriptsViewer Script="@_selectedScript" OnScriptDeleted="@OnScriptDeleted" />
+        <ScriptsViewer Script="@_selectedScript" OnScriptDeleted="@OnScriptDeleted" OnScriptSaved="@OnScriptSaved" />
     </RadzenCard>
 </RadzenStack>
 
@@ -27,8 +27,13 @@
 
     protected override void OnInitialized()
     {
-        _config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
+        LoadConfig();
         base.OnInitialized();
+    }
+
+    private void LoadConfig()
+    {
+        _config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
     }
 
     private void OnTreeChange(TreeEventArgs args)
@@ -47,6 +52,13 @@
     private void OnScriptDeleted()
     {
         _selectedScript = null;
+        LoadConfig();
+        StateHasChanged();
+    }
+
+    private void OnScriptSaved()
+    {
+        LoadConfig();
         StateHasChanged();
     }
 }
