@@ -15,7 +15,11 @@
     <RadzenStack Gap="1rem" Style="flex-grow: 1;">
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
-                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">Editar Script: @Script.Name</RadzenText>
+                <RadzenText TextStyle="TextStyle.Subtitle1" TagName="TagName.H3" Class="rz-m-0">Editar Script: @Script.Name</RadzenText>
+                @if (!string.IsNullOrEmpty(Script.Description))
+                {
+                    <RadzenText TextStyle="TextStyle.Body2" Class="rz-m-0 rz-text-secondary">(@Script.Description)</RadzenText>
+                }
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
                     <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnSave" Tooltip="Guardar cambios" />
                     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDelete" Tooltip="Eliminar script" />
@@ -29,12 +33,17 @@
         </RadzenStack>
 
         <RadzenRow>
-            <RadzenColumn Size="8">
+            <RadzenColumn Size="4">
                 <RadzenFormField Text="Nombre" Style="width: 100%;">
                     <RadzenTextBox @bind-Value="@Script.Name" Style="width: 100%;" />
                 </RadzenFormField>
             </RadzenColumn>
-            <RadzenColumn Size="4" Class="rz-display-flex rz-align-items-center">
+            <RadzenColumn Size="5">
+                <RadzenFormField Text="Descripción" Style="width: 100%;">
+                    <RadzenTextBox @bind-Value="@Script.Description" Style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="3" Class="rz-display-flex rz-align-items-center">
                 <RadzenCheckBox @bind-Value="@Script.Active" Name="LoadOnStart" />
                 <RadzenLabel Text="Activo" Component="LoadOnStart" Class="rz-ms-2" />
             </RadzenColumn>
@@ -87,6 +96,7 @@ else
             if (existingScript != null)
             {
                 existingScript.Name = Script.Name;
+                existingScript.Description = Script.Description;
                 existingScript.Code = Script.Code;
                 existingScript.Active = Script.Active;
             }

@@ -232,7 +232,7 @@ public static class Extensions
 
             var cleanCode = string.Join(Environment.NewLine, cleanCodeLines);
             var syntaxTree = CSharpSyntaxTree.ParseText(cleanCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
-            var assemblyName = Path.GetRandomFileName();
+            var assemblyName = scriptDef.Name+".script";
 
             // Referencias básicas necesarias (mínimo absoluto)
             var references = new List<MetadataReference>();
@@ -304,6 +304,7 @@ public static class Extensions
                 options: new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
                     scriptClassName: "Script",
+                    //scriptClassName: scriptDef.Name + "Class",
                     metadataReferenceResolver: ScriptMetadataResolver.Default,
                     usings: new[] { "System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks" }));
 
@@ -327,11 +328,9 @@ public static class Extensions
             }
 
             ms.Seek(0, SeekOrigin.Begin);
-            if (scriptDef.Active)
-            {
-                //solo cargamos si el script esta activo
-                response.Assembly = Assembly.Load(ms.ToArray());
-            }
+            
+            response.Assembly = ms.ToArray();
+            
             return response;
         }
         catch (Exception e)

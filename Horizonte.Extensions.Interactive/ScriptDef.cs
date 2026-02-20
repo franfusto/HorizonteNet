@@ -12,10 +12,34 @@ public class ScriptDef
     /// 
     /// </summary>
     public string Id { get; set; } = string.Empty;
+    private string _name = string.Empty;
     /// <summary>
     /// 
     /// </summary>
-    public string Name { get; set; } = string.Empty; 
+    public string Name 
+    { 
+        get => _name; 
+        set => _name = SanitizeName(value); 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    private string SanitizeName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return string.Empty;
+        var sb = new StringBuilder();
+        foreach (char c in name)
+        {
+            if (char.IsLetterOrDigit(c))
+            {
+                sb.Append(c);
+            }
+        }
+        return sb.ToString();
+    }
     /// <summary>
     /// Código guardado en formato Base64
     /// </summary>

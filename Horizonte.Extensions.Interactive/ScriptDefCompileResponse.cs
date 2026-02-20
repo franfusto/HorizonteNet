@@ -4,6 +4,6 @@ namespace Horizonte.Extensions.Interactive;
 
 public class ScriptDefCompileResponse
 {
-    public Assembly? Assembly { get; set; }
+    public byte[] Assembly { get; set; } = Array.Empty<byte>();
     public IEnumerable<string> Errors { get; set; } = Enumerable.Empty<string>();
 }
