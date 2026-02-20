@@ -56,6 +56,18 @@ else
     [Parameter]
     public ScriptDef? Script { get; set; }
 
+    private string? _lastScriptId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Script != null && Script.Id != _lastScriptId)
+        {
+            _lastScriptId = Script.Id;
+            // Forzar actualización si es necesario, aunque MonacoEditor ya debería detectarlo por el cambio en Value
+        }
+        await base.OnParametersSetAsync();
+    }
+
     [Parameter]
     public EventCallback OnScriptDeleted { get; set; }
 
@@ -70,12 +82,12 @@ else
 
             var config = Context.Get<ScriptsConfig>() ?? new ScriptsConfig();
             
-            var existingScript = config.Scripts.FirstOrDefault(s => s.Name == Script.Name);
+            var existingScript = config.Scripts.FirstOrDefault(s => s.Id == Script.Id);
             if (existingScript != null)
             {
+                existingScript.Name = Script.Name;
                 existingScript.Code = Script.Code;
                 existingScript.LoadOnStart = Script.LoadOnStart;
-                existingScript.Id = Script.Id;
             }
             else
             {
@@ -102,7 +114,7 @@ else
                 var config = Context.Get<ScriptsConfig>();
                 if (config != null)
                 {
-                    var scriptToRemove = config.Scripts.FirstOrDefault(s => s.Name == Script.Name);
+                    var scriptToRemove = config.Scripts.FirstOrDefault(s => s.Id == Script.Id);
                     if (scriptToRemove != null)
                     {
                         config.Scripts.Remove(scriptToRemove);

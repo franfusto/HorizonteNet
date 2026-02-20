@@ -44,4 +44,6 @@ public class PanelModulo
     [HorizonteRole("widget")]
     [HorizonteCommand("Scripts_ScriptsViewerWidget","pruebas iniciales")]
     public WidgetDef ScriptsViewerWidget()  => new WidgetDef() { Type = typeof(ScriptsViewerWidget), Parameters = null };
+    
+    
 }

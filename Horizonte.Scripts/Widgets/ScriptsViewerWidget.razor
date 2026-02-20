@@ -8,7 +8,10 @@
     <RadzenCard Style="width: 300px; min-width: 300px; display: flex; flex-direction: column;">
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Class="rz-mb-4">
             <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">Scripts</RadzenText>
-            <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnAddScript" Tooltip="Añadir nuevo script" />
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnAddScript" Tooltip="Añadir nuevo script" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDeleteSelectedScript" Tooltip="Eliminar script seleccionado" Disabled="@(_selectedScript == null)" />
+            </RadzenStack>
         </RadzenStack>
         
         <RadzenTree Change="@OnTreeChange" Data="@_config.Scripts" Style="flex-grow: 1; overflow: auto;">
@@ -43,10 +46,29 @@
 
     private void OnAddScript()
     {
-        var newScript = new ScriptDef { Name = "Nuevo Script" };
+        var newScript = new ScriptDef { Id = Guid.NewGuid().ToString(), Name = "Nuevo Script" };
         newScript.CodeText = "// Escribe tu código aquí";
         _config.Scripts.Add(newScript);
         _selectedScript = newScript;
+    }
+
+    private async Task OnDeleteSelectedScript()
+    {
+        if (_selectedScript != null)
+        {
+            var confirm = await DialogService.Confirm($"¿Estás seguro de que quieres eliminar el script '{_selectedScript.Name}'?", "Confirmar");
+            if (confirm == true)
+            {
+                var scriptToRemove = _config.Scripts.FirstOrDefault(s => s.Id == _selectedScript.Id);
+                if (scriptToRemove != null)
+                {
+                    _config.Scripts.Remove(scriptToRemove);
+                    Context.Update(_config);
+                    _selectedScript = null;
+                    StateHasChanged();
+                }
+            }
+        }
     }
 
     private void OnScriptDeleted()
