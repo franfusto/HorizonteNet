@@ -2,6 +2,7 @@
 @using Radzen
 @using Radzen.Blazor
 @inject IHContext Context
+@inject IHorizonteEnv HorizonteEnv
 @inject DialogService DialogService
 @using BlazorMonaco
 @using BlazorMonaco.Editor
@@ -128,6 +129,7 @@ else
 
     private async Task OnCompile()
     {
+       var res = await Script?.Compile(HorizonteEnv) ;
         await Task.CompletedTask;
     }
 

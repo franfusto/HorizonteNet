@@ -1,7 +1,11 @@
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Text;
 using System.Text.RegularExpressions;
 using Horizonte;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Commands;
@@ -27,7 +31,7 @@ public static class Extensions
     {
         try
         {
-            var csharpKernel = new CSharpKernel();
+            var csharpKernel = new Microsoft.DotNet.Interactive.CSharp.CSharpKernel();
 
             // Interceptar #r "nuget:..." y otros comandos específicos de Horizonte
             csharpKernel.AddHorizonteMiddleware(env);
@@ -63,7 +67,7 @@ public static class Extensions
         
     }
 
-    private static void AddHorizonteMiddleware(this CSharpKernel csharpKernel, IHorizonteEnv env)
+    private static void AddHorizonteMiddleware(this Microsoft.DotNet.Interactive.CSharp.CSharpKernel csharpKernel, IHorizonteEnv env)
     {
         csharpKernel.AddMiddleware(async (command, context, next) =>
         {
@@ -162,4 +166,175 @@ public static class Extensions
             await next(command, context);
         });
     }
+
+
+    public static async Task<Assembly?> Compile(this ScriptDef scriptDef, IHorizonteEnv env)
+    {
+        try
+        {
+            var code = scriptDef.CodeText;
+            var lines = code.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            var cleanCodeLines = new List<string>();
+            var additionalReferences = new List<MetadataReference>();
+            var assemblyManager = env.GetService<IhAssemblyManager>();
+
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+
+                // Caso 1: #r "nuget:..." con Regex más flexible
+                var nugetMatch = Regex.Match(trimmedLine, @"^#r\s+""nuget:\s*([^,/""]+)(?:,\s*([^""]+))?""\s*", RegexOptions.IgnoreCase);
+                if (nugetMatch.Success)
+                {
+                    if (assemblyManager != null)
+                    {
+                        var packageName = nugetMatch.Groups[1].Value.Trim();
+                        var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0";
+                        var args = new ResolveEventArgs($"{packageName}, Version={version}");
+                        var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
+                        if (assembly != null && !string.IsNullOrEmpty(assembly.Location))
+                        {
+                            additionalReferences.Add(MetadataReference.CreateFromFile(assembly.Location));
+                        }
+                    }
+                    cleanCodeLines.Add(""); // Reemplazar con línea vacía para mantener números de línea
+                    continue;
+                }
+
+                // Caso 2: #r "ruta/al/dll" (directo)
+                var pathMatch = Regex.Match(trimmedLine, @"^#r\s+""([^""]+\.dll)""\s*", RegexOptions.IgnoreCase);
+                if (pathMatch.Success)
+                {
+                    var dllPath = pathMatch.Groups[1].Value.Trim();
+                    var absoluteDllPath = Path.IsPathRooted(dllPath)
+                        ? Path.GetFullPath(dllPath)
+                        : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), dllPath));
+
+                    if (File.Exists(absoluteDllPath))
+                    {
+                        additionalReferences.Add(MetadataReference.CreateFromFile(absoluteDllPath));
+                    }
+                    cleanCodeLines.Add(""); // Reemplazar con línea vacía
+                    continue;
+                }
+                
+                // Si la línea empieza por #r pero no coincidió con los anteriores, 
+                // mejor eliminarla para evitar el error de Roslyn "Metadata references are not supported"
+                if (trimmedLine.StartsWith("#r ", StringComparison.OrdinalIgnoreCase) || trimmedLine.StartsWith("#r\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    cleanCodeLines.Add("");
+                    continue;
+                }
+
+                cleanCodeLines.Add(line);
+            }
+
+            var cleanCode = string.Join(Environment.NewLine, cleanCodeLines);
+            var syntaxTree = CSharpSyntaxTree.ParseText(cleanCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+            var assemblyName = Path.GetRandomFileName();
+
+            // Referencias básicas necesarias (mínimo absoluto)
+            var references = new List<MetadataReference>();
+            var addedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Intentar cargar lo básico del AppDomain
+            var coreDlls = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "System.Runtime.dll",
+                "mscorlib.dll",
+                "System.Private.CoreLib.dll",
+                "System.Console.dll",
+                "System.Collections.dll",
+                "System.Linq.dll",
+                "System.IO.dll",
+                "System.Threading.dll",
+                "Microsoft.CSharp.dll"
+            };
+
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (!asm.IsDynamic && !string.IsNullOrEmpty(asm.Location))
+                {
+                    var fileName = Path.GetFileName(asm.Location);
+                    if (coreDlls.Contains(fileName) || addedFiles.Count < 50) // Limitar para evitar saturar si no es core
+                    {
+                        if (addedFiles.Add(fileName))
+                        {
+                            references.Add(MetadataReference.CreateFromFile(asm.Location));
+                        }
+                    }
+                }
+            }
+            
+            // Asegurar System.Runtime específicamente si no se cargó
+            if (!addedFiles.Contains("System.Runtime.dll"))
+            {
+                try {
+                    var rt = Assembly.Load("System.Runtime");
+                    if (!string.IsNullOrEmpty(rt.Location) && addedFiles.Add(Path.GetFileName(rt.Location)))
+                        references.Add(MetadataReference.CreateFromFile(rt.Location));
+                } catch {}
+            }
+
+            // Añadir Horizonte
+            var horizonteLoc = typeof(IHorizonteEnv).Assembly.Location;
+            if (!string.IsNullOrEmpty(horizonteLoc) && addedFiles.Add(Path.GetFileName(horizonteLoc)))
+            {
+                references.Add(MetadataReference.CreateFromFile(horizonteLoc));
+            }
+
+            // Añadir referencias extraídas de #r
+            foreach (var r in additionalReferences)
+            {
+                if (!string.IsNullOrEmpty(r.Display))
+                {
+                    var fileName = Path.GetFileName(r.Display);
+                    if (addedFiles.Add(fileName))
+                    {
+                        references.Add(r);
+                    }
+                }
+            }
+
+            var compilation = CSharpCompilation.Create(
+                assemblyName,
+                syntaxTrees: new[] { syntaxTree },
+                references: references,
+                options: new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    scriptClassName: "Script",
+                    metadataReferenceResolver: ScriptMetadataResolver.Default,
+                    usings: new[] { "System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks" }));
+
+            using var ms = new MemoryStream();
+            var result = compilation.Emit(ms);
+
+            if (!result.Success)
+            {
+                var failures = result.Diagnostics.Where(diagnostic => 
+                    diagnostic.IsWarningAsError || 
+                    diagnostic.Severity == DiagnosticSeverity.Error);
+
+                var errors = new StringBuilder("Compiler Errors :\r\n");
+                foreach (var diagnostic in failures)
+                {
+                    var lineSpan = diagnostic.Location.GetLineSpan();
+                    errors.AppendFormat("Line {0},{1}\t: {2}\n", 
+                        lineSpan.StartLinePosition.Line + 1, 
+                        lineSpan.StartLinePosition.Character + 1, 
+                        diagnostic.GetMessage());
+                }
+                throw new Exception(errors.ToString());
+            }
+
+            ms.Seek(0, SeekOrigin.Begin);
+            return Assembly.Load(ms.ToArray());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return null!;
+    }
+    
 }

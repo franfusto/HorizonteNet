@@ -2,6 +2,9 @@ using Horizonte.Extensions.Interactive;
 
 namespace Horizonte.Scripts;
 
+/// <summary>
+/// 
+/// </summary>
 public class ScriptsService
 {
     
