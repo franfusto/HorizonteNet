@@ -129,8 +129,17 @@ else
 
     private async Task OnCompile()
     {
-       var res = await Script?.Compile(HorizonteEnv) ;
-        await Task.CompletedTask;
+        if (Script == null) return;
+        var res = await Script.Compile(HorizonteEnv);
+        if (res.Assembly != null)
+        {
+            await DialogService.Alert("Script compilado correctamente", "Éxito");
+        }
+        else
+        {
+            var errors = string.Join("\n", res.Errors);
+            await DialogService.Alert($"Errores de compilación:\n{errors}", "Error");
+        }
     }
 
     private async Task OnLoad()

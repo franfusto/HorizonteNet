@@ -168,8 +168,9 @@ public static class Extensions
     }
 
 
-    public static async Task<Assembly?> Compile(this ScriptDef scriptDef, IHorizonteEnv env)
+    public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef, IHorizonteEnv env)
     {
+        var response = new ScriptDefCompileResponse();
         try
         {
             var code = scriptDef.CodeText;
@@ -315,26 +316,26 @@ public static class Extensions
                     diagnostic.IsWarningAsError || 
                     diagnostic.Severity == DiagnosticSeverity.Error);
 
-                var errors = new StringBuilder("Compiler Errors :\r\n");
+                var errorList = new List<string>();
                 foreach (var diagnostic in failures)
                 {
                     var lineSpan = diagnostic.Location.GetLineSpan();
-                    errors.AppendFormat("Line {0},{1}\t: {2}\n", 
-                        lineSpan.StartLinePosition.Line + 1, 
-                        lineSpan.StartLinePosition.Character + 1, 
-                        diagnostic.GetMessage());
+                    errorList.Add($"Line {lineSpan.StartLinePosition.Line + 1},{lineSpan.StartLinePosition.Character + 1}\t: {diagnostic.GetMessage()}");
                 }
-                throw new Exception(errors.ToString());
+                response.Errors = errorList;
+                return response;
             }
 
             ms.Seek(0, SeekOrigin.Begin);
-            return Assembly.Load(ms.ToArray());
+            response.Assembly = Assembly.Load(ms.ToArray());
+            return response;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+            response.Errors = new List<string> { e.Message };
         }
-        return null!;
+        return response;
     }
     
 }
