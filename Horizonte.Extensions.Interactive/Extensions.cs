@@ -327,7 +327,11 @@ public static class Extensions
             }
 
             ms.Seek(0, SeekOrigin.Begin);
-            response.Assembly = Assembly.Load(ms.ToArray());
+            if (scriptDef.Active)
+            {
+                //solo cargamos si el script esta activo
+                response.Assembly = Assembly.Load(ms.ToArray());
+            }
             return response;
         }
         catch (Exception e)

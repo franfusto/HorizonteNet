@@ -35,8 +35,8 @@
                 </RadzenFormField>
             </RadzenColumn>
             <RadzenColumn Size="4" Class="rz-display-flex rz-align-items-center">
-                <RadzenCheckBox @bind-Value="@Script.LoadOnStart" Name="LoadOnStart" />
-                <RadzenLabel Text="Cargar al inicio" Component="LoadOnStart" Class="rz-ms-2" />
+                <RadzenCheckBox @bind-Value="@Script.Active" Name="LoadOnStart" />
+                <RadzenLabel Text="Activo" Component="LoadOnStart" Class="rz-ms-2" />
             </RadzenColumn>
         </RadzenRow>
 
@@ -88,7 +88,7 @@ else
             {
                 existingScript.Name = Script.Name;
                 existingScript.Code = Script.Code;
-                existingScript.LoadOnStart = Script.LoadOnStart;
+                existingScript.Active = Script.Active;
             }
             else
             {
@@ -131,7 +131,7 @@ else
     {
         if (Script == null) return;
         var res = await Script.Compile(HorizonteEnv);
-        if (res.Assembly != null)
+        if (res.Errors.Count() == 0)
         {
             await DialogService.Alert("Script compilado correctamente", "Éxito");
         }

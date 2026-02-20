@@ -55,5 +55,5 @@ public class ScriptDef
     /// <summary>
     /// 
     /// </summary>
-    public bool LoadOnStart { get; set; } = false;
+    public bool Active { get; set; } = false;
 }
