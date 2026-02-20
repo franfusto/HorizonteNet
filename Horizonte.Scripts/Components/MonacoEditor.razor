@@ -18,20 +18,21 @@
     private bool _disposed;
     private string? _lastValue;
     private const int MinHeight = 100;
+    private string monacoTheme ="vs";
     private const int LineHeight = 19; // Default Monaco line height
 
     [Parameter] public string Language { get; set; } = "csharp";
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
-    [Parameter] public string? Theme { get; set; } = "vs-dark";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await SyncThemeWithRadzen();
         _options = new StandaloneEditorConstructionOptions
         {
             AutomaticLayout = true,
             Language = Language,
-            Theme = Theme,
+            Theme = monacoTheme, // Default theme, will be updated after render
             Value = Value,
             ScrollBeyondLastLine = false,
             WordWrap = "on",
@@ -49,13 +50,28 @@
         _lastValue = Value;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+
+
+    private async Task SyncThemeWithRadzen()
     {
-        if (firstRender)
+
+        try
         {
-            _rendered = true;
+            // Get the Radzen theme from the HTML link element
+            var radzenThemeHref = await JSRuntime.InvokeAsync<string?>("eval", 
+                "document.getElementById('radzen-theme-link')?.getAttribute('href') || ''");
+            
+            monacoTheme = (radzenThemeHref?.Contains("dark", StringComparison.OrdinalIgnoreCase) ?? false) 
+                ? "vs-dark" 
+                : "vs";
+            
+
         }
-        await base.OnAfterRenderAsync(firstRender);
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            // Ignore JS interop errors during disposal or disconnection
+        }
     }
 
     private async Task OnEditorInit()
