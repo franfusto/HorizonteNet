@@ -34,6 +34,8 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
+    public event Action? DomainChanged;
+
     public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
     {
         _settings = settings;
@@ -203,6 +205,78 @@ public class HAssemblyManager : IhAssemblyManager
         }
 
         return path;
+    }
+
+    public void UnloadDomain(string domainName)
+    {
+        if (domainName == "Default") return;
+        if (_domains.TryGetValue(domainName, out var alc))
+        {
+            Log.Info($"Unloading domain: {domainName}");
+            UnloadModule(domainName);
+            UnloadService(domainName);
+            alc.Unload();
+            _domains.Remove(domainName);
+            DomainChanged?.Invoke();
+        }
+    }
+
+    public void LoadDomain(string domainName)
+    {
+        if (domainName == "Default") return;
+        
+        // Si no existe, lo creamos
+        if (!_domains.ContainsKey(domainName))
+        {
+            Log.Info($"Loading/Creating domain: {domainName}");
+            var alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
+        }
+
+        // Cargamos los módulos y paquetes forzados para este dominio
+        LoadForecedPackages(_settings.ForcedPackages.Where(x => x.Domain == domainName).ToList());
+        foreach (var moduleItem in _settings.List.Where(item => item.Active && item.Domain == domainName))
+        {
+            LoadModuleAssembly(moduleItem);
+            if (moduleItem.LoadAdditionalDlls == true && moduleItem.Path != null)
+            {
+                LoadAdditinalAssemblies(moduleItem.Path);
+            }
+        }
+
+        LoadModule(domainName);
+        LoadService(domainName);
+
+        DomainChanged?.Invoke();
+    }
+
+    public void ReloadDomain(string domainName)
+    {
+        if (domainName == "Default") return;
+        Log.Info($"Reloading domain: {domainName}");
+        UnloadDomain(domainName);
+        LoadDomain(domainName);
+    }
+
+    public void UnloadModule(string domainName)
+    {
+        Log.Info($"UnloadModule placeholder for domain: {domainName}");
+    }
+
+    public void UnloadService(string domainName)
+    {
+        Log.Info($"UnloadService placeholder for domain: {domainName}");
+    }
+
+    public void LoadModule(string domainName)
+    {
+        Log.Info($"LoadModule placeholder for domain: {domainName}");
+    }
+
+    public void LoadService(string domainName)
+    {
+        Log.Info($"LoadService placeholder for domain: {domainName}");
     }
 
 

@@ -2,11 +2,15 @@
 @using System.Xml.Linq
 @using System.IO
 @using System.Runtime.Loader
+@implements IDisposable
 @inject IhAssemblyManager AssemblyManager
 
 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="height: 100%">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 40%; height: 100%">
-        <RadzenText TextStyle="TextStyle.H5" Text="Explorador de Ensamblados"/>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText TextStyle="TextStyle.H5" Text="Explorador de Ensamblados" Style="margin-bottom: 0"/>
+            <RadzenButton Icon="refresh" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@RefreshTree" ToolTip="Recargar" />
+        </RadzenStack>
 
         <RadzenTextBox Placeholder="Filtrar por nombre de ensamblado..."
                        @oninput="@(args => OnSearchChange(args.Value?.ToString() ?? ""))" Style="width: 100%"/>
@@ -46,6 +50,28 @@
 
     protected override void OnInitialized()
     {
+        AssemblyManager.DomainChanged += OnDomainChanged;
+        RefreshTree();
+        base.OnInitialized();
+    }
+
+    private void OnDomainChanged()
+    {
+        InvokeAsync(() =>
+        {
+            RefreshTree();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        AssemblyManager.DomainChanged -= OnDomainChanged;
+    }
+
+    private void RefreshTree()
+    {
+        treeItems = new();
         var assembliesByDomain = AssemblyManager.AssembliesByDomain;
 
         foreach (var domain in assembliesByDomain.OrderBy(d => d.Key == "Default" ? 0 : 1).ThenBy(d => d.Key))
@@ -85,8 +111,14 @@
             treeItems.Add(domainNode);
         }
 
-        filteredTreeItems = treeItems;
-        base.OnInitialized();
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredTreeItems = treeItems;
+        }
+        else
+        {
+            OnSearchChange(searchTerm);
+        }
     }
 
     void OnSearchChange(string value)
