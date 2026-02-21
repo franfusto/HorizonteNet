@@ -193,9 +193,18 @@ public static class Extensions
                         var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0";
                         var args = new ResolveEventArgs($"{packageName}, Version={version}");
                         var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
-                        if (assembly != null && !string.IsNullOrEmpty(assembly.Location))
+                        if (assembly != null)
                         {
-                            additionalReferences.Add(MetadataReference.CreateFromFile(assembly.Location));
+                            var location = assembly.Location;
+                            if (string.IsNullOrEmpty(location))
+                            {
+                                location = assemblyManager.ResolveAssemblyDllPath(packageName, version);
+                            }
+
+                            if (!string.IsNullOrEmpty(location))
+                            {
+                                additionalReferences.Add(MetadataReference.CreateFromFile(location));
+                            }
                         }
                     }
                     cleanCodeLines.Add(""); // Reemplazar con línea vacía para mantener números de línea
@@ -278,7 +287,15 @@ public static class Extensions
             }
 
             // Añadir Horizonte
-            var horizonteLoc = typeof(IHorizonteEnv).Assembly.Location;
+            var horizonteAssembly = typeof(IHorizonteEnv).Assembly;
+            var horizonteLoc = horizonteAssembly.Location;
+            
+            if (string.IsNullOrEmpty(horizonteLoc) && assemblyManager != null)
+            {
+                var version = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
+                horizonteLoc = assemblyManager.ResolveAssemblyDllPath("Horizonte", version);
+            }
+            
             if (!string.IsNullOrEmpty(horizonteLoc) && addedFiles.Add(Path.GetFileName(horizonteLoc)))
             {
                 references.Add(MetadataReference.CreateFromFile(horizonteLoc));

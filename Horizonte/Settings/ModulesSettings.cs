@@ -41,6 +41,7 @@ public class ModulesSettings
             "netstandard2.1",
             "netstandard2.0",
         };
+        this.Domains.Add("Default");
     }
     
     public List<ModulesSettingsItem> List { get; set; } = [];
@@ -48,6 +49,7 @@ public class ModulesSettings
     public List<NugetFolderItem> NugetFolders { get; set; } = new List<NugetFolderItem>();
     public List<string> FrameworkPriorities { get; set; } = new List<string>();
     public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
+    public List<string> Domains { get; set; } = new List<string>();
 }
 
 public class ForcedPackageItem
@@ -64,6 +66,7 @@ public class ModulesSettingsItem
     public string ModuleVersion { get; set; }= string.Empty;
     public string? Path { get; set; }
     public bool? LoadAdditionalDlls { get; set; } = false;
+    public string? Domain { get; set; } = "Default";
 }
 
 public class NugetServerItem

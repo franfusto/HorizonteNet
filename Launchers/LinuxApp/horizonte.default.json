@@ -348,5 +348,26 @@
         "Items": []
       }
     ]
+  },
+  "ScriptsConfig": {
+    "Sources": [
+      {
+        "Name": "App",
+        "Path": "./scripts"
+      },
+      {
+        "Name": "Privado",
+        "Path": "~/horizonte/scripts"
+      }
+    ],
+    "Scripts": [
+      {
+        "Id": "4b7ab579-9766-4359-9398-357cb7a47248",
+        "Name": "NuevoScript",
+        "Description": "",
+        "Code": "I3IgIm51Z2V0Okhvcml6b250ZSwxMC4wLjAtYmV0YSIKI3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKCnVzaW5nIFN5c3RlbTsKdXNpbmcgSG9yaXpvbnRlOwp1c2luZyBNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nOwoKCltIb3Jpem9udGVNb2R1bGUoIlNhbXBsZSIpXQpwdWJsaWMgY2xhc3MgU2FtcGxlCnsKICAgIHByaXZhdGUgSUxvZ2dlcjxQYW5lbE1vZHVsbz4/IF9sb2dnZXI7CiAgICBwcml2YXRlIExhenk8SUhvcml6b250ZUVudj4gX2VudjsKCiAgICBwdWJsaWMgU2FtcGxlKElIb3Jpem9udGVFbnYgZW52KQogICAgewogICAgICAgIF9lbnYgPSBuZXcgTGF6eTxJSG9yaXpvbnRlRW52PigoKSA9PiBlbnYpOwogICAgfQogICAgCiAgICBbSG9yaXpvbnRlUm9sZSgiaW5pdCIpXQogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9Jbml0IildCiAgICBwdWJsaWMgYm9vbCBJbml0KCkKICAgIHsKICAgICAgICBfbG9nZ2VyID0gX2Vudi5WYWx1ZS5HZXRTZXJ2aWNlPElMb2dnZXI8UGFuZWxNb2R1bG8+PigpOwogICAgICAgIHZhciBjb250ZXh0ID0gX2Vudi5WYWx1ZS5HZXRTZXJ2aWNlPElIQ29udGV4dD4oKTsKICAgICAgICBfbG9nZ2VyPy5Mb2dJbmZvcm1hdGlvbigiTcOzZHVsbyBTY3JpcHRzIEluY2ljaWFkbyIpOwogICAgICAgIHJldHVybiB0cnVlOwogICAgfQoKICAgIFtIb3Jpem9udGVDb21tYW5kKCJTYW1wbGVfSGF6QWxnbyIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28oc3RyaW5nIGFyZ3MpCiAgICB7CiAgICAgICAgQ29uc29sZS5Xcml0ZUxpbmUoYXJncyk7CiAgICAgICAgcmV0dXJuIGFyZ3M7CiAgICB9Cn0K",
+        "Active": true
+      }
+    ]
   }
 }

@@ -1,45 +1,20 @@
 @inject IHContext Context
 <RadzenStack Orientation="Orientation.Vertical">
     <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
-                    AllowSorting="true" 
-                    EditMode="DataGridEditMode.Single" Data="ModuleSettings" TItem="ModulesSettingsItem"
+                    AllowSorting="false" 
+                    EditMode="DataGridEditMode.Single" Data="_localDomains" TItem="DomainItem"
                     RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow"  >
         <HeaderTemplate>
             <RadzenStack Orientation="Orientation.Vertical">
-                <RadzenText TextStyle="TextStyle.Subtitle1"> Módulos</RadzenText>
+                <RadzenText TextStyle="TextStyle.Subtitle1">Dominios</RadzenText>
                 <RadzenButton Variant="Variant.Outlined" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@InsertRow"
                               Size="ButtonSize.ExtraSmall" Text="Añadir"/>
             </RadzenStack>
         </HeaderTemplate>
         <Columns>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleName)" Title="Name">
+            <RadzenDataGridColumn Property="@nameof(DomainItem.Domain)" Title="Dominio">
                 <EditTemplate Context="item">
-                    <RadzenTextBox @bind-Value="item.ModuleName"/>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.ModuleVersion)" Title="Version">
-                <EditTemplate Context="item">
-                    <RadzenTextBox @bind-Value="item.ModuleVersion"/>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Path)" Title="Path">
-                <EditTemplate Context="item">
-                    <RadzenTextBox @bind-Value="item.Path"/>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.LoadAdditionalDlls)" Title="Additional Dlls">
-                <EditTemplate Context="item">
-                    <RadzenCheckBox @bind-Value="item.LoadAdditionalDlls"/>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Active)" Title="Activo">
-                <EditTemplate Context="item">
-                    <RadzenCheckBox @bind-Value="item.Active"/>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(ModulesSettingsItem.Domain)" Title="Dominio">
-                <EditTemplate Context="item">
-                    <RadzenDropDown @bind-Value="item.Domain" Data="@Domains" Style="width: 100%"/>
+                    <RadzenTextBox @bind-Value="item.Domain" Style="width: 100%"/>
                 </EditTemplate>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
@@ -75,52 +50,69 @@
 
 @code {
 
-    [Parameter] public List<ModulesSettingsItem> ModuleSettings { get; set; } = new List<ModulesSettingsItem>();
     [Parameter] public List<string> Domains { get; set; } = new List<string>();
-    private RadzenDataGrid<ModulesSettingsItem> _grid = new RadzenDataGrid<ModulesSettingsItem>();
+    
+    public class DomainItem
+    {
+        public string Domain { get; set; } = string.Empty;
+    }
+
+    private RadzenDataGrid<DomainItem> _grid = new RadzenDataGrid<DomainItem>();
+    private List<DomainItem> _localDomains = new();
+    
+    protected override void OnParametersSet()
+    {
+        _localDomains = Domains.Select(x => new DomainItem { Domain = x }).ToList();
+        base.OnParametersSet();
+    }
+
+    private void Sync()
+    {
+        Domains.Clear();
+        Domains.AddRange(_localDomains.Select(x => x.Domain));
+    }
 
     async Task InsertRow()
     {
-        var item = new ModulesSettingsItem()
+        var item = new DomainItem()
         {
-            ModuleName = "modname",
-            ModuleVersion = "1.0.0"
+            Domain = "Default"
         };
         await _grid.InsertRow(item);
     }
 
-
-    void OnUpdateRow(ModulesSettingsItem item)
+    void OnUpdateRow(DomainItem item)
     {
+        Sync();
         _grid.Reload();
     }
 
-    void OnCreateRow(ModulesSettingsItem item)
+    void OnCreateRow(DomainItem item)
     {
-        ModuleSettings.Add(item);
+        _localDomains.Add(item);
+        Sync();
     }
 
-    async Task EditRow(ModulesSettingsItem item)
+    async Task EditRow(DomainItem item)
     {
         await _grid.EditRow(item);
     }
 
-    async Task SaveRow(ModulesSettingsItem item)
+    async Task SaveRow(DomainItem item)
     {
         await _grid.UpdateRow(item);
     }
 
-    void CancelEdit(ModulesSettingsItem item)
+    void CancelEdit(DomainItem item)
     {
         _grid.CancelEditRow(item);
         _grid.Reload();
     }
 
-    async Task DeleteRow(ModulesSettingsItem item)
+    async Task DeleteRow(DomainItem item)
     {
-        var selitem = ModuleSettings.FirstOrDefault(x => (x.ModuleName == item.ModuleName) && (x.ModuleVersion == item.ModuleVersion));
-        if (selitem != null) ModuleSettings.Remove(selitem);
+        _localDomains.Remove(item);
+        Sync();
         await _grid.Reload();
     }
-
 }
