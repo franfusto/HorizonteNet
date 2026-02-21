@@ -1,6 +1,8 @@
 @using System.Reflection
 @using System.Xml.Linq
 @using System.IO
+@using System.Runtime.Loader
+@inject IhAssemblyManager AssemblyManager
 
 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="height: 100%">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 40%; height: 100%">
@@ -44,36 +46,43 @@
 
     protected override void OnInitialized()
     {
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var assembliesByDomain = AssemblyManager.AssembliesByDomain;
 
-        foreach (var assembly in assemblies.OrderBy(a => a.GetName().Name))
+        foreach (var domain in assembliesByDomain.OrderBy(d => d.Key == "Default" ? 0 : 1).ThenBy(d => d.Key))
         {
-            var name = assembly.GetName();
-            var assemblyNode = new TreeItem { Text = $"{name.Name} ({name.Version})", Icon = "folder", Assembly = assembly };
-
-            try
+            var domainNode = new TreeItem { Text = $"Dominio: {domain.Key}", Icon = "dns" };
+            
+            foreach (var assembly in domain.Value.OrderBy(a => a.GetName().Name))
             {
-                var types = assembly.GetTypes()
-                    .GroupBy(t => t.Namespace ?? "<Sin Namespace>")
-                    .OrderBy(g => g.Key);
+                var name = assembly.GetName();
+                var assemblyNode = new TreeItem { Text = $"{name.Name} ({name.Version})", Icon = "folder", Assembly = assembly };
 
-                foreach (var nsGroup in types)
+                try
                 {
-                    var nsNode = new TreeItem { Text = nsGroup.Key, Icon = "folder_open" };
-                    foreach (var type in nsGroup.OrderBy(t => t.Name))
+                    var types = assembly.GetTypes()
+                        .GroupBy(t => t.Namespace ?? "<Sin Namespace>")
+                        .OrderBy(g => g.Key);
+
+                    foreach (var nsGroup in types)
                     {
-                        nsNode.Children.Add(new TreeItem { Text = type.Name, Icon = "description", Type = type, Assembly = assembly });
+                        var nsNode = new TreeItem { Text = nsGroup.Key, Icon = "folder_open" };
+                        foreach (var type in nsGroup.OrderBy(t => t.Name))
+                        {
+                            nsNode.Children.Add(new TreeItem { Text = type.Name, Icon = "description", Type = type, Assembly = assembly });
+                        }
+
+                        assemblyNode.Children.Add(nsNode);
                     }
-
-                    assemblyNode.Children.Add(nsNode);
                 }
-            }
-            catch (ReflectionTypeLoadException)
-            {
-                assemblyNode.Children.Add(new TreeItem { Text = "Error al cargar tipos", Icon = "error" });
-            }
+                catch (ReflectionTypeLoadException)
+                {
+                    assemblyNode.Children.Add(new TreeItem { Text = "Error al cargar tipos", Icon = "error" });
+                }
 
-            treeItems.Add(assemblyNode);
+                domainNode.Children.Add(assemblyNode);
+            }
+            
+            treeItems.Add(domainNode);
         }
 
         filteredTreeItems = treeItems;
@@ -90,7 +99,15 @@
         else
         {
             filteredTreeItems = treeItems
-                .Where(i => i.Text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .Select(domainNode => new TreeItem 
+                { 
+                    Text = domainNode.Text, 
+                    Icon = domainNode.Icon, 
+                    Children = domainNode.Children
+                        .Where(assemblyNode => assemblyNode.Text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                        .ToList()
+                })
+                .Where(domainNode => domainNode.Children.Any())
                 .ToList();
         }
     }

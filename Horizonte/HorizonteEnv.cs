@@ -314,7 +314,7 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHCredManager>(_credManager);
 
             //ensamblados
-            if (_assemblyManager != null) _builder.Services.AddSingleton(_assemblyManager);
+            if (_assemblyManager != null) _builder.Services.AddSingleton<IhAssemblyManager>(_assemblyManager);
 
             //log 
             _builder.ConfigureLog4Net(_context);

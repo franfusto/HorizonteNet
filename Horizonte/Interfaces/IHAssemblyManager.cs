@@ -12,6 +12,7 @@ public interface IhAssemblyManager
     /// 
     /// </summary>
     public List<Assembly> Assemblies { get; }
+    public Dictionary<string, List<Assembly>> AssembliesByDomain { get; }
 
     public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName);
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args);

@@ -20,6 +20,20 @@ public class HAssemblyManager : IhAssemblyManager
     private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
 
+    public Dictionary<string, List<Assembly>> AssembliesByDomain
+    {
+        get
+        {
+            var result = new Dictionary<string, List<Assembly>>();
+            result["Default"] = AssemblyLoadContext.Default.Assemblies.ToList();
+            foreach (var domain in _domains)
+            {
+                result[domain.Key] = domain.Value.Assemblies.ToList();
+            }
+            return result;
+        }
+    }
+
     public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
     {
         _settings = settings;

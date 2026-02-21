@@ -19,6 +19,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
     private IHContext? _context;
     private IHCredManager? _credManager;
     private ISymLinkScafolder? _linkScafolder;
+    private IhAssemblyManager? _assemblyManager;
     //private IHModManager? _modManager;
 
     public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
@@ -61,6 +62,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         if (_context != null) builder.Services.AddSingleton(_context);
         if(_credManager != null) builder.Services.AddSingleton(_credManager);
         if (_linkScafolder != null) builder.Services.AddSingleton(_linkScafolder);
+        if (_assemblyManager != null) builder.Services.AddSingleton(_assemblyManager);
        // if (_modManager != null) builder.Services.AddSingleton(_modManager);
        
         builder.Services.AddRazorComponents()
@@ -94,6 +96,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         _context = _env?.HHost.Services.GetService<IHContext>();
         _credManager = _env?.HHost.Services.GetService<IHCredManager>();
         _linkScafolder = _env?.HHost.Services.GetService<ISymLinkScafolder>();
+        _assemblyManager = _env?.HHost.Services.GetService<IhAssemblyManager>();
         //_modManager = _env?.HHost.Services.GetService<IHModManager>();
         _log?.LogInformation("Starting Horizonte.AdminUi.Worker");
         IsRunning = true;
