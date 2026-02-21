@@ -17,7 +17,7 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly SymLinkScafolder _linkScafolder;
     private readonly HorizonteEnv _environment;
     private string _installFolder = String.Empty;
-    public List<Assembly> Assemblies => AppDomain.CurrentDomain.GetAssemblies().ToList();
+    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.ToList();
 
     public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
     {
@@ -25,7 +25,7 @@ public class HAssemblyManager : IhAssemblyManager
         _linkScafolder = linkScafolder;
         _environment = environment;
         SetUpAssemblyPaths();
-        AppDomain.CurrentDomain.AssemblyResolve += ResolveAssemblyFromNuGetPackages;
+        SetUpDomains();
         LoadModulesFromEnvironment();
     }
 
@@ -57,6 +57,39 @@ public class HAssemblyManager : IhAssemblyManager
                 _searchPaths.Add(folderItem.Folder);
             }
         }
+    }
+
+    private void SetUpDomains()
+    {
+        try
+        {
+            foreach (var domainName in _settings.Domains)
+            {
+                if (domainName == "Default")
+                {
+                    // Default es el ALC por defecto, nos aseguramos de que tenga el resolve
+                    AssemblyLoadContext.Default.Resolving -= ResolveAssemblyFromALC;
+                    AssemblyLoadContext.Default.Resolving += ResolveAssemblyFromALC;
+                }
+                else
+                {
+                    // Por ahora solo logueamos la intención de crear el dominio
+                    // ya que en .NET Core/10.0 la gestión de dominios aislados 
+                    // se realiza mediante AssemblyLoadContext si fuera necesario.
+                    Log.Info($"Dominio configurado: {domainName}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error(e);
+        }
+    }
+
+
+    public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName)
+    {
+        return ResolveAssemblyFromNuGetPackages(context, new ResolveEventArgs(assemblyName.FullName));
     }
 
 
