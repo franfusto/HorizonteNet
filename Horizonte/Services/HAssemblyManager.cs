@@ -17,7 +17,8 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly SymLinkScafolder _linkScafolder;
     private readonly HorizonteEnv _environment;
     private string _installFolder = String.Empty;
-    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.ToList();
+    private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
+    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
 
     public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
     {
@@ -73,10 +74,13 @@ public class HAssemblyManager : IhAssemblyManager
                 }
                 else
                 {
-                    // Por ahora solo logueamos la intención de crear el dominio
-                    // ya que en .NET Core/10.0 la gestión de dominios aislados 
-                    // se realiza mediante AssemblyLoadContext si fuera necesario.
-                    Log.Info($"Dominio configurado: {domainName}");
+                    if (!_domains.ContainsKey(domainName))
+                    {
+                        Log.Info($"Creando dominio (ALC): {domainName}");
+                        var alc = new AssemblyLoadContext(domainName, isCollectible: true);
+                        alc.Resolving += ResolveAssemblyFromALC;
+                        _domains[domainName] = alc;
+                    }
                 }
             }
         }
@@ -126,6 +130,14 @@ public class HAssemblyManager : IhAssemblyManager
                 return null;
             }
 
+            // Asegurarse de que el path sea absoluto
+            if (!Path.IsPathRooted(resAssemblyPath))
+            {
+                // Intentar resolverlo relativo al directorio de ejecución o a los search paths
+                // Pero lo más seguro para ALC es Path.GetFullPath
+                resAssemblyPath = Path.GetFullPath(resAssemblyPath);
+            }
+
             //registras assets
             _environment.StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
 
@@ -144,6 +156,11 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             // Cargar y devolver el ensamblado seleccionado
+            if (sender is AssemblyLoadContext context)
+            {
+                return context.LoadFromAssemblyPath(resAssemblyPath);
+            }
+            
             return Assembly.LoadFrom(resAssemblyPath);
         }
         catch (Exception ex)
@@ -166,6 +183,11 @@ public class HAssemblyManager : IhAssemblyManager
             path = ResolveNugetFromLocalDirectory(packageName, version, null, false);
         }
 
+        if (path != null && !Path.IsPathRooted(path))
+        {
+            path = Path.GetFullPath(path);
+        }
+
         return path;
     }
 
@@ -177,7 +199,7 @@ public class HAssemblyManager : IhAssemblyManager
         var frameworkName = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
         // FrameworkDescription suele ser ".NET 10.0.0" o similar.
         // AppContext.TargetFrameworkName suele ser ".NETCoreApp,Version=v10.0"
-        var targetFramework = AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName;
+        var targetFramework = AppContext.TargetFrameworkName;
         
         if (string.IsNullOrEmpty(targetFramework))
         {
@@ -703,8 +725,21 @@ public class HAssemblyManager : IhAssemblyManager
 
                 if (dllPath != null)
                 {
+                    if (!Path.IsPathRooted(dllPath))
+                        dllPath = Path.GetFullPath(dllPath);
+
                     Log.Info($"Forced package {package.PackageId} resolved to: {dllPath}");
-                    Assembly.LoadFrom(dllPath);
+                    
+                    var alc = AssemblyLoadContext.Default;
+                    if (!string.IsNullOrEmpty(package.Domain) && package.Domain != "Default")
+                    {
+                        if (_domains.TryGetValue(package.Domain, out var customAlc))
+                        {
+                            alc = customAlc;
+                        }
+                    }
+                    
+                    alc.LoadFromAssemblyPath(dllPath);
                     
                     // Registrar assets del paquete
                     _environment.StaticFileRegistry.RegisterPackageDirectory(dllPath);
@@ -744,13 +779,25 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
+            var alc = AssemblyLoadContext.Default;
+            if (!string.IsNullOrEmpty(moduleItem.Domain) && moduleItem.Domain != "Default")
+            {
+                if (_domains.TryGetValue(moduleItem.Domain, out var customAlc))
+                {
+                    alc = customAlc;
+                }
+            }
+
             if (File.Exists(moduleItem.Path))
             {
-                Log.Info($"Loading module from: {moduleItem.Path}");
+                var fullPath = Path.IsPathRooted(moduleItem.Path) 
+                    ? moduleItem.Path 
+                    : Path.GetFullPath(moduleItem.Path);
 
+                Log.Info($"Loading module from: {fullPath}");
 
                 // Carga el ensamblado desde la ruta especificada.
-                var loadedassembly = Assembly.LoadFrom(moduleItem.Path);
+                var loadedassembly = alc.LoadFromAssemblyPath(fullPath);
 
                 // Agrega los activos y el archivo de documentación al entorno.
                 _environment.StaticFileRegistry.RegisterModuleDirectory(moduleItem);
@@ -761,10 +808,8 @@ public class HAssemblyManager : IhAssemblyManager
                 var args = new ResolveEventArgs(
                     $"{moduleItem.ModuleName}, Version={moduleItem.ModuleVersion}"); //, Culture=neutral, PublicKeyToken=null
 
-                var nugetassembly = ResolveAssemblyFromNuGetPackages(null, args);
-                if (nugetassembly != null)
-                    Assembly.LoadFrom(nugetassembly.Location);
-                else
+                var nugetassembly = ResolveAssemblyFromNuGetPackages(alc, args);
+                if (nugetassembly == null)
                     Log.Error($"Can't find: {moduleItem.Path}");
             }
         }
@@ -792,11 +837,12 @@ public class HAssemblyManager : IhAssemblyManager
                     string assemblyName = AssemblyName.GetAssemblyName(dllFile).FullName;
 
                     // Verifica si el ensamblado ya está cargado
-                    if (!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == assemblyName))
+                    if (!this.Assemblies.Any(a => a.FullName == assemblyName))
                     {
-                        // Si no, lo carga
-                        Assembly.LoadFrom(dllFile);
-                        Log.Info($"--Loading additional dll: {dllFile}");
+                        var fullDllPath = Path.GetFullPath(dllFile);
+                        // Si no, lo carga en el ALC por defecto (comportamiento legacy para DLLs adicionales en la misma carpeta)
+                        AssemblyLoadContext.Default.LoadFromAssemblyPath(fullDllPath);
+                        Log.Info($"--Loading additional dll: {fullDllPath}");
                     }
                     else
                     {
