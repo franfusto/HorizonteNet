@@ -84,81 +84,24 @@ public class HGesCom : IHGesCom
         try
         {
             var enviorment = _env.Value;
+            var assemblyManager = _env.Value.AssemblyManager;
             var processedAssemblies = new HashSet<string>();
-            var assembliesToProcess = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
-            
-            //Console.WriteLine("----------------------" + assembliesToProcess.Count);
-            //llenamos diccionario de commandos
-            var cnt = 0;
-            while (assembliesToProcess.Count > 0)
+
+            // Si no tenemos assemblyManager (muy raro), usamos el comportamiento anterior como fallback seguro
+            var assembliesByDomain = assemblyManager?.AssembliesByDomain;
+
+            if (assembliesByDomain == null)
             {
-                var assembly = assembliesToProcess.Dequeue();
-                if (processedAssemblies.Contains(assembly.FullName!)) continue;
-                processedAssemblies.Add(assembly.FullName!);
+                Log.Warn("IhAssemblyManager not found or AssembliesByDomain is null. Falling back to AppDomain.CurrentDomain.");
+                ProcessAssemblies(AppDomain.CurrentDomain.GetAssemblies().ToList(), "Default", processedAssemblies, enviorment);
+                return;
+            }
 
-                //Console.WriteLine($"****** Processing assembly '{assembly.FullName}' {cnt++}");
-                
-                Type[] types;
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    types = ex.Types.Where(t => t != null).ToArray()!;
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName}: {e.Message}");
-                    continue;
-                }
-
-                var modulostypes = (from type in types
-                    where Attribute.IsDefined(type, typeof(HorizonteModule)) 
-                    select type).ToList();
-
-                foreach (var modtype in modulostypes)
-                {
-                    try
-                    {
-                        if (modtype == null) continue;
-                        object? modInstance;
-                        try
-                        {
-                            Log.Info($">>>> Loading modules from '{modtype.FullName}'");
-
-                            modInstance = Activator.CreateInstance(modtype, enviorment);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error("Error al crear instancia: " + modtype.FullName, e);
-                            continue;
-                        }
-
-                        var metodos = modtype.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
-                        foreach (var method in metodos)
-                        {
-                            if (modInstance != null)
-                            {
-                                AddCommandToList(method, modInstance);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        _log?.LogError(e.ToString());
-                    }
-                }
-
-                // Verificar si se cargaron nuevos ensamblados durante el procesamiento
-                var currentAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var currentAssembly in currentAssemblies)
-                {
-                    if (!processedAssemblies.Contains(currentAssembly.FullName!))
-                    {
-                        assembliesToProcess.Enqueue(currentAssembly);
-                    }
-                }
+            foreach (var domainEntry in assembliesByDomain)
+            {
+                var domainName = domainEntry.Key;
+                var assemblies = domainEntry.Value;
+                ProcessAssemblies(assemblies, domainName, processedAssemblies, enviorment);
             }
 
             _log?.LogInformation($"Loaded {_commandList.Count} HCommands");
@@ -166,6 +109,70 @@ public class HGesCom : IHGesCom
         catch (Exception e)
         {
             _log?.LogError(e.ToString());
+        }
+    }
+
+    private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies, IHorizonteEnv enviorment)
+    {
+        var assembliesToProcess = new Queue<Assembly>(assemblies);
+
+        while (assembliesToProcess.Count > 0)
+        {
+            var assembly = assembliesToProcess.Dequeue();
+            if (processedAssemblies.Contains(assembly.FullName!)) continue;
+            processedAssemblies.Add(assembly.FullName!);
+
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray()!;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
+                continue;
+            }
+
+            var modulostypes = (from type in types
+                                where Attribute.IsDefined(type, typeof(HorizonteModule))
+                                select type).ToList();
+
+            foreach (var modtype in modulostypes)
+            {
+                try
+                {
+                    if (modtype == null) continue;
+                    object? modInstance;
+                    try
+                    {
+                        Log.Info($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
+
+                        modInstance = Activator.CreateInstance(modtype, enviorment);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
+                        continue;
+                    }
+
+                    var metodos = modtype.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
+                    foreach (var method in metodos)
+                    {
+                        if (modInstance != null)
+                        {
+                            AddCommandToList(method, modInstance, domainName);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log?.LogError(e.ToString());
+                }
+            }
         }
     }
 
@@ -209,7 +216,8 @@ public class HGesCom : IHGesCom
     /// </summary>
     /// <param name="method">La información del método que será añadido como comando.</param>
     /// <param name="instance">La instancia del objeto que contiene el método que se va a agregar.</param>
-    private void AddCommandToList(MethodInfo method, object instance)
+    /// <param name="domain">El dominio (ALC) al que pertenece el comando.</param>
+    private void AddCommandToList(MethodInfo method, object instance, string domain = "Default")
     {
         var hAttrib = method.CustomAttributes.First(t =>
             t.AttributeType == typeof(HorizonteCommand));
@@ -228,7 +236,8 @@ public class HGesCom : IHGesCom
             Roles = roleAttrib,
             IsAsync = method.ReturnType == typeof(Task) ||
                       (method.ReturnType.IsGenericType &&
-                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
+            Domain = domain
         };
         _commandList.Add(miCmd.CommandKey, miCmd);
     }

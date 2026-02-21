@@ -27,6 +27,7 @@ public class HorizonteEnv : IHorizonteEnv
     public string Contextname { get; private set; }
     public StaticFileRegistry StaticFileRegistry { get; set; }
    // public UnmanagedDllResolver UnmanagedDllResolver { get; set; }
+    public IhAssemblyManager? AssemblyManager { get; set; }
 
     private HostApplicationBuilder? _builder { get; set; }
     private readonly string[] _args;
@@ -38,7 +39,7 @@ public class HorizonteEnv : IHorizonteEnv
     private WorkerSettings _workerSettings;
     private Log4NetSettings _log4NetSettings;
     private IHGesCom? _gescom;
-    private IhAssemblyManager? _assemblyManager;
+    
     private List<BackgroundService> _startServicesList = new();
     private CancellationToken _cts = new CancellationToken();
     private ILogger _startlogger;
@@ -119,7 +120,6 @@ public class HorizonteEnv : IHorizonteEnv
         return HHost.Services.GetRequiredService<T>();
     }
 
-    
 
 
     // ********* LIFECYCLE *********
@@ -256,7 +256,7 @@ public class HorizonteEnv : IHorizonteEnv
         _startlogger.Info("******** STAGE 2 - LOAD ASSEMBLIES **********");
         try
         {
-            _assemblyManager = new HAssemblyManager(_modulesSettings, _linkScafolder, this);
+            AssemblyManager = new HAssemblyManager(_modulesSettings, _linkScafolder, this);
             //Assemblies = _assemblyManager.Assemblies;
         }
         catch (Exception e)
@@ -314,7 +314,7 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHCredManager>(_credManager);
 
             //ensamblados
-            if (_assemblyManager != null) _builder.Services.AddSingleton<IhAssemblyManager>(_assemblyManager);
+            if (AssemblyManager != null) _builder.Services.AddSingleton<IhAssemblyManager>(AssemblyManager);
 
             //log 
             _builder.ConfigureLog4Net(_context);

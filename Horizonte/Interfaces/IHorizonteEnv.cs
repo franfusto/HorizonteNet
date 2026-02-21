@@ -18,5 +18,6 @@ public interface IHorizonteEnv
     public  string Contextname { get;  }
     public T? GetService<T>();
     public T? GetRequiredService<T>(T value) where T : Type;
+    public IhAssemblyManager? AssemblyManager { get; set; }
 }
 

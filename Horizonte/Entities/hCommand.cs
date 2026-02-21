@@ -52,6 +52,11 @@ namespace Horizonte
         /// </summary>
         public bool IsAsync { get; set; } = false;
         
+        /// <summary>
+        /// El dominio (ALC) al que pertenece el comando.
+        /// </summary>
+        public string Domain { get; set; } = "Default";
+        
         
     }
 }
