@@ -1,4 +1,5 @@
 @inject IHContext Context
+@inject IhAssemblyManager AssemblyManager
 <RadzenStack Orientation="Orientation.Vertical">
     <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
                     AllowSorting="false" 
@@ -17,8 +18,29 @@
                     <RadzenTextBox @bind-Value="item.Domain" Style="width: 100%"/>
                 </EditTemplate>
             </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Acciones ALC" TextAlign="TextAlign.Center" Width="180px">
+                <Template Context="item">
+                    @if (item.Domain != "Default")
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.Center">
+                            <RadzenButton Icon="file_download_off" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat"
+                                          Size="ButtonSize.Small" Click="@(args => UnloadDomain(item))"
+                                          ToolTip="Descargar (Unload)">
+                            </RadzenButton>
+                            <RadzenButton Icon="file_download" ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat"
+                                          Size="ButtonSize.Small" Click="@(args => LoadDomain(item))"
+                                          ToolTip="Cargar (Load)">
+                            </RadzenButton>
+                            <RadzenButton Icon="refresh" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                          Size="ButtonSize.Small" Click="@(args => ReloadDomain(item))"
+                                          ToolTip="Recargar (Reload)">
+                            </RadzenButton>
+                        </RadzenStack>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
-                                  Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                                  Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="100px">
                 <Template Context="item">
                     <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
                                   Size="ButtonSize.Medium" Click="@(args => EditRow(item))"
@@ -114,5 +136,20 @@
         _localDomains.Remove(item);
         Sync();
         await _grid.Reload();
+    }
+
+    private void UnloadDomain(DomainItem item)
+    {
+        // TODO: Implementar Unload en AssemblyManager
+    }
+
+    private void LoadDomain(DomainItem item)
+    {
+        // TODO: Implementar Load en AssemblyManager
+    }
+
+    private void ReloadDomain(DomainItem item)
+    {
+        // TODO: Implementar Reload en AssemblyManager
     }
 }
