@@ -27,6 +27,11 @@
                     <RadzenTextBox @bind-Value="item.Framework" Style="width: 100%"/>
                 </EditTemplate>
             </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.Domain)" Title="Dominio">
+                <EditTemplate Context="item">
+                    <RadzenDropDown @bind-Value="item.Domain" Data="@Domains" Style="width: 100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn Context="item" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
                                   Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
                 <Template Context="item">
@@ -71,6 +76,7 @@
 @code {
 
     [Parameter] public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
+    [Parameter] public List<string> Domains { get; set; } = new List<string>();
     
     private RadzenDataGrid<ForcedPackageItem> _grid = new RadzenDataGrid<ForcedPackageItem>();
 

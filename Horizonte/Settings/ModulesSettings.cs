@@ -57,6 +57,7 @@ public class ForcedPackageItem
     public string PackageId { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
     public string Framework { get; set; } = string.Empty;
+    public string Domain { get; set; } = "Default";
 }
 
 public class ModulesSettingsItem
