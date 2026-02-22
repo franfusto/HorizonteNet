@@ -563,4 +563,75 @@ public class HGesCom : IHGesCom
     {
         return _commandList.Values.ToList();
     }
+
+    /// <summary>
+    /// Elimina de la lista de comandos aquellos que pertenezcan al dominio especificado.
+    /// </summary>
+    /// <param name="domainName">Nombre del dominio (ALC).</param>
+    public void UnloadCommandsByDomain(string domainName)
+    {
+        try
+        {
+            var keysToRemove = _commandList.Where(x => x.Value.Domain == domainName).Select(x => x.Key).ToList();
+            foreach (var key in keysToRemove)
+            {
+                if (_commandList.TryGetValue(key, out var command))
+                {
+                    // Si la instancia implementa IDisposable, la liberamos
+                    if (command.Instance is IDisposable disposable)
+                    {
+                        try
+                        {
+                            disposable.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warn($"Error al liberar instancia del comando {key} en el dominio {domainName}: {ex.Message}");
+                        }
+                    }
+                    _commandList.Remove(key);
+                }
+            }
+            Log.Info($"Desvinculados {keysToRemove.Count} comandos del dominio {domainName}");
+        }
+        catch (Exception e)
+        {
+            Log.Error($"Error en UnloadCommandsByDomain para {domainName}: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Cargamos los comandos de los ensamblados asociados a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio (ALC).</param>
+    public void LoadCommandsByDomain(string domainName)
+    {
+        try
+        {
+            var enviorment = _env.Value;
+            var assemblyManager = _env.Value.AssemblyManager;
+            var processedAssemblies = new HashSet<string>();
+
+            if (assemblyManager == null)
+            {
+                Log.Error("No se puede cargar comandos por dominio: IhAssemblyManager no disponible.");
+                return;
+            }
+
+            var assembliesByDomain = assemblyManager.AssembliesByDomain;
+            if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
+            {
+                Log.Info($"Cargando comandos para el dominio: {domainName}");
+                ProcessAssemblies(assemblies, domainName, processedAssemblies, enviorment);
+            }
+            else
+            {
+                Log.Warn($"No se encontraron ensamblados para el dominio {domainName}");
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"Error en LoadCommandsByDomain para {domainName}: {e.Message}");
+        }
+    }
 }

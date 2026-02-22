@@ -87,4 +87,16 @@ public interface IHGesCom
     /// Una colección enumerable de objetos <see cref="HCommand"/>.
     /// </returns>
     public IEnumerable<HCommand> GetCommandList();
+
+    /// <summary>
+    /// Elimina los comandos asociados a un dominio específico y limpia las instancias creadas.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio (ALC).</param>
+    public void UnloadCommandsByDomain(string domainName);
+
+    /// <summary>
+    /// Carga los comandos de los ensamblados asociados a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio (ALC).</param>
+    public void LoadCommandsByDomain(string domainName);
 }

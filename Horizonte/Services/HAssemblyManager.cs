@@ -213,8 +213,8 @@ public class HAssemblyManager : IhAssemblyManager
         if (_domains.TryGetValue(domainName, out var alc))
         {
             Log.Info($"Unloading domain: {domainName}");
-            UnloadModule(domainName);
             UnloadService(domainName);
+            UnloadModule(domainName);
             alc.Unload();
             _domains.Remove(domainName);
             DomainChanged?.Invoke();
@@ -261,7 +261,9 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void UnloadModule(string domainName)
     {
-        Log.Info($"UnloadModule placeholder for domain: {domainName}");
+        Log.Info($"UnloadModule for domain: {domainName}");
+        var gesCom = _environment.HHost.Services.GetService(typeof(IHGesCom)) as IHGesCom;
+        gesCom?.UnloadCommandsByDomain(domainName);
     }
 
     public void UnloadService(string domainName)
@@ -271,7 +273,9 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void LoadModule(string domainName)
     {
-        Log.Info($"LoadModule placeholder for domain: {domainName}");
+        Log.Info($"LoadModule for domain: {domainName}");
+        var gesCom = _environment.HHost.Services.GetService(typeof(IHGesCom)) as IHGesCom;
+        gesCom?.LoadCommandsByDomain(domainName);
     }
 
     public void LoadService(string domainName)
