@@ -10,7 +10,6 @@
             <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">Scripts</RadzenText>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
                 <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnAddScript" Tooltip="Añadir nuevo script" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDeleteSelectedScript" Tooltip="Eliminar script seleccionado" Disabled="@(_selectedScript == null)" />
             </RadzenStack>
         </RadzenStack>
         
@@ -52,24 +51,7 @@
         _selectedScript = newScript;
     }
 
-    private async Task OnDeleteSelectedScript()
-    {
-        if (_selectedScript != null)
-        {
-            var confirm = await DialogService.Confirm($"¿Estás seguro de que quieres eliminar el script '{_selectedScript.Name}'?", "Confirmar");
-            if (confirm == true)
-            {
-                var scriptToRemove = _config.Scripts.FirstOrDefault(s => s.Id == _selectedScript.Id);
-                if (scriptToRemove != null)
-                {
-                    _config.Scripts.Remove(scriptToRemove);
-                    Context.Update(_config);
-                    _selectedScript = null;
-                    StateHasChanged();
-                }
-            }
-        }
-    }
+
 
     private void OnScriptDeleted()
     {

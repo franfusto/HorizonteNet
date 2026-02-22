@@ -23,12 +23,8 @@
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
                     <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnSave" Tooltip="Guardar cambios" />
                     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDelete" Tooltip="Eliminar script" />
+                    <RadzenButton Icon="build" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnCompile" Tooltip="Compilar script" />
                 </RadzenStack>
-            </RadzenStack>
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                <RadzenButton Icon="build" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnCompile" Tooltip="Compilar script" />
-                <RadzenButton Icon="upload" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnLoad" Tooltip="Cargar" />
-                <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDownload" Tooltip="Descargar" />
             </RadzenStack>
         </RadzenStack>
 
@@ -152,13 +148,5 @@ else
         }
     }
 
-    private async Task OnLoad()
-    {
-        await Task.CompletedTask;
-    }
 
-    private async Task OnDownload()
-    {
-        await Task.CompletedTask;
-    }
 }
