@@ -375,7 +375,27 @@ public static class Extensions
             if (scriptasmlist.Count==0) return;
 
             var asmmanager = env.GetService<IhAssemblyManager>();
-            asmmanager?.UnloadDomain("scripts");
+            if (asmmanager != null)
+            {
+                asmmanager.UnloadDomain("scripts");
+                asmmanager.LoadDomain("scripts", scriptasmlist);
+                
+                // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
+                var gesCom = env.GetService<IHGesCom>();
+                if (gesCom != null)
+                {
+                    foreach (var item in gesCom.GetRoleCommands("init"))
+                    {
+                        // Solo ejecutamos si el comando pertenece al dominio "scripts"
+                        var hCmd = gesCom.GetHCommand(item.CommandName);
+                        if (hCmd != null && hCmd.Domain == "scripts")
+                        {
+                            logger?.LogInformation($"Ejecutando Init de script: {item.CommandName}");
+                            gesCom.RunCommand(item.CommandName);
+                        }
+                    }
+                }
+            }
 
             
             

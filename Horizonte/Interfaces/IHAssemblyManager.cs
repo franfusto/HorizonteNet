@@ -21,6 +21,7 @@ public interface IhAssemblyManager
 
     public void UnloadDomain(string domainName);
     public void LoadDomain(string domainName);
+    public void LoadDomain(string domainName, IEnumerable<byte[]> assemblies);
     public void ReloadDomain(string domainName);
 
     public void UnloadModule(string domainName);

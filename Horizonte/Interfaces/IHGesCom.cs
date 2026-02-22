@@ -89,6 +89,13 @@ public interface IHGesCom
     public IEnumerable<HCommand> GetCommandList();
 
     /// <summary>
+    /// Recupera una instancia de un HCommand asociada con la clave de comando especificada.
+    /// </summary>
+    /// <param name="commandKey">El identificador único del comando.</param>
+    /// <returns>La instancia de HCommand o null si no se encuentra.</returns>
+    public HCommand? GetHCommand(string commandKey);
+
+    /// <summary>
     /// Elimina los comandos asociados a un dominio específico y limpia las instancias creadas.
     /// </summary>
     /// <param name="domainName">El nombre del dominio (ALC).</param>

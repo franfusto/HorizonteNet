@@ -251,6 +251,38 @@ public class HAssemblyManager : IhAssemblyManager
         DomainChanged?.Invoke();
     }
 
+    public void LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
+    {
+        if (domainName == "Default") return;
+
+        // Si no existe, lo creamos
+        if (!_domains.TryGetValue(domainName, out var alc))
+        {
+            Log.Info($"Creating domain from memory: {domainName}");
+            alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
+        }
+
+        foreach (var asmData in assemblies)
+        {
+            try
+            {
+                using var ms = new MemoryStream(asmData);
+                alc.LoadFromStream(ms);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error loading assembly from stream into domain {domainName}: {ex.Message}");
+            }
+        }
+
+        LoadModule(domainName);
+        LoadService(domainName);
+
+        DomainChanged?.Invoke();
+    }
+
     public void ReloadDomain(string domainName)
     {
         if (domainName == "Default") return;
