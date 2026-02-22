@@ -9,16 +9,25 @@ public class PanelModulo
 {
     private ILogger<PanelModulo>? _logger;
     private Lazy<IHorizonteEnv> _env;
-    
+
     /// <summary>
-    /// 
+    /// Clase que representa un módulo denominado "PanelModulo" dentro de la aplicación Horizonte.
+    /// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
+    /// modular de Horizonte, tales como inicializar servicios y registrar widgets personalizados.
     /// </summary>
-    /// <param name="env"></param>
     public PanelModulo(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
     }
-    
+
+    /// <summary>
+    /// Método encargado de inicializar el módulo "Scripts" en la aplicación Horizonte.
+    /// Este método configura el logger y otros servicios necesarios para el correcto funcionamiento
+    /// del módulo y registra un mensaje de información en los logs.
+    /// </summary>
+    /// <returns>
+    /// Devuelve un valor booleano que indica si el módulo fue iniciado correctamente.
+    /// </returns>
     [HorizonteRole("init")]
     [HorizonteCommand("Scripts_Init")]
     public bool Init()
@@ -28,22 +37,31 @@ public class PanelModulo
         _logger?.LogInformation("Módulo Scripts Inciciado");
         return true;
     }
-    
+
+
+    /// <summary>
+    /// Método que devuelve la configuración del widget de Jupyter Notebook
+    /// para su uso en el módulo "Scripts" de la aplicación Horizonte.
+    /// Este método configura los parámetros iniciales y define el tipo del widget
+    /// asociado al entorno de ejecución de Jupyter Notebook.
+    /// </summary>
+    /// <returns>
+    /// Devuelve una instancia de `WidgetDef` que especifica la configuración del widget
+    /// para la integración con la funcionalidad de Jupyter Notebook.
+    /// </returns>
     [HorizonteRole("widget")]
-    [HorizonteCommand("Scripts_JupyterNotebookViewer","pruebas iniciales")]
-    public WidgetDef JupyterNotebookViewer()  => new WidgetDef() { Type = typeof(JupyterNotebookViewer), Parameters = null };    
-    /*
+    [HorizonteCommand("Scripts_JupyterNotebookWidget", "pruebas iniciales")]
+    public WidgetDef JupyterNotebookWidget() =>
+        new WidgetDef() { Type = typeof(JupyterNotebookWidget), Parameters = null };
+
+    /// <summary>
+    /// Método encargado de proporcionar la definición del widget "ScriptsViewerWidget" en el contexto del módulo "Scripts".
+    /// Este widget permite visualizar, gestionar y modificar scripts configurados dentro de la aplicación Horizonte.
+    /// </summary>
+    /// <returns>
+    /// Devuelve una instancia de <c>WidgetDef</c> que define el widget asociado, incluyendo su tipo y parámetros de inicialización.
+    /// </returns>
     [HorizonteRole("widget")]
-    [HorizonteCommand("Scripts_ScriptsViewer","pruebas iniciales")]
-    public WidgetDef ScriptsViewer()  => new WidgetDef() { Type = typeof(ScriptsViewer), Parameters = null };
-    */
-    [HorizonteRole("widget")]
-    [HorizonteCommand("Scripts_JupyterNotebookWidget","pruebas iniciales")]
-    public WidgetDef JupyterNotebookWidget()  => new WidgetDef() { Type = typeof(JupyterNotebookWidget), Parameters = null };    
-    
-    [HorizonteRole("widget")]
-    [HorizonteCommand("Scripts_ScriptsViewerWidget","pruebas iniciales")]
-    public WidgetDef ScriptsViewerWidget()  => new WidgetDef() { Type = typeof(ScriptsViewerWidget), Parameters = null };
-    
-    
+    [HorizonteCommand("Scripts_ScriptsViewerWidget", "pruebas iniciales")]
+    public WidgetDef ScriptsViewerWidget() => new WidgetDef() { Type = typeof(ScriptsViewerWidget), Parameters = null };
 }
