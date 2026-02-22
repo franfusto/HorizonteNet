@@ -10,6 +10,7 @@ using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
+using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Extensions.Interactive;
 
@@ -357,5 +358,32 @@ public static class Extensions
         }
         return response;
     }
-    
+
+    public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IHorizonteEnv env)
+    {
+        var  logger = env.GetService<ILogger<PanelModulo>>();
+        try
+        {
+            var scriptasmlist = new List<byte[]>();
+            foreach (var script in scriptDefs.Where(x=> x.Active))
+            {
+                logger?.LogInformation($"Loading script {script.Name}...");
+                var compileresponse = await script.Compile(env);
+                var asm =  compileresponse.Assembly;
+                if (asm.Length>0) scriptasmlist.Add(asm);
+            }
+            if (scriptasmlist.Count==0) return;
+
+            var asmmanager = env.GetService<IhAssemblyManager>();
+            asmmanager?.UnloadDomain("scripts");
+
+            
+            
+        }
+        catch (Exception e)
+        {
+            logger?.LogError(e.Message);
+        }
+    }
+
 }

@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Extensions.Interactive;
 using Horizonte.Scripts.Widgets;
 using Microsoft.Extensions.Logging;
 
@@ -34,6 +35,8 @@ public class PanelModulo
     {
         _logger = _env.Value.GetService<ILogger<PanelModulo>>();
         var context = _env.Value.GetService<IHContext>();
+        var config = context?.Get<ScriptsConfig>() ?? new ScriptsConfig();
+        LoadScriptModules(config);
         _logger?.LogInformation("Módulo Scripts Inciciado");
         return true;
     }
@@ -64,4 +67,11 @@ public class PanelModulo
     [HorizonteRole("widget")]
     [HorizonteCommand("Scripts_ScriptsViewerWidget", "pruebas iniciales")]
     public WidgetDef ScriptsViewerWidget() => new WidgetDef() { Type = typeof(ScriptsViewerWidget), Parameters = null };
+    
+    private void LoadScriptModules(ScriptsConfig config)
+    {
+        var scripts = config.Scripts;
+        scripts.LoadScriptModules(_env.Value);
+
+    }
 }
