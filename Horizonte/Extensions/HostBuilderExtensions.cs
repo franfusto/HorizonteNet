@@ -1,3 +1,4 @@
+using System.Runtime.Loader;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
@@ -40,9 +41,22 @@ public static class HostBuilderExtensions
     public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerSettings modset,
         IHorizonteEnv env)
     {
+        /*
+        var types = (env.AssemblyManager?.Assemblies ?? AssemblyLoadContext.Default.Assemblies)
+            .SelectMany(a => a.GetTypes())
+            .ToList();
+            */
+        
         foreach (var workeritem in modset.List.OrderBy(item=>item.Order))
         {
             var servicetype = Type.GetType(workeritem.WorkerType);
+            /*
+            if (servicetype == null)
+            {
+                // buscamos el tipo en types
+                servicetype = types.FirstOrDefault(t => t.FullName == workeritem.WorkerType || t.Name == workeritem.WorkerType);
+            }
+            */
             if (servicetype != null)
             {
                 try
