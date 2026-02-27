@@ -62,9 +62,48 @@
 </div>
 @code {
     [Parameter] public WorkFlowDef? WorkFlowDef { get; set; } 
-    BlazorDiagram _diagram = GetDiagram();
+    private BlazorDiagram _diagram = CreateDiagram();
+    private string? _currentWorkFlowId;
 
-    private static BlazorDiagram GetDiagram()
+    protected override void OnParametersSet()
+    {
+        if (WorkFlowDef != null && WorkFlowDef.Id != _currentWorkFlowId)
+        {
+            _currentWorkFlowId = WorkFlowDef.Id;
+            InitializeDiagram();
+        }
+    }
+
+    private void InitializeDiagram()
+    {
+        _diagram.Nodes.Clear();
+        _diagram.Links.Clear();
+
+        if (WorkFlowDef == null) return;
+
+        if (WorkFlowDef.Nodes.Count == 0)
+        {
+            // Ejemplo inicial si no hay nodos
+            var firstNode = _diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
+            {
+                Title = "Inicio"
+            });
+            WorkFlowDef.Nodes.Add(new WorkFlowNode { Id = firstNode.Id, Name = firstNode.Title });
+        }
+        else
+        {
+            foreach (var node in WorkFlowDef.Nodes)
+            {
+                _diagram.Nodes.Add(new NodeModel(id: node.Id, position: new Point(100, 100))
+                {
+                    Title = node.Name
+                });
+            }
+            // Aquí se podrían cargar los links si WorkFlowDef.Links tuviera información
+        }
+    }
+
+    private static BlazorDiagram CreateDiagram()
     {
         var options = new BlazorDiagramOptions
         {
@@ -80,25 +119,6 @@
             },
         };
 
-        BlazorDiagram diagram = new BlazorDiagram(options);
-        var firstNode = diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
-        {
-            Title = "Node 1"
-        });
-        var secondNode = diagram.Nodes.Add(new NodeModel(position: new Point(200, 100))
-        {
-            Title = "Node 2"
-        });
-        var leftPort = secondNode.AddPort(PortAlignment.Left);
-        var rightPort = secondNode.AddPort(PortAlignment.Right);
-            
-        // The connection point will be the intersection of
-        // a line going from the target to the center of the source
-        var sourceAnchor = new ShapeIntersectionAnchor(firstNode);
-        // The connection point will be the port's position
-        var targetAnchor = new SinglePortAnchor(leftPort);
-        var link = diagram.Links.Add(new LinkModel(sourceAnchor, targetAnchor));
-        return diagram;
+        return new BlazorDiagram(options);
     }
-    
 }

@@ -1,1 +1,132 @@
-<h3>Dashboard</h3>
+@using Horizonte.Extension.WorkFlows
+@using Horizonte
+@inject IHContext Context
+@inject DialogService DialogService
+
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Class="rz-p-4" Style="height: 100%;">
+    <RadzenCard Style="width: 300px; min-width: 300px; display: flex; flex-direction: column;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Class="rz-mb-4">
+            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-m-0">WorkFlows</RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnAddWorkFlow" Tooltip="Añadir nuevo workflow" />
+            </RadzenStack>
+        </RadzenStack>
+        
+        <RadzenTree Change="@OnTreeChange" Data="@_config.WorkFlows" Style="flex-grow: 1; overflow: auto;">
+            <RadzenTreeLevel TextProperty="Name" HasChildren="@(n => false)" />
+        </RadzenTree>
+    </RadzenCard>
+
+    <RadzenCard Style="flex-grow: 1; display: flex; flex-direction: column;">
+        @if (_selectedWorkFlow != null)
+        {
+            <RadzenStack Gap="1rem" Style="flex-grow: 1;">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenText TextStyle="TextStyle.Subtitle1" TagName="TagName.H3" Class="rz-m-0">Editar WorkFlow: @_selectedWorkFlow.Name</RadzenText>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                            <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnSave" Tooltip="Guardar cambios" />
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDelete" Tooltip="Eliminar workflow" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenStack>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <RadzenFormField Text="Nombre" Style="width: 100%;">
+                            <RadzenTextBox @bind-Value="@_selectedWorkFlow.Name" Style="width: 100%;" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <WorkFlowDesigner WorkFlowDef="@_selectedWorkFlow" />
+
+            </RadzenStack>
+        }
+        else
+        {
+            <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Seleccione un workflow para editar o cree uno nuevo.</RadzenText>
+            </div>
+        }
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private WorkFlowConfig _config = new();
+    private WorkFlowDef? _selectedWorkFlow;
+
+    protected override void OnInitialized()
+    {
+        LoadConfig();
+        base.OnInitialized();
+    }
+
+    private void LoadConfig()
+    {
+        _config = Context.Get<WorkFlowConfig>() ?? new WorkFlowConfig();
+    }
+
+    private void OnTreeChange(TreeEventArgs args)
+    {
+        _selectedWorkFlow = args.Value as WorkFlowDef;
+    }
+
+    private void OnAddWorkFlow()
+    {
+        var newWorkFlow = new WorkFlowDef { Id = Guid.NewGuid().ToString(), Name = "Nuevo WorkFlow" };
+        _config.WorkFlows.Add(newWorkFlow);
+        _selectedWorkFlow = newWorkFlow;
+    }
+
+    private async Task OnSave()
+    {
+        try
+        {
+            if (_selectedWorkFlow == null) return;
+
+            var config = Context.Get<WorkFlowConfig>() ?? new WorkFlowConfig();
+            
+            var existing = config.WorkFlows.FirstOrDefault(w => w.Id == _selectedWorkFlow.Id);
+            if (existing != null)
+            {
+                var index = config.WorkFlows.IndexOf(existing);
+                config.WorkFlows[index] = _selectedWorkFlow;
+            }
+            else
+            {
+                config.WorkFlows.Add(_selectedWorkFlow);
+            }
+
+            Context.Update(config);
+            await DialogService.Alert("WorkFlow guardado correctamente", "Éxito");
+        }
+        catch (Exception ex)
+        {
+            await DialogService.Alert($"Error al guardar: {ex.Message}", "Error");
+        }
+    }
+
+    private async Task OnDelete()
+    {
+        if (_selectedWorkFlow != null)
+        {
+            var confirm = await DialogService.Confirm($"¿Estás seguro de que quieres eliminar el workflow '{_selectedWorkFlow.Name}'?", "Confirmar");
+            if (confirm == true)
+            {
+                var config = Context.Get<WorkFlowConfig>();
+                if (config != null)
+                {
+                    var toRemove = config.WorkFlows.FirstOrDefault(w => w.Id == _selectedWorkFlow.Id);
+                    if (toRemove != null)
+                    {
+                        config.WorkFlows.Remove(toRemove);
+                        Context.Update(config);
+                        _selectedWorkFlow = null;
+                        LoadConfig();
+                    }
+                }
+            }
+        }
+    }
+}
