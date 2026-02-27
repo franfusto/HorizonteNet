@@ -5,6 +5,8 @@ using log4net;
 using log4net.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 
 namespace Horizonte;
@@ -18,6 +20,7 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly HorizonteEnv _environment;
     private string _installFolder = String.Empty;
     private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
+    private List<BackgroundService> _dynamicServices = new List<BackgroundService>();
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
 
     public Dictionary<string, List<Assembly>> AssembliesByDomain
@@ -300,7 +303,38 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void UnloadService(string domainName)
     {
-        Log.Info($"UnloadService placeholder for domain: {domainName}");
+        Log.Info($"Unloading services for domain: {domainName}");
+        if (domainName == "Default") return;
+
+        if (_domains.TryGetValue(domainName, out var alc))
+        {
+            var domainAssemblies = alc.Assemblies.ToList();
+            var services = _environment.HHost.Services.GetServices<BackgroundService>().ToList();
+
+            foreach (var service in services)
+            {
+                var serviceType = service.GetType();
+                var serviceAssembly = serviceType.Assembly;
+
+                if (domainAssemblies.Any(a => a.FullName == serviceAssembly.FullName))
+                {
+                    Log.Info($"Stopping service: {serviceType.FullName} in domain {domainName}");
+                    try
+                    {
+                        service.StopAsync(CancellationToken.None).Wait();
+
+                        if (_dynamicServices.Contains(service))
+                        {
+                            _dynamicServices.Remove(service);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Error stopping service {serviceType.FullName}: {ex.Message}");
+                    }
+                }
+            }
+        }
     }
 
     public void LoadModule(string domainName)
@@ -312,7 +346,38 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void LoadService(string domainName)
     {
-        Log.Info($"LoadService placeholder for domain: {domainName}");
+        Log.Info($"LoadService for domain: {domainName}");
+        if (domainName == "Default") return;
+
+        if (_domains.TryGetValue(domainName, out var alc))
+        {
+            var workerSettings = _environment.GetService<IHContext>()?.Get<WorkerSettings>() ?? new WorkerSettings();
+            
+            foreach (var workerSetting in workerSettings.List)
+            {
+                if (!workerSetting.RunOnStart) continue;
+
+                var typeName = workerSetting.WorkerType.Split(',')[0].Trim();
+                var type = alc.Assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
+
+                if (type != null && typeof(IHorizonteBackgroundService).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                {
+                    try
+                    {
+                        Log.Info($"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
+                        if (Activator.CreateInstance(type, _environment, workerSetting.ServiceName, workerSetting.RunOnStart) is BackgroundService worker)
+                        {
+                            worker.StartAsync(CancellationToken.None).Wait();
+                            _dynamicServices.Add(worker);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
+                    }
+                }
+            }
+        }
     }
 
 
