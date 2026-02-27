@@ -1,0 +1,104 @@
+@using Horizonte.Extension.WorkFlows
+@using Blazor.Diagrams
+@using Blazor.Diagrams.Components
+@using Blazor.Diagrams.Core.Anchors
+@using Blazor.Diagrams.Core.Models
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
+@using Blazor.Diagrams.Options
+@using Point = Blazor.Diagrams.Core.Geometry.Point
+<h3>WorkFlowDesigner</h3>
+
+
+
+<style>
+    .diagram-container {
+        width: 100%;
+        height: calc(100vh - 300px);
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-background-color);
+    }
+
+    /* Personalización de los nodos del diagrama para que coincidan con Radzen */
+    .diagram-container .default-node {
+        background-color: var(--rz-base-background-color) !important;
+        border-color: var(--rz-primary) !important;
+        color: var(--rz-text-color) !important;
+        border-radius: var(--rz-border-radius);
+    }
+
+    .diagram-container .default-node .title {
+        color: var(--rz-text-color) !important;
+    }
+
+    .diagram-container .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+
+    .diagram-container .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+
+    /* Selectores adicionales para asegurar que el color se aplique */
+    .diagram-container svg.diagram-svg .diagram-link path {
+        stroke: var(--rz-primary) !important;
+    }
+
+    .diagram-container svg.diagram-svg .diagram-link .marker path {
+        fill: var(--rz-primary) !important;
+        stroke: var(--rz-primary) !important;
+    }
+    .diagram-container .navigator-widget {
+        border: 1px solid var(--rz-border-color);
+        background-color: var(--rz-base-background-color);
+        position: absolute;
+    }
+</style>
+<div class="diagram-container">
+    <CascadingValue Value="_diagram" IsFixed="true">
+        <DiagramCanvas></DiagramCanvas>
+    </CascadingValue>
+</div>
+@code {
+    [Parameter] public WorkFlowDef? WorkFlowDef { get; set; } 
+    BlazorDiagram _diagram = GetDiagram();
+
+    private static BlazorDiagram GetDiagram()
+    {
+        var options = new BlazorDiagramOptions
+        {
+            AllowMultiSelection = true,
+            Zoom =
+            {
+                Enabled = false,
+            },
+            Links =
+            {
+                DefaultRouter = new NormalRouter(),
+                DefaultPathGenerator = new SmoothPathGenerator()
+            },
+        };
+
+        BlazorDiagram diagram = new BlazorDiagram(options);
+        var firstNode = diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
+        {
+            Title = "Node 1"
+        });
+        var secondNode = diagram.Nodes.Add(new NodeModel(position: new Point(200, 100))
+        {
+            Title = "Node 2"
+        });
+        var leftPort = secondNode.AddPort(PortAlignment.Left);
+        var rightPort = secondNode.AddPort(PortAlignment.Right);
+            
+        // The connection point will be the intersection of
+        // a line going from the target to the center of the source
+        var sourceAnchor = new ShapeIntersectionAnchor(firstNode);
+        // The connection point will be the port's position
+        var targetAnchor = new SinglePortAnchor(leftPort);
+        var link = diagram.Links.Add(new LinkModel(sourceAnchor, targetAnchor));
+        return diagram;
+    }
+    
+}
