@@ -1,5 +1,5 @@
-<h3>NodeIn</h3>
 
+<h3>Node</h3>
 @foreach (var port in Node.Ports)
 {
     // In case you have any ports to show
@@ -7,5 +7,5 @@
     <PortRenderer @key="port" Port="port" />
 }
 @code {
-    [Parameter] public NodeInModel Node { get; set; } = null!;
+    [Parameter] public NodeOperationModel Node { get; set; } = null!;
 }

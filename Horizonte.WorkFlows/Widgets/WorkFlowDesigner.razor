@@ -6,6 +6,7 @@
 @using Blazor.Diagrams.Core.PathGenerators
 @using Blazor.Diagrams.Core.Routers
 @using Blazor.Diagrams.Options
+@using Horizonte.WorkFlows.Components
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 <style>
     .diagram-container {
@@ -101,11 +102,18 @@
     private BlazorDiagram _diagram = new BlazorDiagram();
     private string? _currentWorkFlowId = null;
 
+    protected override void OnInitialized()
+    {
+        _diagram.RegisterComponent<NodeInModel, NodeIn>();
+        _diagram.RegisterComponent<NodeOperationModel, NodeOperation>();
+        _diagram.RegisterComponent<NodeOutModel, NodeOut>();
+        base.OnInitialized();
+    }
+
     private void AddNode(WorkFlowNodeTypes type)
     {
         if (WorkFlowDef == null) return;
-
-        var nodeDef = new WorkFlowNode
+        WorkFlowNode nodeDef = new WorkFlowNode
         {
             Id = Guid.NewGuid().ToString(),
             Name = $"Nuevo {type}",
@@ -114,17 +122,25 @@
             PosY = 100
         };
 
-        // TODO: Mapear WorkFlowNode a Node de Blazor.Diagrams basándose en el tipo
-        // Por ahora usamos el nodo por defecto de Blazor.Diagrams
-        var node = new NodeModel(new Point(nodeDef.PosX, nodeDef.PosY))
+        NodeModel nodeModel;
+        switch (type)
         {
-            Title = nodeDef.Name
-        };
+            case WorkFlowNodeTypes.In:
+                nodeModel = new NodeInModel(nodeDef);
+                nodeModel.AddPort(PortAlignment.Right);
+                break;
+            case WorkFlowNodeTypes.Out:
+                nodeModel = new NodeOutModel(nodeDef);
+                nodeModel.AddPort(PortAlignment.Left);
+                break;
+            default:
+                nodeModel = new NodeOperationModel(nodeDef);
+                nodeModel.AddPort(PortAlignment.Left);
+                nodeModel.AddPort(PortAlignment.Right);
+                break;
+        }
 
-        node.AddPort(PortAlignment.Left);
-        node.AddPort(PortAlignment.Right);
-
-        _diagram.Nodes.Add(node);
+        _diagram.Nodes.Add(nodeModel);
         WorkFlowDef.Nodes.Add(nodeDef);
     }
 }
