@@ -1,11 +1,14 @@
-<h3>NodeOut</h3>
 
-@foreach (var port in Node.Ports)
-{
-    // In case you have any ports to show
-    // IMPORTANT: You are always in charge of rendering ports
-    <PortRenderer @key="port" Port="port" />
-}
+<RadzenCard class="node rz-background-color-primary-lighter">
+    <h5>NodeOut</h5>
+
+    @foreach (var port in Node.Ports)
+    {
+        <PortRenderer @key="port" Port="port"/>
+        
+    }
+</RadzenCard>
+
 @code {
     [Parameter] public NodeOutModel Node { get; set; } = null!;
 }

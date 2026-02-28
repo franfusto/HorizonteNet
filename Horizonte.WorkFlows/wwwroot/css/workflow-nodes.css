@@ -1,0 +1,56 @@
+.node {
+    width: 230px;
+    padding: 1rem !important;
+    position: relative;
+    border-radius: var(--rz-border-radius);
+    box-shadow: var(--rz-shadow-5);
+}
+
+.node h5 {
+    margin-top: 0;
+    color: var(--rz-text-color);
+    font-weight: var(--rz-font-weight-bold);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.node .diagram-port {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: var(--rz-primary);
+    border: 2px solid var(--rz-base-100);
+    border-radius: 50%;
+    cursor: crosshair;
+    z-index: 10;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.node .diagram-port:hover {
+    transform: scale(1.4);
+    background-color: var(--rz-secondary);
+}
+
+.node .diagram-port.top {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.node .diagram-port.bottom {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.node .diagram-port.left {
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.node .diagram-port.right {
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
