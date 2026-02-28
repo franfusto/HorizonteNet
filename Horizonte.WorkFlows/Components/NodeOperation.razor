@@ -1,11 +1,44 @@
 
+@using Blazor.Diagrams.Core.Models
 <RadzenCard class="node rz-background-color-primary-lighter">
     <h5>NodeOperation</h5>
-    @foreach (var port in Node.Ports)
+    @{
+        var leftPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Left).ToList();
+        var rightPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Right).ToList();
+        var topPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Top).ToList();
+        var bottomPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Bottom).ToList();
+    }
+
+    @foreach (var port in leftPorts)
     {
-        <PortRenderer @key="port" Port="port">
-        </PortRenderer>
-        
+        var topPercent = (leftPorts.IndexOf(port) + 1) * 100 / (leftPorts.Count + 1);
+        <div style="top: @(topPercent + "%"); left: 0;" class="port-container">
+            <PortRenderer @key="port" Port="port" />
+        </div>
+    }
+
+    @foreach (var port in rightPorts)
+    {
+        var topPercent = (rightPorts.IndexOf(port) + 1) * 100 / (rightPorts.Count + 1);
+        <div style="top: @(topPercent + "%"); right: 0;" class="port-container">
+            <PortRenderer @key="port" Port="port" />
+        </div>
+    }
+
+    @foreach (var port in topPorts)
+    {
+        var leftPercent = (topPorts.IndexOf(port) + 1) * 100 / (topPorts.Count + 1);
+        <div style="left: @(leftPercent + "%"); top: 0;" class="port-container">
+            <PortRenderer @key="port" Port="port" />
+        </div>
+    }
+
+    @foreach (var port in bottomPorts)
+    {
+        var leftPercent = (bottomPorts.IndexOf(port) + 1) * 100 / (bottomPorts.Count + 1);
+        <div style="left: @(leftPercent + "%"); bottom: 0;" class="port-container">
+            <PortRenderer @key="port" Port="port" />
+        </div>
     }
 </RadzenCard>
 

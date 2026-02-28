@@ -95,12 +95,23 @@
 }
 
 @code {
-    [Parameter] public WorkFlowDef? WorkFlowDef { get; set; }
+    [Parameter] public WorkFlowDef? WorkFlowDef
+    {
+        get => Getdef();
+        set;
+    }
+
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private string? _currentWorkFlowId = null;
+
+    private WorkFlowDef? Getdef()
+    {
+        //desde _diagram debemos obtener WorkFlowDef?
+        return new();
+    }
 
     protected override void OnInitialized()
     {

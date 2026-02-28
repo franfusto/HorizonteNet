@@ -54,3 +54,20 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
+.node .port-container .diagram-port.top,
+.node .port-container .diagram-port.bottom,
+.node .port-container .diagram-port.left,
+.node .port-container .diagram-port.right {
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+}
+
+.node .port-container {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
