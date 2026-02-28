@@ -20,28 +20,7 @@
     <RadzenCard Style="flex-grow: 1; display: flex; flex-direction: column;">
         @if (_selectedWorkFlow != null)
         {
-            <RadzenStack Gap="1rem" Style="flex-grow: 1;">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
-                        <RadzenText TextStyle="TextStyle.Subtitle1" TagName="TagName.H3" Class="rz-m-0">Editar WorkFlow: @_selectedWorkFlow.Name</RadzenText>
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                            <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnSave" Tooltip="Guardar cambios" />
-                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@OnDelete" Tooltip="Eliminar workflow" />
-                        </RadzenStack>
-                    </RadzenStack>
-                </RadzenStack>
-
-                <RadzenRow>
-                    <RadzenColumn Size="12">
-                        <RadzenFormField Text="Nombre" Style="width: 100%;">
-                            <RadzenTextBox @bind-Value="@_selectedWorkFlow.Name" Style="width: 100%;" />
-                        </RadzenFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-
-                <WorkFlowDesigner WorkFlowDef="@_selectedWorkFlow" />
-
-            </RadzenStack>
+            <WorkFlowDesigner WorkFlowDef="@_selectedWorkFlow" OnSave="@OnSave" OnDelete="@OnDelete" />
         }
         else
         {

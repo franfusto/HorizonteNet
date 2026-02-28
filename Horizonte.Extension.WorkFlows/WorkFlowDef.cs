@@ -13,9 +13,28 @@ public class WorkFlowNode
 {
     public string Id { get; set; } = Guid.Empty.ToString();
     public string Name { get; set; }
+    public WorkFlowNodeTypes Type { get; set; } = WorkFlowNodeTypes.Node;
+    public int PosX { get; set; } = 0;
+    public int PosY { get; set; } = 0;
+    public NodePort[] InPorts { get; set; } = Array.Empty<NodePort>();
+    public NodePort[] OutPorts { get; set; } = Array.Empty<NodePort>();
+    public string CommandAction { get; set; } = "";
+    
 }
 
 public class WorkFlowLink
 {
     
+}
+
+public class NodePort
+{
+    
+}
+
+public enum WorkFlowNodeTypes
+{
+    In,
+    Node,
+    Out
 }

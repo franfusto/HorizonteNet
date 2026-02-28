@@ -7,14 +7,10 @@
 @using Blazor.Diagrams.Core.Routers
 @using Blazor.Diagrams.Options
 @using Point = Blazor.Diagrams.Core.Geometry.Point
-<h3>WorkFlowDesigner</h3>
-
-
-
 <style>
     .diagram-container {
         width: 100%;
-        height: calc(100vh - 300px);
+        height: calc(100vh - 350px);
         border: 1px solid var(--rz-border-color);
         background-color: var(--rz-background-color);
     }
@@ -54,71 +50,81 @@
         background-color: var(--rz-base-background-color);
         position: absolute;
     }
-</style>
-<div class="diagram-container">
-    <CascadingValue Value="_diagram" IsFixed="true">
-        <DiagramCanvas></DiagramCanvas>
-    </CascadingValue>
-</div>
-@code {
-    [Parameter] public WorkFlowDef? WorkFlowDef { get; set; } 
-    private BlazorDiagram _diagram = CreateDiagram();
-    private string? _currentWorkFlowId;
 
-    protected override void OnParametersSet()
-    {
-        if (WorkFlowDef != null && WorkFlowDef.Id != _currentWorkFlowId)
-        {
-            _currentWorkFlowId = WorkFlowDef.Id;
-            InitializeDiagram();
-        }
+    .diagram-toolbox {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 100;
+        background-color: var(--rz-base-background-color);
+        border: 1px solid var(--rz-border-color);
+        border-radius: var(--rz-border-radius);
+        padding: 5px;
+        box-shadow: var(--rz-box-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
+</style>
 
-    private void InitializeDiagram()
+@if (WorkFlowDef != null)
+{
+    <RadzenStack Gap="1rem" Style="flex-grow: 1;">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+            <RadzenFormField Text="Nombre" Style="flex-grow: 1;">
+                <RadzenTextBox @bind-Value="@WorkFlowDef.Name" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => OnSave.InvokeAsync())" Tooltip="Guardar cambios" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => OnDelete.InvokeAsync())" Tooltip="Eliminar workflow" />
+            </RadzenStack>
+        </RadzenStack>
+
+        <div class="diagram-container" style="position: relative;">
+            <div class="diagram-toolbox">
+                <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Tooltip="Entrada (In)" Click="@(() => AddNode(WorkFlowNodeTypes.In))" />
+                <RadzenButton Icon="reorder" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Tooltip="Nodo (Node)" Click="@(() => AddNode(WorkFlowNodeTypes.Node))" />
+                <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Small" Tooltip="Salida (Out)" Click="@(() => AddNode(WorkFlowNodeTypes.Out))" />
+            </div>
+            <CascadingValue Value="_diagram" IsFixed="true">
+                <DiagramCanvas></DiagramCanvas>
+            </CascadingValue>
+        </div>
+    </RadzenStack>
+}
+
+@code {
+    [Parameter] public WorkFlowDef? WorkFlowDef { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+
+    private BlazorDiagram _diagram = new BlazorDiagram();
+    private string? _currentWorkFlowId = null;
+
+    private void AddNode(WorkFlowNodeTypes type)
     {
-        _diagram.Nodes.Clear();
-        _diagram.Links.Clear();
-
         if (WorkFlowDef == null) return;
 
-        if (WorkFlowDef.Nodes.Count == 0)
+        var nodeDef = new WorkFlowNode
         {
-            // Ejemplo inicial si no hay nodos
-            var firstNode = _diagram.Nodes.Add(new NodeModel(position: new Point(50, 50))
-            {
-                Title = "Inicio"
-            });
-            WorkFlowDef.Nodes.Add(new WorkFlowNode { Id = firstNode.Id, Name = firstNode.Title });
-        }
-        else
-        {
-            foreach (var node in WorkFlowDef.Nodes)
-            {
-                _diagram.Nodes.Add(new NodeModel(id: node.Id, position: new Point(100, 100))
-                {
-                    Title = node.Name
-                });
-            }
-            // Aquí se podrían cargar los links si WorkFlowDef.Links tuviera información
-        }
-    }
-
-    private static BlazorDiagram CreateDiagram()
-    {
-        var options = new BlazorDiagramOptions
-        {
-            AllowMultiSelection = true,
-            Zoom =
-            {
-                Enabled = false,
-            },
-            Links =
-            {
-                DefaultRouter = new NormalRouter(),
-                DefaultPathGenerator = new SmoothPathGenerator()
-            },
+            Id = Guid.NewGuid().ToString(),
+            Name = $"Nuevo {type}",
+            Type = type,
+            PosX = 100,
+            PosY = 100
         };
 
-        return new BlazorDiagram(options);
+        // TODO: Mapear WorkFlowNode a Node de Blazor.Diagrams basándose en el tipo
+        // Por ahora usamos el nodo por defecto de Blazor.Diagrams
+        var node = new NodeModel(new Point(nodeDef.PosX, nodeDef.PosY))
+        {
+            Title = nodeDef.Name
+        };
+
+        node.AddPort(PortAlignment.Left);
+        node.AddPort(PortAlignment.Right);
+
+        _diagram.Nodes.Add(node);
+        WorkFlowDef.Nodes.Add(nodeDef);
     }
 }
