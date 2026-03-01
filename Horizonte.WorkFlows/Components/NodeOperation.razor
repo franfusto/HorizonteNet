@@ -1,7 +1,26 @@
 
-@using Blazor.Diagrams.Core.Models
 <RadzenCard class="node rz-background-color-primary-lighter">
-    <h5>NodeOperation</h5>
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Class="rz-mb-2">
+        <RadzenIcon Icon="reorder" IconColor="var(--rz-primary)" />
+    </RadzenStack>
+
+    <RadzenLabel Text="Nombre" Style="font-size: 0.8rem; margin-top: 0.5rem;" />
+    <RadzenTextBox @bind-Value="Node.Node.Name" Placeholder="Nombre del nodo" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
+
+    <RadzenLabel Text="Acción de comando" Style="font-size: 0.8rem;" />
+    <RadzenTextBox @bind-Value="Node.Node.CommandAction" Placeholder="Command Action" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
+    
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Class="rz-mb-2">
+        <RadzenStack Gap="0" Style="width: 45%;">
+            <RadzenLabel Text="In Ports" Style="font-size: 0.7rem;" />
+            <RadzenNumeric Value="@leftCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Left, v))" Style="width: 100%;" Placeholder="Left" Min="0" Max="10" />
+        </RadzenStack>
+        <RadzenStack Gap="0" Style="width: 45%;">
+            <RadzenLabel Text="Out Ports" Style="font-size: 0.7rem;" />
+            <RadzenNumeric Value="@rightCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Right, v))" Style="width: 100%;" Placeholder="Right" Min="0" Max="10" />
+        </RadzenStack>
+    </RadzenStack>
+
     @{
         var leftPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Left).ToList();
         var rightPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Right).ToList();
@@ -44,4 +63,13 @@
 
 @code {
     [Parameter] public NodeOperationModel Node { get; set; } = null!;
+
+    private int leftCount => Node.Ports.Count(p => p.Alignment == PortAlignment.Left);
+    private int rightCount => Node.Ports.Count(p => p.Alignment == PortAlignment.Right);
+
+    private async void OnPortsChanged(PortAlignment alignment, int count)
+    {
+        Node.NotifyPortsChanged(alignment, count);
+        await InvokeAsync(StateHasChanged);
+    }
 }

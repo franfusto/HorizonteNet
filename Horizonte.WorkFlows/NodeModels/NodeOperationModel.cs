@@ -13,6 +13,17 @@ public class NodeOperationModel : NodeModel
     /// 
     /// </summary>
     public WorkFlowNode Node { get; }
+
+    /// <summary>
+    /// Evento emitido cuando cambia el número de puertos.
+    /// (Alignment, Count)
+    /// </summary>
+    public event Action<PortAlignment, int>? OnPortsChanged;
+
+    public void NotifyPortsChanged(PortAlignment alignment, int count)
+    {
+        OnPortsChanged?.Invoke(alignment, count);
+    }
     /// <summary>
     /// 
     /// </summary>

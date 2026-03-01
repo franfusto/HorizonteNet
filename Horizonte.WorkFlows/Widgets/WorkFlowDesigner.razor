@@ -7,6 +7,7 @@
 @using Blazor.Diagrams.Core.Routers
 @using Blazor.Diagrams.Options
 @using Horizonte.WorkFlows.Components
+@using Horizonte.WorkFlows.NodeModels
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 <style>
     .diagram-container {
@@ -76,16 +77,17 @@
                 <RadzenTextBox @bind-Value="@WorkFlowDef.Name" Style="width: 100%;" />
             </RadzenFormField>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => OnSave.InvokeAsync())" Tooltip="Guardar cambios" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => OnDelete.InvokeAsync())" Tooltip="Eliminar workflow" />
+                <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build" />
+                <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@(() => OnDelete.InvokeAsync())" Tooltip="Eliminar workflow" />
             </RadzenStack>
         </RadzenStack>
 
         <div class="diagram-container" style="position: relative;">
             <div class="diagram-toolbox">
-                <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" Tooltip="Entrada (In)" Click="@(() => AddNode(WorkFlowNodeTypes.In))" />
-                <RadzenButton Icon="reorder" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Tooltip="Nodo (Node)" Click="@(() => AddNode(WorkFlowNodeTypes.Node))" />
-                <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Small" Tooltip="Salida (Out)" Click="@(() => AddNode(WorkFlowNodeTypes.Out))" />
+                <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Entrada (In)" Click="@(() => AddNode(WorkFlowNodeTypes.In))" />
+                <RadzenButton Icon="reorder" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Nodo (Node)" Click="@(() => AddNode(WorkFlowNodeTypes.Node))" />
+                <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Salida (Out)" Click="@(() => AddNode(WorkFlowNodeTypes.Out))" />
             </div>
             <CascadingValue Value="_diagram" IsFixed="true">
                 <DiagramCanvas></DiagramCanvas>
@@ -95,22 +97,145 @@
 }
 
 @code {
-    [Parameter] public WorkFlowDef? WorkFlowDef
+    [Parameter] public WorkFlowDef? WorkFlowDef 
     {
-        get => Getdef();
-        set;
+        get { return _currentWorkFlowNode; }
+        set 
+        { 
+            if (_currentWorkFlowNode?.Id != value?.Id)
+            {
+                _currentWorkFlowNode = value;
+                LoadWorkFlow(value);
+            }
+        }
     }
 
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
 
     private BlazorDiagram _diagram = new BlazorDiagram();
-    private string? _currentWorkFlowId = null;
+    private WorkFlowDef? _currentWorkFlowNode;
+
+    private void LoadWorkFlow(WorkFlowDef? workflow)
+    {
+        _diagram.Nodes.Clear();
+        _diagram.Links.Clear();
+
+        if (workflow == null) return;
+
+        // Cargar Nodos
+        foreach (var nodeDef in workflow.Nodes)
+        {
+            NodeModel nodeModel;
+            switch (nodeDef.Type)
+            {
+                case WorkFlowNodeTypes.In:
+                    nodeModel = new NodeInModel(nodeDef);
+                    break;
+                case WorkFlowNodeTypes.Out:
+                    nodeModel = new NodeOutModel(nodeDef);
+                    break;
+                default:
+                    var opModel = new NodeOperationModel(nodeDef);
+                    opModel.OnPortsChanged += (alignment, count) => HandlePortsChanged(opModel, alignment, count);
+                    nodeModel = opModel;
+                    break;
+            }
+
+            // Restaurar Puertos
+            foreach (var portDef in nodeDef.InPorts)
+            {
+                nodeModel.AddPort(new PortModel(portDef.Id, nodeModel, Enum.Parse<PortAlignment>(portDef.Alignment)));
+            }
+            foreach (var portDef in nodeDef.OutPorts)
+            {
+                nodeModel.AddPort(new PortModel(portDef.Id, nodeModel, Enum.Parse<PortAlignment>(portDef.Alignment)));
+            }
+
+            _diagram.Nodes.Add(nodeModel);
+        }
+
+        // Cargar Enlaces
+        foreach (var linkDef in workflow.Links)
+        {
+            var sourceNode = _diagram.Nodes.FirstOrDefault(n => n.Id == linkDef.SourceNodeId);
+            var targetNode = _diagram.Nodes.FirstOrDefault(n => n.Id == linkDef.TargetNodeId);
+
+            if (sourceNode != null && targetNode != null)
+            {
+                var sourcePort = sourceNode.Ports.FirstOrDefault(p => p.Id == linkDef.SourcePortId);
+                var targetPort = targetNode.Ports.FirstOrDefault(p => p.Id == linkDef.TargetPortId);
+
+                if (sourcePort != null && targetPort != null)
+                {
+                    var link = new LinkModel(linkDef.Id, sourcePort, targetPort);
+                    _diagram.Links.Add(link);
+                }
+            }
+        }
+    }
+
+    private async Task BuildWorkflow()
+    {
+        Getdef();
+        //aqui hacemos el build
+    }
+    private async Task Save()
+    {
+        Getdef();
+        await OnSave.InvokeAsync();
+    }
 
     private WorkFlowDef? Getdef()
     {
-        //desde _diagram debemos obtener WorkFlowDef?
-        return new();
+        if (WorkFlowDef == null) return null;
+
+        WorkFlowDef.Nodes.Clear();
+        foreach (var node in _diagram.Nodes)
+        {
+            WorkFlowNode? nodeDef = null;
+            if (node is NodeInModel inModel) nodeDef = inModel.Node;
+            else if (node is NodeOperationModel opModel) nodeDef = opModel.Node;
+            else if (node is NodeOutModel outModel) nodeDef = outModel.Node;
+
+            if (nodeDef != null)
+            {
+                nodeDef.PosX = (int)node.Position.X;
+                nodeDef.PosY = (int)node.Position.Y;
+                
+                // Actualizar puertos en el nodeDef para reflejar el estado del diagrama
+                var leftPorts = node.Ports.Where(p => p.Alignment == PortAlignment.Left).ToList();
+                nodeDef.InPorts = leftPorts
+                    .Select((p, i) => new NodePort { Id = p.Id, Name = $"In_{i}", Alignment = p.Alignment.ToString() })
+                    .ToArray();
+                
+                var rightPorts = node.Ports.Where(p => p.Alignment == PortAlignment.Right).ToList();
+                nodeDef.OutPorts = rightPorts
+                    .Select((p, i) => new NodePort { Id = p.Id, Name = $"Out_{i}", Alignment = p.Alignment.ToString() })
+                    .ToArray();
+
+                WorkFlowDef.Nodes.Add(nodeDef);
+            }
+        }
+
+        WorkFlowDef.Links.Clear();
+        foreach (var link in _diagram.Links)
+        {
+            if (link.Source is SinglePortAnchor sourceAnchor && 
+                link.Target is SinglePortAnchor targetAnchor)
+            {
+                WorkFlowDef.Links.Add(new WorkFlowLink
+                {
+                    Id = link.Id,
+                    SourceNodeId = sourceAnchor.Port.Parent.Id,
+                    SourcePortId = sourceAnchor.Port.Id,
+                    TargetNodeId = targetAnchor.Port.Parent.Id,
+                    TargetPortId = targetAnchor.Port.Id
+                });
+            }
+        }
+
+        return WorkFlowDef;
     }
 
     protected override void OnInitialized()
@@ -145,15 +270,65 @@
                 nodeModel.AddPort(PortAlignment.Left);
                 break;
             default:
-                nodeModel = new NodeOperationModel(nodeDef);
+                var opModel = new NodeOperationModel(nodeDef);
+                opModel.OnPortsChanged += (alignment, count) => HandlePortsChanged(opModel, alignment, count);
+                nodeModel = opModel;
                 nodeModel.AddPort(PortAlignment.Left);
-                nodeModel.AddPort(PortAlignment.Right);
-                nodeModel.AddPort(PortAlignment.Right);
                 nodeModel.AddPort(PortAlignment.Right);
                 break;
         }
 
         _diagram.Nodes.Add(nodeModel);
-        WorkFlowDef.Nodes.Add(nodeDef);
+    }
+
+    private async void HandlePortsChanged(NodeModel node, PortAlignment alignment, int count)
+    {
+        var currentPorts = node.Ports.Where(p => p.Alignment == alignment).ToList();
+        var currentCount = currentPorts.Count;
+
+        if (count > currentCount)
+        {
+            for (int i = 0; i < count - currentCount; i++)
+            {
+                node.AddPort(alignment);
+            }
+        }
+        else if (count < currentCount)
+        {
+            for (int i = 0; i < currentCount - count; i++)
+            {
+                var portToRemove = currentPorts.Last();
+                
+                // Eliminar enlaces conectados al puerto que se va a quitar
+                var linksToRemove = _diagram.Links
+                    .Where(l => (l.Source is SinglePortAnchor source && source.Port == portToRemove) || 
+                                (l.Target is SinglePortAnchor target && target.Port == portToRemove))
+                    .ToList();
+                foreach (var link in linksToRemove)
+                {
+                    _diagram.Links.Remove(link);
+                }
+                
+                node.RemovePort(portToRemove);
+                currentPorts.RemoveAt(currentPorts.Count - 1);
+            }
+        }
+
+        // Primero pedimos a Blazor que renderice los nuevos componentes de puerto
+        node.Refresh();
+        StateHasChanged();
+
+        // Esperamos un poco más para asegurar que el DOM está listo
+        await Task.Delay(50);
+
+        // Forzamos a cada puerto a recalcular sus dimensiones (esto llama a UpdateDimensions en PortRenderer)
+        foreach (var port in node.Ports)
+        {
+            port.Initialized = false;
+            port.Refresh();
+        }
+        
+        // Refrescamos el diagrama para que se entere de las nuevas posiciones
+        _diagram.Refresh();
     }
 }

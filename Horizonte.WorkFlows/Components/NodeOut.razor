@@ -1,11 +1,18 @@
 
 <RadzenCard class="node rz-background-color-primary-lighter">
-    <h5>NodeOut</h5>
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Class="rz-mb-2">
+        <RadzenIcon Icon="logout" IconColor="var(--rz-primary)" />
+    </RadzenStack>
+
+    <RadzenLabel Text="Nombre" Style="font-size: 0.8rem; margin-top: 0.5rem;" />
+    <RadzenTextBox @bind-Value="Node.Node.Name" Placeholder="Nombre del nodo" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
+
+    <RadzenLabel Text="Acción de comando" Style="font-size: 0.8rem;" />
+    <RadzenTextBox @bind-Value="Node.Node.CommandAction" Placeholder="Command Action" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
 
     @foreach (var port in Node.Ports)
     {
         <PortRenderer @key="port" Port="port"/>
-        
     }
 </RadzenCard>
 

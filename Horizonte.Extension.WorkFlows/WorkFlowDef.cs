@@ -24,12 +24,18 @@ public class WorkFlowNode
 
 public class WorkFlowLink
 {
-    
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string SourceNodeId { get; set; }
+    public string SourcePortId { get; set; }
+    public string TargetNodeId { get; set; }
+    public string TargetPortId { get; set; }
 }
 
 public class NodePort
 {
-    
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Name { get; set; }
+    public string Alignment { get; set; }
 }
 
 public enum WorkFlowNodeTypes
