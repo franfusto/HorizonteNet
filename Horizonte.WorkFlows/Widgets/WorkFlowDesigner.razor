@@ -19,6 +19,7 @@
         border-radius: var(--rz-border-radius);
         box-shadow: var(--rz-shadow-5);
     }
+
     .node h5 {
         margin-top: 0;
         color: var(--rz-text-color);
@@ -123,6 +124,7 @@
         fill: var(--rz-primary) !important;
         stroke: var(--rz-primary) !important;
     }
+
     .diagram-container .navigator-widget {
         border: 1px solid var(--rz-border-color);
         background-color: var(--rz-base-background-color);
@@ -147,38 +149,75 @@
 
 @if (WorkFlowDef != null)
 {
-    
     <RadzenStack Gap="1rem" Style="flex-grow: 1;">
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
             <RadzenFormField Text="Nombre" Style="flex-grow: 1;">
-                <RadzenTextBox @bind-Value="@WorkFlowDef.Name" Style="width: 100%;" />
+                <RadzenTextBox @bind-Value="@WorkFlowDef.Name" Style="width: 100%;"/>
             </RadzenFormField>
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build" />
-                <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Medium" Click="@(() => OnDelete.InvokeAsync())" Tooltip="Eliminar workflow" />
-            </RadzenStack>
+            @if (DesignerMode == DesignerMode.Design)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build"/>
+                    <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios"/>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@(() => OnDelete.InvokeAsync())"
+                                  Tooltip="Eliminar workflow"/>
+                    <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@SetModeShow"/>
+                </RadzenStack>
+            }
+            @if (DesignerMode == DesignerMode.Show)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Icon="motion_play" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@SetModeRun"/>
+                    <RadzenButton Icon="draw" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@SetModeDesign"/>
+                </RadzenStack>
+            }
+            @if (DesignerMode == DesignerMode.Run)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@SetModeShow"/>
+                </RadzenStack>
+            }
         </RadzenStack>
 
         <div class="diagram-container" style="position: relative;">
-            <div class="diagram-toolbox">
-                <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Entrada (In)" Click="@(() => AddNode(WorkFlowNodeTypes.In))" />
-                <RadzenButton Icon="reorder" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Nodo (Node)" Click="@(() => AddNode(WorkFlowNodeTypes.Node))" />
-                <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Medium" Tooltip="Salida (Out)" Click="@(() => AddNode(WorkFlowNodeTypes.Out))" />
-            </div>
+            @if (DesignerMode == DesignerMode.Design)
+            {
+                <div class="diagram-toolbox">
+                    <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Tooltip="Entrada (In)"
+                                  Click="@(() => AddNode(WorkFlowNodeTypes.In))"/>
+                    <RadzenButton Icon="reorder" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Tooltip="Nodo (Node)"
+                                  Click="@(() => AddNode(WorkFlowNodeTypes.Node))"/>
+                    <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Tooltip="Salida (Out)"
+                                  Click="@(() => AddNode(WorkFlowNodeTypes.Out))"/>
+                </div>
+            }
             <CascadingValue Value="_diagram" IsFixed="true">
-                <DiagramCanvas></DiagramCanvas>
+                <CascadingValue Value="DesignerMode">
+                    <DiagramCanvas></DiagramCanvas>
+                </CascadingValue>
             </CascadingValue>
         </div>
     </RadzenStack>
 }
 
 @code {
-    [Parameter] public WorkFlowDef? WorkFlowDef 
+
+    [Parameter]
+    public WorkFlowDef? WorkFlowDef
     {
         get { return _currentWorkFlowNode; }
-        set 
-        { 
+        set
+        {
             if (_currentWorkFlowNode?.Id != value?.Id)
             {
                 _currentWorkFlowNode = value;
@@ -189,6 +228,7 @@
 
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public DesignerMode DesignerMode { get; set; } = DesignerMode.Show;
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private WorkFlowDef? _currentWorkFlowNode;
@@ -224,6 +264,7 @@
             {
                 nodeModel.AddPort(new PortModel(portDef.Id, nodeModel, Enum.Parse<PortAlignment>(portDef.Alignment)));
             }
+
             foreach (var portDef in nodeDef.OutPorts)
             {
                 nodeModel.AddPort(new PortModel(portDef.Id, nodeModel, Enum.Parse<PortAlignment>(portDef.Alignment)));
@@ -252,11 +293,25 @@
         }
     }
 
+    private void SetModeRun() => DesignerMode = DesignerMode.Run;
+    private void SetModeShow() => DesignerMode = DesignerMode.Show;
+    private void SetModeDesign() => DesignerMode = DesignerMode.Design;
+
     private async Task BuildWorkflow()
     {
-        Getdef();
-        //aqui hacemos el build
+        try
+        {
+            Getdef();
+            //aqui hacemos el build
+            object WorkFlow = WorkFlowDef.Build();
+        }
+        catch (Exception e)
+        {
+            // interceptar error
+            Console.WriteLine(e);
+        }
     }
+
     private async Task Save()
     {
         Getdef();
@@ -279,13 +334,13 @@
             {
                 nodeDef.PosX = (int)node.Position.X;
                 nodeDef.PosY = (int)node.Position.Y;
-                
+
                 // Actualizar puertos en el nodeDef para reflejar el estado del diagrama
                 var leftPorts = node.Ports.Where(p => p.Alignment == PortAlignment.Left).ToList();
                 nodeDef.InPorts = leftPorts
                     .Select((p, i) => new NodePort { Id = p.Id, Name = $"In_{i}", Alignment = p.Alignment.ToString() })
                     .ToArray();
-                
+
                 var rightPorts = node.Ports.Where(p => p.Alignment == PortAlignment.Right).ToList();
                 nodeDef.OutPorts = rightPorts
                     .Select((p, i) => new NodePort { Id = p.Id, Name = $"Out_{i}", Alignment = p.Alignment.ToString() })
@@ -298,7 +353,7 @@
         WorkFlowDef.Links.Clear();
         foreach (var link in _diagram.Links)
         {
-            if (link.Source is SinglePortAnchor sourceAnchor && 
+            if (link.Source is SinglePortAnchor sourceAnchor &&
                 link.Target is SinglePortAnchor targetAnchor)
             {
                 WorkFlowDef.Links.Add(new WorkFlowLink
@@ -314,6 +369,7 @@
 
         return WorkFlowDef;
     }
+
 
     protected override void OnInitialized()
     {
@@ -375,17 +431,17 @@
             for (int i = 0; i < currentCount - count; i++)
             {
                 var portToRemove = currentPorts.Last();
-                
+
                 // Eliminar enlaces conectados al puerto que se va a quitar
                 var linksToRemove = _diagram.Links
-                    .Where(l => (l.Source is SinglePortAnchor source && source.Port == portToRemove) || 
+                    .Where(l => (l.Source is SinglePortAnchor source && source.Port == portToRemove) ||
                                 (l.Target is SinglePortAnchor target && target.Port == portToRemove))
                     .ToList();
                 foreach (var link in linksToRemove)
                 {
                     _diagram.Links.Remove(link);
                 }
-                
+
                 node.RemovePort(portToRemove);
                 currentPorts.RemoveAt(currentPorts.Count - 1);
             }
@@ -404,8 +460,9 @@
             port.Initialized = false;
             port.Refresh();
         }
-        
+
         // Refrescamos el diagrama para que se entere de las nuevas posiciones
         _diagram.Refresh();
     }
+
 }

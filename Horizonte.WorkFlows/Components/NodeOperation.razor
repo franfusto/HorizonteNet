@@ -1,25 +1,35 @@
-
 <RadzenCard class="node rz-background-color-primary-lighter">
     <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Class="rz-mb-2">
-        <RadzenIcon Icon="reorder" IconColor="var(--rz-primary)" />
+        <RadzenIcon Icon="reorder" IconColor="var(--rz-primary)"/>
     </RadzenStack>
+    @if (DesignerMode == DesignerMode.Show || DesignerMode == DesignerMode.Run)
+    {
+        <RadzenText Text="@Node.Node.Name"/>
+        <RadzenText Text="@Node.Node.CommandAction"/>
+    }
+    @if (DesignerMode == DesignerMode.Design)
+    {
+        <RadzenLabel Text="Nombre" Style="font-size: 0.8rem; margin-top: 0.5rem;"/>
+        <RadzenTextBox @bind-Value="Node.Node.Name" Placeholder="Nombre del nodo"
+                       Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
 
-    <RadzenLabel Text="Nombre" Style="font-size: 0.8rem; margin-top: 0.5rem;" />
-    <RadzenTextBox @bind-Value="Node.Node.Name" Placeholder="Nombre del nodo" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
+        <RadzenLabel Text="Acción de comando" Style="font-size: 0.8rem;"/>
+        <RadzenTextBox @bind-Value="Node.Node.CommandAction" Placeholder="Command Action"
+                       Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
 
-    <RadzenLabel Text="Acción de comando" Style="font-size: 0.8rem;" />
-    <RadzenTextBox @bind-Value="Node.Node.CommandAction" Placeholder="Command Action" Style="width: 100%; margin-bottom: 0.5rem;"></RadzenTextBox>
-    
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Class="rz-mb-2">
-        <RadzenStack Gap="0" Style="width: 45%;">
-            <RadzenLabel Text="In Ports" Style="font-size: 0.7rem;" />
-            <RadzenNumeric Value="@leftCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Left, v))" Style="width: 100%;" Placeholder="Left" Min="0" Max="10" />
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Class="rz-mb-2">
+            <RadzenStack Gap="0" Style="width: 45%;">
+                <RadzenLabel Text="In Ports" Style="font-size: 0.7rem;"/>
+                <RadzenNumeric Value="@leftCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Left, v))"
+                               Style="width: 100%;" Placeholder="Left" Min="0" Max="10"/>
+            </RadzenStack>
+            <RadzenStack Gap="0" Style="width: 45%;">
+                <RadzenLabel Text="Out Ports" Style="font-size: 0.7rem;"/>
+                <RadzenNumeric Value="@rightCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Right, v))"
+                               Style="width: 100%;" Placeholder="Right" Min="0" Max="10"/>
+            </RadzenStack>
         </RadzenStack>
-        <RadzenStack Gap="0" Style="width: 45%;">
-            <RadzenLabel Text="Out Ports" Style="font-size: 0.7rem;" />
-            <RadzenNumeric Value="@rightCount" TValue="int" Change="@(v => OnPortsChanged(PortAlignment.Right, v))" Style="width: 100%;" Placeholder="Right" Min="0" Max="10" />
-        </RadzenStack>
-    </RadzenStack>
+    }
 
     @{
         var leftPorts = Node.Ports.Where(p => p.Alignment == PortAlignment.Left).ToList();
@@ -32,7 +42,7 @@
     {
         var topPercent = (leftPorts.IndexOf(port) + 1) * 100 / (leftPorts.Count + 1);
         <div style="top: @(topPercent + "%"); left: 0;" class="port-container">
-            <PortRenderer @key="port" Port="port" />
+            <PortRenderer @key="port" Port="port"/>
         </div>
     }
 
@@ -40,7 +50,7 @@
     {
         var topPercent = (rightPorts.IndexOf(port) + 1) * 100 / (rightPorts.Count + 1);
         <div style="top: @(topPercent + "%"); right: 0;" class="port-container">
-            <PortRenderer @key="port" Port="port" />
+            <PortRenderer @key="port" Port="port"/>
         </div>
     }
 
@@ -48,7 +58,7 @@
     {
         var leftPercent = (topPorts.IndexOf(port) + 1) * 100 / (topPorts.Count + 1);
         <div style="left: @(leftPercent + "%"); top: 0;" class="port-container">
-            <PortRenderer @key="port" Port="port" />
+            <PortRenderer @key="port" Port="port"/>
         </div>
     }
 
@@ -56,12 +66,13 @@
     {
         var leftPercent = (bottomPorts.IndexOf(port) + 1) * 100 / (bottomPorts.Count + 1);
         <div style="left: @(leftPercent + "%"); bottom: 0;" class="port-container">
-            <PortRenderer @key="port" Port="port" />
+            <PortRenderer @key="port" Port="port"/>
         </div>
     }
 </RadzenCard>
 
 @code {
+    [CascadingParameter] public DesignerMode DesignerMode { get; set; } = DesignerMode.Show;
     [Parameter] public NodeOperationModel Node { get; set; } = null!;
 
     private int leftCount => Node.Ports.Count(p => p.Alignment == PortAlignment.Left);
@@ -72,4 +83,5 @@
         Node.NotifyPortsChanged(alignment, count);
         await InvokeAsync(StateHasChanged);
     }
+
 }
