@@ -29,6 +29,13 @@ public class WorkFlowLink
     public string SourcePortId { get; set; }
     public string TargetNodeId { get; set; }
     public string TargetPortId { get; set; }
+    public LinkCondition? Condition { get; set; }
+}
+
+public class LinkCondition
+{
+    public string ConditionName { get; set; }
+    public string ConditionCommand { get; set; }
 }
 
 public class NodePort

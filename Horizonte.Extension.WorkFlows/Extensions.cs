@@ -6,7 +6,7 @@ namespace Horizonte.Extension.WorkFlows;
 
 public static class Extensions
 {
-    public static Workflow Build(this WorkFlowDef def, IHorizonteEnv env)
+    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env)
     {
         var gesCom = env.HHost.Services.GetService<IHGesCom>();
         if (gesCom == null)
@@ -24,7 +24,7 @@ public static class Extensions
         // 2. Create executors for each node
         var executors = def.Nodes.ToDictionary(
             node => node.Id,
-            node => new HGesComExecutor(node.Id, node.CommandAction, gesCom)
+            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom)
         );
 
         // 3. Initialize WorkflowBuilder with the starting executor
@@ -36,11 +36,30 @@ public static class Extensions
             if (executors.TryGetValue(link.SourceNodeId, out var source) &&
                 executors.TryGetValue(link.TargetNodeId, out var target))
             {
-                builder.AddEdge(source, target);
+                // aqui metemos la condicion TODO:
+                var edge = builder.AddEdge(source, target);
+
+                // If the target node is an 'Out' node, mark it as a workflow output
+                if (def.Nodes.Any(n => n.Id == link.TargetNodeId && n.Type == WorkFlowNodeTypes.Out))
+                {
+                    edge.WithOutputFrom(target);
+                }
+
+                // If the source node is also an 'Out' node, mark it as a workflow output
+                if (def.Nodes.Any(n => n.Id == link.SourceNodeId && n.Type == WorkFlowNodeTypes.Out))
+                {
+                    edge.WithOutputFrom(source);
+                }
             }
         }
 
-        // 5. Build the workflow
+        // 5. Special case: If the start node is also an 'Out' node but has no edges,
+        // it's not possible to mark it as output via builder.AddEdge(...).WithOutputFrom(...).
+        // However, if there are edges starting from it, we've handled it above.
+        // If it's a single-node workflow (only 'In'), it should probably be connected to itself or similar,
+        // but 'WorkflowBuilder' expects at least one edge for outputs usually.
+        
+        // 6. Build the workflow
         return builder.Build();
     }
 }
@@ -48,6 +67,18 @@ public static class Extensions
 /// <summary>
 /// Custom executor that invokes HGesCom commands.
 /// </summary>
+///
+
+
+internal sealed class HGesComExecutor<T>(string id,string command, IHGesCom gesCom) : Executor<T, T>(id)
+{
+    public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context, CancellationToken cancellationToken = default)
+    {
+        return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]) ;
+    }
+}
+
+/*
 public sealed partial class HGesComExecutor : Executor
 {
     private readonly string _commandName;
@@ -64,7 +95,7 @@ public sealed partial class HGesComExecutor : Executor
     {
         // Execute the command via HGesCom
         // Each node acts as an executor, receiving a payload (message) and context.
-        return await _gesCom.RunCommandAsync(_commandName, new object[] { message!, context }, cancellationToken);
+        return await _gesCom.RunCommandAsync(_commandName, new object[] { message!, context });
     }
 
     protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder builder)
@@ -72,3 +103,4 @@ public sealed partial class HGesComExecutor : Executor
         return builder;
     }
 }
+*/

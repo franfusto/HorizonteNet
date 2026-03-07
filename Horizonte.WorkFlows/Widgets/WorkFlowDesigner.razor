@@ -2,12 +2,16 @@
 @using Blazor.Diagrams
 @using Blazor.Diagrams.Components
 @using Blazor.Diagrams.Core.Anchors
+@using Blazor.Diagrams.Core.Controls
+@using Blazor.Diagrams.Core.Controls.Default
 @using Blazor.Diagrams.Core.Models
 @using Blazor.Diagrams.Core.PathGenerators
 @using Blazor.Diagrams.Core.Routers
 @using Blazor.Diagrams.Options
 @using Horizonte.WorkFlows.Components
 @using Horizonte.WorkFlows.NodeModels
+@using Microsoft.Agents.AI.Workflows
+@using Microsoft.Extensions.DependencyInjection
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 @inject IHorizonteEnv HorizonteEnv
 <style>
@@ -180,6 +184,10 @@
             @if (DesignerMode == DesignerMode.Run)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Icon="settings_timelapse" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@RunWorkflow"/>
+                    <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@CancelWorkflow"/>
                     <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Click="@SetModeShow"/>
                 </RadzenStack>
@@ -287,10 +295,19 @@
                 if (sourcePort != null && targetPort != null)
                 {
                     var link = new LinkModel(linkDef.Id, sourcePort, targetPort);
+                    var conditionname = "<>";
+                    if (linkDef.Condition != null)
+                    {
+                        conditionname = $"<{linkDef.Condition.ConditionName}>";
+                    }
+                        
+                    link. AddLabel(conditionname,30);
+                    _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(new ArrowHeadControl(true,null));
                     _diagram.Links.Add(link);
                 }
             }
         }
+
     }
 
     private void SetModeRun() => DesignerMode = DesignerMode.Run;
@@ -302,12 +319,80 @@
         try
         {
             Getdef();
-            //aqui hacemos el build
-            object WorkFlow = WorkFlowDef.Build(HorizonteEnv);
+            _ = WorkFlowDef?.Build<string>(HorizonteEnv);
         }
         catch (Exception e)
         {
-            // interceptar error
+            Console.WriteLine(e);
+        }
+    }
+
+    private async Task RunWorkflow()
+    {
+        try
+        {
+            Getdef();
+            var workflow = WorkFlowDef?.Build<string>(HorizonteEnv);
+
+            await using StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, input: "Hello, World!");
+            await foreach (WorkflowEvent evt in run.WatchStreamAsync())
+            {
+                Console.WriteLine(">>>" + evt.ToString());
+                if (evt is WorkflowOutputEvent outputEvt)
+                {
+                    Console.WriteLine($"Final result: {outputEvt.Data}");
+                }
+            }
+
+ 
+            /*
+            Console.WriteLine(workflow.ToMermaidString());
+            var gesCom = HorizonteEnv.HHost.Services.GetService<IHGesCom>();
+            ArgumentNullException.ThrowIfNull(gesCom);
+            ReverseTextExecutor<string> uppercase = new("id1","TestNode",gesCom);
+            ReverseTextExecutor<string> reverse = new("id2","TestNode2",gesCom);
+
+            WorkflowBuilder builder = new(uppercase);
+            builder.AddEdge(uppercase, reverse).WithOutputFrom(reverse);
+            var workflow = builder.Build();
+
+            Run result = await InProcessExecution.RunAsync(workflow,"holamundo");
+            foreach (WorkflowEvent evt in result.NewEvents)
+            {
+                Console.WriteLine(evt.ToString());
+                if (evt is WorkflowOutputEvent outputEvt)
+                {
+                    Console.WriteLine($"Final result: {outputEvt.Data}");
+                }
+            }
+            */
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+
+    internal sealed class ReverseTextExecutor<T>(string id, string command, IHGesCom gesCom) : Executor<T, T>(id)
+    {
+        public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context, CancellationToken cancellationToken = default)
+        {
+            return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]);
+        }
+    }
+
+
+    /// <summary>
+    /// /////////
+    /// </summary>
+    private async Task CancelWorkflow()
+    {
+        try
+        {
+        }
+        catch (Exception e)
+        {
             Console.WriteLine(e);
         }
     }

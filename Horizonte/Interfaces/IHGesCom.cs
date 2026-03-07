@@ -40,24 +40,9 @@ public interface IHGesCom
     T? RunCommand<T>(string commandKeyor, object[]? arg = null);
 
 
-    /// <summary>
-    /// Ejecuta de manera asíncrona un comando identificado por su clave y devuelve el resultado de la ejecución.
-    /// </summary>
-    /// <param name="commandKeyor">La clave que identifica el comando a ejecutar.</param>
-    /// <param name="arg">Un arreglo opcional de argumentos que se pasarán al comando.</param>
-    /// <param name="cancellationToken">Token de cancelación.</param>
-    /// <returns>Un <see cref="Task"/> que representa la operación asíncrona. El resultado contiene un objeto que representa el resultado de la ejecución del comando.</returns>
-    Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null, CancellationToken cancellationToken = default);
+    Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null);
 
-    /// <summary>
-    /// Ejecuta asincrónicamente un comando especificado por su clave y devuelve el resultado convertido a un tipo de datos específico.
-    /// </summary>
-    /// <param name="commandKeyor">Identificador único del comando que se desea ejecutar.</param>
-    /// <param name="arg">Matriz opcional de argumentos que se pasarán al comando al momento de su ejecución.</param>
-    /// <param name="cancellationToken">Token de cancelación.</param>
-    /// <typeparam name="T">Tipo de datos al que se convertirá el resultado del comando.</typeparam>
-    /// <returns>Tarea que representa la ejecución asincrónica del comando, devolviendo un resultado convertido al tipo especificado T.</returns>
-    Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null, CancellationToken cancellationToken = default);
+    Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null);
     
 
     /// <summary>
