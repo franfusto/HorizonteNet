@@ -9,7 +9,7 @@
 @using Horizonte.WorkFlows.Components
 @using Horizonte.WorkFlows.NodeModels
 @using Point = Blazor.Diagrams.Core.Geometry.Point
-
+@inject IHorizonteEnv HorizonteEnv
 <style>
 
     .node {
@@ -303,7 +303,7 @@
         {
             Getdef();
             //aqui hacemos el build
-            object WorkFlow = WorkFlowDef.Build();
+            object WorkFlow = WorkFlowDef.Build(HorizonteEnv);
         }
         catch (Exception e)
         {

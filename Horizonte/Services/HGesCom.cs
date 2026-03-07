@@ -390,7 +390,7 @@ public class HGesCom : IHGesCom
         return _commandList.ContainsKey(commandKey);
     }
 
-    public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
+    public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -407,6 +407,27 @@ public class HGesCom : IHGesCom
 
             if (rCommand.CommandAction == null) return null;
 
+            // Si se pasa un CancellationToken, intentamos añadirlo a los argumentos si el comando lo soporta
+            if (cancellationToken != default)
+            {
+                var parameters = rCommand.CommandAction.GetParameters();
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (parameters[i].ParameterType == typeof(CancellationToken))
+                    {
+                        if (arg == null)
+                        {
+                            arg = new object[parameters.Length];
+                        }
+                        else if (arg.Length <= i)
+                        {
+                            Array.Resize(ref arg, parameters.Length);
+                        }
+                        arg[i] = cancellationToken;
+                    }
+                }
+            }
+
             // Revisar si el comando es una tarea asíncrona
             if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
             {
@@ -414,8 +435,7 @@ public class HGesCom : IHGesCom
                 var task = (Task)rCommand.CommandAction.Invoke(rCommand.Instance, arg)!;
 
                 // Esperamos si la tarea tiene resultado (Task<T>)
-                await task.ConfigureAwait(true);
-                task.Wait();
+                await task.WaitAsync(cancellationToken).ConfigureAwait(true);
 
                 if (rCommand.CommandAction.ReturnType.IsGenericType)
                 {
@@ -433,6 +453,11 @@ public class HGesCom : IHGesCom
                 return rCommand.CommandAction.Invoke(rCommand.Instance, arg);
             }
         }
+        catch (OperationCanceledException)
+        {
+            _log?.LogWarning($"Ejecución de RunCommandAsync cancelada para {commandKeyor}");
+            throw;
+        }
         catch (Exception ex)
         {
             _log?.LogError($"Error al ejecutar RunCommandAsync para {commandKeyor}: {ex}");
@@ -440,7 +465,7 @@ public class HGesCom : IHGesCom
         }
     }
 
-    public async Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null)
+    public async Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -457,13 +482,34 @@ public class HGesCom : IHGesCom
     
             if (rCommand.CommandAction == null) return default!;
     
+            // Si se pasa un CancellationToken, intentamos añadirlo a los argumentos si el comando lo soporta
+            if (cancellationToken != default)
+            {
+                var parameters = rCommand.CommandAction.GetParameters();
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (parameters[i].ParameterType == typeof(CancellationToken))
+                    {
+                        if (arg == null)
+                        {
+                            arg = new object[parameters.Length];
+                        }
+                        else if (arg.Length <= i)
+                        {
+                            Array.Resize(ref arg, parameters.Length);
+                        }
+                        arg[i] = cancellationToken;
+                    }
+                }
+            }
+
             // Si el comando es async
             //if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
             if (rCommand.IsAsync)
             {
                 var task = (Task)rCommand.CommandAction.Invoke(rCommand.Instance, arg)!;
     
-                await task.ConfigureAwait(true);
+                await task.WaitAsync(cancellationToken).ConfigureAwait(true);
     
                 if (task.GetType().IsGenericType)
                 {
@@ -479,6 +525,11 @@ public class HGesCom : IHGesCom
                 var result = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
                 return (T)Convert.ChangeType(result, typeof(T));
             }
+        }
+        catch (OperationCanceledException)
+        {
+            _log?.LogWarning($"Ejecución de RunCommandAsync<T> cancelada para {commandKeyor}");
+            throw;
         }
         catch (Exception ex)
         {

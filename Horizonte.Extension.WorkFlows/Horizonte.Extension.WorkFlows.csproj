@@ -10,4 +10,8 @@
       <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.0.0-rc3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+
 </Project>
