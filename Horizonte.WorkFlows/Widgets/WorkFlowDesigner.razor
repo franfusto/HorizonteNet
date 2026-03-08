@@ -154,10 +154,7 @@
         background-color: var(--rz-base-background-color) !important;
         border: 1px solid var(--rz-primary);
         border-radius: var(--rz-border-radius);
-        padding: 0.25rem;
         box-shadow: var(--rz-shadow-2);
-        align-items: center;
-        justify-content: center;
         pointer-events: all;
         overflow: visible;
         z-index: 9999;
@@ -316,7 +313,7 @@
                     }
                         
                     link. AddLabel(conditionname,30);
-                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl());
+                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl(linkDef,workflow));
                     _diagram.Links.Add(link);
                 }
             }

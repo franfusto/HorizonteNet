@@ -8,14 +8,16 @@ using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.Positions;
 using System;
 using System.Threading.Tasks;
+using Horizonte.Extension.WorkFlows;
 
 namespace Horizonte.WorkFlows.NodeModels;
 
 
 
 
-public class LinkSettingsControl : ExecutableControl
+public class LinkSettingsControl(WorkFlowLink LinkDef,WorkFlowDef workFlowDef) : ExecutableControl
 {
+
     public Rectangle Bounds { get; private set; } = Rectangle.Zero;
     
     public override Point? GetPosition(Model model)
@@ -27,8 +29,8 @@ public class LinkSettingsControl : ExecutableControl
         if (bounds == null)
             return null;
 
-        Bounds = bounds.Inflate(10, 10);
-        return Bounds.NorthWest;
+        Bounds = bounds;//.Inflate(10, 10);
+        return Bounds.North;
     }
 
     public override ValueTask OnPointerDown(Diagram diagram, Model model, PointerEventArgs e)
@@ -36,5 +38,15 @@ public class LinkSettingsControl : ExecutableControl
         if(model.Locked) return new ValueTask();
         return new ValueTask();
         //throw new NotImplementedException();
+    }
+
+    public void EditCondition()
+    {
+        
+    }
+
+    public void DeleteCondition()
+    {
+        
     }
 }

@@ -3,16 +3,17 @@
 
 
 
-<foreignObject width="350" height="350">
+<foreignObject width="150" height="100">
     <div class="LinkSettingsControl">
-        <RadzenCard >
-            <RadzenStack Orientation="Orientation.Vertical">
-                <RadzenText TextStyle="TextStyle.DisplayH3" Text="Condicional"></RadzenText>
-                <RadzenTextBox></RadzenTextBox>
-                <RadzenTextBox></RadzenTextBox>
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+
+                <RadzenText TextStyle="TextStyle.Subtitle2" Text="Condición"></RadzenText>
                 <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenButton Text="save"></RadzenButton>
-                    <RadzenButton Text="delete"></RadzenButton>
+                    <RadzenButton Icon="edit_note" Size="ButtonSize.ExtraSmall" 
+                                  Variant="Variant.Outlined" Click="EditCondition"/>
+                    <RadzenButton Icon="delete_forever" Size="ButtonSize.ExtraSmall" 
+                                  Variant="Variant.Outlined" Click="DeleteCondition"/>
                 </RadzenStack>
             </RadzenStack>
         </RadzenCard>
@@ -30,4 +31,24 @@
         base.OnInitialized();
     }
 
+
+    private void DeleteCondition()
+    {
+        Control.DeleteCondition();
+    }
+    async Task EditCondition()
+    {
+        var result = await DialogService.OpenAsync("Editar condición", ds =>
+            @<RadzenStack Orientation="Orientation.Vertical" Gap="1.5rem">
+                <RadzenText Text="Nombre"/>
+                <RadzenTextBox/>
+                <RadzenText Text="Comando acción"/>
+                <RadzenTextBox/>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;"/>
+                    <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
+                </RadzenStack>
+            </RadzenStack>);
+        Control.EditCondition();
+    }
 }
