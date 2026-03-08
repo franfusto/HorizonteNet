@@ -1,4 +1,5 @@
 @using Blazor.Diagrams.Core.Models.Base;
+@using Horizonte.Extension.WorkFlows
 @inject DialogService DialogService
 
 
@@ -7,7 +8,6 @@
     <div class="LinkSettingsControl">
         <RadzenCard>
             <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-
                 <RadzenText TextStyle="TextStyle.Subtitle2" Text="Condición"></RadzenText>
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenButton Icon="edit_note" Size="ButtonSize.ExtraSmall" 
@@ -35,20 +35,60 @@
     private void DeleteCondition()
     {
         Control.DeleteCondition();
+        UpdateLinkLabel();
     }
     async Task EditCondition()
     {
+        WorkFlowLink updlink = Control.WorkFlowLink;
+        if (updlink.Condition == null)
+        {
+            updlink.Condition = new LinkCondition();
+        }
+        
+        string name = updlink.Condition.ConditionName;
+        string command = updlink.Condition.ConditionCommand;
+
         var result = await DialogService.OpenAsync("Editar condición", ds =>
             @<RadzenStack Orientation="Orientation.Vertical" Gap="1.5rem">
                 <RadzenText Text="Nombre"/>
-                <RadzenTextBox/>
+                <RadzenTextBox @bind-Value="name"/>
                 <RadzenText Text="Comando acción"/>
-                <RadzenTextBox/>
+                <RadzenTextBox @bind-Value="command"/>
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;"/>
                     <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
                 </RadzenStack>
             </RadzenStack>);
-        Control.EditCondition();
+            
+        if (result == true)
+        {
+            updlink.Condition.ConditionName = name;
+            updlink.Condition.ConditionCommand = command;
+            Control.EditCondition(updlink);
+            UpdateLinkLabel();
+            StateHasChanged();
+        }
+    }
+
+    private void UpdateLinkLabel()
+    {
+        var conditionname = "<>";
+        if (Control.WorkFlowLink.Condition != null && !string.IsNullOrEmpty(Control.WorkFlowLink.Condition.ConditionName))
+        {
+            conditionname = $"<{Control.WorkFlowLink.Condition.ConditionName}>";
+        }
+
+        var label = Model.Labels.FirstOrDefault();
+        if (label != null)
+        {
+            label.Content = conditionname;
+        }
+        else
+        {
+            Model.AddLabel(conditionname, 30);
+        }
+        
+        Model.Refresh();
+        Control.Diagram.Refresh();
     }
 }

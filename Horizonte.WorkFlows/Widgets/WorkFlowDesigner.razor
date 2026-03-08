@@ -310,10 +310,10 @@
                     if (linkDef.Condition != null)
                     {
                         conditionname = $"<{linkDef.Condition.ConditionName}>";
+                        link. AddLabel(conditionname,30);
                     }
                         
-                    link. AddLabel(conditionname,30);
-                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl(linkDef,workflow));
+                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl(linkDef,workflow,_diagram));
                     _diagram.Links.Add(link);
                 }
             }
@@ -452,14 +452,23 @@
             if (link.Source is SinglePortAnchor sourceAnchor &&
                 link.Target is SinglePortAnchor targetAnchor)
             {
-                WorkFlowDef.Links.Add(new WorkFlowLink
+                var workFlowLink = new WorkFlowLink
                 {
                     Id = link.Id,
                     SourceNodeId = sourceAnchor.Port.Parent.Id,
                     SourcePortId = sourceAnchor.Port.Id,
                     TargetNodeId = targetAnchor.Port.Parent.Id,
                     TargetPortId = targetAnchor.Port.Id
-                });
+                };
+
+                // Recuperar la condición si existe en el control
+                var control = _diagram.Controls.GetFor(link).OfType<LinkSettingsControl>().FirstOrDefault();
+                if (control != null)
+                {
+                    workFlowLink.Condition = control.WorkFlowLink.Condition;
+                }
+
+                WorkFlowDef.Links.Add(workFlowLink);
             }
         }
 
