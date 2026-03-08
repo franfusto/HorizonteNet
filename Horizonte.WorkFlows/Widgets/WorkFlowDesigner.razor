@@ -149,6 +149,20 @@
         flex-direction: column;
         gap: 5px;
     }
+
+    .LinkSettingsControl {
+        background-color: var(--rz-base-background-color) !important;
+        border: 1px solid var(--rz-primary);
+        border-radius: var(--rz-border-radius);
+        padding: 0.25rem;
+        box-shadow: var(--rz-shadow-2);
+        align-items: center;
+        justify-content: center;
+        pointer-events: all;
+        overflow: visible;
+        z-index: 9999;
+    }
+
 </style>
 
 @if (WorkFlowDef != null)
@@ -302,7 +316,7 @@
                     }
                         
                     link. AddLabel(conditionname,30);
-                    _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(new ArrowHeadControl(true,null));
+                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl());
                     _diagram.Links.Add(link);
                 }
             }
@@ -461,6 +475,10 @@
         _diagram.RegisterComponent<NodeInModel, NodeIn>();
         _diagram.RegisterComponent<NodeOperationModel, NodeOperation>();
         _diagram.RegisterComponent<NodeOutModel, NodeOut>();
+        _diagram.RegisterComponent<LinkSettingsControl,LinkSettingsWidget>();
+        
+        //todo: aqui registrar condicion widget
+        
         base.OnInitialized();
     }
 

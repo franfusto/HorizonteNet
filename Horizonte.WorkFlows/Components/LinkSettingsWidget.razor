@@ -1,0 +1,33 @@
+@using Blazor.Diagrams.Core.Models.Base;
+@inject DialogService DialogService
+
+
+
+<foreignObject width="350" height="350">
+    <div class="LinkSettingsControl">
+        <RadzenCard >
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenText TextStyle="TextStyle.DisplayH3" Text="Condicional"></RadzenText>
+                <RadzenTextBox></RadzenTextBox>
+                <RadzenTextBox></RadzenTextBox>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Text="save"></RadzenButton>
+                    <RadzenButton Text="delete"></RadzenButton>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+    </div>
+</foreignObject>
+
+@code
+{
+    [Parameter] public LinkSettingsControl Control { get; set; } = null!;
+
+    [Parameter] public BaseLinkModel Model { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+}
