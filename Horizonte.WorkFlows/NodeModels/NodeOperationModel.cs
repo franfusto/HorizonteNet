@@ -7,13 +7,15 @@ namespace Horizonte.WorkFlows.NodeModels;
 /// <summary>
 /// 
 /// </summary>
-public class NodeOperationModel : NodeModel
+public class NodeOperationModel : NodeModel,IRunnableNode
 {
     /// <summary>
     /// 
     /// </summary>
     public WorkFlowNode Node { get; }
 
+    public string RunMessage {get; set;}
+    
     /// <summary>
     /// Evento emitido cuando cambia el número de puertos.
     /// (Alignment, Count)

@@ -6,13 +6,15 @@ namespace Horizonte.WorkFlows.NodeModels;
 /// <summary>
 /// 
 /// </summary>
-public class NodeOutModel : NodeModel
+public class NodeOutModel : NodeModel,IRunnableNode
 {
     /// <summary>
     /// 
     /// </summary>
     public WorkFlowNode Node { get; }
 
+    public string RunMessage {get; set;}
+    
     /// <summary>
     /// 
     /// </summary>

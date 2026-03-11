@@ -160,6 +160,21 @@
         z-index: 9999;
     }
 
+    .diagram-link {
+        width: 100px !important;
+    }
+
+    .default-link-label {
+        width: 100px !important;
+        color: var(--rz-text-color) !important;
+        background-color: var(--rz-base-background-color) !important;
+        border: 1px solid var(--rz-primary);
+        border-radius: var(--rz-border-radius);
+        box-shadow: var(--rz-shadow-2);
+        pointer-events: all;
+        overflow: visible;
+        z-index: 9999;
+    }
 </style>
 
 @if (WorkFlowDef != null)
@@ -172,13 +187,7 @@
             @if (DesignerMode == DesignerMode.Design)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                    <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build"/>
-                    <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios"/>
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@(() => OnDelete.InvokeAsync())"
-                                  Tooltip="Eliminar workflow"/>
+
                     <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Click="@SetModeShow"/>
                 </RadzenStack>
@@ -195,20 +204,25 @@
             @if (DesignerMode == DesignerMode.Run)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                    <RadzenButton Icon="settings_timelapse" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@RunWorkflow"/>
-                    <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@CancelWorkflow"/>
                     <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Click="@SetModeShow"/>
                 </RadzenStack>
             }
         </RadzenStack>
 
+
         <div class="diagram-container" style="position: relative;">
-            @if (DesignerMode == DesignerMode.Design)
-            {
-                <div class="diagram-toolbox">
+            <div class="diagram-toolbox">
+                @if (DesignerMode == DesignerMode.Design)
+                {
+                    <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build"/>
+                    <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios"/>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                  Size="ButtonSize.Medium" Click="@(() => OnDelete.InvokeAsync())"
+                                  Tooltip="Eliminar workflow"/>
+                    <hr/>
                     <RadzenButton Icon="login" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Tooltip="Entrada (In)"
                                   Click="@(() => AddNode(WorkFlowNodeTypes.In))"/>
@@ -218,8 +232,33 @@
                     <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Tooltip="Salida (Out)"
                                   Click="@(() => AddNode(WorkFlowNodeTypes.Out))"/>
-                </div>
-            }
+                }
+                @if (DesignerMode == DesignerMode.Run)
+                {
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                                 JustifyContent="JustifyContent.Center">
+
+                        <RadzenStack Orientation="Orientation.Horizontal">
+
+                            <RadzenButton Icon="settings_timelapse" ButtonStyle="ButtonStyle.Primary"
+                                          Variant="Variant.Outlined"
+                                          Size="ButtonSize.Medium" Click="@RunWorkflow"/>
+                            <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                          Size="ButtonSize.Medium" Click="@CancelWorkflow"/>
+                        </RadzenStack>
+                        <RadzenCard>
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenText Text="Entrada"/>
+                                <RadzenTextArea @bind-Value="_inmessage"/>
+                                <RadzenText Text="Salida"/>
+                                <RadzenTextArea @bind-Value="_outmessage"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                        <RadzenTextArea @bind-Value="_logmessage"/>
+
+                    </RadzenStack>
+                }
+            </div>
             <CascadingValue Value="_diagram" IsFixed="true">
                 <CascadingValue Value="DesignerMode">
                     <DiagramCanvas></DiagramCanvas>
@@ -251,6 +290,10 @@
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private WorkFlowDef? _currentWorkFlowNode;
+
+    private string _inmessage = string.Empty;
+    private string _outmessage = string.Empty;
+    private string _logmessage = string.Empty;
 
     private void LoadWorkFlow(WorkFlowDef? workflow)
     {
@@ -306,30 +349,54 @@
                 if (sourcePort != null && targetPort != null)
                 {
                     var link = new LinkModel(linkDef.Id, sourcePort, targetPort);
-                    var conditionname = "<>";
+                    var conditionname = string.Empty;
                     if (linkDef.Condition != null)
                     {
-                        conditionname = $"<{linkDef.Condition.ConditionName}>";
-                        link. AddLabel(conditionname,30);
+                        conditionname = linkDef.Condition.ConditionName;
+                        link.AddLabel(conditionname, 60);
                     }
-                        
-                    _diagram.Controls.AddFor(link,ControlsType.OnSelection).Add(new LinkSettingsControl(linkDef,workflow,_diagram));
+
+                    if (DesignerMode == DesignerMode.Design)
+                    {
+                        var control = new LinkSettingsControl(linkDef);
+                        control.OnConditionChanged += () =>
+                        {
+                            Getdef();
+                            LoadWorkFlow(_currentWorkFlowNode);
+                            StateHasChanged();
+                        };
+                        _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(control);
+                    }
+
                     _diagram.Links.Add(link);
                 }
             }
         }
-
     }
 
-    private void SetModeRun() => DesignerMode = DesignerMode.Run;
-    private void SetModeShow() => DesignerMode = DesignerMode.Show;
-    private void SetModeDesign() => DesignerMode = DesignerMode.Design;
+    private void SetModeRun()
+    {
+        DesignerMode = DesignerMode.Run;
+        LoadWorkFlow(_currentWorkFlowNode);
+    }
+
+    private void SetModeShow()
+    {
+        DesignerMode = DesignerMode.Show;
+        LoadWorkFlow(_currentWorkFlowNode);
+    }
+
+    private void SetModeDesign()
+    {
+        DesignerMode = DesignerMode.Design;
+        LoadWorkFlow(_currentWorkFlowNode);
+    }
 
     private async Task BuildWorkflow()
     {
         try
         {
-            Getdef();
+            //Getdef();
             _ = WorkFlowDef?.Build<string>(HorizonteEnv);
         }
         catch (Exception e)
@@ -342,41 +409,12 @@
     {
         try
         {
-            Getdef();
+            _logmessage = string.Empty;
+            // todo: serializar deserealizar set default to json
             var workflow = WorkFlowDef?.Build<string>(HorizonteEnv);
-
-            await using StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, input: "Hello, World!");
-            await foreach (WorkflowEvent evt in run.WatchStreamAsync())
-            {
-                Console.WriteLine(">>>" + evt.ToString());
-                if (evt is WorkflowOutputEvent outputEvt)
-                {
-                    Console.WriteLine($"Final result: {outputEvt.Data}");
-                }
-            }
-
- 
-            /*
-            Console.WriteLine(workflow.ToMermaidString());
-            var gesCom = HorizonteEnv.HHost.Services.GetService<IHGesCom>();
-            ArgumentNullException.ThrowIfNull(gesCom);
-            ReverseTextExecutor<string> uppercase = new("id1","TestNode",gesCom);
-            ReverseTextExecutor<string> reverse = new("id2","TestNode2",gesCom);
-
-            WorkflowBuilder builder = new(uppercase);
-            builder.AddEdge(uppercase, reverse).WithOutputFrom(reverse);
-            var workflow = builder.Build();
-
-            Run result = await InProcessExecution.RunAsync(workflow,"holamundo");
-            foreach (WorkflowEvent evt in result.NewEvents)
-            {
-                Console.WriteLine(evt.ToString());
-                if (evt is WorkflowOutputEvent outputEvt)
-                {
-                    Console.WriteLine($"Final result: {outputEvt.Data}");
-                }
-            }
-            */
+            var result = await workflow.Run<string>(_inmessage, ProcLogMessge);
+            _outmessage = result.Data.ToString();
+            Console.WriteLine(_outmessage);
         }
         catch (Exception e)
         {
@@ -384,13 +422,48 @@
         }
     }
 
-
-    internal sealed class ReverseTextExecutor<T>(string id, string command, IHGesCom gesCom) : Executor<T, T>(id)
+    private void ProcLogMessge(WorkflowEvent workflowEvent)
     {
-        public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context, CancellationToken cancellationToken = default)
+        try
         {
-            return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]);
+            string log = string.Empty;
+            switch (workflowEvent)
+            {
+                case ExecutorInvokedEvent invoke:
+                    UpdRunUi(invoke.ExecutorId, "invoke");
+                    log = $"Starting {invoke.ExecutorId}" + Environment.NewLine;
+                    break;
+
+                case ExecutorCompletedEvent complete:
+                    UpdRunUi(complete.ExecutorId, "complete");
+                    log = $"Completed {complete.ExecutorId}: {complete.Data}" + Environment.NewLine;
+                    break;
+
+                case WorkflowOutputEvent output:
+                    UpdRunUi(output.ExecutorId, "output");
+                    log = $"Workflow output: {output.Data}" + Environment.NewLine;
+                    return;
+
+                case WorkflowErrorEvent error:
+                    log = $"Workflow error: {error.Exception}" + Environment.NewLine;
+                    return;
+            }
+
+            _logmessage += log;
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    private void UpdRunUi(string executorid, string eventtype)
+    {
+        var curnode = _diagram.Nodes.Where(x => x.Id == executorid).FirstOrDefault();
+        ((IRunnableNode)curnode).RunMessage += eventtype;
+        var x = ((IRunnableNode)curnode).RunMessage;
+        curnode.Refresh();
+        InvokeAsync(StateHasChanged);
     }
 
 
@@ -462,7 +535,7 @@
                 };
 
                 // Recuperar la condición si existe en el control
-                var control = _diagram.Controls.GetFor(link).OfType<LinkSettingsControl>().FirstOrDefault();
+                var control = _diagram.Controls.GetFor(link)?.OfType<LinkSettingsControl>().FirstOrDefault();
                 if (control != null)
                 {
                     workFlowLink.Condition = control.WorkFlowLink.Condition;
@@ -481,10 +554,9 @@
         _diagram.RegisterComponent<NodeInModel, NodeIn>();
         _diagram.RegisterComponent<NodeOperationModel, NodeOperation>();
         _diagram.RegisterComponent<NodeOutModel, NodeOut>();
-        _diagram.RegisterComponent<LinkSettingsControl,LinkSettingsWidget>();
-        
-        //todo: aqui registrar condicion widget
-        
+        _diagram.RegisterComponent<LinkSettingsControl, LinkSettingsWidget>();
+
+
         base.OnInitialized();
     }
 

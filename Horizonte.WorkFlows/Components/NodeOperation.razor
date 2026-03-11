@@ -2,11 +2,16 @@
     <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Class="rz-mb-2">
         <RadzenIcon Icon="reorder" IconColor="var(--rz-primary)"/>
     </RadzenStack>
-    @if (DesignerMode == DesignerMode.Show || DesignerMode == DesignerMode.Run)
+    @if (DesignerMode == DesignerMode.Show)
     {
         <RadzenText Text="@Node.Node.Name"/>
         <RadzenText Text="@Node.Node.CommandAction"/>
     }
+    @if (DesignerMode == DesignerMode.Run)
+    {
+        <RadzenText Text="@Node.RunMessage"/>
+    }
+
     @if (DesignerMode == DesignerMode.Design)
     {
         <RadzenLabel Text="Nombre" Style="font-size: 0.8rem; margin-top: 0.5rem;"/>

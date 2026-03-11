@@ -12,9 +12,6 @@ using Horizonte.Extension.WorkFlows;
 
 namespace Horizonte.WorkFlows.NodeModels;
 
-
-
-
 public class LinkSettingsControl : ExecutableControl
 {
 
@@ -23,11 +20,9 @@ public class LinkSettingsControl : ExecutableControl
     public Rectangle Bounds { get; private set; } = Rectangle.Zero;
     public Diagram Diagram { get; private set; }
 
-    public LinkSettingsControl(WorkFlowLink LinkDef,WorkFlowDef workFlowDef, Diagram diagram)
+    public LinkSettingsControl(WorkFlowLink LinkDef)
     {
-        WorkFlowDef = workFlowDef;
         WorkFlowLink = LinkDef;
-        Diagram = diagram;
     }
     
     public override Point? GetPosition(Model model)
@@ -39,24 +34,26 @@ public class LinkSettingsControl : ExecutableControl
         if (bounds == null)
             return null;
 
-        Bounds = bounds;//.Inflate(10, 10);
+        Bounds = bounds;
         return Bounds.North;
     }
 
     public override ValueTask OnPointerDown(Diagram diagram, Model model, PointerEventArgs e)
     {
-        if(model.Locked) return new ValueTask();
         return new ValueTask();
-        //throw new NotImplementedException();
     }
+
+    public Action OnConditionChanged { get; set; }
 
     public void EditCondition(WorkFlowLink updLink)
     {
         WorkFlowLink = updLink;
+        OnConditionChanged?.Invoke();
     }
 
     public void DeleteCondition()
     {
         WorkFlowLink.Condition = null;
+        OnConditionChanged?.Invoke();
     }
 }

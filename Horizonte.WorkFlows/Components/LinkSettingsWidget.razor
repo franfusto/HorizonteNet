@@ -35,7 +35,6 @@
     private void DeleteCondition()
     {
         Control.DeleteCondition();
-        UpdateLinkLabel();
     }
     async Task EditCondition()
     {
@@ -65,30 +64,8 @@
             updlink.Condition.ConditionName = name;
             updlink.Condition.ConditionCommand = command;
             Control.EditCondition(updlink);
-            UpdateLinkLabel();
-            StateHasChanged();
         }
     }
 
-    private void UpdateLinkLabel()
-    {
-        var conditionname = "<>";
-        if (Control.WorkFlowLink.Condition != null && !string.IsNullOrEmpty(Control.WorkFlowLink.Condition.ConditionName))
-        {
-            conditionname = $"<{Control.WorkFlowLink.Condition.ConditionName}>";
-        }
 
-        var label = Model.Labels.FirstOrDefault();
-        if (label != null)
-        {
-            label.Content = conditionname;
-        }
-        else
-        {
-            Model.AddLabel(conditionname, 30);
-        }
-        
-        Model.Refresh();
-        Control.Diagram.Refresh();
-    }
 }

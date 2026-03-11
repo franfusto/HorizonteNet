@@ -1,3 +1,4 @@
+using System.Text;
 using Horizonte;
 using Horizonte.WorkFlows.Widgets;
 using Microsoft.Agents.AI.Workflows;
@@ -33,6 +34,7 @@ public class PanelModulo
     [HorizonteCommand("TestNode1")]
     public async Task<string> TestNode1(string message, IWorkflowContext context, CancellationToken cancellationToken)
     {
+        Thread.Sleep(2000);
         return await Task.FromResult(message + " TestNode1 ");
     }
     [HorizonteCommand("TestNode2")]
@@ -72,6 +74,17 @@ public class PanelModulo
     public async Task<string> TestNode8(string message, IWorkflowContext context, CancellationToken cancellationToken)
     {
         return await Task.FromResult(message +" TestNode8 ");
+    }
+
+    [HorizonteCommand("Condition1")]
+    public bool Condition1(string message)
+    {
+        return true;
+    }
+    [HorizonteCommand("Condition2")]
+    public bool Condition2(string message)
+    {
+        return false;
     }
 
 }

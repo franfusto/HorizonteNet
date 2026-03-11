@@ -36,8 +36,8 @@ public static class Extensions
             if (executors.TryGetValue(link.SourceNodeId, out var source) &&
                 executors.TryGetValue(link.TargetNodeId, out var target))
             {
-                // aqui metemos la condicion TODO:
-                var edge = builder.AddEdge(source, target);
+                Func<T, bool>? condition = GetConditionFunc<T>(link, gesCom);
+                var edge = builder.AddEdge(source, target, condition!);
 
                 // If the target node is an 'Out' node, mark it as a workflow output
                 if (def.Nodes.Any(n => n.Id == link.TargetNodeId && n.Type == WorkFlowNodeTypes.Out))
@@ -58,9 +58,36 @@ public static class Extensions
         // However, if there are edges starting from it, we've handled it above.
         // If it's a single-node workflow (only 'In'), it should probably be connected to itself or similar,
         // but 'WorkflowBuilder' expects at least one edge for outputs usually.
-        
+
         // 6. Build the workflow
         return builder.Build();
+    }
+
+    private static Func<T, bool>? GetConditionFunc<T>(WorkFlowLink link, IHGesCom gesCom)
+    {
+        if (link.Condition == null || string.IsNullOrEmpty(link.Condition.ConditionCommand))
+        {
+            return null;
+        }
+
+        return (message) => { return gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]); };
+    }
+
+    public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null) where T : notnull
+    {
+        var result = default(WorkflowEvent);
+        await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message);
+        await foreach (var evt in run.WatchStreamAsync())
+        {
+            Console.WriteLine(evt);
+            result = evt;
+            eventhandler?.Invoke(evt);
+            if (evt is WorkflowOutputEvent)
+            {
+                return evt;
+            }
+        }
+        return result;
     }
 }
 
@@ -68,13 +95,12 @@ public static class Extensions
 /// Custom executor that invokes HGesCom commands.
 /// </summary>
 ///
-
-
-internal sealed class HGesComExecutor<T>(string id,string command, IHGesCom gesCom) : Executor<T, T>(id)
+internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom) : Executor<T, T>(id)
 {
-    public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context, CancellationToken cancellationToken = default)
+    public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context,
+        CancellationToken cancellationToken = default)
     {
-        return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]) ;
+        return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]);
     }
 }
 
