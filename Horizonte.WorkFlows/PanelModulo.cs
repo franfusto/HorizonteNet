@@ -34,7 +34,12 @@ public class PanelModulo
     [HorizonteCommand("TestNode1")]
     public async Task<string> TestNode1(string message, IWorkflowContext context, CancellationToken cancellationToken)
     {
-        Thread.Sleep(2000);
+        for (int i = 0; i < 5; i++)
+        {
+            if(cancellationToken.IsCancellationRequested) break;
+            Console.WriteLine($"Iteration {i}");
+            Thread.Sleep(2000);
+        }
         return await Task.FromResult(message + " TestNode1 ");
     }
     [HorizonteCommand("TestNode2")]

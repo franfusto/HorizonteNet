@@ -35,7 +35,7 @@ public class LinkSettingsControl : ExecutableControl
             return null;
 
         Bounds = bounds;
-        return Bounds.North;
+        return Bounds.West;
     }
 
     public override ValueTask OnPointerDown(Diagram diagram, Model model, PointerEventArgs e)

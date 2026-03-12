@@ -73,10 +73,10 @@ public static class Extensions
         return (message) => { return gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]); };
     }
 
-    public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null) where T : notnull
+    public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
     {
         var result = default(WorkflowEvent);
-        await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message);
+        await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message,cancellationToken: token);
         await foreach (var evt in run.WatchStreamAsync())
         {
             Console.WriteLine(evt);

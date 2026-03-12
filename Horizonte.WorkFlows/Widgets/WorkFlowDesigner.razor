@@ -1,3 +1,4 @@
+@implements IDisposable
 @using Horizonte.Extension.WorkFlows
 @using Blazor.Diagrams
 @using Blazor.Diagrams.Components
@@ -294,11 +295,52 @@
     private string _inmessage = string.Empty;
     private string _outmessage = string.Empty;
     private string _logmessage = string.Empty;
+    private CancellationTokenSource? _cts;
+
+    private void HandleConditionChanged()
+    {
+        Getdef();
+        LoadWorkFlow(_currentWorkFlowNode);
+        StateHasChanged();
+    }
+
+    private void HandlePortsChangedDelegate(PortAlignment alignment, int count)
+    {
+        // Esta implementación necesita saber qué nodo disparó el evento.
+        // Debido a que el evento OnPortsChanged actual no pasa el remitente,
+        // tendríamos que modificar NodeOperationModel para que sea más robusto.
+        // Por ahora, lo mantenemos como una referencia para permitir la desuscripción.
+    }
+
+    private void CleanEventHandlers()
+    {
+        foreach (var node in _diagram.Nodes)
+        {
+            if (node is NodeOperationModel opModel)
+            {
+                opModel.OnPortsChanged -= HandlePortsChangedDelegate;
+            }
+        }
+
+        foreach (var link in _diagram.Links)
+        {
+            var controls = _diagram.Controls.GetFor(link);
+            if (controls != null)
+            {
+                foreach (var control in controls.OfType<LinkSettingsControl>())
+                {
+                    control.OnConditionChanged -= HandleConditionChanged;
+                }
+            }
+        }
+    }
 
     private void LoadWorkFlow(WorkFlowDef? workflow)
     {
+        CleanEventHandlers();
         _diagram.Nodes.Clear();
         _diagram.Links.Clear();
+        CleanLastRun();
 
         if (workflow == null) return;
 
@@ -316,7 +358,7 @@
                     break;
                 default:
                     var opModel = new NodeOperationModel(nodeDef);
-                    opModel.OnPortsChanged += (alignment, count) => HandlePortsChanged(opModel, alignment, count);
+                    opModel.OnPortsChanged += HandlePortsChangedDelegate;
                     nodeModel = opModel;
                     break;
             }
@@ -359,12 +401,7 @@
                     if (DesignerMode == DesignerMode.Design)
                     {
                         var control = new LinkSettingsControl(linkDef);
-                        control.OnConditionChanged += () =>
-                        {
-                            Getdef();
-                            LoadWorkFlow(_currentWorkFlowNode);
-                            StateHasChanged();
-                        };
+                        control.OnConditionChanged += HandleConditionChanged;
                         _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(control);
                     }
 
@@ -409,16 +446,27 @@
     {
         try
         {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            CleanLastRun(false);
             _logmessage = string.Empty;
             // todo: serializar deserealizar set default to json
             var workflow = WorkFlowDef?.Build<string>(HorizonteEnv);
-            var result = await workflow.Run<string>(_inmessage, ProcLogMessge);
+            var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);
             _outmessage = result.Data.ToString();
             Console.WriteLine(_outmessage);
+        }
+        catch (OperationCanceledException)
+        {
+            _logmessage += "Workflow cancelado." + Environment.NewLine;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+        }
+        finally
+        {
+            _cts = null;
         }
     }
 
@@ -466,14 +514,30 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private void CleanLastRun(bool clenainmessage = true)
+    {
+        if(clenainmessage) _inmessage = string.Empty;
+        _outmessage = string.Empty;
+        _logmessage = string.Empty;
 
-    /// <summary>
-    /// /////////
-    /// </summary>
+        foreach (var node in _diagram.Nodes)
+        {
+            if (node is IRunnableNode runnableNode)
+            {
+                runnableNode.RunMessage = string.Empty;
+                node.RefreshAll();
+            }
+        }
+    }
+
     private async Task CancelWorkflow()
     {
         try
         {
+            if (_cts != null)
+            {
+                await _cts.CancelAsync();
+            }
         }
         catch (Exception e)
         {
@@ -645,5 +709,10 @@
         // Refrescamos el diagrama para que se entere de las nuevas posiciones
         _diagram.Refresh();
     }
-
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        CleanEventHandlers();
+    }
 }
