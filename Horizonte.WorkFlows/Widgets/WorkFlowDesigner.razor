@@ -446,6 +446,7 @@
     {
         try
         {
+            Console.WriteLine("RunWorkflow()=>");
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             CleanLastRun(false);
@@ -456,17 +457,22 @@
             _outmessage = result.Data.ToString();
             Console.WriteLine(_outmessage);
         }
-        catch (OperationCanceledException)
-        {
-            _logmessage += "Workflow cancelado." + Environment.NewLine;
-        }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            if (e is OperationCanceledException || e.InnerException is OperationCanceledException)
+            {
+                Console.WriteLine("RunWorkflow()=> OperationCanceledException");
+                _logmessage += "Workflow cancelado." + Environment.NewLine;
+            }
+            else
+            {
+                Console.WriteLine(e);
+            }
         }
         finally
         {
             _cts = null;
+            InvokeAsync(StateHasChanged);
         }
     }
 
@@ -534,9 +540,14 @@
     {
         try
         {
+        Console.WriteLine("CancelWorkflow()=>");
+            
             if (_cts != null)
             {
+                Console.WriteLine($"Token Hash: {_cts.GetHashCode()}");
+                Console.WriteLine("CancelWorkflow()=> before _cts.CancelAsync() " + _cts.IsCancellationRequested);
                 await _cts.CancelAsync();
+                Console.WriteLine("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);
             }
         }
         catch (Exception e)

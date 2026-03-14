@@ -275,7 +275,7 @@ public class HGesCom : IHGesCom
         {
             object?[]? inobjparams = null;
             var method = GetHCommand(commandKey);
-            if (method == null) return null;
+            if (method == null) throw new KeyNotFoundException($"Comando {commandKey} no encontrado.");
 
             // Si el método requiere tipos de entrada y jsonarglist no es null
             var intypes = method.InTypes?.ToArray();
@@ -315,10 +315,16 @@ public class HGesCom : IHGesCom
 
             return JsonSerializer.Serialize(resobj);
         }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException ?? ex;
+            _log?.LogError("RunCommandJson: Invocación fallida: " + inner.ToString());
+            throw inner;
+        }
         catch (Exception e)
         {
             _log?.LogError("RunCommandJson: " + e.ToString());
-            return null;
+            throw;
         }
     }
 
@@ -329,7 +335,7 @@ public class HGesCom : IHGesCom
         {
             object?[]? inobjparams = null;
             var method = GetHCommand(commandKey);
-            if (method == null) return null;
+            if (method == null) throw new KeyNotFoundException($"Comando {commandKey} no encontrado.");
 
             // Si el método requiere tipos de entrada y jsonarglist no es null
             var intypes = method.InTypes?.ToArray();
@@ -370,10 +376,16 @@ public class HGesCom : IHGesCom
 
             return JsonSerializer.Serialize(resobj);
         }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException ?? ex;
+            _log?.LogError("RunCommandJsonAsync: Invocación fallida: " + inner.ToString());
+            throw inner;
+        }
         catch (Exception e)
         {
-            _log?.LogError("RunCommandJson: " + e.ToString());
-            return null;
+            _log?.LogError("RunCommandJsonAsync: " + e.ToString());
+            throw;
         }
     }
 
@@ -404,12 +416,12 @@ public class HGesCom : IHGesCom
             if (!_commandList.ContainsKey(commandKeyor))
             {
                 _log?.LogError($"Comando {commandKeyor} no encontrado.");
-                return null;
+                throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
             }
 
             var rCommand = _commandList[commandKeyor];
 
-            if (rCommand.CommandAction == null) return null;
+            if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
 
             // Revisar si el comando es una tarea asíncrona
             if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
@@ -418,8 +430,7 @@ public class HGesCom : IHGesCom
                 var task = (Task)rCommand.CommandAction.Invoke(rCommand.Instance, arg)!;
 
                 // Esperamos si la tarea tiene resultado (Task<T>)
-                await task.ConfigureAwait(true);
-                task.Wait();
+                await task.ConfigureAwait(false);
 
                 if (rCommand.CommandAction.ReturnType.IsGenericType)
                 {
@@ -437,10 +448,20 @@ public class HGesCom : IHGesCom
                 return rCommand.CommandAction.Invoke(rCommand.Instance, arg);
             }
         }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException ?? ex;
+            _log?.LogError($"Excepción de invocación en RunCommandAsync para {commandKeyor}: {inner}");
+            throw inner;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log?.LogError($"Error al ejecutar RunCommandAsync para {commandKeyor}: {ex}");
-            return null;
+            throw;
         }
     }
 
@@ -454,12 +475,12 @@ public class HGesCom : IHGesCom
             if (!_commandList.ContainsKey(commandKeyor))
             {
                 _log?.LogError($"Comando {commandKeyor} no encontrado.");
-                return default!;
+                throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
             }
     
             var rCommand = _commandList[commandKeyor];
     
-            if (rCommand.CommandAction == null) return default!;
+            if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
     
             // Si el comando es async
             //if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
@@ -467,7 +488,7 @@ public class HGesCom : IHGesCom
             {
                 var task = (Task)rCommand.CommandAction.Invoke(rCommand.Instance, arg)!;
     
-                await task.ConfigureAwait(true);
+                await task.ConfigureAwait(false);
     
                 if (task.GetType().IsGenericType)
                 {
@@ -484,10 +505,20 @@ public class HGesCom : IHGesCom
                 return (T)Convert.ChangeType(result, typeof(T));
             }
         }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException ?? ex;
+            _log?.LogError($"Excepción de invocación en RunCommandAsync<T> para {commandKeyor}: {inner}");
+            throw inner;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log?.LogError($"Error al ejecutar RunCommandAsync<T> para {commandKeyor}: {ex}");
-            return default!;
+            throw;
         }
     }
 
@@ -525,22 +556,28 @@ public class HGesCom : IHGesCom
             if (!_commandList.ContainsKey(commandKeyor))
             {
                 _log?.LogError($"Comando {commandKeyor} no encontrado.");
-                return default(T);
+                throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
             }
 
             var rCommand = (HCommand)_commandList[commandKeyor];
             // invocamos el método de la clase Panel con los argumentos
-            if (rCommand.CommandAction == null) return default(T);
+            if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
             var resObject = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
             if (typeof(T) != typeof(object))
                 resObject = Convert.ChangeType(resObject, typeof(T));
             //devolvemos el objeto
             return (T)resObject!;
         }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException ?? ex;
+            _log?.LogError($"**** {commandKeyor} **** Invocación fallida: {inner}");
+            throw inner;
+        }
         catch (Exception ex)
         {
-            _log?.LogError($"**** {commandKeyor} ****" + ex.ToString());
-            return default(T);
+            _log?.LogError($"**** {commandKeyor} **** Error: {ex}");
+            throw;
         }
     }
 

@@ -100,6 +100,8 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
     public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"Token Hash: {cancellationToken.GetHashCode()}");
+        cancellationToken.ThrowIfCancellationRequested();
         return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]);
     }
 }

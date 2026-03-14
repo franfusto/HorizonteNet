@@ -36,11 +36,17 @@ public class PanelModulo
     {
         for (int i = 0; i < 5; i++)
         {
-            if(cancellationToken.IsCancellationRequested) break;
+            Console.WriteLine($"Token Hash: {cancellationToken.GetHashCode()}");
+            Console.WriteLine("Cancellation requested? ; " +cancellationToken.IsCancellationRequested);
+            cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"Iteration {i}");
-            Thread.Sleep(2000);
+            await Task.Delay(2000, cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine("Cancellation requested");
+            }
         }
-        return await Task.FromResult(message + " TestNode1 ");
+        return message + " TestNode1 ";
     }
     [HorizonteCommand("TestNode2")]
     public async Task<string> TestNode2(string message, IWorkflowContext context, CancellationToken cancellationToken)
