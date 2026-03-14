@@ -40,9 +40,9 @@ public interface IHGesCom
     T? RunCommand<T>(string commandKeyor, object[]? arg = null);
 
 
-    Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null);
+    Task<object?> RunCommandAsync(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null);
 
-    Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null);
+    Task<T> RunCommandAsync<T>(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null);
     
 
     /// <summary>
@@ -51,11 +51,12 @@ public interface IHGesCom
     /// </summary>
     /// <param name="commandKey">El identificador único o clave del comando que se va a ejecutar.</param>
     /// <param name="jsonarglist">Opcional. Un arreglo de argumentos serializados en formato JSON requeridos por el comando.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
     /// <returns>El objeto con la respuesta de la ejecución del comando o null si la ejecución falla.</returns>
     public string? RunCommandJson(string commandKey, string[]? jsonarglist);
 
     
-    public Task<string?> RunCommandJsonAsync(string commandKey, string[]? jsonarglist);
+    public Task<string?> RunCommandJsonAsync(string commandKey, CancellationToken cancellationToken, string[]? jsonarglist = null);
     
     
     public bool IsAsyncCommand(string commandKey);

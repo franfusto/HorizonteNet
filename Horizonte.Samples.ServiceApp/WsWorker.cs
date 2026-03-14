@@ -60,9 +60,10 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sample web service worker API V1");
             });
         }
+        //todo: cancelation token
         _app.MapGet("/", () => "Hello World!");
         _app.MapGet("/time", () => DateTime.Now);
-        _app.MapGet("/workers", () => _gesCom?.RunCommandAsync("Workers_GetServicesRunning"));
+        _app.MapGet("/workers", (CancellationToken ct) => _gesCom?.RunCommandAsync("Workers_GetServicesRunning", ct));
         _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
         IsRunning = true;
         return _app.RunAsync(stoppingToken);

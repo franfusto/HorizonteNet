@@ -75,6 +75,7 @@ public static class Extensions
 
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
     {
+        Console.WriteLine($"Extensions.Run Token Hash: {token.GetHashCode()}");
         var result = default(WorkflowEvent);
         await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message,cancellationToken: token);
         await foreach (var evt in run.WatchStreamAsync())
@@ -100,9 +101,10 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
     public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"Token Hash: {cancellationToken.GetHashCode()}");
+        Console.WriteLine($"HGesComExecutor.HandleAsync Token Hash: {cancellationToken.GetHashCode()}");
+        Console.WriteLine($"HGesComExecutor.HandleAsync Context Hash: {context.GetHashCode()}");
         cancellationToken.ThrowIfCancellationRequested();
-        return await gesCom.RunCommandAsync<T>(command, [message!, context, cancellationToken]);
+        return await gesCom.RunCommandAsync<T>(command, cancellationToken, [message!, context, cancellationToken]);
     }
 }
 

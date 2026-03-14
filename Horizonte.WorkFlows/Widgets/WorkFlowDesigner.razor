@@ -449,10 +449,13 @@
             Console.WriteLine("RunWorkflow()=>");
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
+            Console.WriteLine($"WorkFlowDesigner.RunWorkflow CTS Hash: {_cts.GetHashCode()}");
+            Console.WriteLine($"WorkFlowDesigner.RunWorkflow Token Hash: {_cts.Token.GetHashCode()}");
             CleanLastRun(false);
             _logmessage = string.Empty;
             // todo: serializar deserealizar set default to json
             var workflow = WorkFlowDef?.Build<string>(HorizonteEnv);
+            Console.WriteLine($"WorkFlowDesigner.RunWorkflow Workflow Hash: {workflow?.GetHashCode()}");
             var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);
             _outmessage = result.Data.ToString();
             Console.WriteLine(_outmessage);
@@ -544,7 +547,8 @@
             
             if (_cts != null)
             {
-                Console.WriteLine($"Token Hash: {_cts.GetHashCode()}");
+                Console.WriteLine($"WorkFlowDesigner.CancelWorkflow CTS Hash: {_cts.GetHashCode()}");
+                Console.WriteLine($"WorkFlowDesigner.CancelWorkflow Token Hash: {_cts.Token.GetHashCode()}");
                 Console.WriteLine("CancelWorkflow()=> before _cts.CancelAsync() " + _cts.IsCancellationRequested);
                 await _cts.CancelAsync();
                 Console.WriteLine("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);

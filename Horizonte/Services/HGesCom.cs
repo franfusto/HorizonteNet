@@ -279,24 +279,40 @@ public class HGesCom : IHGesCom
 
             // Si el método requiere tipos de entrada y jsonarglist no es null
             var intypes = method.InTypes?.ToArray();
-            if (intypes != null && intypes.Length != 0 && jsonarglist != null)
+            var parameters = method.CommandAction.GetParameters();
+
+            if (intypes != null && intypes.Length != 0)
             {
                 var tmpobjlst = new List<object?>();
-                for (var i = 0; i < intypes.Length; i++)
+                int jsonIdx = 0;
+                for (var i = 0; i < parameters.Length; i++)
                 {
-                    var T = intypes[i];
-                    string jsonValue = jsonarglist[i];
-
-                    // Comprobar si el tipo de entrada es string
-                    if ((T == typeof(string) || T==typeof(DateTime) ) && !jsonValue.StartsWith("\"") && !jsonValue.EndsWith("\""))
+                    var param = parameters[i];
+                    if (param.ParameterType == typeof(CancellationToken))
                     {
-                        jsonValue = $"\"{jsonValue}\""; // Agregar comillas si faltan
+                        tmpobjlst.Add(CancellationToken.None);
+                        continue;
                     }
 
-                    var serob = JsonSerializer.Deserialize(jsonValue,T);
+                    if (jsonarglist != null && jsonIdx < jsonarglist.Length)
+                    {
+                        var T = param.ParameterType;
+                        string jsonValue = jsonarglist[jsonIdx++];
 
-                    tmpobjlst.Add(serob);
+                        // Comprobar si el tipo de entrada es string
+                        if ((T == typeof(string) || T == typeof(DateTime)) && !jsonValue.StartsWith("\"") && !jsonValue.EndsWith("\""))
+                        {
+                            jsonValue = $"\"{jsonValue}\""; // Agregar comillas si faltan
+                        }
 
+                        var serob = JsonSerializer.Deserialize(jsonValue, T);
+                        tmpobjlst.Add(serob);
+                    }
+                    else
+                    {
+                        // Manejar argumentos faltantes si no es un CancellationToken
+                        tmpobjlst.Add(param.HasDefaultValue ? param.DefaultValue : null);
+                    }
                 }
 
                 inobjparams = tmpobjlst.ToArray();
@@ -329,7 +345,7 @@ public class HGesCom : IHGesCom
     }
 
 
-    public async Task<string?> RunCommandJsonAsync(string commandKey, string[]? jsonarglist)
+    public async Task<string?> RunCommandJsonAsync(string commandKey, CancellationToken cancellationToken, string[]? jsonarglist = null)
     {
         try
         {
@@ -366,7 +382,7 @@ public class HGesCom : IHGesCom
             //if (method.IsAsync) // comprobamos sí el método está maracado cómo async
             //{
             
-                resobj = await  RunCommandAsync(method.CommandKey, inobjparams!);//TODO: revisar inclusion token
+                resobj = await  RunCommandAsync(method.CommandKey, cancellationToken, inobjparams!);
             
                 //}
             //else
@@ -406,7 +422,7 @@ public class HGesCom : IHGesCom
         return _commandList.ContainsKey(commandKey);
     }
 
-    public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
+    public async Task<object?> RunCommandAsync(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null)
     {
         try
         {
@@ -465,7 +481,8 @@ public class HGesCom : IHGesCom
         }
     }
 
-    public async Task<T> RunCommandAsync<T>(string commandKeyor,  object[]? arg = null)
+
+    public async Task<T> RunCommandAsync<T>(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null)
     {
         try
         {
@@ -481,7 +498,7 @@ public class HGesCom : IHGesCom
             var rCommand = _commandList[commandKeyor];
     
             if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
-    
+
             // Si el comando es async
             //if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
             if (rCommand.IsAsync)

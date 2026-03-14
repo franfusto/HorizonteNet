@@ -36,15 +36,12 @@ public class PanelModulo
     {
         for (int i = 0; i < 5; i++)
         {
-            Console.WriteLine($"Token Hash: {cancellationToken.GetHashCode()}");
+            Console.WriteLine($"PanelModulo.TestNode1 Token Hash: {cancellationToken.GetHashCode()}");
+            Console.WriteLine($"PanelModulo.TestNode1 Context Hash: {context.GetHashCode()}");
             Console.WriteLine("Cancellation requested? ; " +cancellationToken.IsCancellationRequested);
             cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"Iteration {i}");
             await Task.Delay(2000, cancellationToken);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                Console.WriteLine("Cancellation requested");
-            }
         }
         return message + " TestNode1 ";
     }

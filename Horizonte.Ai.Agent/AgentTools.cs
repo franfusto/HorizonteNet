@@ -52,7 +52,8 @@ public class AgentTools
             object? result = null;
             if (_gesCom.IsAsyncCommand(commandName))
             {
-                result = await _gesCom.RunCommandJsonAsync(commandName, args);
+                //todo: gestionar el token de cancelación
+                result = await _gesCom.RunCommandJsonAsync(commandName, CancellationToken.None, args);
             }
             else
             {
