@@ -50,16 +50,6 @@ public class HGesCom : IHGesCom
     private readonly Lazy<IHorizonteEnv> _env;
 
     /// <summary>
-    /// Representa una instancia de logger que se utiliza para registrar mensajes, advertencias y errores dentro de la clase HGesCom.
-    /// </summary>
-    /// <remarks>
-    /// El logger se instancia de forma perezosa durante la inicialización del módulo y utiliza Microsoft.Extensions.Logging.
-    /// Se emplea para proporcionar información de diagnóstico durante la carga de módulos, ejecución de comandos,
-    /// y manejo de errores a lo largo del ciclo de vida de HGesCom.
-    /// </remarks>
-    private ILogger? _log;
-
-    /// <summary>
     /// Una clase que implementa la interfaz IHGesCom, responsable de gestionar y ejecutar comandos
     /// dentro del entorno de Horizonte. Carga módulos de comandos, gestiona los comandos disponibles
     /// y facilita la interacción con estos comandos usando entradas basadas en objetos o JSON.
@@ -86,10 +76,7 @@ public class HGesCom : IHGesCom
             var enviorment = _env.Value;
             var assemblyManager = _env.Value.AssemblyManager;
             var processedAssemblies = new HashSet<string>();
-
-            // Si no tenemos assemblyManager (muy raro), usamos el comportamiento anterior como fallback seguro
             var assembliesByDomain = assemblyManager?.AssembliesByDomain;
-
             if (assembliesByDomain == null)
             {
                 Log.Warn("IhAssemblyManager not found or AssembliesByDomain is null. Falling back to AppDomain.CurrentDomain.");
@@ -104,14 +91,21 @@ public class HGesCom : IHGesCom
                 ProcessAssemblies(assemblies, domainName, processedAssemblies, enviorment);
             }
 
-            _log?.LogInformation($"Loaded {_commandList.Count} HCommands");
+            Log.Info($"Loaded {_commandList.Count} HCommands");
         }
         catch (Exception e)
         {
-            _log?.LogError(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 
+    /// <summary>
+    /// Procesa una lista de ensamblados para buscar y cargar módulos de Horizonte.
+    /// </summary>
+    /// <param name="assemblies">Lista de ensamblados a procesar.</param>
+    /// <param name="domainName">Nombre del dominio (Application Load Context) al que pertenecen los ensamblados.</param>
+    /// <param name="processedAssemblies">Conjunto de nombres completos de ensamblados que ya han sido procesados para evitar duplicados.</param>
+    /// <param name="enviorment">Instancia del entorno de Horizonte para la creación de instancias de módulos.</param>
     private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies, IHorizonteEnv enviorment)
     {
         var assembliesToProcess = new Queue<Assembly>(assemblies);
@@ -170,7 +164,7 @@ public class HGesCom : IHGesCom
                 }
                 catch (Exception e)
                 {
-                    _log?.LogError(e.ToString());
+                    Log.Error(e.ToString());
                 }
             }
         }
@@ -186,14 +180,13 @@ public class HGesCom : IHGesCom
     /// </remarks>
     public void InitzializeModules()
     {
-        _log = _env.Value.HHost.Services.GetService<ILogger<HGesCom>>();
         foreach (var item in GetRoleCommands("init"))
         {
-            _log?.LogInformation("Ejecutando Init: " + item.CommandName);
+            Log.Info("Ejecutando Init: " + item.CommandName);
             RunCommand(item.CommandName);
         }
 
-        _log?.LogInformation("Módulos iniciados");
+        Log.Info("Módulos iniciados");
     }
 
     /// <summary>
@@ -273,143 +266,109 @@ public class HGesCom : IHGesCom
     {
         try
         {
-            object?[]? inobjparams = null;
-            var method = GetHCommand(commandKey);
-            if (method == null) throw new KeyNotFoundException($"Comando {commandKey} no encontrado.");
-
-            // Si el método requiere tipos de entrada y jsonarglist no es null
-            var intypes = method.InTypes?.ToArray();
-            var parameters = method.CommandAction.GetParameters();
-
-            if (intypes != null && intypes.Length != 0)
-            {
-                var tmpobjlst = new List<object?>();
-                int jsonIdx = 0;
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    var param = parameters[i];
-                    if (param.ParameterType == typeof(CancellationToken))
-                    {
-                        tmpobjlst.Add(CancellationToken.None);
-                        continue;
-                    }
-
-                    if (jsonarglist != null && jsonIdx < jsonarglist.Length)
-                    {
-                        var T = param.ParameterType;
-                        string jsonValue = jsonarglist[jsonIdx++];
-
-                        // Comprobar si el tipo de entrada es string
-                        if ((T == typeof(string) || T == typeof(DateTime)) && !jsonValue.StartsWith("\"") && !jsonValue.EndsWith("\""))
-                        {
-                            jsonValue = $"\"{jsonValue}\""; // Agregar comillas si faltan
-                        }
-
-                        var serob = JsonSerializer.Deserialize(jsonValue, T);
-                        tmpobjlst.Add(serob);
-                    }
-                    else
-                    {
-                        // Manejar argumentos faltantes si no es un CancellationToken
-                        tmpobjlst.Add(param.HasDefaultValue ? param.DefaultValue : null);
-                    }
-                }
-
-                inobjparams = tmpobjlst.ToArray();
-            }
-
-            // Ejecutar el comando con o sin parámetros
-            object? resobj = null;
-            //if (method.IsAsync) // comprobamos sí el método está maracado cómo async
-            //{
-            //    resobj =  RunCommandAsync(method.CommandKey, inobjparams!).Result;
-            //}
-            //else
-            //{
-                resobj = RunCommand(method.CommandKey, inobjparams!);
-            //}
-
-            return JsonSerializer.Serialize(resobj);
+            return RunCommandJsonAsync(commandKey, jsonarglist).GetAwaiter().GetResult();
         }
         catch (TargetInvocationException ex)
         {
             var inner = ex.InnerException ?? ex;
-            _log?.LogError("RunCommandJson: Invocación fallida: " + inner.ToString());
+            Log.Error("RunCommandJson: Invocación fallida: " + inner.ToString());
             throw inner;
         }
         catch (Exception e)
         {
-            _log?.LogError("RunCommandJson: " + e.ToString());
+            Log.Error("RunCommandJson: " + e.ToString());
             throw;
         }
     }
 
 
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona basado en su clave y argumentos en formato JSON.
+    /// </summary>
+    /// <param name="commandKey">El identificador único o clave del comando que se va a ejecutar.</param>
+    /// <param name="jsonarglist">Opcional. Un arreglo de argumentos serializados en formato JSON.</param>
+    /// <returns>Una tarea que devuelve el resultado de la ejecución serializado en JSON o null.</returns>
     public async Task<string?> RunCommandJsonAsync(string commandKey, string[]? jsonarglist = null)
     {
         try
         {
-            object?[]? inobjparams = null;
             var method = GetHCommand(commandKey);
             if (method == null) throw new KeyNotFoundException($"Comando {commandKey} no encontrado.");
 
-            // Si el método requiere tipos de entrada y jsonarglist no es null
-            var intypes = method.InTypes?.ToArray();
-            if (intypes != null && intypes.Length != 0 && jsonarglist != null)
-            {
-                var tmpobjlst = new List<object?>();
-                for (var i = 0; i < intypes.Length; i++)
-                {
-                    var T = intypes[i];
-                    string jsonValue = jsonarglist[i];
-
-                    // Comprobar si el tipo de entrada es string
-                    if ((T == typeof(string) || T==typeof(DateTime) ) && !jsonValue.StartsWith("\"") && !jsonValue.EndsWith("\""))
-                    {
-                        jsonValue = $"\"{jsonValue}\""; // Agregar comillas si faltan
-                    }
-
-                    var serob = JsonSerializer.Deserialize(jsonValue, T);
-                    tmpobjlst.Add(serob);
-
-                }
-
-                inobjparams = tmpobjlst.ToArray();
-            }
-
-            // Ejecutar el comando con o sin parámetros
-            object? resobj = null;
-            //if (method.IsAsync) // comprobamos sí el método está maracado cómo async
-            //{
-            
-                resobj = await  RunCommandAsync(method.CommandKey, inobjparams!);
-            
-                //}
-            //else
-            //{
-            //    resobj = RunCommand(method.CommandKey, inobjparams!);
-            //}
+            var inobjparams = PrepareParameters(method, jsonarglist);
+            var resobj = await RunCommandAsync(method.CommandKey, inobjparams!);
 
             return JsonSerializer.Serialize(resobj);
         }
         catch (TargetInvocationException ex)
         {
             var inner = ex.InnerException ?? ex;
-            _log?.LogError("RunCommandJsonAsync: Invocación fallida: " + inner.ToString());
+            Log.Error("RunCommandJsonAsync: Invocación fallida: " + inner.ToString());
             throw inner;
         }
         catch (Exception e)
         {
-            _log?.LogError("RunCommandJsonAsync: " + e.ToString());
+            Log.Error("RunCommandJsonAsync: " + e.ToString());
             throw;
         }
     }
 
+    /// <summary>
+    /// Prepara los parámetros para la ejecución de un comando a partir de una lista de argumentos en formato JSON.
+    /// </summary>
+    /// <param name="method">El comando para el cual se preparan los parámetros.</param>
+    /// <param name="jsonarglist">Lista de argumentos en formato JSON.</param>
+    /// <returns>Un arreglo de objetos con los parámetros procesados.</returns>
+    private object?[]? PrepareParameters(HCommand method, string[]? jsonarglist)
+    {
+        
+        var parameters = method.CommandAction!.GetParameters();
+        if (parameters.Length == 0) return null;
+
+        var tmpobjlst = new List<object?>();
+        var jsonIdx = 0;
+
+        foreach (var param in parameters)
+        {
+            if (param.ParameterType == typeof(CancellationToken))
+            {
+                tmpobjlst.Add(CancellationToken.None);
+                continue;
+            }
+
+            if (jsonarglist != null && jsonIdx < jsonarglist.Length)
+            {
+                var T = param.ParameterType;
+                string jsonValue = jsonarglist[jsonIdx++];
+
+                // Comprobar si el tipo de entrada es string o DateTime y agregar comillas si faltan
+                if ((T == typeof(string) || T == typeof(DateTime)) && !jsonValue.StartsWith("\"") && !jsonValue.EndsWith("\""))
+                {
+                    jsonValue = $"\"{jsonValue}\"";
+                }
+
+                var serob = JsonSerializer.Deserialize(jsonValue, T);
+                tmpobjlst.Add(serob);
+            }
+            else
+            {
+                // Manejar argumentos faltantes si no es un CancellationToken
+                tmpobjlst.Add(param.HasDefaultValue ? param.DefaultValue : null);
+            }
+        }
+
+        return tmpobjlst.ToArray();
+    }
+
+    /// <summary>
+    /// Determina si un comando está marcado como asíncrono.
+    /// </summary>
+    /// <param name="commandKey">La clave del comando a comprobar.</param>
+    /// <returns>True si el comando es asíncrono, False en caso contrario.</returns>
     public bool IsAsyncCommand(string commandKey)
     {
         var method = GetHCommand(commandKey);
-        if (method == null) return false;
-        return method.IsAsync;
+        return method is { IsAsync: true };
     }
 
     /// <summary>
@@ -422,7 +381,26 @@ public class HGesCom : IHGesCom
         return _commandList.ContainsKey(commandKey);
     }
 
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada.
+    /// </summary>
+    /// <param name="commandKeyor">La clave o identificador del comando que se va a ejecutar.</param>
+    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
+    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado de la ejecución como un objeto, o null.</returns>
     public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
+    {
+        return await RunCommandAsync<object?>(commandKeyor, arg).ConfigureAwait(false);
+    }
+
+
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada y devuelve un resultado tipado.
+    /// </summary>
+    /// <typeparam name="T">El tipo del resultado devuelto por la ejecución del comando.</typeparam>
+    /// <param name="commandKeyor">La clave o identificador asociado con el comando específico a ejecutar.</param>
+    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
+    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado convertido al tipo <typeparamref name="T"/>.</returns>
+    public async Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null)
     {
         try
         {
@@ -431,13 +409,15 @@ public class HGesCom : IHGesCom
             // Recuperamos el comando del diccionario a partir de su clave
             if (!_commandList.ContainsKey(commandKeyor))
             {
-                _log?.LogError($"Comando {commandKeyor} no encontrado.");
+                Log.Error($"Comando {commandKeyor} no encontrado.");
                 throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
             }
 
             var rCommand = _commandList[commandKeyor];
 
             if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
+
+            object? result;
 
             // Revisar si el comando es una tarea asíncrona
             if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
@@ -452,22 +432,27 @@ public class HGesCom : IHGesCom
                 {
                     // Obtenemos el resultado de la tarea genérica Task<T>
                     var resultProperty = rCommand.CommandAction.ReturnType.GetProperty("Result");
-                    return resultProperty?.GetValue(task);
+                    result = resultProperty?.GetValue(task);
                 }
-
-                return null; // Si es una Task void, no retornamos resultado
+                else
+                {
+                    result = null; // Si es una Task void, no retornamos resultado
+                }
             }
-
             else
             {
                 // Si el comando no es asíncrono, invocarlo de forma normal
-                return rCommand.CommandAction.Invoke(rCommand.Instance, arg);
+                result = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
             }
+
+            if (result == null) return default!;
+            if (typeof(T) == typeof(object)) return (T)result;
+            return (T)Convert.ChangeType(result, typeof(T));
         }
         catch (TargetInvocationException ex)
         {
             var inner = ex.InnerException ?? ex;
-            _log?.LogError($"Excepción de invocación en RunCommandAsync para {commandKeyor}: {inner}");
+            Log.Error($"Excepción de invocación en RunCommandAsync para {commandKeyor}: {inner}");
             throw inner;
         }
         catch (OperationCanceledException)
@@ -476,56 +461,7 @@ public class HGesCom : IHGesCom
         }
         catch (Exception ex)
         {
-            _log?.LogError($"Error al ejecutar RunCommandAsync para {commandKeyor}: {ex}");
-            throw;
-        }
-    }
-
-
-    public async Task<T> RunCommandAsync<T>(string commandKeyor,object[]? arg = null)
-    {
-        try
-        {
-            commandKeyor = commandKeyor.Trim();
-    
-            // Recuperamos el comando del diccionario a partir de su clave
-            if (!_commandList.ContainsKey(commandKeyor))
-            {
-                _log?.LogError($"Comando {commandKeyor} no encontrado.");
-                throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
-            }
-    
-            var rCommand = _commandList[commandKeyor];
-    
-            if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
-
-            // Si el comando es async
-            //if (typeof(Task).IsAssignableFrom(rCommand.CommandAction.ReturnType))
-            if (rCommand.IsAsync)
-            {
-                var task = (Task)rCommand.CommandAction.Invoke(rCommand.Instance, arg)!;
-    
-                await task.ConfigureAwait(false);
-    
-                if (task.GetType().IsGenericType)
-                {
-                    var resultProperty = task.GetType().GetProperty("Result");
-                    return (T)resultProperty?.GetValue(task)!;
-                }
-    
-                return default!;
-            }
-            else
-            {
-                // Si no es async, se ejecuta normalmente
-                var result = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
-                return (T)Convert.ChangeType(result, typeof(T));
-            }
-        }
-
-        catch (Exception ex)
-        {
-            _log?.LogError($"Error al ejecutar RunCommandAsync<T> para {commandKeyor}: {ex}");
+            Log.Error($"Error al ejecutar RunCommandAsync para {commandKeyor}: {ex}");
             throw;
         }
     }
@@ -540,7 +476,7 @@ public class HGesCom : IHGesCom
     /// </returns>
     public object? RunCommand(string commandKeyor, object[]? arg = null)
     {
-        return RunCommand<object>(commandKeyor, arg);
+        return RunCommandAsync(commandKeyor, arg).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -556,35 +492,12 @@ public class HGesCom : IHGesCom
     /// </returns>
     public T? RunCommand<T>(string commandKeyor, object[]? arg = null)
     {
-        try
-        {
-            commandKeyor = commandKeyor.Trim();
-
-            // recuperamos del diccionario el comando correspondiente al CommandKey
-            if (!_commandList.ContainsKey(commandKeyor))
-            {
-                _log?.LogError($"Comando {commandKeyor} no encontrado.");
-                throw new KeyNotFoundException($"Comando {commandKeyor} no encontrado.");
-            }
-
-            var rCommand = (HCommand)_commandList[commandKeyor];
-            // invocamos el método de la clase Panel con los argumentos
-            if (rCommand.CommandAction == null) throw new InvalidOperationException($"Comando {commandKeyor} no tiene una acción asociada.");
-            var resObject = rCommand.CommandAction.Invoke(rCommand.Instance, arg);
-            if (typeof(T) != typeof(object))
-                resObject = Convert.ChangeType(resObject, typeof(T));
-            //devolvemos el objeto
-            return (T)resObject!;
-        }
-
-        catch (Exception ex)
-        {
-            _log?.LogError($"Error al ejecutar RunCommand<T> para {commandKeyor}: {ex}");
-            throw;
-        }
+        return RunCommandAsync<T>(commandKeyor, arg).GetAwaiter().GetResult();
     }
 
+    /// <summary>
     /// Recupera una instancia de un HCommand asociada con la clave de comando especificada.
+    /// </summary>
     /// <param name="commandKey">
     /// El identificador único del comando que se desea recuperar.
     /// </param>

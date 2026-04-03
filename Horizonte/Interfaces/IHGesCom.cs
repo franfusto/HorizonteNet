@@ -24,39 +24,61 @@ public interface IHGesCom
 
 
     /// <summary>
-    /// Ejecuta un comando específico identificado por la clave proporcionada y, opcionalmente, acepta argumentos.
+    /// Ejecuta un comando de forma síncrona identificado por la clave proporcionada.
     /// </summary>
     /// <param name="commandKeyor">La clave o identificador del comando que se va a ejecutar.</param>
     /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
-    /// <returns>Devuelve el resultado de la ejecución como un objeto, o null si el comando no produce un resultado.</returns>
+    /// <returns>El resultado de la ejecución como un objeto, o null si el comando no produce un resultado.</returns>
     object? RunCommand(string commandKeyor, object[]? arg = null);
     
     /// <summary>
-    /// Ejecuta un comando identificado por la clave proporcionada y, opcionalmente, le pasa argumentos.
+    /// Ejecuta un comando de forma síncrona identificado por la clave proporcionada y devuelve un resultado tipado.
     /// </summary>
     /// <typeparam name="T">El tipo del resultado devuelto por la ejecución del comando.</typeparam>
     /// <param name="commandKeyor">La clave o identificador asociado con el comando específico a ejecutar.</param>
-    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null si no se proporcionan argumentos.</param>
-    /// <returns>Devuelve el resultado de la ejecución del comando como el tipo especificado <typeparamref name="T"/>. Devuelve null si el comando no produce un resultado o si el tipo especificado es nullable.</returns>
+    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
+    /// <returns>El resultado de la ejecución del comando como el tipo especificado <typeparamref name="T"/>.</returns>
     T? RunCommand<T>(string commandKeyor, object[]? arg = null);
 
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada.
+    /// </summary>
+    /// <param name="commandKeyor">La clave o identificador del comando que se va a ejecutar.</param>
+    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
+    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado de la ejecución como un objeto, o null.</returns>
     Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null);
 
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada y devuelve un resultado tipado.
+    /// </summary>
+    /// <typeparam name="T">El tipo del resultado devuelto por la ejecución del comando.</typeparam>
+    /// <param name="commandKeyor">La clave o identificador asociado con el comando específico a ejecutar.</param>
+    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
+    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado convertido al tipo <typeparamref name="T"/>.</returns>
     Task<T> RunCommandAsync<T>(string commandKeyor,  object[]? arg = null);
 
     /// <summary>
     /// Ejecuta un comando basado en su clave de comando y opcionalmente argumentos de entrada proporcionados como cadenas JSON.
-    /// Convierte los argumentos en formato JSON a sus tipos respectivos e invoca el comando correspondiente.
+    /// Convierte los argumentos en formato JSON a sus tipos respectivos e invoca el comando correspondiente de forma síncrona.
     /// </summary>
     /// <param name="commandKey">El identificador único o clave del comando que se va a ejecutar.</param>
     /// <param name="jsonarglist">Opcional. Un arreglo de argumentos serializados en formato JSON requeridos por el comando.</param>
-    /// <param name="cancellationToken">Token de cancelación.</param>
-    /// <returns>El objeto con la respuesta de la ejecución del comando o null si la ejecución falla.</returns>
+    /// <returns>El resultado de la ejecución serializado en JSON o null si falla.</returns>
     public string? RunCommandJson(string commandKey, string[]? jsonarglist);
     
+    /// <summary>
+    /// Ejecuta un comando de forma asíncrona basado en su clave y argumentos en formato JSON.
+    /// </summary>
+    /// <param name="commandKey">El identificador único o clave del comando que se va a ejecutar.</param>
+    /// <param name="jsonarglist">Opcional. Un arreglo de argumentos serializados en formato JSON.</param>
+    /// <returns>Una tarea que devuelve el resultado de la ejecución serializado en JSON o null.</returns>
     public Task<string?> RunCommandJsonAsync(string commandKey,  string[]? jsonarglist = null);
     
-    
+    /// <summary>
+    /// Determina si un comando está marcado como asíncrono.
+    /// </summary>
+    /// <param name="commandKey">La clave del comando a comprobar.</param>
+    /// <returns>True si el comando devuelve una Task o Task de T, False en caso contrario.</returns>
     public bool IsAsyncCommand(string commandKey);
     
     /// <summary>
