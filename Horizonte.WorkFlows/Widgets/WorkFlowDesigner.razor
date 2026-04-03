@@ -1,20 +1,8 @@
 @implements IDisposable
-@using Horizonte.Extension.WorkFlows
-@using Blazor.Diagrams
-@using Blazor.Diagrams.Components
-@using Blazor.Diagrams.Core.Anchors
-@using Blazor.Diagrams.Core.Controls
-@using Blazor.Diagrams.Core.Controls.Default
-@using Blazor.Diagrams.Core.Models
-@using Blazor.Diagrams.Core.PathGenerators
-@using Blazor.Diagrams.Core.Routers
-@using Blazor.Diagrams.Options
-@using Horizonte.WorkFlows.Components
-@using Horizonte.WorkFlows.NodeModels
-@using Microsoft.Agents.AI.Workflows
-@using Microsoft.Extensions.DependencyInjection
+
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 @inject IHorizonteEnv HorizonteEnv
+@inject ILogger<HGesCom> Logger
 <style>
 
     .node {
@@ -274,14 +262,12 @@
     [Parameter]
     public WorkFlowDef? WorkFlowDef
     {
-        get { return _currentWorkFlowNode; }
+        get => _currentWorkFlowNode;
         set
         {
-            if (_currentWorkFlowNode?.Id != value?.Id)
-            {
-                _currentWorkFlowNode = value;
-                LoadWorkFlow(value);
-            }
+            if (_currentWorkFlowNode?.Id == value?.Id) return;
+            _currentWorkFlowNode = value;
+            LoadWorkFlow(value);
         }
     }
 
@@ -291,9 +277,8 @@
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private WorkFlowDef? _currentWorkFlowNode;
-
     private string _inmessage = string.Empty;
-    private string _outmessage = string.Empty;
+    private string? _outmessage = string.Empty;
     private string _logmessage = string.Empty;
     private CancellationTokenSource? _cts;
 
@@ -337,12 +322,14 @@
 
     private void LoadWorkFlow(WorkFlowDef? workflow)
     {
+        if (workflow == null) return;
+
+        //limpiar
         CleanEventHandlers();
         _diagram.Nodes.Clear();
         _diagram.Links.Clear();
         CleanLastRun();
 
-        if (workflow == null) return;
 
         // Cargar Nodos
         foreach (var nodeDef in workflow.Nodes)
@@ -429,16 +416,15 @@
         LoadWorkFlow(_currentWorkFlowNode);
     }
 
-    private async Task BuildWorkflow()
+    private void BuildWorkflow()
     {
         try
         {
-            //Getdef();
             _ = WorkFlowDef?.Build<string>(HorizonteEnv);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Logger.LogError(e.ToString());
         }
     }
 
@@ -446,36 +432,29 @@
     {
         try
         {
-            Console.WriteLine("RunWorkflow()=>");
+            Logger.LogInformation("RunWorkflow()=>");
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
-            Console.WriteLine($"WorkFlowDesigner.RunWorkflow CTS Hash: {_cts.GetHashCode()}");
-            Console.WriteLine($"WorkFlowDesigner.RunWorkflow Token Hash: {_cts.Token.GetHashCode()}");
             CleanLastRun(false);
-            _logmessage = string.Empty;
             // todo: serializar deserealizar set default to json
-            var workflow = WorkFlowDef?.Build<string>(HorizonteEnv);
-            Console.WriteLine($"WorkFlowDesigner.RunWorkflow Workflow Hash: {workflow?.GetHashCode()}");
-            var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);
-            _outmessage = result.Data.ToString();
-            Console.WriteLine(_outmessage);
+            _logmessage = string.Empty;
+            var workflow = WorkFlowDef?.Build<string>(HorizonteEnv, _cts.Token);
+            if (workflow != null)
+            {
+                var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);
+                _outmessage = result?.Data?.ToString();
+            }
+
+            Logger.LogInformation(_outmessage);
         }
         catch (Exception e)
         {
-            if (e is OperationCanceledException || e.InnerException is OperationCanceledException)
-            {
-                Console.WriteLine("RunWorkflow()=> OperationCanceledException");
-                _logmessage += "Workflow cancelado." + Environment.NewLine;
-            }
-            else
-            {
-                Console.WriteLine(e);
-            }
+            Logger.LogError(e.ToString());
         }
         finally
         {
             _cts = null;
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -510,14 +489,15 @@
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Logger.LogError(e.ToString());
         }
     }
 
     private void UpdRunUi(string executorid, string eventtype)
     {
-        var curnode = _diagram.Nodes.Where(x => x.Id == executorid).FirstOrDefault();
-        ((IRunnableNode)curnode).RunMessage += eventtype;
+        var curnode = _diagram.Nodes.FirstOrDefault(x => x.Id == executorid);
+        if (curnode == null) return;
+        ((IRunnableNode)curnode)?.RunMessage += eventtype;
         var x = ((IRunnableNode)curnode).RunMessage;
         curnode.Refresh();
         InvokeAsync(StateHasChanged);
@@ -525,38 +505,24 @@
 
     private void CleanLastRun(bool clenainmessage = true)
     {
-        if(clenainmessage) _inmessage = string.Empty;
+        if (clenainmessage) _inmessage = string.Empty;
         _outmessage = string.Empty;
         _logmessage = string.Empty;
 
         foreach (var node in _diagram.Nodes)
         {
-            if (node is IRunnableNode runnableNode)
-            {
-                runnableNode.RunMessage = string.Empty;
-                node.RefreshAll();
-            }
+            if (node is not IRunnableNode runnableNode) continue;
+            runnableNode.RunMessage = string.Empty;
+            node.RefreshAll();
         }
     }
 
     private async Task CancelWorkflow()
     {
-        try
+        if (_cts != null)
         {
-        Console.WriteLine("CancelWorkflow()=>");
-            
-            if (_cts != null)
-            {
-                Console.WriteLine($"WorkFlowDesigner.CancelWorkflow CTS Hash: {_cts.GetHashCode()}");
-                Console.WriteLine($"WorkFlowDesigner.CancelWorkflow Token Hash: {_cts.Token.GetHashCode()}");
-                Console.WriteLine("CancelWorkflow()=> before _cts.CancelAsync() " + _cts.IsCancellationRequested);
-                await _cts.CancelAsync();
-                Console.WriteLine("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
+            Logger.LogInformation("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);
+            await _cts.CancelAsync();
         }
     }
 
@@ -634,8 +600,6 @@
         _diagram.RegisterComponent<NodeOperationModel, NodeOperation>();
         _diagram.RegisterComponent<NodeOutModel, NodeOut>();
         _diagram.RegisterComponent<LinkSettingsControl, LinkSettingsWidget>();
-
-
         base.OnInitialized();
     }
 
@@ -681,14 +645,14 @@
 
         if (count > currentCount)
         {
-            for (int i = 0; i < count - currentCount; i++)
+            for (var i = 0; i < count - currentCount; i++)
             {
                 node.AddPort(alignment);
             }
         }
         else if (count < currentCount)
         {
-            for (int i = 0; i < currentCount - count; i++)
+            for (var i = 0; i < currentCount - count; i++)
             {
                 var portToRemove = currentPorts.Last();
 
@@ -724,10 +688,12 @@
         // Refrescamos el diagrama para que se entere de las nuevas posiciones
         _diagram.Refresh();
     }
+
     public void Dispose()
     {
         _cts?.Cancel();
         _cts?.Dispose();
         CleanEventHandlers();
     }
+
 }

@@ -5,11 +5,18 @@ using Microsoft.Agents.AI.Workflows;
 
 namespace Horizonte.WorkFlows;
 
+/// <summary>
+/// 
+/// </summary>
 [HorizonteModule("Horizonte.WorkFlows")]
 public class PanelModulo
 {
     private readonly IHorizonteEnv _env;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="env"></param>
     public PanelModulo(IHorizonteEnv env)
     {
         _env = env;
@@ -34,14 +41,12 @@ public class PanelModulo
     [HorizonteCommand("TestNode1")]
     public async Task<string> TestNode1(string message, IWorkflowContext context, CancellationToken cancellationToken)
     {
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            Console.WriteLine($"PanelModulo.TestNode1 Token Hash: {cancellationToken.GetHashCode()}");
-            Console.WriteLine($"PanelModulo.TestNode1 Context Hash: {context.GetHashCode()}");
-            Console.WriteLine("Cancellation requested? ; " +cancellationToken.IsCancellationRequested);
-            cancellationToken.ThrowIfCancellationRequested();
+            if(cancellationToken.IsCancellationRequested) break;
+
             Console.WriteLine($"Iteration {i}");
-            await Task.Delay(2000, cancellationToken);
+            await Task.Delay(2000);
         }
         return message + " TestNode1 ";
     }

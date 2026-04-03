@@ -63,7 +63,7 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
         //todo: cancelation token
         _app.MapGet("/", () => "Hello World!");
         _app.MapGet("/time", () => DateTime.Now);
-        _app.MapGet("/workers", (CancellationToken ct) => _gesCom?.RunCommandAsync("Workers_GetServicesRunning", ct));
+        _app.MapGet("/workers", (CancellationToken ct) => _gesCom?.RunCommandAsync("Workers_GetServicesRunning"));
         _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
         IsRunning = true;
         return _app.RunAsync(stoppingToken);

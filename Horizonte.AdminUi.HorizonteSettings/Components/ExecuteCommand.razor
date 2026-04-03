@@ -66,7 +66,7 @@
         if (Command.IsAsync)
         {
             //todo: gestionar el token de cancelación
-            _result = await GesCom.RunCommandJsonAsync(Command.CommandKey, CancellationToken.None, objparam);
+            _result = await GesCom.RunCommandJsonAsync(Command.CommandKey,  objparam);
         }
         else
         {

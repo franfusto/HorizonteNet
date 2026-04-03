@@ -6,7 +6,7 @@ namespace Horizonte.Extension.WorkFlows;
 
 public static class Extensions
 {
-    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env)
+    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env,CancellationToken token = default)
     {
         var gesCom = env.HHost.Services.GetService<IHGesCom>();
         if (gesCom == null)
@@ -24,7 +24,7 @@ public static class Extensions
         // 2. Create executors for each node
         var executors = def.Nodes.ToDictionary(
             node => node.Id,
-            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom)
+            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom,token)
         );
 
         // 3. Initialize WorkflowBuilder with the starting executor
@@ -75,62 +75,53 @@ public static class Extensions
 
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
     {
-        Console.WriteLine($"Extensions.Run Token Hash: {token.GetHashCode()}");
-        var result = default(WorkflowEvent);
-        await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message,cancellationToken: token);
-        await foreach (var evt in run.WatchStreamAsync())
+            Console.WriteLine($"Extensions.Run Token Hash: {token.GetHashCode()}");
+            var result = default(WorkflowEvent);
+        try
         {
-            Console.WriteLine(evt);
-            result = evt;
-            eventhandler?.Invoke(evt);
-            if (evt is WorkflowOutputEvent)
+            await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message,cancellationToken: token);
+            await foreach (var evt in run.WatchStreamAsync())
             {
-                return evt;
+                Console.WriteLine(evt);
+                result = evt;
+                eventhandler?.Invoke(evt);
+                if (evt is WorkflowOutputEvent)
+                {
+                    return evt;
+                }
             }
+
+        }
+        catch (Exception e)
+        {
+            throw;
         }
         return result;
     }
 }
 
-/// <summary>
-/// Custom executor that invokes HGesCom commands.
-/// </summary>
-///
-internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom) : Executor<T, T>(id)
+
+
+internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom, CancellationToken sharedToken)
+    : Executor<T, T>(id)
 {
-    public override async ValueTask<T> HandleAsync(T message, IWorkflowContext context,
+    public override async ValueTask<T> HandleAsync(
+        T message,
+        IWorkflowContext context,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"HGesComExecutor.HandleAsync Token Hash: {cancellationToken.GetHashCode()}");
-        Console.WriteLine($"HGesComExecutor.HandleAsync Context Hash: {context.GetHashCode()}");
+        // Comprobación temprana
         cancellationToken.ThrowIfCancellationRequested();
-        return await gesCom.RunCommandAsync<T>(command, cancellationToken, [message!, context, cancellationToken]);
+
+        // Combinar señales (motor + compartida) si procede
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(sharedToken, cancellationToken);
+        var ct = linkedCts.Token;
+
+        // Pasar ct a operaciones del contexto cuando sea posible
+        // await context.AddEventAsync(new WorkflowLogEvent($"Nodo {Id} inicia"), ct); // si procede
+
+        // Pasar ct a tus servicios para cortar I/O y trabajo pesado
+        return await gesCom.RunCommandAsync<T>(command, new object?[] { message!, context, ct });
     }
 }
 
-/*
-public sealed partial class HGesComExecutor : Executor
-{
-    private readonly string _commandName;
-    private readonly IHGesCom _gesCom;
-
-    public HGesComExecutor(string id, string commandName, IHGesCom gesCom) : base(id)
-    {
-        _commandName = commandName;
-        _gesCom = gesCom;
-    }
-
-    [MessageHandler]
-    private async ValueTask<object?> HandleAsync(object? message, IWorkflowContext context, CancellationToken cancellationToken = default)
-    {
-        // Execute the command via HGesCom
-        // Each node acts as an executor, receiving a payload (message) and context.
-        return await _gesCom.RunCommandAsync(_commandName, new object[] { message!, context });
-    }
-
-    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder builder)
-    {
-        return builder;
-    }
-}
-*/

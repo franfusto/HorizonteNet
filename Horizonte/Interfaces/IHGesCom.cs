@@ -22,6 +22,7 @@ public interface IHGesCom
     /// <returns>Una lista de objetos <see cref="HGesCom.RoleListItem"/> que contiene información sobre los comandos disponibles para el rol especificado.</returns>
     public List<HGesCom.RoleListItem> GetRoleCommands(string role);
 
+
     /// <summary>
     /// Ejecuta un comando específico identificado por la clave proporcionada y, opcionalmente, acepta argumentos.
     /// </summary>
@@ -39,11 +40,9 @@ public interface IHGesCom
     /// <returns>Devuelve el resultado de la ejecución del comando como el tipo especificado <typeparamref name="T"/>. Devuelve null si el comando no produce un resultado o si el tipo especificado es nullable.</returns>
     T? RunCommand<T>(string commandKeyor, object[]? arg = null);
 
+    Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null);
 
-    Task<object?> RunCommandAsync(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null);
-
-    Task<T> RunCommandAsync<T>(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null);
-    
+    Task<T> RunCommandAsync<T>(string commandKeyor,  object[]? arg = null);
 
     /// <summary>
     /// Ejecuta un comando basado en su clave de comando y opcionalmente argumentos de entrada proporcionados como cadenas JSON.
@@ -54,9 +53,8 @@ public interface IHGesCom
     /// <param name="cancellationToken">Token de cancelación.</param>
     /// <returns>El objeto con la respuesta de la ejecución del comando o null si la ejecución falla.</returns>
     public string? RunCommandJson(string commandKey, string[]? jsonarglist);
-
     
-    public Task<string?> RunCommandJsonAsync(string commandKey, CancellationToken cancellationToken, string[]? jsonarglist = null);
+    public Task<string?> RunCommandJsonAsync(string commandKey,  string[]? jsonarglist = null);
     
     
     public bool IsAsyncCommand(string commandKey);

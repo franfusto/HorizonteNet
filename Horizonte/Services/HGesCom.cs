@@ -345,7 +345,7 @@ public class HGesCom : IHGesCom
     }
 
 
-    public async Task<string?> RunCommandJsonAsync(string commandKey, CancellationToken cancellationToken, string[]? jsonarglist = null)
+    public async Task<string?> RunCommandJsonAsync(string commandKey, string[]? jsonarglist = null)
     {
         try
         {
@@ -382,7 +382,7 @@ public class HGesCom : IHGesCom
             //if (method.IsAsync) // comprobamos sí el método está maracado cómo async
             //{
             
-                resobj = await  RunCommandAsync(method.CommandKey, cancellationToken, inobjparams!);
+                resobj = await  RunCommandAsync(method.CommandKey, inobjparams!);
             
                 //}
             //else
@@ -422,7 +422,7 @@ public class HGesCom : IHGesCom
         return _commandList.ContainsKey(commandKey);
     }
 
-    public async Task<object?> RunCommandAsync(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null)
+    public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
     {
         try
         {
@@ -482,7 +482,7 @@ public class HGesCom : IHGesCom
     }
 
 
-    public async Task<T> RunCommandAsync<T>(string commandKeyor, CancellationToken cancellationToken, object[]? arg = null)
+    public async Task<T> RunCommandAsync<T>(string commandKeyor,object[]? arg = null)
     {
         try
         {
@@ -522,16 +522,7 @@ public class HGesCom : IHGesCom
                 return (T)Convert.ChangeType(result, typeof(T));
             }
         }
-        catch (TargetInvocationException ex)
-        {
-            var inner = ex.InnerException ?? ex;
-            _log?.LogError($"Excepción de invocación en RunCommandAsync<T> para {commandKeyor}: {inner}");
-            throw inner;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
+
         catch (Exception ex)
         {
             _log?.LogError($"Error al ejecutar RunCommandAsync<T> para {commandKeyor}: {ex}");
@@ -585,15 +576,10 @@ public class HGesCom : IHGesCom
             //devolvemos el objeto
             return (T)resObject!;
         }
-        catch (TargetInvocationException ex)
-        {
-            var inner = ex.InnerException ?? ex;
-            _log?.LogError($"**** {commandKeyor} **** Invocación fallida: {inner}");
-            throw inner;
-        }
+
         catch (Exception ex)
         {
-            _log?.LogError($"**** {commandKeyor} **** Error: {ex}");
+            _log?.LogError($"Error al ejecutar RunCommand<T> para {commandKeyor}: {ex}");
             throw;
         }
     }
