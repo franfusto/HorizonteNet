@@ -6,7 +6,7 @@ namespace Horizonte.Extension.WorkFlows;
 
 public static class Extensions
 {
-    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env,CancellationToken token = default)
+    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env, CancellationToken token = default)
     {
         var gesCom = env.HHost.Services.GetService<IHGesCom>();
         if (gesCom == null)
@@ -24,7 +24,7 @@ public static class Extensions
         // 2. Create executors for each node
         var executors = def.Nodes.ToDictionary(
             node => node.Id,
-            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom,token)
+            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom, token)
         );
 
         // 3. Initialize WorkflowBuilder with the starting executor
@@ -36,7 +36,7 @@ public static class Extensions
             if (executors.TryGetValue(link.SourceNodeId, out var source) &&
                 executors.TryGetValue(link.TargetNodeId, out var target))
             {
-                Func<T, bool>? condition = GetConditionFunc<T>(link, gesCom);
+                var condition = GetConditionFunc<T>(link, gesCom);
                 var edge = builder.AddEdge(source, target, condition!);
 
                 // If the target node is an 'Out' node, mark it as a workflow output
@@ -73,34 +73,27 @@ public static class Extensions
         return (message) => { return gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]); };
     }
 
-    public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message, Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
+    public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message,
+        Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
     {
-            Console.WriteLine($"Extensions.Run Token Hash: {token.GetHashCode()}");
-            var result = default(WorkflowEvent);
-        try
+        var result = default(WorkflowEvent);
+        await using var run =
+            await InProcessExecution.RunStreamingAsync(workflow, input: message, cancellationToken: token);
+        await foreach (var evt in run.WatchStreamAsync())
         {
-            await using var run = await InProcessExecution.RunStreamingAsync(workflow, input: message,cancellationToken: token);
-            await foreach (var evt in run.WatchStreamAsync())
+            Console.WriteLine(evt);
+            result = evt;
+            eventhandler?.Invoke(evt);
+            if (evt is WorkflowOutputEvent)
             {
-                Console.WriteLine(evt);
-                result = evt;
-                eventhandler?.Invoke(evt);
-                if (evt is WorkflowOutputEvent)
-                {
-                    return evt;
-                }
+                return evt;
             }
+        }
 
-        }
-        catch (Exception e)
-        {
-            throw;
-        }
+
         return result;
     }
 }
-
-
 
 internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom, CancellationToken sharedToken)
     : Executor<T, T>(id)
@@ -110,18 +103,20 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
         IWorkflowContext context,
         CancellationToken cancellationToken = default)
     {
-        // Comprobación temprana
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Combinar señales (motor + compartida) si procede
+        // Combinar señales (motor + compartida) 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(sharedToken, cancellationToken);
         var ct = linkedCts.Token;
-
-        // Pasar ct a operaciones del contexto cuando sea posible
-        // await context.AddEventAsync(new WorkflowLogEvent($"Nodo {Id} inicia"), ct); // si procede
-
-        // Pasar ct a tus servicios para cortar I/O y trabajo pesado
-        return await gesCom.RunCommandAsync<T>(command, new object?[] { message!, context, ct });
+        try
+        {
+            // Comprobación temprana
+            ct.ThrowIfCancellationRequested();
+            return await gesCom.RunCommandAsync<T>(command, [message!, context, ct]);
+        }
+        catch (OperationCanceledException)
+        {
+            await context.YieldOutputAsync(message!, ct);
+            await context.RequestHaltAsync();
+            return message;
+        }
     }
 }
-

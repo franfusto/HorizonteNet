@@ -478,7 +478,8 @@
                 case WorkflowOutputEvent output:
                     UpdRunUi(output.ExecutorId, "output");
                     log = $"Workflow output: {output.Data}" + Environment.NewLine;
-                    return;
+                    _outmessage = output.Data?.ToString();
+                    break;
 
                 case WorkflowErrorEvent error:
                     log = $"Workflow error: {error.Exception}" + Environment.NewLine;

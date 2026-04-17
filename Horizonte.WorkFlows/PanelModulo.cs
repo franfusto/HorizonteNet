@@ -44,7 +44,7 @@ public class PanelModulo
         for (var i = 0; i < 5; i++)
         {
             if(cancellationToken.IsCancellationRequested) break;
-
+            message += ".";
             Console.WriteLine($"Iteration {i}");
             await Task.Delay(2000);
         }
@@ -58,6 +58,7 @@ public class PanelModulo
     [HorizonteCommand("TestNode3")]
     public async Task<string> TestNode3(string message, IWorkflowContext context, CancellationToken cancellationToken)
     {
+        throw new Exception("Exception TestNode4");
         return await Task.FromResult(message + " TestNode3 ");
     }
     [HorizonteCommand("TestNode4")]
