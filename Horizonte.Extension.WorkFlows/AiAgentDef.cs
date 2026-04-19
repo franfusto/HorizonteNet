@@ -1,10 +1,12 @@
-namespace Horizonte.Extension.Ai.Entities;
+namespace Horizonte.Extension.WorkFlows;
 
-public class AiClientDef
+public class AiAgentDef
 {
     public string Id { get; set; }
     public string Name { get; set; }
     public string Endpoint { get; set; }
     public string ApiKey { get; set; }
-    public string RefreshToken { get; set; }
+    public string Model { get; set; }
+    public string Instructions { get; set; }
+    
 }

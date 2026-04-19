@@ -1,4 +1,6 @@
+@using Horizonte.Extension.WorkFlows
 @using Microsoft.Agents.AI
+@using OpenAI.Chat
 @inject IHGesCom GesCom
 
 <RadzenText Text="Agente IA" TextStyle="TextStyle.H5"/>
@@ -17,17 +19,30 @@
 @code
 {
     AIAgent _agent;
+    AgentSession? _session;
     string _input = string.Empty;
     string _output = string.Empty;
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-       _agent = GesCom.RunCommand("Horizonte.Ai_GetAgent") as AIAgent;
-        base.OnInitialized();
+        AiAgentDef def = new AiAgentDef()
+        {
+            Endpoint = "http://localhost:1234/v1",
+            ApiKey = "",
+            Id = Guid.NewGuid().ToString(),
+            Name = "Agent",
+            Model = "qwen2.5-0.5b-instruct",
+            Instructions = "Eres un agradable asistente"
+        };
+
+        _agent = def.Build();
+        _session = await _agent.CreateSessionAsync();
+        await base.OnInitializedAsync();
     }
 
     private async Task Send()
     {
-        var result = await _agent.RunAsync(_input);
+        _session ??= await _agent.CreateSessionAsync();
+        var result = await _agent.RunAsync(_input, _session, null);
         Console.WriteLine(result);
         _output = result.Text;
     }

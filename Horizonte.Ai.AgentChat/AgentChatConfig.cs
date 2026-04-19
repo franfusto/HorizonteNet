@@ -1,4 +1,4 @@
-using Horizonte.Extension.Ai.Entities;
+
 
 namespace Horizonte.Ai.AgentChat;
 
