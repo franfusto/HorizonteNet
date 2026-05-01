@@ -1,4 +1,4 @@
-﻿namespace Horizonte.Extension.WorkFlows;
+﻿namespace Horizonte.Extension.AiWorkFlows;
 
 public class WorkFlowDef
 {

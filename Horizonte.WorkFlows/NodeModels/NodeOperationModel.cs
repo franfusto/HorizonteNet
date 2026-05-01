@@ -1,6 +1,6 @@
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
-using Horizonte.Extension.WorkFlows;
+using Horizonte.Extension.AiWorkFlows;
 
 namespace Horizonte.WorkFlows.NodeModels;
 

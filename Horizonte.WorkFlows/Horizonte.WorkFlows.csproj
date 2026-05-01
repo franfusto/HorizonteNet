@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
-        <ProjectReference Include="..\Horizonte.Extension.WorkFlows\Horizonte.Extension.WorkFlows.csproj" />
+        <ProjectReference Include="..\Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj" />
         <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.4" />
     </ItemGroup>

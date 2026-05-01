@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 
-namespace Horizonte.Extension.WorkFlows;
+namespace Horizonte.Extension.AiWorkFlows;
 
 public class AiAgentDef
 {

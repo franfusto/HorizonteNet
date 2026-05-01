@@ -1,4 +1,4 @@
-using Horizonte.Extension.WorkFlows;
+using Horizonte.Extension.AiWorkFlows;
 
 namespace Horizonte.WorkFlows;
 

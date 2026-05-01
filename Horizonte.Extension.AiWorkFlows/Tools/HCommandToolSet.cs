@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 
-namespace Horizonte.Extension.WorkFlows.Tools;
+namespace Horizonte.Extension.AiWorkFlows.Tools;
 
 public class HCommandToolSet
 {

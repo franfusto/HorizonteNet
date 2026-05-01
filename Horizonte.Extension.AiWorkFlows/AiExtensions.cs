@@ -5,7 +5,7 @@ using System.ClientModel;
 using OpenAI;
 using OpenAI.Chat;
 
-namespace Horizonte.Extension.WorkFlows;
+namespace Horizonte.Extension.AiWorkFlows;
 
 public static class AiExtensions
 {

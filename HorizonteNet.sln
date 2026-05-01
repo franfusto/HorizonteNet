@@ -55,7 +55,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extensions.Intera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.WorkFlows", "Horizonte.WorkFlows\Horizonte.WorkFlows.csproj", "{893B584F-5D99-4DB9-950D-ADC129363737}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.WorkFlows", "Horizonte.Extension.WorkFlows\Horizonte.Extension.WorkFlows.csproj", "{A472B4AE-2039-4E6A-977A-52AD4F7DF3F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.AiWorkFlows", "Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj", "{A472B4AE-2039-4E6A-977A-52AD4F7DF3F2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{11171AF6-7681-45B2-AC36-A86155B9E3A9}"
 EndProject

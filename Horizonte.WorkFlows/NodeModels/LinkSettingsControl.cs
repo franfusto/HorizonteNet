@@ -8,7 +8,7 @@ using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.Positions;
 using System;
 using System.Threading.Tasks;
-using Horizonte.Extension.WorkFlows;
+using Horizonte.Extension.AiWorkFlows;
 
 namespace Horizonte.WorkFlows.NodeModels;
 
