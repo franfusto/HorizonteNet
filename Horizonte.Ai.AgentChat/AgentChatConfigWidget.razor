@@ -3,27 +3,68 @@
 @using System.Text.Json
 @using Radzen
 @using Radzen.Blazor
+@using Horizonte.Extension.WorkFlows
 @inject IHContext Context
 
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
-                 JustifyContent="JustifyContent.SpaceBetween">
-        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Horizonte.Ai"></RadzenText>
-        <div>
-            <RadzenButton Icon="refresh" Variant="Variant.Outlined" Click="Get"></RadzenButton>
-        </div>
+                 JustifyContent="JustifyContent.SpaceBetween" Class="rz-mb-4">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Configuración de Horizonte.Ai Agent Chat" class="rz-m-0"></RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+            <RadzenButton Icon="refresh" Variant="Variant.Outlined" Click="Get" Text=""></RadzenButton>
+            <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Click="Update" Text="Guardar"></RadzenButton>
+        </RadzenStack>
     </RadzenStack>
 
-    
-    <div style="max-width: 600px; white-space: pre-wrap; white-space: -moz-pre-wrap;white-space: -o-pre-wrap;word-wrap: break-word; ">
-        @_jsonContent
-    </div>
+    <RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+        <Tabs>
+
+            <RadzenTabsItem Text="Cliente AI">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <div>
+                        <RadzenText Text="Endpoint" />
+                        <CredentialSelector @bind-Value="@_chatconfig.ClientDef.Endpoint" />
+                    </div>
+                    <div>
+                        <RadzenText Text="API Key" />
+                        <CredentialSelector @bind-Value="@_chatconfig.ClientDef.ApiKey" />
+                    </div>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Definición de Agente">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                        <RadzenFormField Text="Nombre" Variant="Variant.Outlined" style="flex: 2;">
+                            <ChildContent>
+                                <RadzenTextBox @bind-Value="@_chatconfig.AgentDef.Name" style="width: 100%;" />
+                            </ChildContent>
+                        </RadzenFormField>
+                    </RadzenStack>
+                    <RadzenFormField Text="Modelo" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_chatconfig.AgentDef.Model" style="width: 100%;" />
+                        </ChildContent>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Modelo de Embeddings" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_chatconfig.AgentDef.EmbedderModel" style="width: 100%;" />
+                        </ChildContent>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Instrucciones" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextArea @bind-Value="@_chatconfig.AgentDef.Instructions" style="width: 100%;" Rows="5" />
+                        </ChildContent>
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+
 </RadzenCard>
 
 @code {
-    
+
     AgentChatConfig _chatconfig = new();
-    string _jsonContent = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -34,15 +75,10 @@
     private void Get()
     {
         _chatconfig = Context.Get<AgentChatConfig>() ?? new AgentChatConfig();
-        SerializeConfig();
-    }
-
-    private void SerializeConfig()
-    {
-        _jsonContent = JsonSerializer.Serialize(_chatconfig, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        
+        // Asegurar que las sub-configuraciones no sean nulas
+        _chatconfig.ClientDef ??= new AiClientDef();
+        _chatconfig.AgentDef ??= new AiAgentDef();
     }
 
     private void Update()

@@ -1,9 +1,11 @@
 
 
+using Horizonte.Extension.WorkFlows;
+
 namespace Horizonte.Ai.AgentChat;
 
 public class AgentChatConfig
 {
-    public string DefaultAgentId { get; set; } = "default_agent_id";
-    
+    public AiClientDef ClientDef { get;set; } = new AiClientDef();
+    public AiAgentDef AgentDef { get;set; } = new AiAgentDef();
 }

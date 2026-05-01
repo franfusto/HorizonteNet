@@ -1,51 +1,285 @@
+@using System.ComponentModel
+@using Horizonte.Ai.AgentChat.Entities
 @using Horizonte.Extension.WorkFlows
+@using Horizonte.Extension.WorkFlows.Tools
 @using Microsoft.Agents.AI
+@using Microsoft.Extensions.AI
+@using Microsoft.Extensions.Logging
+@using OpenAI
 @using OpenAI.Chat
+@using OpenAI.Realtime
+@using AgentResponse = Microsoft.Agents.AI.AgentResponse
+@using ChatResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat
 @inject IHGesCom GesCom
+@inject IHCredManager CredManager
+@inject IHorizonteEnv HorizonteEnv
+@inject DialogService DialogService
+@inject IHContext Context
+@inject  ILogger<ChatWidget> Logger
 
-<RadzenText Text="Agente IA" TextStyle="TextStyle.H5"/>
- <RadzenCard>
-     
-<RadzenStack Orientation="Orientation.Vertical">
-    <RadzenStack Orientation="Orientation.Horizontal">
-        <RadzenTextBox @bind-Value="@_input"> </RadzenTextBox>
-        <RadzenButton Click="Send"></RadzenButton>
+<RadzenStack style="width: 100%" Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+             JustifyContent="JustifyContent.Center">
+
+    <RadzenStack style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"
+                 align-items="center">
+        <RadzenTextBox Style="width: 100%" @bind-Value="@_prompt"></RadzenTextBox>
+        <RadzenButton IsBusy="@_busy" Icon="send" Click="Send"></RadzenButton>
+        <RadzenButton Click="ClearChat" Icon="tab_close"></RadzenButton>
     </RadzenStack>
-    <RadzenTextArea @bind-Value="@_output"></RadzenTextArea>
+
+    <RadzenListBox style="width: 100%" TValue="ChatElement" @bind-Value=@_selectedChatElement Data=@_chatlist>
+        <Template>
+            <RadzenCard style="width: 100%">
+                <RadzenStack AlignItems="AlignItems.Center"
+                             JustifyContent="@((context as ChatElement).OrientationLeft ? JustifyContent.Left : JustifyContent.Right)"
+                             Orientation="Orientation.Horizontal">
+                    <RadzenIcon Icon="@((context as ChatElement)?.IconName)"></RadzenIcon>
+                </RadzenStack>
+                <RadzenMarkdown style="width: 100%">
+                    @((MarkupString)((context as ChatElement)?.Text.Replace(Environment.NewLine, "<br/>") ?? string.Empty))
+                </RadzenMarkdown>
+                <br/>
+                @((context as ChatElement)?.RenderFragment)
+
+            </RadzenCard>
+        </Template>
+    </RadzenListBox>
+    @if (_busy)
+    {
+        <RadzenButton Text="Cancel" Icon="cancel"  Click="Cancel"/>
+    }
 </RadzenStack>
- </RadzenCard>
 
 
 @code
 {
     AIAgent _agent;
     AgentSession? _session;
-    string _input = string.Empty;
-    string _output = string.Empty;
+    private bool _busy = false;
+    private List<ChatElement> _chatlist = new List<ChatElement>();
+    private ChatElement _selectedChatElement = new ChatElement();
+    private string _prompt = string.Empty;
+    private CancellationTokenSource? _cts;
+    private AgentChatConfig _chatconfig = new();
+
     protected override async Task OnInitializedAsync()
     {
-        AiAgentDef def = new AiAgentDef()
-        {
-            Endpoint = "http://localhost:1234/v1",
-            ApiKey = "",
-            Id = Guid.NewGuid().ToString(),
-            Name = "Agent",
-            Model = "qwen2.5-0.5b-instruct",
-            Instructions = "Eres un agradable asistente"
-        };
-
-        _agent = def.Build();
-        _session = await _agent.CreateSessionAsync();
+        _chatconfig = Context.Get<AgentChatConfig>() ?? new AgentChatConfig();
+        await SetUpAgent();
         await base.OnInitializedAsync();
+
     }
 
+
+    private async Task SetUpAgent()
+    {
+
+        //definimos el agente
+        OpenAIClient client = _chatconfig.ClientDef.GetClient(CredManager);
+        
+        //instrucciones adicionales para la serialización
+        string outputformat = @"
+Serializa la respuesta en Output usando el siguiente formato para la salida estructurada:
+{
+  'type': 'object',
+  'title': 'AgentResponse',
+  'properties': {
+    'Output': {
+      'type': 'object',
+      'title': 'Output',
+      'description': 'Representa los datos de salida estructurados del agente.',
+      'properties': {
+        'Response': {
+          'type': 'string',
+          'description': 'Tu respuesta para el usuario.'
+        },
+        'Widget': {
+          'type': 'string',
+          'description': 'El nombre del comando que genera el widget en la interfaz gráfica.'
+        },
+        'Error': {
+          'type': 'string',
+          'description': 'Mensaje de error si ocurre alguno.'
+        }
+      },
+      'required': ['Response'],
+      'additionalProperties': false
+    }
+  },
+  'required': ['Output'],
+  'additionalProperties': false
+}
+";
+        _chatconfig.AgentDef.Instructions += outputformat;
+
+        // creamos las tools
+        HCommandToolSet toolSet = new HCommandToolSet(HorizonteEnv,client, _chatconfig.AgentDef.EmbedderModel);
+        
+        IList<AITool>? tools = new[]
+        {
+           toolSet.GetSystemTime(),
+           toolSet.RunCommand(),
+           toolSet.QueryVectorStore()
+        };
+        
+        _agent = _chatconfig.AgentDef.WhithTools(tools).Build(client);
+        _session = await _agent.CreateSessionAsync();
+    }
+    
     private async Task Send()
     {
-        _session ??= await _agent.CreateSessionAsync();
-        var result = await _agent.RunAsync(_input, _session, null);
-        Console.WriteLine(result);
-        _output = result.Text;
+        if (string.IsNullOrWhiteSpace(_prompt))
+        {
+            // Validación: _prompt vacío o inválido
+            _chatlist.Add(new ChatElement
+            {
+                Text = "El mensaje no puede estar vacío.",
+                IconName = "warning"
+            });
+            return;
+        }
+
+        if (_agent == null || GesCom == null)
+        {
+            // Validación: _agent y GesCom deben estar inicializados
+            _chatlist.Add(new ChatElement
+            {
+                Text = "El agente o el sistema de gestión de comandos no está inicializado.",
+                IconName = "error"
+            });
+            return;
+        }
+        // Resetear el CancellationTokenSource anterior (si existiera)
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
+        // Añadir el mensaje del usuario a la lista de chats
+        _chatlist.Add(new ChatElement
+        {
+            Text = _prompt,
+            IconName = "person"
+        });
+
+        // Inicialización de variables
+        _busy = true;
+        ChatElement response = new ChatElement();
+        WidgetDef? widgetDef = null;
+
+
+        try
+        {
+            var result = await _agent.RunAsync(_prompt, _session, null);
+            response = ParseResponse(result);
+            Console.WriteLine(result);
+            //_output = result.Text;
+
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Error durante el procesamiento del mensaje: {e}");
+            response.Text = "Ocurrió un error al procesar la solicitud.";
+            response.IconName = "error";
+        }
+        // Añadir la respuesta al chat
+        _chatlist.Add(response);
+
+        // Restablecer estado
+        _prompt = string.Empty;
+        await InvokeAsync(StateHasChanged); 
+        _busy = false;
     }
+
+    private ChatElement ParseResponse(AgentResponse response)
+    {
+        ChatElement chatElement = new();
+        chatElement.IconName = "smart_toy";
+        chatElement.OrientationLeft = false;
+
+        try
+        {
+            var agentResponse = System.Text.Json.JsonSerializer.Deserialize<AgentChatResponse>(response.ToString());
+            if (agentResponse != null)
+            {
+                chatElement.Text = agentResponse.Output. Response ?? response.ToString();
+                if (!string.IsNullOrEmpty(agentResponse.Output.Widget))
+                {
+                   var  _hcommand = GesCom.GetCommandList().FirstOrDefault(x => x.CommandKey == agentResponse.Output.Widget);
+                    if (_hcommand != null)
+                    {
+                        var widgetDef = new WidgetDef();
+                        // Determinar si es un widget o una página de configuración
+                        if (_hcommand.Roles.Contains("widget") || _hcommand.Roles.Contains("configpage"))
+                        {
+                            widgetDef = GesCom.RunCommand<WidgetDef>(agentResponse.Output.Widget);
+                        }
+                        else
+                        {
+                            // Intenta cargar el tipo dinámico
+                            var type = Type.GetType("Horizonte.AdminUi.HorizonteSettings.Components.ExecuteCommand, Horizonte.AdminUi.HorizonteSettings");
+                            if (type == null)
+                            {
+                                chatElement.Text = "No se pudo cargar el tipo de widget proporcionado.";
+                            }
+
+                            widgetDef = new WidgetDef()
+                            {
+                                Type = type,
+                                Parameters = new Dictionary<string, object>() { { "Command", _hcommand } },
+                            };
+                        }
+
+                        // Ejecutar el comando para renderizar el widget
+                        chatElement.RenderFragment = GesCom.RunCommand<RenderFragment>("HorizonteGui_RenderWidget", new object[] { widgetDef })
+                                                     ?? (builder => builder.AddMarkupContent(0, "<p>Error al cargar el widget</p>"));
+                    }
+                    else
+                    {
+                        chatElement.RenderFragment = null;
+                    }
+                }
+                if (!string.IsNullOrEmpty(agentResponse.Output.Error))
+                {
+                    chatElement.Text = $"Error: {agentResponse.Output.Error}";
+                    chatElement.IconName = "error";
+                }
+            }
+            else
+            {
+                chatElement.Text = response.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error al deserializar la respuesta: {ex}");
+            chatElement.Text = response.ToString();
+        }
+
+        return chatElement;
+    }
+
+    private async Task ClearChat()
+    {
+        _session = await _agent.CreateSessionAsync();
+        _chatlist.Clear();
+    }
+   
+    private void Cancel()
+    {
+        // Cancela la operación en curso
+        _cts?.Cancel();
+        _busy = false;
+    }
+    RenderFragment? CreateDynamicComponent(Type type)
+    {
+        WidgetDef widgetDef = new WidgetDef()
+        {
+            Type = type,
+            Parameters = null
+        };
+        return GesCom.RunCommand<RenderFragment>("HorizonteGui_RenderWidget",
+            new object[] { widgetDef });
+    }
+
 
 
 }

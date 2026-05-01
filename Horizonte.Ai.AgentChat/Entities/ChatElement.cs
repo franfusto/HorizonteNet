@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Horizonte.Ai.Agent;
+namespace Horizonte.Ai.AgentChat.Entities;
 
 /// <summary>
 /// Representa un elemento de chat utilizado en el contexto de un agente.
@@ -10,9 +10,9 @@ namespace Horizonte.Ai.Agent;
 /// </summary>
 public class ChatElement
 {
-    public string Text = string.Empty;
-    public string? IconName;
-    public bool OrientationLeft = true;
-    public Dictionary<string, object>? ExecuteArgs;
-    public RenderFragment? RenderFragment;
+    public string Text { get; set; } = string.Empty;
+    public string? IconName  { get; set; }
+    public bool OrientationLeft  { get; set; } = true;
+    public Dictionary<string, object>? ExecuteArgs  { get; set; }
+    public RenderFragment? RenderFragment  { get; set; }
 }

@@ -1,14 +1,13 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-
-namespace Horizonte.Ai.Agent;
+namespace Horizonte.Ai.AgentChat.Entities;
 
 /// <summary>
 /// Representa una respuesta formateada del agente.
 /// Utilizada para estructurar y contener datos de salida del sistema.
 /// </summary>
-public class AgentResponse
+public class AgentChatResponse
 {
     [JsonPropertyName("Output")]
     public Output Output { get; set; } = new Output();
