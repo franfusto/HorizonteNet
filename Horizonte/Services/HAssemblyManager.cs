@@ -365,7 +365,7 @@ public class HAssemblyManager : IhAssemblyManager
                     try
                     {
                         Log.Info($"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
-                        if (Activator.CreateInstance(type, _environment, workerSetting.ServiceName, workerSetting.RunOnStart) is BackgroundService worker)
+                        if (CreateInstance(type) is BackgroundService worker)
                         {
                             worker.StartAsync(CancellationToken.None).Wait();
                             _dynamicServices.Add(worker);
@@ -377,6 +377,20 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                 }
             }
+        }
+    }
+
+    public object? CreateInstance(Type type)
+    {
+        try
+        {
+            // Intentar crear instancia con el constructor que acepta HorizonteEnv
+            return Activator.CreateInstance(type, _environment);
+        }
+        catch
+        {
+            // Fallback a constructor por defecto si falla
+            return Activator.CreateInstance(type);
         }
     }
 

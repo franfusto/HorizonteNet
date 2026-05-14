@@ -109,6 +109,7 @@ public class HGesCom : IHGesCom
     private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies, IHorizonteEnv enviorment)
     {
         var assembliesToProcess = new Queue<Assembly>(assemblies);
+        var assemblyManager = enviorment.AssemblyManager;
 
         while (assembliesToProcess.Count > 0)
         {
@@ -145,7 +146,7 @@ public class HGesCom : IHGesCom
                     {
                         Log.Info($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
 
-                        modInstance = Activator.CreateInstance(modtype, enviorment);
+                        modInstance = assemblyManager?.CreateInstance(modtype);
                     }
                     catch (Exception e)
                     {
