@@ -28,5 +28,9 @@ public interface IhAssemblyManager
     public void UnloadService(string domainName);
     public void LoadModule(string domainName);
     public void LoadService(string domainName);
+
+    public void UnloadCommandsByDomain(string domainName);
+    public void LoadCommandsByDomain(string domainName);
+
     public object? CreateInstance(Type type);
 }

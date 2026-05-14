@@ -57,38 +57,28 @@ public class HGesCom : IHGesCom
     public HGesCom(IHorizonteEnv env)
     {
         _env = new Lazy<IHorizonteEnv>(() => env);
-        LoadModules();
     }
 
     /// <summary>
     /// Carga e inicializa los módulos decorados con el atributo <see cref="HorizonteModule"/> 
     /// desde los ensamblados del dominio de aplicación actual.
-    /// Este método crea dinámicamente instancias de esas clases de módulo, identifica sus métodos
-    /// marcados con el atributo <see cref="HorizonteCommand"/> y los agrega a un diccionario interno de comandos.
-    /// Esto permite que las operaciones o comandos se descubran y ejecuten dinámicamente en tiempo de ejecución.
-    /// Cualquier error encontrado durante la instanciación de módulos o la inicialización de comandos
-    /// se registra para su diagnóstico y el proceso continúa sin fallar por completo.
+    /// Este método delega la carga a HAssemblyManager.
     /// </summary>
-    private void LoadModules()
+    public void LoadModules()
     {
         try
         {
-            var enviorment = _env.Value;
             var assemblyManager = _env.Value.AssemblyManager;
-            var processedAssemblies = new HashSet<string>();
-            var assembliesByDomain = assemblyManager?.AssembliesByDomain;
-            if (assembliesByDomain == null)
+            if (assemblyManager == null)
             {
-                Log.Warn("IhAssemblyManager not found or AssembliesByDomain is null. Falling back to AppDomain.CurrentDomain.");
-                ProcessAssemblies(AppDomain.CurrentDomain.GetAssemblies().ToList(), "Default", processedAssemblies, enviorment);
+                Log.Error("IhAssemblyManager not found. Cannot load modules.");
                 return;
             }
 
-            foreach (var domainEntry in assembliesByDomain)
+            var assembliesByDomain = assemblyManager.AssembliesByDomain;
+            foreach (var domainName in assembliesByDomain.Keys)
             {
-                var domainName = domainEntry.Key;
-                var assemblies = domainEntry.Value;
-                ProcessAssemblies(assemblies, domainName, processedAssemblies, enviorment);
+                assemblyManager.LoadCommandsByDomain(domainName);
             }
 
             Log.Info($"Loaded {_commandList.Count} HCommands");
@@ -96,78 +86,6 @@ public class HGesCom : IHGesCom
         catch (Exception e)
         {
             Log.Error(e.ToString());
-        }
-    }
-
-    /// <summary>
-    /// Procesa una lista de ensamblados para buscar y cargar módulos de Horizonte.
-    /// </summary>
-    /// <param name="assemblies">Lista de ensamblados a procesar.</param>
-    /// <param name="domainName">Nombre del dominio (Application Load Context) al que pertenecen los ensamblados.</param>
-    /// <param name="processedAssemblies">Conjunto de nombres completos de ensamblados que ya han sido procesados para evitar duplicados.</param>
-    /// <param name="enviorment">Instancia del entorno de Horizonte para la creación de instancias de módulos.</param>
-    private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies, IHorizonteEnv enviorment)
-    {
-        var assembliesToProcess = new Queue<Assembly>(assemblies);
-        var assemblyManager = enviorment.AssemblyManager;
-
-        while (assembliesToProcess.Count > 0)
-        {
-            var assembly = assembliesToProcess.Dequeue();
-            if (processedAssemblies.Contains(assembly.FullName!)) continue;
-            processedAssemblies.Add(assembly.FullName!);
-
-            Type[] types;
-            try
-            {
-                types = assembly.GetTypes();
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                types = ex.Types.Where(t => t != null).ToArray()!;
-            }
-            catch (Exception e)
-            {
-                Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
-                continue;
-            }
-
-            var modulostypes = (from type in types
-                                where Attribute.IsDefined(type, typeof(HorizonteModule))
-                                select type).ToList();
-
-            foreach (var modtype in modulostypes)
-            {
-                try
-                {
-                    if (modtype == null) continue;
-                    object? modInstance;
-                    try
-                    {
-                        Log.Info($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
-
-                        modInstance = assemblyManager?.CreateInstance(modtype);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
-                        continue;
-                    }
-
-                    var metodos = modtype.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
-                    foreach (var method in metodos)
-                    {
-                        if (modInstance != null)
-                        {
-                            AddCommandToList(method, modInstance, domainName);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e.ToString());
-                }
-            }
         }
     }
 
@@ -206,53 +124,23 @@ public class HGesCom : IHGesCom
     }
 
     /// <summary>
-    /// Añade un método como comando al diccionario interno asociándolo con sus metadatos y propiedades.
+    /// Registra un comando en el sistema.
     /// </summary>
-    /// <param name="method">La información del método que será añadido como comando.</param>
-    /// <param name="instance">La instancia del objeto que contiene el método que se va a agregar.</param>
-    /// <param name="domain">El dominio (ALC) al que pertenece el comando.</param>
-    private void AddCommandToList(MethodInfo method, object instance, string domain = "Default")
+    /// <param name="command">El comando a registrar.</param>
+    public void RegisterCommand(HCommand command)
     {
-        var hAttrib = method.CustomAttributes.First(t =>
-            t.AttributeType == typeof(HorizonteCommand));
-        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false)
-            as HorizonteRole[] ?? []).ToList().Select(x => x.Role).ToList();
-
-        var miCmd = new HCommand
+        if (command == null) return;
+        if (string.IsNullOrEmpty(command.CommandKey)) return;
+        
+        if (_commandList.ContainsKey(command.CommandKey))
         {
-            CommandKey = hAttrib.ConstructorArguments[0].Value!.ToString()!,
-            Description = hAttrib.ConstructorArguments[1].Value?.ToString() ?? string.Empty,
-            CommandAction = method,
-            Instance = instance,
-            InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
-            InNames = GetParameterNames(method),
-            OutType = method.ReturnType,
-            Roles = roleAttrib,
-            IsAsync = method.ReturnType == typeof(Task) ||
-                      (method.ReturnType.IsGenericType &&
-                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
-            Domain = domain
-        };
-        _commandList.Add(miCmd.CommandKey, miCmd);
+            _commandList[command.CommandKey] = command;
+        }
+        else
+        {
+            _commandList.Add(command.CommandKey, command);
+        }
     }
-
-    /// <summary>
-    /// Recupera los nombres de los parámetros de un método dado.
-    /// </summary>
-    /// <param name="methodInfo">La información del método del cual se extraen los nombres de los parámetros.</param>
-    /// <returns>
-    /// Una lista de nombres de los parámetros para el método especificado o una lista vacía si no se encuentran parámetros.
-    /// </returns>
-    private List<string>? GetParameterNames(MethodInfo methodInfo)
-    {
-        return methodInfo.GetParameters()
-            .Where(x => x.Name != null)
-            .Select(parameter => parameter.Name!)
-            .ToList();
-    }
-
-
-
 
     /// <summary>
     /// Ejecuta un comando identificado por su clave usando argumentos en formato JSON.
@@ -566,9 +454,7 @@ public class HGesCom : IHGesCom
     {
         try
         {
-            var enviorment = _env.Value;
             var assemblyManager = _env.Value.AssemblyManager;
-            var processedAssemblies = new HashSet<string>();
 
             if (assemblyManager == null)
             {
@@ -576,16 +462,7 @@ public class HGesCom : IHGesCom
                 return;
             }
 
-            var assembliesByDomain = assemblyManager.AssembliesByDomain;
-            if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
-            {
-                Log.Info($"Cargando comandos para el dominio: {domainName}");
-                ProcessAssemblies(assemblies, domainName, processedAssemblies, enviorment);
-            }
-            else
-            {
-                Log.Warn($"No se encontraron ensamblados para el dominio {domainName}");
-            }
+            assemblyManager.LoadCommandsByDomain(domainName);
         }
         catch (Exception e)
         {

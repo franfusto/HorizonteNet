@@ -297,7 +297,17 @@ public class HAssemblyManager : IhAssemblyManager
     public void UnloadModule(string domainName)
     {
         Log.Info($"UnloadModule for domain: {domainName}");
-        var gesCom = _environment.HHost.Services.GetService(typeof(IHGesCom)) as IHGesCom;
+        UnloadCommandsByDomain(domainName);
+    }
+
+    /// <summary>
+    /// Elimina de la lista de comandos aquellos que pertenezcan al dominio especificado.
+    /// </summary>
+    /// <param name="domainName">Nombre del dominio (ALC).</param>
+    public void UnloadCommandsByDomain(string domainName)
+    {
+        var gesCom = _environment.HHost?.Services?.GetService(typeof(IHGesCom)) as IHGesCom
+                     ?? _environment.GetService<IHGesCom>();
         gesCom?.UnloadCommandsByDomain(domainName);
     }
 
@@ -340,8 +350,137 @@ public class HAssemblyManager : IhAssemblyManager
     public void LoadModule(string domainName)
     {
         Log.Info($"LoadModule for domain: {domainName}");
-        var gesCom = _environment.HHost.Services.GetService(typeof(IHGesCom)) as IHGesCom;
-        gesCom?.LoadCommandsByDomain(domainName);
+        LoadCommandsByDomain(domainName);
+    }
+
+    /// <summary>
+    /// Cargamos los comandos de los ensamblados asociados a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio (ALC).</param>
+    public void LoadCommandsByDomain(string domainName)
+    {
+        try
+        {
+            var processedAssemblies = new HashSet<string>();
+            var assembliesByDomain = this.AssembliesByDomain;
+
+            if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
+            {
+                Log.Info($"Cargando comandos para el dominio: {domainName}");
+                ProcessAssemblies(assemblies, domainName, processedAssemblies);
+            }
+            else
+            {
+                Log.Warn($"No se encontraron ensamblados para el dominio {domainName}");
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"Error en LoadCommandsByDomain para {domainName}: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Procesa una lista de ensamblados para buscar y cargar módulos de Horizonte.
+    /// </summary>
+    /// <param name="assemblies">Lista de ensamblados a procesar.</param>
+    /// <param name="domainName">Nombre del dominio (Application Load Context) al que pertenecen los ensamblados.</param>
+    /// <param name="processedAssemblies">Conjunto de nombres completos de ensamblados que ya han sido procesados para evitar duplicados.</param>
+    private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies)
+    {
+        var assembliesToProcess = new Queue<Assembly>(assemblies);
+        var gesCom = _environment.HHost?.Services?.GetService(typeof(IHGesCom)) as IHGesCom 
+                     ?? _environment.GetService<IHGesCom>();
+
+        while (assembliesToProcess.Count > 0)
+        {
+            var assembly = assembliesToProcess.Dequeue();
+            if (processedAssemblies.Contains(assembly.FullName!)) continue;
+            processedAssemblies.Add(assembly.FullName!);
+
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray()!;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
+                continue;
+            }
+
+            var modulostypes = (from type in types
+                                where Attribute.IsDefined(type, typeof(HorizonteModule))
+                                select type).ToList();
+
+            foreach (var modtype in modulostypes)
+            {
+                try
+                {
+                    if (modtype == null) continue;
+                    object? modInstance;
+                    try
+                    {
+                        Log.Info($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
+
+                        modInstance = CreateInstance(modtype);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
+                        continue;
+                    }
+
+                    var metodos = modtype.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
+                    foreach (var method in metodos)
+                    {
+                        if (modInstance != null)
+                        {
+                            AddCommandToGesCom(gesCom, method, modInstance, domainName);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.ToString());
+                }
+            }
+        }
+    }
+
+    private void AddCommandToGesCom(IHGesCom? gesCom, MethodInfo method, object instance, string domain)
+    {
+        if (gesCom == null) return;
+
+        var hAttrib = method.GetCustomAttribute<HorizonteCommand>();
+        if (hAttrib == null) return;
+
+        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false)
+            as HorizonteRole[] ?? []).ToList().Select(x => x.Role).ToList();
+
+        var miCmd = new HCommand
+        {
+            CommandKey = hAttrib.Key,
+            Description = hAttrib.Description,
+            CommandAction = method,
+            Instance = instance,
+            InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
+            InNames = method.GetParameters()
+                            .Where(x => x.Name != null)
+                            .Select(parameter => parameter.Name!)
+                            .ToList(),
+            OutType = method.ReturnType,
+            Roles = roleAttrib,
+            IsAsync = method.ReturnType == typeof(Task) ||
+                      (method.ReturnType.IsGenericType &&
+                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
+            Domain = domain
+        };
+        gesCom.RegisterCommand(miCmd);
     }
 
     public void LoadService(string domainName)

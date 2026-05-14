@@ -7,6 +7,12 @@ namespace Horizonte;
 public interface IHGesCom
 {
     /// <summary>
+    /// Carga e inicializa los módulos decorados con el atributo <see cref="HorizonteModule"/> 
+    /// desde los ensamblados del dominio de aplicación actual.
+    /// </summary>
+    public void LoadModules();
+
+    /// <summary>
     /// Inicializa varios módulos dentro del sistema ejecutando sus respectivos comandos de inicialización.
     /// </summary>
     /// <remarks>
@@ -102,6 +108,12 @@ public interface IHGesCom
     /// <param name="commandKey">El identificador único del comando.</param>
     /// <returns>La instancia de HCommand o null si no se encuentra.</returns>
     public HCommand? GetHCommand(string commandKey);
+
+    /// <summary>
+    /// Registra un comando en el sistema.
+    /// </summary>
+    /// <param name="command">El comando a registrar.</param>
+    public void RegisterCommand(HCommand command);
 
     /// <summary>
     /// Elimina los comandos asociados a un dominio específico y limpia las instancias creadas.

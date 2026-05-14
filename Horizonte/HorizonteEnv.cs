@@ -98,8 +98,8 @@ public class HorizonteEnv : IHorizonteEnv
     {
         try
         {
-            return HHost.Services.GetService<T>();
-
+            if (typeof(T) == typeof(IHGesCom) && _gescom != null) return (T?)_gescom;
+            return HHost != null ? HHost.Services.GetService<T>() : default;
         }
         catch (Exception e)
         {
@@ -280,6 +280,7 @@ public class HorizonteEnv : IHorizonteEnv
         try
         {
             _gescom = new HGesCom(this);
+            _gescom.LoadModules();
         }
         catch (Exception e)
         {
