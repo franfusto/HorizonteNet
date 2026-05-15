@@ -62,14 +62,14 @@ public class HorizonteEnv : IHorizonteEnv
         Stage1(); // Cargar contexto
         Stage2_pre(); // Crear andamio de enlace simbolicos
         Stage2(); // Cargar ensamblados
-        Stage3(); // Cargar moóulos 
-        
+        // Stage3 se mueve al StartAsync para asegurar que HHost esté disponible para la inyección de dependencias
     }
     
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
 
         Stage4(); // Crear Host
+        Stage3(); // Cargar módulos (ahora con HHost disponible)
         Stage5(); // Iniciar Módulos
         Stage6(); // Iniciar Workers
         Stage7(); // Iniciar Host 
@@ -279,7 +279,7 @@ public class HorizonteEnv : IHorizonteEnv
         _startlogger.Info("******** STAGE 3 - LOAD MODULES **********");
         try
         {
-            _gescom = new HGesCom(this);
+            if (_gescom == null) _gescom = new HGesCom(this);
             _gescom.LoadModules();
         }
         catch (Exception e)
@@ -327,7 +327,8 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHorizonteEnv>(this);
 
             //gestor de commandos
-            if (_gescom != null) _builder.Services.AddSingleton(_gescom);
+            if (_gescom == null) _gescom = new HGesCom(this);
+            _builder.Services.AddSingleton<IHGesCom>(_gescom);
             
             //scafolder
             if(_linkScafolder != null!) _builder.Services.AddSingleton<ISymLinkScafolder>(_linkScafolder);

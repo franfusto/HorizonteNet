@@ -20,6 +20,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
     private IHCredManager? _credManager;
     private ISymLinkScafolder? _linkScafolder;
     private IhAssemblyManager? _assemblyManager;
+
     //private IHModManager? _modManager;
 
     public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
@@ -63,6 +64,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         if(_credManager != null) builder.Services.AddSingleton(_credManager);
         if (_linkScafolder != null) builder.Services.AddSingleton(_linkScafolder);
         if (_assemblyManager != null) builder.Services.AddSingleton(_assemblyManager);
+        if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
        // if (_modManager != null) builder.Services.AddSingleton(_modManager);
        
         builder.Services.AddRazorComponents()

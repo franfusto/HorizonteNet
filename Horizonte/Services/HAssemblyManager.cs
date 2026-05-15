@@ -523,7 +523,12 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            // Intentar crear instancia con el constructor que acepta HorizonteEnv
+            if (_environment.HHost != null)
+            {
+                return ActivatorUtilities.CreateInstance(_environment.HHost.Services, type);
+            }
+
+            // Intentar crear instancia con el constructor que acepta HorizonteEnv (Fallback pre-host)
             return Activator.CreateInstance(type, _environment);
         }
         catch

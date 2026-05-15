@@ -75,6 +75,9 @@ public class HGesCom : IHGesCom
                 return;
             }
 
+            // Limpiamos comandos previos si los hubiera (útil para re-carga)
+            _commandList.Clear();
+
             var assembliesByDomain = assemblyManager.AssembliesByDomain;
             foreach (var domainName in assembliesByDomain.Keys)
             {
