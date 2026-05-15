@@ -23,7 +23,11 @@ class Program
             File.WriteAllText(contextname + ".json", text);
         }
 
-        var env = new HorizonteEnv(contextname, args); 
-        await env.StartAsync();
+        var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings { Args = args });
+        builder.ConfigureContext(contextname);
+
+        var host = builder.Build();
+        host.StartWorkers();
+        await host.RunAsync();
     }
 }

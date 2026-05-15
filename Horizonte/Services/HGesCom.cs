@@ -47,16 +47,16 @@ public class HGesCom : IHGesCom
     /// a los servicios, configuraciones y operaciones del entorno de Horizonte.
     /// Esta variable se utiliza para gestionar la carga de módulos, inicialización y registro de logs dentro de la clase HGesCom.
     /// </summary>
-    private readonly Lazy<IHorizonteEnv> _env;
+    private readonly Lazy<IhAssemblyManager> _assemblyManager;
 
     /// <summary>
     /// Una clase que implementa la interfaz IHGesCom, responsable de gestionar y ejecutar comandos
     /// dentro del entorno de Horizonte. Carga módulos de comandos, gestiona los comandos disponibles
     /// y facilita la interacción con estos comandos usando entradas basadas en objetos o JSON.
     /// </summary>
-    public HGesCom(IHorizonteEnv env)
+    public HGesCom(IServiceProvider serviceProvider)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _assemblyManager = new Lazy<IhAssemblyManager>(() => serviceProvider.GetRequiredService<IhAssemblyManager>());
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public class HGesCom : IHGesCom
     {
         try
         {
-            var assemblyManager = _env.Value.AssemblyManager;
+            var assemblyManager = _assemblyManager.Value;
             if (assemblyManager == null)
             {
                 Log.Error("IhAssemblyManager not found. Cannot load modules.");
@@ -457,7 +457,7 @@ public class HGesCom : IHGesCom
     {
         try
         {
-            var assemblyManager = _env.Value.AssemblyManager;
+            var assemblyManager = _assemblyManager.Value;
 
             if (assemblyManager == null)
             {

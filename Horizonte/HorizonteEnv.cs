@@ -57,12 +57,19 @@ public class HorizonteEnv : IHorizonteEnv
         _args = appargs;
         Contextname = contextname;
         StaticFileRegistry = new(this);
+        RootPath = Directory.GetCurrentDirectory();
 
-        Stage0(); // Registro de inicio
-        Stage1(); // Cargar contexto
-        Stage2_pre(); // Crear andamio de enlace simbolicos
-        Stage2(); // Cargar ensamblados
+        // Stage0(); // Registro de inicio
+        // Stage1(); // Cargar contexto
+        // Stage2_pre(); // Crear andamio de enlace simbolicos
+        // Stage2(); // Cargar ensamblados
         // Stage3 se mueve al StartAsync para asegurar que HHost esté disponible para la inyección de dependencias
+    }
+    
+    public void SetHost(IHost host)
+    {
+        HHost = host;
+        AssemblyManager = host.Services.GetService<IhAssemblyManager>();
     }
     
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -254,15 +261,6 @@ public class HorizonteEnv : IHorizonteEnv
     private void Stage2()
     {
         _startlogger.Info("******** STAGE 2 - LOAD ASSEMBLIES **********");
-        try
-        {
-            AssemblyManager = new HAssemblyManager(_modulesSettings, _linkScafolder, this);
-            //Assemblies = _assemblyManager.Assemblies;
-        }
-        catch (Exception e)
-        {
-            _startlogger.Error(e);
-        }
     }
 
 
@@ -279,7 +277,7 @@ public class HorizonteEnv : IHorizonteEnv
         _startlogger.Info("******** STAGE 3 - LOAD MODULES **********");
         try
         {
-            if (_gescom == null) _gescom = new HGesCom(this);
+            if (_gescom == null) _gescom = new HGesCom(HHost.Services);
             _gescom.LoadModules();
         }
         catch (Exception e)
@@ -327,7 +325,7 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHorizonteEnv>(this);
 
             //gestor de commandos
-            if (_gescom == null) _gescom = new HGesCom(this);
+            if (_gescom == null) _gescom = new HGesCom(_builder.Services.BuildServiceProvider());
             _builder.Services.AddSingleton<IHGesCom>(_gescom);
             
             //scafolder

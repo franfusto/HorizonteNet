@@ -38,6 +38,7 @@ public static class HostBuilderExtensions
     /// <param name="builder">La instancia de HostApplicationBuilder para la que se configurarán los trabajadores.</param>
     /// <param name="modset">La instancia de WorkerSettings que contiene los detalles de configuración para los trabajadores.</param>
     /// <param name="env">La instancia de IHorizonteEnv que representa el entorno en el cual se ejecutará la configuración.</param>
+    [Obsolete("Utilice IhWorkersManager.ConfigureWorkers() en su lugar.")]
     public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerSettings modset,
         IHorizonteEnv env)
     {

@@ -16,8 +16,8 @@ public class HAssemblyManager : IhAssemblyManager
     private static readonly ILog Log = LogManager.GetLogger(typeof(HAssemblyManager));
     private readonly ModulesSettings _settings;
     private List<string> _searchPaths = new List<string>();
-    private readonly SymLinkScafolder _linkScafolder;
-    private readonly HorizonteEnv _environment;
+    private readonly ISymLinkScafolder _linkScafolder;
+    private readonly IServiceProvider _serviceProvider;
     private string _installFolder = String.Empty;
     private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
     private List<BackgroundService> _dynamicServices = new List<BackgroundService>();
@@ -39,11 +39,11 @@ public class HAssemblyManager : IhAssemblyManager
 
     public event Action? DomainChanged;
 
-    public HAssemblyManager(ModulesSettings settings,SymLinkScafolder linkScafolder, HorizonteEnv environment)
+    public HAssemblyManager(ModulesSettings settings, ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
         _settings = settings;
         _linkScafolder = linkScafolder;
-        _environment = environment;
+        _serviceProvider = serviceProvider;
         SetUpAssemblyPaths();
         SetUpDomains();
         LoadModulesFromEnvironment();
@@ -158,7 +158,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             //registras assets
-            _environment.StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
+            _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
 
             // Procesar archivos .targets / .props para crear enlaces simbólicos
             try
@@ -306,8 +306,7 @@ public class HAssemblyManager : IhAssemblyManager
     /// <param name="domainName">Nombre del dominio (ALC).</param>
     public void UnloadCommandsByDomain(string domainName)
     {
-        var gesCom = _environment.HHost?.Services?.GetService(typeof(IHGesCom)) as IHGesCom
-                     ?? _environment.GetService<IHGesCom>();
+        var gesCom = _serviceProvider.GetService<IHGesCom>();
         gesCom?.UnloadCommandsByDomain(domainName);
     }
 
@@ -319,7 +318,8 @@ public class HAssemblyManager : IhAssemblyManager
         if (_domains.TryGetValue(domainName, out var alc))
         {
             var domainAssemblies = alc.Assemblies.ToList();
-            var services = _environment.HHost.Services.GetServices<BackgroundService>().ToList();
+            var hhost = _serviceProvider.GetService<IHorizonteEnv>()?.HHost;
+            var services = hhost?.Services.GetServices<BackgroundService>().ToList() ?? new List<BackgroundService>();
 
             foreach (var service in services)
             {
@@ -389,8 +389,7 @@ public class HAssemblyManager : IhAssemblyManager
     private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies)
     {
         var assembliesToProcess = new Queue<Assembly>(assemblies);
-        var gesCom = _environment.HHost?.Services?.GetService(typeof(IHGesCom)) as IHGesCom 
-                     ?? _environment.GetService<IHGesCom>();
+        var gesCom = _serviceProvider.GetService<IHGesCom>();
 
         while (assembliesToProcess.Count > 0)
         {
@@ -490,7 +489,8 @@ public class HAssemblyManager : IhAssemblyManager
 
         if (_domains.TryGetValue(domainName, out var alc))
         {
-            var workerSettings = _environment.GetService<IHContext>()?.Get<WorkerSettings>() ?? new WorkerSettings();
+            var hContext = _serviceProvider.GetService<IHContext>();
+            var workerSettings = hContext?.Get<WorkerSettings>() ?? new WorkerSettings();
             
             foreach (var workerSetting in workerSettings.List)
             {
@@ -523,13 +523,14 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            if (_environment.HHost != null)
+            var hEnv = _serviceProvider.GetService<IHorizonteEnv>();
+            if (hEnv?.HHost != null)
             {
-                return ActivatorUtilities.CreateInstance(_environment.HHost.Services, type);
+                return ActivatorUtilities.CreateInstance(hEnv.HHost.Services, type);
             }
 
-            // Intentar crear instancia con el constructor que acepta HorizonteEnv (Fallback pre-host)
-            return Activator.CreateInstance(type, _environment);
+            // Intentar crear instancia con el constructor que acepta IServiceProvider o default
+            return ActivatorUtilities.CreateInstance(_serviceProvider, type);
         }
         catch
         {
@@ -1089,7 +1090,7 @@ public class HAssemblyManager : IhAssemblyManager
                     alc.LoadFromAssemblyPath(dllPath);
                     
                     // Registrar assets del paquete
-                    _environment.StaticFileRegistry.RegisterPackageDirectory(dllPath);
+                    _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterPackageDirectory(dllPath);
 
                     // Procesar archivos .targets / .props para crear enlaces simbólicos
                     try
@@ -1147,7 +1148,7 @@ public class HAssemblyManager : IhAssemblyManager
                 var loadedassembly = alc.LoadFromAssemblyPath(fullPath);
 
                 // Agrega los activos y el archivo de documentación al entorno.
-                _environment.StaticFileRegistry.RegisterModuleDirectory(moduleItem);
+                _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterModuleDirectory(moduleItem);
                 //AddAssetsFolder(moduleItem);
             }
             else
