@@ -11,7 +11,9 @@ using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.DotNet.Interactive.Events;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 namespace Horizonte.Extensions.Interactive;
 
 public static class Extensions
@@ -28,14 +30,14 @@ public static class Extensions
     /// <returns>
     /// Una tarea asincrónica que, al completarse, devuelve una instancia de <c>CompositeKernel</c>.
     /// </returns>
-    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions, IHorizonteEnv env)
+    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions,IServiceProvider serviceProvider)
     {
         try
         {
             var csharpKernel = new Microsoft.DotNet.Interactive.CSharp.CSharpKernel();
 
             // Interceptar #r "nuget:..." y otros comandos específicos de Horizonte
-            csharpKernel.AddHorizonteMiddleware(env);
+            csharpKernel.AddHorizonteMiddleware(serviceProvider);
 
             // Obtener la versión del ensamblado Horizonte actualmente cargado
             var horizonteAssembly = typeof(IHorizonteEnv).Assembly;
@@ -44,7 +46,7 @@ public static class Extensions
             await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:{currenthorzonte.Name},{currenthorzonte.Version}\""));
             
             // Inyectar el entorno modular
-            await csharpKernel.SetValueAsync("henv", env, typeof(IHorizonteEnv));
+            await csharpKernel.SetValueAsync("ServiceProvider", serviceProvider, typeof(IServiceProvider));
 
             //aqui hay que implementar la función display para integrarla con el Widget...
             //await csharpKernel.SendAsync(new SubmitCode("static void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x, \"text/plain\");"));
@@ -68,7 +70,7 @@ public static class Extensions
         
     }
 
-    private static void AddHorizonteMiddleware(this Microsoft.DotNet.Interactive.CSharp.CSharpKernel csharpKernel, IHorizonteEnv env)
+    private static void AddHorizonteMiddleware(this Microsoft.DotNet.Interactive.CSharp.CSharpKernel csharpKernel, IServiceProvider serviceProvider)
     {
         csharpKernel.AddMiddleware(async (command, context, next) =>
         {
@@ -89,7 +91,8 @@ public static class Extensions
                     {
                         var packageName = nugetMatch.Groups[1].Value.Trim();
                         var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0"; // Versión por defecto si no se especifica
-                        var assemblyManager = env.GetService<IhAssemblyManager>();
+                        //HAssemblyManager assemblyManager = serviceProvider.GetService<IhAssemblyManager>();
+                        var assemblyManager = serviceProvider.GetService<IhAssemblyManager>() ;
                         if (assemblyManager != null)
                         {
                             var args = new ResolveEventArgs($"{packageName}, Version={version}");

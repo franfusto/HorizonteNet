@@ -16,6 +16,7 @@
 @inject IHorizonteEnv env
 @inject ILogger log
 @inject DialogService DialogService
+@inject IServiceProvider ServiceProvider
 
 <style>
     .markdown-container h1 {
@@ -218,7 +219,7 @@ else
             _kernel.Dispose();
         }
         var options = new KernelOptions(); // sacar de configuración
-        _kernel = await options.BuildKernelAsync(env);
+        _kernel = await options.BuildKernelAsync(ServiceProvider);
 
         _kernel.KernelEvents.Subscribe(OnKernelEvent);
         _isKernelLoaded = true;

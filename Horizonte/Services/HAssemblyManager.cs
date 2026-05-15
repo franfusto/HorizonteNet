@@ -527,11 +527,6 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            var hEnv = _serviceProvider.GetService<IHorizonteEnv>();
-            if (hEnv?.HHost != null)
-            {
-                return ActivatorUtilities.CreateInstance(hEnv.HHost.Services, type);
-            }
 
             // Intentar crear instancia con el constructor que acepta IServiceProvider o default
             return ActivatorUtilities.CreateInstance(_serviceProvider, type);
