@@ -7,27 +7,26 @@ namespace Horizonte.Samples.Gcalendar;
 [HorizonteModule("Hmod.Calendar")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+    private readonly IHCredManager _credManager;
     private ServiceCal? _calendarService;
     private GCalConfig _config;
-    private ILogger<PanelModulo>? _logger;
-    private IHCredManager? _credManager;
     
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHCredManager credManager)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
+        _context = context;
+        _credManager = credManager;
     }
 
     [HorizonteRole("init")]
     [HorizonteCommand("Calendar_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        var context = _env.Value.GetService<IHContext>();
-        _config = context?.Get<GCalConfig>() ?? new GCalConfig();
-        _credManager = _env.Value.GetService<IHCredManager>();
+        _config = _context.Get<GCalConfig>() ?? new GCalConfig();
         _calendarService = new ServiceCal(_config, _logger, _credManager);
-        _logger?.LogInformation("Módulo Google Calendar Inciciado");
+        _logger.LogInformation("Módulo Google Calendar Inciciado");
         return true;
     }
 

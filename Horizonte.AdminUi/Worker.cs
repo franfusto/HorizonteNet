@@ -13,31 +13,41 @@ namespace Horizonte.AdminUi;
 public sealed class Worker : BackgroundService, IHorizonteBackgroundService
 {
     private readonly IHorizonteEnv _env;
-    private ILogger? _log;
-    private IHGesCom? _gesCom;
-    private WebApplication _app;
-    private IHContext? _context;
-    private IHCredManager? _credManager;
-    private ISymLinkScafolder? _linkScafolder;
-    private IhAssemblyManager? _assemblyManager;
+    private readonly ILogger<Worker> _log;
+    private readonly IHGesCom _gesCom;
+    private readonly IHContext _context;
+    private readonly IHCredManager _credManager;
+    private readonly ISymLinkScafolder _linkScafolder;
+    private readonly IhAssemblyManager _assemblyManager;
+    private WebApplication? _app;
 
-    //private IHModManager? _modManager;
-
-    public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
+    public Worker(IHorizonteEnv env, 
+                  ILogger<Worker> log, 
+                  IHGesCom gesCom, 
+                  IHContext context, 
+                  IHCredManager credManager, 
+                  ISymLinkScafolder linkScafolder, 
+                  IhAssemblyManager assemblyManager,
+                  string serviceName, 
+                  bool runOnStart)
     {
         _env = env;
+        _log = log;
+        _gesCom = gesCom;
+        _context = context;
+        _credManager = credManager;
+        _linkScafolder = linkScafolder;
+        _assemblyManager = assemblyManager;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
     }
 
-
-
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _log?.LogInformation("Build and start AdminUi");
+        _log.LogInformation("Build and start AdminUi");
         string location = Assembly.GetExecutingAssembly().Location;
         string dir = Path.GetDirectoryName(location)!;
-        string url =_context?.Get<HGuiSettings>()?.AppUrl ?? "http://0.0.0.0:5000";
+        string url = _context.Get<HGuiSettings>()?.AppUrl ?? "http://0.0.0.0:5000";
         var builder = WebApplication.CreateSlimBuilder(
             new WebApplicationOptions
             {
@@ -45,42 +55,27 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
                 ContentRootPath = dir,
                 WebRootPath = Path.Combine(dir, "wwwroot")
             });
-        builder.Services.AddSingleton(_env);
-        if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
         
-        /////////////////
-       // builder.Services.addmo AddBlazorMonacoComponents();
-        /////////////////
-        if (_log != null)
-        {
-            builder.Logging.ClearProviders();
-            builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
-            builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
-            builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
-            //builder.Logging.SetMinimumLevel(LogLevel.Error);
-            builder.Services.AddSingleton(_log);
-        }
-        if (_context != null) builder.Services.AddSingleton(_context);
-        if(_credManager != null) builder.Services.AddSingleton(_credManager);
-        if (_linkScafolder != null) builder.Services.AddSingleton(_linkScafolder);
-        if (_assemblyManager != null) builder.Services.AddSingleton(_assemblyManager);
-        if (_gesCom != null) builder.Services.AddSingleton(_gesCom);
-       // if (_modManager != null) builder.Services.AddSingleton(_modManager);
-       
+        builder.Services.AddSingleton(_env);
+        builder.Services.AddSingleton(_gesCom);
+        builder.Services.AddSingleton((ILogger)_log);
+        builder.Services.AddSingleton(_context);
+        builder.Services.AddSingleton(_credManager);
+        builder.Services.AddSingleton(_linkScafolder);
+        builder.Services.AddSingleton(_assemblyManager);
+        
+        builder.Logging.ClearProviders();
+        builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+        builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+        builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
-        //builder.Services.AddBlazorMonacoComponents();
-        /*
-        builder.Services.AddBlazorMonacoComponents(config =>
-        {
-            //Change this to specify your own CDN. Must be a full URL. 
-            config.MonacoLoaderUrl = "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.js";
-        });
-        */
         builder.Services.AddScoped<HGuiSession>();
+        
         _app = builder.Build();
-       _app.UseHorizonteStaticFiles();
+        _app.UseHorizonteStaticFiles();
         _app.UseAntiforgery();
         _app.UseStaticFiles();
 
@@ -90,25 +85,17 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         return _app.RunAsync(url);
     }
 
-
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _log = _env?.HHost.Services.GetService<ILogger<Worker>>();
-        _gesCom = _env?.HHost.Services.GetService<IHGesCom>();
-        _context = _env?.HHost.Services.GetService<IHContext>();
-        _credManager = _env?.HHost.Services.GetService<IHCredManager>();
-        _linkScafolder = _env?.HHost.Services.GetService<ISymLinkScafolder>();
-        _assemblyManager = _env?.HHost.Services.GetService<IhAssemblyManager>();
-        //_modManager = _env?.HHost.Services.GetService<IHModManager>();
-        _log?.LogInformation("Starting Horizonte.AdminUi.Worker");
+        _log.LogInformation("Starting Horizonte.AdminUi.Worker");
         IsRunning = true;
         return base.StartAsync(cancellationToken);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
-        _log?.LogInformation("Ending Horizonte.AdminUi.Worker");
-        _app.StopAsync(cancellationToken);
+        _log.LogInformation("Ending Horizonte.AdminUi.Worker");
+        _app?.StopAsync(cancellationToken);
         IsRunning = false;
         return base.StopAsync(cancellationToken);
     }

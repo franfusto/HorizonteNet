@@ -23,33 +23,22 @@ public class PanelModulo
     /// Representa la interfaz del entorno modular utilizada por la clase PanelModulo en el framework Horizonte.
     /// Proporciona funcionalidad central y acceso a servicios modulares, recursos y operaciones del ciclo de vida.
     /// </summary>
-    private IHorizonteEnv? _env;
-
-    /// <summary>
-    /// Representa una instancia de la interfaz IHGesCom utilizada por la clase PanelModulo
-    /// para interactuar con los comandos y roles definidos dentro del sistema Horizonte.
-    /// Proporciona funcionalidades como inicialización de módulos, obtención de comandos por rol,
-    /// y ejecución de comandos específicos.
-    /// </summary>
-    private IHGesCom? _gesCom;
-
-    /// <summary>
-    /// Proporciona una instancia de registro específica para la clase PanelModulo.
-    /// Se utiliza para realizar el seguimiento, diagnóstico y registro de eventos dentro de la clase,
-    /// facilitando el análisis de problemas y el monitoreo del comportamiento del sistema.
-    /// </summary>
-    private ILogger<PanelModulo>? _logger;
+    private readonly IHorizonteEnv _env;
+    private readonly IHGesCom _gesCom;
+    private readonly ILogger<PanelModulo> _logger;
 
 
     /// <summary>
-    /// Representa un panel de módulo en el framework Horizonte que funciona como una interfaz 
+    /// Represent un panel de módulo en el framework Horizonte que funciona como una interfaz 
     /// entre un módulo y el entorno modular. Expone las funcionalidades del módulo 
     /// como comandos (HorizonteCommand), cada uno de los cuales tiene una clave única y, opcionalmente, 
     /// una descripción.
     /// </summary>
-    public PanelModulo(IHorizonteEnv enviorment)
+    public PanelModulo(IHorizonteEnv enviorment, IHGesCom gesCom, ILogger<PanelModulo> logger)
     {
         _env = enviorment;
+        _gesCom = gesCom;
+        _logger = logger;
     }
 
     /// <summary>
@@ -63,8 +52,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Init")]
     public bool Init()
     {
-        _logger = _env?.GetService<ILogger<PanelModulo>>();
-        _gesCom = _env?.GetService<IHGesCom>();
+        _logger.LogInformation("Módulo Horizonte Iniciado");
         return true;
     }
 
@@ -77,7 +65,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Reboot", Description = "Reinicia el sistema")]
     public void Reboot()
     {
-        _env?.Reboot();
+        _env.Reboot();
     }
 
     /// <summary>
@@ -87,7 +75,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Quit", description: "Cierra el sistema")]
     public void Quit()
     {
-        _env?.Quit();
+        _env.Quit();
     }
 
     //Memory Log
@@ -202,18 +190,18 @@ public class PanelModulo
     [HorizonteCommand("Workers_GetServicesRunning", "Obtiene la lista de Workers que se están ejecutando")]
     public List<RunningServiceInfo> Workers_GetServicesRunning()
     {
-        return _env?.HHost.Services.GetServices<BackgroundService>()
+        return _env.HHost.Services.GetServices<BackgroundService>()
             .Select(service => new RunningServiceInfo(
                 Typename: service.GetType().Name,
                 Isrunning: IsRunning(service),
                 Name: (service as IHorizonteBackgroundService)?.ServiceName ?? string.Empty))
-            .ToList() ?? new();
+            .ToList();
     }
 
     [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
     public List<Type> Workers_GetAvailablesServices()
     {
-        var assemblymanager = _env?.HHost.Services.GetService<IhAssemblyManager>();
+        var assemblymanager = _env.HHost.Services.GetService<IhAssemblyManager>();
         if (assemblymanager == null) return new List<Type>();
 
         var types = assemblymanager.Assemblies

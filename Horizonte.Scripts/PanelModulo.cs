@@ -8,17 +8,20 @@ namespace Horizonte.Scripts;
 [HorizonteModule("Horizonte.Scripts")]
 public class PanelModulo
 {
-    private ILogger<PanelModulo>? _logger;
-    private Lazy<IHorizonteEnv> _env;
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+    private readonly IHorizonteEnv _env;
 
     /// <summary>
     /// Clase que representa un módulo denominado "PanelModulo" dentro de la aplicación Horizonte.
     /// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
     /// modular de Horizonte, tales como inicializar servicios y registrar widgets personalizados.
     /// </summary>
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHorizonteEnv env)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
+        _context = context;
+        _env = env;
     }
 
     /// <summary>
@@ -33,11 +36,9 @@ public class PanelModulo
     [HorizonteCommand("Scripts_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        var context = _env.Value.GetService<IHContext>();
-        var config = context?.Get<ScriptsConfig>() ?? new ScriptsConfig();
+        var config = _context.Get<ScriptsConfig>() ?? new ScriptsConfig();
         LoadScriptModules(config);
-        _logger?.LogInformation("Módulo Scripts Inciciado");
+        _logger.LogInformation("Módulo Scripts Iniciado");
         return true;
     }
 
@@ -71,7 +72,7 @@ public class PanelModulo
     private void LoadScriptModules(ScriptsConfig config)
     {
         var scripts = config.Scripts;
-        scripts.LoadScriptModules(_env.Value);
+        scripts.LoadScriptModules(_env);
 
     }
 }

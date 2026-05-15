@@ -9,24 +9,22 @@ namespace Horizonte.AdminUi;
 [HorizonteModule("Horizonte.AdminUi")]
 public class PanelModulo
 {
-    private IHorizonteEnv _env;
-    private ILogger<PanelModulo>? _logger;
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
     private HGuiSettings? _settings;
-    private IHContext? _context;
 
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context)
     {
-        _env = env;
+        _logger = logger;
+        _context = context;
     }
 
     [HorizonteRole("init")]
     [HorizonteCommand("HorizonteGui_Init")]
     public bool Init()
     {
-        _logger = _env.GetService<ILogger<PanelModulo>>();
-        _context = _env.GetService<IHContext>();
-        _logger?.LogInformation("Horizonte.AdminUi Inciciado");
-        _settings = _context?.Get<HGuiSettings>();
+        _logger.LogInformation("Horizonte.AdminUi Inciciado");
+        _settings = _context.Get<HGuiSettings>();
         return true;
     }
 
@@ -51,7 +49,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
         }
     }
 
@@ -105,11 +103,11 @@ public class PanelModulo
                 { Caption = "Agente", Component = "AgentH_Agent", Icon = "smart_toy", Id = 10, ParentId = 0 });
 
 
-            _context?.Update(menu);
+            _context.Update(menu);
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
         }
     }
 }

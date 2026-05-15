@@ -8,18 +8,17 @@ using Horizonte.Samples.RazorApp.Pages;
 [HorizonteModule("Horizonte.Samples.RazorApp")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
-    private ILogger<PanelModulo>? _logger;
-    public PanelModulo(IHorizonteEnv env)
+    private readonly ILogger<PanelModulo> _logger;
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
     }
     
     [HorizonteRole("init")]
     [HorizonteCommand("RazorApp_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
+        _logger.LogInformation("Horizonte.Samples.RazorApp Iniciado");
         return true;
     }
     

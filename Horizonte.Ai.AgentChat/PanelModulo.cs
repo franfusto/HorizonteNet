@@ -6,19 +6,19 @@ namespace Horizonte.Ai.AgentChat;
 [HorizonteModule("Horizonte.Ai.AgentChat")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
-    private ILogger<PanelModulo>? _logger;
-    public PanelModulo(IHorizonteEnv env)
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
+        _context = context;
     }
     [HorizonteRole("init")]
     [HorizonteCommand("Horizonte.Ai.AgentChat_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        var context = _env.Value.GetService<IHContext>();
-        _logger?.LogInformation("Módulo Horizonte.Ai.AgentChat Iniciciado");
+        _logger.LogInformation("Módulo Horizonte.Ai.AgentChat Iniciado");
         return true;
     }
     [HorizonteRole("configpage")]

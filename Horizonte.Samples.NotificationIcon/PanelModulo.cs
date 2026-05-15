@@ -9,24 +9,25 @@ namespace Horizonte.Samples.NotificationIcon;
 public class PanelModulo
 {
 
-    private IHorizonteEnv _env;
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+    private readonly IHGesCom _gescom;
     private IconManager? _iconManager;
 
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHGesCom gescom)
     {
-        _env = env;
+        _logger = logger;
+        _context = context;
+        _gescom = gescom;
     }
 
     [HorizonteRole("init")]
     [HorizonteCommand("HNotiIcon_Init")]
     public bool Init()
     {
-        var logger = _env.GetService<ILogger<PanelModulo>>();
-        var context = _env.GetService<IHContext>();
-        var gescom = _env.GetService<IHGesCom>();
-        NotiIconSettings settings = context?.Get<NotiIconSettings>() ?? new NotiIconSettings();
-        _iconManager = new IconManager(settings,logger,gescom);
-        logger?.LogInformation("Horizonte.Samples.NotificationIcon Inciciado");
+        NotiIconSettings settings = _context.Get<NotiIconSettings>() ?? new NotiIconSettings();
+        _iconManager = new IconManager(settings, _logger, _gescom);
+        _logger.LogInformation("Horizonte.Samples.NotificationIcon Inciciado");
         return true;
     }
 

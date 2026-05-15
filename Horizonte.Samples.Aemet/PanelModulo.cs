@@ -16,19 +16,21 @@ namespace Horizonte.Samples.Aemet;
 [HorizonteModule("Horizonte.Samples.Aemet")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
-    private ILogger<PanelModulo>? _logger;
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+    private readonly IHCredManager _credManager;
     private AemetConfig? _config;
     private PrediccionesEspecificasApi? _prediccionesEspecificasApi = new PrediccionesEspecificasApi();
-    private IHCredManager? _credManager;
     
     private PrediccionesNormalizadasTextoApi?
         _prediccionesNormalizadasTextoApi = new PrediccionesNormalizadasTextoApi();
 
 
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHCredManager credManager)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
+        _context = context;
+        _credManager = credManager;
     }
 
     // module
@@ -37,12 +39,9 @@ public class PanelModulo
     [HorizonteCommand("Aemet_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        var context = _env.Value.GetService<IHContext>();
-        _credManager = _env.Value.GetService<IHCredManager>();
-        _config = context?.Get<AemetConfig>() ?? new AemetConfig();
+        _config = _context.Get<AemetConfig>() ?? new AemetConfig();
         ConfigureApi();
-        _logger?.LogInformation("Módulo Aemet Inciciado");
+        _logger.LogInformation("Módulo Aemet Inciciado");
         return true;
     }
 
@@ -68,7 +67,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -87,7 +86,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -106,7 +105,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -125,7 +124,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -143,7 +142,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -162,7 +161,7 @@ public class PanelModulo
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
             return "Se ha producido un error, no ha sido posible realizar la consulta.";
         }
     }
@@ -188,7 +187,7 @@ public class PanelModulo
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex.ToString());
+            _logger.LogError(ex.ToString());
             return error;
         }
     }
@@ -200,14 +199,14 @@ public class PanelModulo
         {
             if (_config == null) return;
             var apiconfig = new Configuration();
-            apiconfig.BasePath = _credManager?.GetCredential(_config.BaseUrl) ?? string.Empty;
-            apiconfig.AddApiKey("api_key", _credManager?.GetCredential(_config.ApiKey) ?? string.Empty );
+            apiconfig.BasePath = _credManager.GetCredential(_config.BaseUrl) ?? string.Empty;
+            apiconfig.AddApiKey("api_key", _credManager.GetCredential(_config.ApiKey) ?? string.Empty );
             _prediccionesEspecificasApi = new PrediccionesEspecificasApi(apiconfig);
             _prediccionesNormalizadasTextoApi = new PrediccionesNormalizadasTextoApi(apiconfig);
         }
         catch (Exception e)
         {
-            _logger?.LogError(e.ToString());
+            _logger.LogError(e.ToString());
         }
     }
 }

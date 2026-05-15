@@ -9,17 +9,16 @@ namespace Modulo2;
 [HorizonteModule("Horizonte.Samples.SampleComponent")]
 public class PanelModulo
 {
-    private IHorizonteEnv _env;
-    private ILogger<PanelModulo>? _logger;
-    public PanelModulo(IHorizonteEnv env)
+    private readonly ILogger<PanelModulo> _logger;
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
-        _env = env;
+        _logger = logger;
     }
     
     [HorizonteCommand("Modulo2_Command2")]
     public DateTime Command1()
     {
-       _logger?.LogInformation("desde el módulo 2");
+       _logger.LogInformation("desde el módulo 2");
        return  DateTime.Now;
     }
     
@@ -27,11 +26,8 @@ public class PanelModulo
     [HorizonteCommand("Modulo2_Init")]
     public bool Init()
     {
-        _logger =_env.GetService<ILogger<PanelModulo>>();
-       _logger?.LogInformation("Módulo 2 Inciciado");
-      
+       _logger.LogInformation("Módulo 2 Iniciado");
        return true;
-       
     }
 
     [HorizonteRole("configpage")]

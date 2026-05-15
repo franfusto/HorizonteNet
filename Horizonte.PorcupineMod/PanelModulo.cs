@@ -1,4 +1,5 @@
-﻿using Horizonte.PorcupineMod.Widgets;
+﻿using Horizonte;
+using Horizonte.PorcupineMod.Widgets;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte.PorcupineMod;
@@ -6,19 +7,19 @@ namespace Horizonte.PorcupineMod;
 [HorizonteModule("Horizonte.PorcupineMod")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
-    private ILogger<PanelModulo>? _logger;
-    public PanelModulo(IHorizonteEnv env)
+    private readonly ILogger<PanelModulo> _logger;
+    private readonly IHContext _context;
+
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
+        _context = context;
     }
     [HorizonteRole("init")]
     [HorizonteCommand("Porcupine_Init")]
     public bool Init()
     {
-        _logger = _env.Value.GetService<ILogger<PanelModulo>>();
-        var context = _env.Value.GetService<IHContext>();
-        _logger?.LogInformation("Módulo Porcupine Inciciado");
+        _logger.LogInformation("Módulo Porcupine Iniciado");
         return true;
     }
     /*

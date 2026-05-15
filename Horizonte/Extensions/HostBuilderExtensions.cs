@@ -61,7 +61,7 @@ public static class HostBuilderExtensions
             {
                 try
                 {
-                    if (Activator.CreateInstance(servicetype, env, workeritem.ServiceName,
+                    if (ActivatorUtilities.CreateInstance(builder.Services.BuildServiceProvider(), servicetype, env, workeritem.ServiceName,
                             workeritem.RunOnStart) is BackgroundService worker)
                     {
                         builder.Services.AddSingleton(worker);

@@ -2,6 +2,7 @@ using System.Text;
 using Horizonte;
 using Horizonte.WorkFlows.Widgets;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 
 namespace Horizonte.WorkFlows;
 
@@ -11,21 +12,22 @@ namespace Horizonte.WorkFlows;
 [HorizonteModule("Horizonte.WorkFlows")]
 public class PanelModulo
 {
-    private readonly IHorizonteEnv _env;
+    private readonly ILogger<PanelModulo> _logger;
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="env"></param>
-    public PanelModulo(IHorizonteEnv env)
+    /// <param name="logger"></param>
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
-        _env = env;
+        _logger = logger;
     }
 
     [HorizonteRole("init")]
     [HorizonteCommand("WorkFlows_Init")]
     public bool Init()
     {
+        _logger.LogInformation("Módulo Horizonte.WorkFlows Iniciado");
         return true;
     }
     

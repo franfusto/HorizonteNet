@@ -1,18 +1,22 @@
+using Horizonte;
+using Microsoft.Extensions.Logging;
+
 namespace Horizonte.Samples.ServiceApp;
 
 [HorizonteModule("Horizonte.Samples.ServiceApp")]
 public class PanelModulo
 {
-    private Lazy<IHorizonteEnv> _env;
-    public PanelModulo(IHorizonteEnv env)
+    private readonly ILogger<PanelModulo> _logger;
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
-        _env = new Lazy<IHorizonteEnv>(() => env);
+        _logger = logger;
     }
     
     [HorizonteRole("init")]
     [HorizonteCommand("ServiceApp_Init")]
     public bool Init()
     {
+        _logger.LogInformation("Horizonte.Samples.ServiceApp Iniciado");
         return true;
     }
     

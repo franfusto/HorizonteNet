@@ -7,12 +7,19 @@ namespace Horizonte.AdminUi.HorizonteSettings;
 [HorizonteModule("Horizonte.AdminUi.HorizonteSettings")]
 public class PanelModulo
 {
-    private IHorizonteEnv _env;
-    private ILogger<PanelModulo>? _logger;
+    private readonly ILogger<PanelModulo> _logger;
 
-    public PanelModulo(IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
-        _env = env;
+        _logger = logger;
+    }
+
+    [HorizonteRole("init")]
+    [HorizonteCommand("HorizonteConfig_Init")]
+    public bool Init()
+    {
+        _logger.LogInformation("Módulo Horizonte.AdminUi.HorizonteSettings Iniciado");
+        return true;
     }
 
     //widgets
