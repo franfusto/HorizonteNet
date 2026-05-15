@@ -19,14 +19,10 @@ namespace Horizonte;
 [HorizonteModule("Horizonte")]
 public class PanelModulo
 {
-    /// <summary>
-    /// Representa la interfaz del entorno modular utilizada por la clase PanelModulo en el framework Horizonte.
-    /// Proporciona funcionalidad central y acceso a servicios modulares, recursos y operaciones del ciclo de vida.
-    /// </summary>
-    private readonly IHorizonteEnv _env;
+
     private readonly IHGesCom _gesCom;
     private readonly ILogger<PanelModulo> _logger;
-
+    private IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Represent un panel de módulo en el framework Horizonte que funciona como una interfaz 
@@ -34,9 +30,9 @@ public class PanelModulo
     /// como comandos (HorizonteCommand), cada uno de los cuales tiene una clave única y, opcionalmente, 
     /// una descripción.
     /// </summary>
-    public PanelModulo(IHorizonteEnv enviorment, IHGesCom gesCom, ILogger<PanelModulo> logger)
+    public PanelModulo(IServiceProvider serviceProvider, IHGesCom gesCom, ILogger<PanelModulo> logger)
     {
-        _env = enviorment;
+        _serviceProvider = serviceProvider;
         _gesCom = gesCom;
         _logger = logger;
     }
@@ -65,7 +61,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Reboot", Description = "Reinicia el sistema")]
     public void Reboot()
     {
-        _env.Reboot();
+        //_env.Reboot();
     }
 
     /// <summary>
@@ -75,7 +71,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Quit", description: "Cierra el sistema")]
     public void Quit()
     {
-        _env.Quit();
+       // _env.Quit();
     }
 
     //Memory Log
@@ -190,7 +186,7 @@ public class PanelModulo
     [HorizonteCommand("Workers_GetServicesRunning", "Obtiene la lista de Workers que se están ejecutando")]
     public List<RunningServiceInfo> Workers_GetServicesRunning()
     {
-        return _env.HHost.Services.GetServices<BackgroundService>()
+        return _serviceProvider.GetServices<BackgroundService>()
             .Select(service => new RunningServiceInfo(
                 Typename: service.GetType().Name,
                 Isrunning: IsRunning(service),
@@ -201,7 +197,7 @@ public class PanelModulo
     [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
     public List<Type> Workers_GetAvailablesServices()
     {
-        var assemblymanager = _env.HHost.Services.GetService<IhAssemblyManager>();
+        var assemblymanager = _serviceProvider.GetService<IhAssemblyManager>();
         if (assemblymanager == null) return new List<Type>();
 
         var types = assemblymanager.Assemblies
@@ -253,7 +249,7 @@ public class PanelModulo
         try
         {
             // Obtenemos todos los servicios que implementan BackgroundService
-            var services = _env?.HHost.Services.GetServices<BackgroundService>() ??
+            var services = _serviceProvider.GetServices<BackgroundService>() ??
                            Enumerable.Empty<BackgroundService>();
 
             // Buscamos el servicio que implementa IHservice y cuyo nombre coincide
@@ -310,7 +306,7 @@ public class PanelModulo
         try
         {
             // Obtenemos todos los servicios que implementan BackgroundService
-            var services = _env?.HHost.Services.GetServices<BackgroundService>() ??
+            var services = _serviceProvider.GetServices<BackgroundService>() ??
                            Enumerable.Empty<BackgroundService>();
 
             // Buscamos el servicio que implementa IHservice y cuyo nombre coincide
@@ -351,7 +347,8 @@ public class PanelModulo
     [HorizonteCommand("Context_GetJsonContent", "obtiene el contenido el contexto de la aplicación")]
     public string Context_GetJsonContent()
     {
-        string fileContent = File.ReadAllText(_env!.Contextname + ".json");
+        //string fileContent = File.ReadAllText(_env!.Contextname + ".json"); // TODO: 
+        string fileContent = File.ReadAllText( "horizonte.json"); // TODO: 
         object? jsonObject = JsonSerializer.Deserialize<object>(fileContent);
         string formattedJsonString = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions
         {
@@ -367,7 +364,7 @@ public class PanelModulo
     [HorizonteCommand("Context_SetJsonContent", "Establece el contexto de la aplicación")]
     public void Context_SetJsonContent(string content)
     {
-        File.WriteAllText(_env!.Contextname + ".json", content);
+        File.WriteAllText("horizonte.json", content);//todo
     }
 
     /// <summary>

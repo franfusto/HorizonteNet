@@ -320,8 +320,8 @@ public class HAssemblyManager : IhAssemblyManager
         if (_domains.TryGetValue(domainName, out var alc))
         {
             var domainAssemblies = alc.Assemblies.ToList();
-            var hhost = _serviceProvider.GetService<IHorizonteEnv>()?.HHost;
-            var services = hhost?.Services.GetServices<BackgroundService>().ToList() ?? new List<BackgroundService>();
+            //var hhost = _serviceProvider.GetService<IHorizonteEnv>()?.HHost;
+            var services = _serviceProvider.GetServices<BackgroundService>().ToList() ?? new List<BackgroundService>();
 
             foreach (var service in services)
             {

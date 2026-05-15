@@ -12,15 +12,16 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
     public bool RunOnStart { get; set; }
    
     private WebApplication? _app;
-    private readonly IHorizonteEnv? _env;
     private ILogger? _log;
     private IHGesCom? _gesCom;
     private IHContext? _context;
     private ServiceConfig _config = new();
     
-    public WsWorker(IHorizonteEnv env, string serviceName, bool runOnStart)
+    public WsWorker(IServiceProvider serviceProvider, string serviceName, bool runOnStart)
     {
-        _env = env;
+        _log = serviceProvider?.GetService<ILogger<WsWorker>>();
+        _gesCom = serviceProvider?.GetService<IHGesCom>();
+        _context = serviceProvider?.GetService<IHContext>();
         //Horizonte.Samples.ServiceApp.WsWorker
         ServiceName = serviceName;
         RunOnStart = runOnStart;
@@ -71,9 +72,7 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _log = _env?.GetService<ILogger<WsWorker>>();
-        _gesCom = _env?.GetService<IHGesCom>();
-        _context = _env?.GetService<IHContext>();
+
         _config = _context?.Get<ServiceConfig>() ?? new ServiceConfig();
         
         _log?.LogInformation("Starting Web Service Worker");

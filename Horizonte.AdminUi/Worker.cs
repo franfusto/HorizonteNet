@@ -20,8 +20,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
     private readonly IhAssemblyManager _assemblyManager;
     private WebApplication? _app;
 
-    public Worker(IHorizonteEnv env, 
-                  ILogger<Worker> log, 
+    public Worker(ILogger<Worker> log, 
                   IHGesCom gesCom, 
                   IHContext context, 
                   IHCredManager credManager, 

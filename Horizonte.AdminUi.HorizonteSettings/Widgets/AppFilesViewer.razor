@@ -1,5 +1,4 @@
 @inject ISymLinkScafolder symlinkscafoler
-@inject IHorizonteEnv environment
 @inject IhAssemblyManager assemblyManager
 @using Blazor.Diagrams
 @using Blazor.Diagrams.Core.Anchors
@@ -171,7 +170,6 @@
 
     private void GetFileSystemData()
     {
-        _appPRootPath = environment.RootPath;
         _assembliesfilelist = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !string.IsNullOrEmpty(a.Location))
             .Select(a => a.Location)

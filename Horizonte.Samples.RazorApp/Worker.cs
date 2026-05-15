@@ -15,7 +15,6 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     public bool RunOnStart { get; set; }
     public string ServiceName { get; set; }
     
-    private readonly IHorizonteEnv _env;
     private ILogger? _log;
     private WebApplication app;
     private RazorAppConfig _config = new();
@@ -23,6 +22,7 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
 
     public BlazorWorker(IServiceProvider services,string serviceName,bool runOnStart)
     {
+        _log = services?.GetService<ILogger<BlazorWorker>>();
         _services = services;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
@@ -30,7 +30,7 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
 
     private void GetConfiguration()
     {
-        var context = _env.GetService<IHContext>();
+        var context = _services.GetService<IHContext>();
         _config = context?.Get<RazorAppConfig>() ?? new RazorAppConfig();
     }
 
@@ -69,7 +69,7 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         GetConfiguration();
-        _log = _env?.GetService<ILogger<BlazorWorker>>();
+        
         _log?.LogInformation("Iniciando RazorApp");
         return base.StartAsync(cancellationToken);
     }
