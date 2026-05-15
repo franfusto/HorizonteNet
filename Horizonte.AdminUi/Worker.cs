@@ -12,7 +12,6 @@ namespace Horizonte.AdminUi;
 
 public sealed class Worker : BackgroundService, IHorizonteBackgroundService
 {
-    private readonly IHorizonteEnv _env;
     private readonly ILogger<Worker> _log;
     private readonly IHGesCom _gesCom;
     private readonly IHContext _context;
@@ -31,7 +30,6 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
                   string serviceName, 
                   bool runOnStart)
     {
-        _env = env;
         _log = log;
         _gesCom = gesCom;
         _context = context;
@@ -56,7 +54,6 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
                 WebRootPath = Path.Combine(dir, "wwwroot")
             });
         
-        builder.Services.AddSingleton(_env);
         builder.Services.AddSingleton(_gesCom);
         builder.Services.AddSingleton((ILogger)_log);
         builder.Services.AddSingleton(_context);

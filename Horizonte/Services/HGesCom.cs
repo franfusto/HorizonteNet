@@ -42,11 +42,7 @@ public class HGesCom : IHGesCom
     /// </remarks>
     private readonly Dictionary<string, HCommand> _commandList = new();
 
-    /// <summary>
-    /// Una instancia cargada perezosamente (lazy-loaded) de la interfaz IHorizonteEnv, que proporciona acceso
-    /// a los servicios, configuraciones y operaciones del entorno de Horizonte.
-    /// Esta variable se utiliza para gestionar la carga de módulos, inicialización y registro de logs dentro de la clase HGesCom.
-    /// </summary>
+
     private readonly Lazy<IhAssemblyManager> _assemblyManager;
 
     /// <summary>

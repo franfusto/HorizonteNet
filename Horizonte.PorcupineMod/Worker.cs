@@ -10,7 +10,6 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     public string ServiceName { get; set; } = "Porcupine Service";
     public bool IsRunning { get; set; }
     public bool RunOnStart { get; set; }
-    private readonly IHorizonteEnv? _env;
     private ILogger? _log;
     private IHGesCom? _gesCom;
     private IHContext? _context;
@@ -20,9 +19,13 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     private PvRecorder _recorder;
     private IHCredManager? _credManager;
     
-    public Worker(IHorizonteEnv env, string serviceName, bool runOnStart)
+    public Worker(ILogger<Worker> logger,IHGesCom gesCom,IHContext context,IHCredManager credManager,  string serviceName, bool runOnStart)
     {
-        _env = env;
+        _log = logger;
+        _gesCom = gesCom;
+        _context = context;
+        _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
+        _credManager = credManager;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
     }
@@ -77,11 +80,7 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     {
         try
         {
-            _log = _env?.GetService<ILogger<Worker>>();
-            _gesCom = _env?.GetService<IHGesCom>();
-            _context = _env?.GetService<IHContext>();
-            _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
-            _credManager = _env?.GetService<IHCredManager>();
+
             _log?.LogInformation("Starting Service Porcupine");
             IsRunning = true;
 

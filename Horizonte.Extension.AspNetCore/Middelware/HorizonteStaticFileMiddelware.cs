@@ -16,8 +16,8 @@ public class HorizonteStaticFileMiddelware
     private readonly ILogger<HorizonteStaticFileMiddelware> _logger;
     private readonly IFileProvider _fileProvider;
     private readonly IContentTypeProvider _contentTypeProvider;
+    private readonly IhAssemblyManager _assemblyManager;
 
-    private readonly IHorizonteEnv _env;
 
     /// <summary>
     /// Creates a new instance of the StaticFileMiddleware.
@@ -27,20 +27,20 @@ public class HorizonteStaticFileMiddelware
     /// <param name="options">The configuration options.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
     public HorizonteStaticFileMiddelware(RequestDelegate next, IWebHostEnvironment hostingEnv,
-        IOptions<StaticFileOptions> options, IHorizonteEnv env, ILogger<HorizonteStaticFileMiddelware> logger)
+        IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger,IhAssemblyManager assemblyManager)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(hostingEnv);
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(env);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(assemblyManager);
+        _assemblyManager = assemblyManager;
         _next = next;
         _options = options.Value;
         _contentTypeProvider = _options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
-        _fileProvider = _options.FileProvider ?? ResolveFileProvider(hostingEnv);
         _matchUrl = _options.RequestPath;
         _logger = logger;
-        _env = env;
+        _fileProvider = _options.FileProvider ?? ResolveFileProvider(hostingEnv);
 
         // See HostingEnvironmentExtensions.Initialize
         if (_fileProvider is NullFileProvider && _fileProvider == hostingEnv.WebRootFileProvider)
@@ -134,7 +134,7 @@ public class HorizonteStaticFileMiddelware
     private async Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
     {
         if (subPath.Value == null) return;
-        FileInfo? fileInfo = _env.StaticFileRegistry.GetFile(subPath.Value);
+        FileInfo? fileInfo = _assemblyManager.StaticFileRegistry.GetFile(subPath.Value);
         if (fileInfo != null)
         {
             context.Response.ContentType = contentType;

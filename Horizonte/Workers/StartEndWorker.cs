@@ -40,17 +40,7 @@ public class StartEndWorker : BackgroundService, IHorizonteBackgroundService
     /// </summary>
     public string ServiceName { get; set; }
 
-    /// <summary>
-    /// Representa la interfaz de entorno utilizada por el StartEndWorker para los servicios del host,
-    /// la configuración del entorno y las funciones de utilidad.
-    /// </summary>
-    /// <remarks>
-    /// La variable _env es una instancia de la interfaz IHorizonteEnv, que proporciona acceso
-    /// a la instancia del host, las rutas raíz de la aplicación, los directorios de activos,
-    /// las configuraciones de inicio y los métodos de gestión de servicios. Es fundamental para
-    /// ejecutar operaciones del ciclo de vida del servicio y recuperar dependencias del contenedor de servicios.
-    /// </remarks>
-    private readonly IHorizonteEnv _env;
+
 
     /// <summary>
     /// Representa la instancia del registrador utilizada por el StartEndWorker para registrar información, advertencias, errores
@@ -92,19 +82,13 @@ public class StartEndWorker : BackgroundService, IHorizonteBackgroundService
     /// </summary>
     private SeCommandsSettings _seCommandsSettings = new ();
 
-    /// <summary>
-    /// Representa un servicio en segundo plano que ejecuta lógica personalizada en puntos específicos de su ciclo de vida, incluyendo el inicio y el apagado.
-    /// </summary>
-    /// <remarks>
-    /// La clase StartEndWorker extiende la clase BackgroundService e implementa la interfaz IHservice para proporcionar comportamiento de ciclo de vida de inicio y detención.
-    /// Utiliza dependencias inyectadas a través del constructor al ser creada, como IHorizonteEnv para operaciones relacionadas con el entorno, 
-    /// e interactúa con otras clases de servicio como IHContext y IHGesCom para la gestión de datos contextuales y la comunicación.
-    /// StartEndWorker también admite configuraciones personalizables que incluyen su nombre, el comportamiento de inicio mediante la propiedad RunOnStart,
-    /// y rastrea su estado de ejecución con la propiedad IsRunning.
-    /// </remarks>
-    public StartEndWorker(IHorizonteEnv env, string serviceName, bool runOnStart)
+
+    public StartEndWorker(ILogger<FakeWorker> logger,IHContext context,IHGesCom gesCom, string serviceName, bool runOnStart)
     {
-        _env = env;
+        _log = logger;
+        _context = context;
+        _seCommandsSettings = _context?.Get<SeCommandsSettings>() ?? new SeCommandsSettings();
+        _gesCom = gesCom;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
         ServiceName = serviceName;
@@ -148,10 +132,7 @@ public class StartEndWorker : BackgroundService, IHorizonteBackgroundService
     /// </returns>
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _log = _env.HHost.Services.GetService<ILogger<FakeWorker>>();
-        _context = _env.HHost.Services.GetService<IHContext>();
-        _seCommandsSettings = _context?.Get<SeCommandsSettings>() ?? new SeCommandsSettings();
-        _gesCom = _env.HHost.Services.GetService<IHGesCom>();
+
         IsRunning = true;
         return base.StartAsync(cancellationToken);
     }

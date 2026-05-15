@@ -25,7 +25,7 @@ public class HorizonteEnv : IHorizonteEnv
     public IHost HHost { get; private set; }
     public string RootPath { get; private set; }
     public string Contextname { get; private set; }
-    public StaticFileRegistry StaticFileRegistry { get; set; }
+    //public StaticFileRegistry StaticFileRegistry { get; set; }
    // public UnmanagedDllResolver UnmanagedDllResolver { get; set; }
     public IhAssemblyManager? AssemblyManager { get; set; }
 
@@ -56,7 +56,7 @@ public class HorizonteEnv : IHorizonteEnv
 
         _args = appargs;
         Contextname = contextname;
-        StaticFileRegistry = new(this);
+        //StaticFileRegistry = new(this);
         RootPath = Directory.GetCurrentDirectory();
 
         // Stage0(); // Registro de inicio

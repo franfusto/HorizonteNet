@@ -19,10 +19,11 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     private ILogger? _log;
     private WebApplication app;
     private RazorAppConfig _config = new();
+    private IServiceProvider _services;
 
-    public BlazorWorker(IHorizonteEnv env,string serviceName,bool runOnStart)
+    public BlazorWorker(IServiceProvider services,string serviceName,bool runOnStart)
     {
-        _env = env;
+        _services = services;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
     }
@@ -53,7 +54,7 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
             builder.Services.AddSingleton(_log);
         }
         builder.Services.AddSingleton<WeatherForecastService>();
-        builder.Services.AddHorizonteLegacyServices(_env); //-> Add Horizonte services
+        builder.Services.AddHorizonteLegacyServices(_services); //-> Add Horizonte services
         builder.Services.AddRadzenComponents();
         app = builder.Build();
         app.UseHorizonteStaticFiles(); //-> Add Horizonte static files

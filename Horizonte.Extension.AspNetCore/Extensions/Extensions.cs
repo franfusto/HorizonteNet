@@ -9,21 +9,20 @@ public static class Extensions
     }
 
     public static IServiceCollection AddHorizonteLegacyServices(
-        this IServiceCollection services, IHorizonteEnv instanceEnv)
+        this IServiceCollection services, IServiceProvider legacyServiceProvider)
         
     {
-        services.AddSingleton<IHorizonteEnv>( instanceEnv);
 
-        var context = instanceEnv.GetService<IHContext>();
+        var context = legacyServiceProvider. GetService<IHContext>();
         if (context != null) services.AddSingleton<IHContext>(context);
         
-        var trans = instanceEnv.GetService<IHtrans>();
+        var trans = legacyServiceProvider.GetService<IHtrans>();
         if (trans != null) services.AddSingleton<IHtrans>(trans);        
         
-        var gescom = instanceEnv.GetService<IHGesCom>();
+        var gescom = legacyServiceProvider.GetService<IHGesCom>();
         if (gescom != null) services.AddSingleton<IHGesCom>(gescom); 
         
-        var symLinkScafolder = instanceEnv.GetService<ISymLinkScafolder>();
+        var symLinkScafolder = legacyServiceProvider.GetService<ISymLinkScafolder>();
         if (symLinkScafolder != null) services.AddSingleton<ISymLinkScafolder>(symLinkScafolder);   
         
         /*

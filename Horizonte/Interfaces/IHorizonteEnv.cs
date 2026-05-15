@@ -13,7 +13,7 @@ public interface IHorizonteEnv
     string RootPath { get; }
     Task Quit();
     Task Reboot();
-    public StaticFileRegistry StaticFileRegistry { get; }
+    //public StaticFileRegistry StaticFileRegistry { get; }
     public void AddOnStartWorker(BackgroundService obj);
     public  string Contextname { get;  }
     public T? GetService<T>();

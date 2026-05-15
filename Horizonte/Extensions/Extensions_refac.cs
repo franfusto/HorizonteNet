@@ -34,9 +34,10 @@ public static class Extensions_refac
         hostBuilder.Services.AddSingleton<IHtrans, Htrans>();
         
         // Registramos HorizonteEnv como servicio (legado/wrapper)
-        hostBuilder.Services.AddSingleton<IHorizonteEnv>(sp => new HorizonteEnv(contextName, hostBuilder.Configuration["args"]?.Split(' ') ?? Array.Empty<string>()));
+       hostBuilder.Services.AddSingleton<IHorizonteEnv>(sp => new HorizonteEnv(contextName, hostBuilder.Configuration["args"]?.Split(' ') ?? Array.Empty<string>()));
+        
         var modulesSettings = hContext.Get<ModulesSettings>() ?? new ModulesSettings();
-        hostBuilder.Services.AddSingleton(modulesSettings);
+       hostBuilder.Services.AddSingleton(modulesSettings);
         
         var workerSettings = hContext.Get<WorkerSettings>() ?? new WorkerSettings();
         hostBuilder.Services.AddSingleton(workerSettings);

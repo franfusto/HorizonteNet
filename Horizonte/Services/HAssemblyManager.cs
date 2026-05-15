@@ -22,7 +22,8 @@ public class HAssemblyManager : IhAssemblyManager
     private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
     private List<BackgroundService> _dynamicServices = new List<BackgroundService>();
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
-
+    public StaticFileRegistry StaticFileRegistry { get; private set; }
+    
     public Dictionary<string, List<Assembly>> AssembliesByDomain
     {
         get
@@ -41,6 +42,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public HAssemblyManager(ModulesSettings settings, ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
+        StaticFileRegistry = new StaticFileRegistry();
         _settings = settings;
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
@@ -158,7 +160,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             //registras assets
-            _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
+            StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
 
             // Procesar archivos .targets / .props para crear enlaces simbólicos
             try
@@ -518,6 +520,8 @@ public class HAssemblyManager : IhAssemblyManager
             }
         }
     }
+
+   
 
     public object? CreateInstance(Type type)
     {
@@ -1090,7 +1094,7 @@ public class HAssemblyManager : IhAssemblyManager
                     alc.LoadFromAssemblyPath(dllPath);
                     
                     // Registrar assets del paquete
-                    _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterPackageDirectory(dllPath);
+                    StaticFileRegistry.RegisterPackageDirectory(dllPath);
 
                     // Procesar archivos .targets / .props para crear enlaces simbólicos
                     try
@@ -1148,7 +1152,7 @@ public class HAssemblyManager : IhAssemblyManager
                 var loadedassembly = alc.LoadFromAssemblyPath(fullPath);
 
                 // Agrega los activos y el archivo de documentación al entorno.
-                _serviceProvider.GetService<IHorizonteEnv>()?.StaticFileRegistry.RegisterModuleDirectory(moduleItem);
+                StaticFileRegistry.RegisterModuleDirectory(moduleItem);
                 //AddAssetsFolder(moduleItem);
             }
             else

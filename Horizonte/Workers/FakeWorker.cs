@@ -15,12 +15,11 @@ public class FakeWorker : BackgroundService, IHorizonteBackgroundService
     public bool RunOnStart { get; set; }
     public string ServiceName { get; set; }
     
-    private readonly IHorizonteEnv? _env;
     private ILogger? _log;
 
-    public FakeWorker(IHorizonteEnv env,string serviceName,bool runOnStart)
+    public FakeWorker(ILogger<FakeWorker> logger,string serviceName,bool runOnStart)
     {
-        _env = env;
+        _log = logger;
         ServiceName = serviceName;
         RunOnStart = runOnStart;
     }
@@ -45,7 +44,7 @@ public class FakeWorker : BackgroundService, IHorizonteBackgroundService
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _log = _env?.GetService<ILogger<FakeWorker>>();
+       
         _log?.LogInformation("Iniciando FakeWorker");
         return base.StartAsync(cancellationToken);
     }

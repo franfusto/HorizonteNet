@@ -38,7 +38,7 @@ public class StaticFileRegistry
     /// Proporciona funciones para vincular directorios específicos de paquetes y módulos,
     /// así como para recuperar archivos estáticos basados en una ruta dada.
     /// </summary>
-    public StaticFileRegistry(IHorizonteEnv env)
+    public StaticFileRegistry()
     {
     }
 

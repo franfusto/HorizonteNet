@@ -28,7 +28,8 @@ public interface IhAssemblyManager
     public void UnloadService(string domainName);
     public void LoadModule(string domainName);
     public void LoadService(string domainName);
-
+    public StaticFileRegistry StaticFileRegistry { get; }
+    
     public void UnloadCommandsByDomain(string domainName);
     public void LoadCommandsByDomain(string domainName);
 

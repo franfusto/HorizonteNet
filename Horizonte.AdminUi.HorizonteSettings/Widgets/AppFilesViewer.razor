@@ -1,5 +1,6 @@
 @inject ISymLinkScafolder symlinkscafoler
 @inject IHorizonteEnv environment
+@inject IhAssemblyManager assemblyManager
 @using Blazor.Diagrams
 @using Blazor.Diagrams.Core.Anchors
 @using Blazor.Diagrams.Core.Models
@@ -181,7 +182,7 @@
             .ToList();
 
 
-        _webcontentfilelist = environment.StaticFileRegistry.Files.
+        _webcontentfilelist = assemblyManager.StaticFileRegistry.Files.
             Select(x => Path.Combine(_appPRootPath,  x.Key.TrimStart('/').TrimStart('\\'))).ToList();
 
         _appfileslist = Directory.EnumerateFileSystemEntries(_appPRootPath,
