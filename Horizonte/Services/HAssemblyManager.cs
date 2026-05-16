@@ -127,6 +127,22 @@ public class HAssemblyManager : IhAssemblyManager
             
             var (name, version) = ParseAssemblyName(args.Name);
             
+            ///
+            var alreadyLoaded = Assemblies.FirstOrDefault(a =>
+                string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+
+            if (alreadyLoaded != null)
+            {
+                return alreadyLoaded;
+            }
+
+            if (AssemblyHelpers.ShouldSkipNuGetResolution(name))
+            {
+                Log.Info($"Skipping NuGet resolution for runtime assembly: {name}");
+                return null;
+            }
+            ////
+
             //try load from local directory
             resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, true);
             //

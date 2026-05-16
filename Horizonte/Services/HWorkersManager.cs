@@ -11,21 +11,24 @@ public class HWorkersManager : IhWorkersManager
     private readonly IHContext _context;
     private readonly ILogger<HWorkersManager> _logger;
     private readonly List<BackgroundService> _managedWorkers = new();
+    private readonly IhAssemblyManager _assemblyManager;
 
     public HWorkersManager(IServiceProvider serviceProvider, IHContext context, ILogger<HWorkersManager> logger)
     {
         _serviceProvider = serviceProvider;
         _context = context;
         _logger = logger;
+        _assemblyManager = _serviceProvider.GetService<IhAssemblyManager>();
     }
 
     public void ConfigureWorkers()
     {
+        _managedWorkers.Clear();
         var workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
-        var assemblyManager = _serviceProvider.GetService<IhAssemblyManager>();
 
         foreach (var workerItem in workerSettings.List.OrderBy(item => item.Order))
         {
+            /*
             Type? serviceType = Type.GetType(workerItem.WorkerType);
             
             if (serviceType == null && assemblyManager != null)
@@ -36,6 +39,22 @@ public class HWorkersManager : IhWorkersManager
                     .Select(a => a.GetType(typeName))
                     .FirstOrDefault(t => t != null);
             }
+            */
+            var typeName = workerItem.WorkerType.Split(',')[0].Trim();
+            Type? serviceType = null;
+
+            if (_assemblyManager != null)
+            {
+                serviceType = _assemblyManager.Assemblies
+                    .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
+                    .FirstOrDefault(t => t != null);
+            }
+
+            serviceType ??= AppDomain.CurrentDomain.GetAssemblies()
+                .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
+                .FirstOrDefault(t => t != null);
+
+            serviceType ??= Type.GetType(workerItem.WorkerType, throwOnError: false);
 
             if (serviceType != null)
             {
@@ -68,7 +87,8 @@ public class HWorkersManager : IhWorkersManager
             if (worker is IHorizonteBackgroundService hService && hService.RunOnStart)
             {
                 _logger.LogInformation($"Iniciando worker: {hService.ServiceName}");
-                worker.StartAsync(CancellationToken.None);
+                //worker.StartAsync(CancellationToken.None);
+                worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
             }
             else
             {
