@@ -26,13 +26,7 @@ namespace Horizonte
         }
     }
 
-    /// <summary>
-    /// Atributo utilizado para marcar una clase como una opción de configuración dentro del marco Horizonte.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public class HConfigOption : Attribute
-    {
-    }
+
 
     /// <summary>
     /// Atributo para definir un comando en Horizonte. Este comando puede ser ejecutado y contiene metadata como una clave y descripción.

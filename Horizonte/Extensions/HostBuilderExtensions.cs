@@ -1,5 +1,6 @@
 using System.Runtime.Loader;
 using Horizonte.Services;
+using Horizonte.Settings;
 using log4net;
 using log4net.Appender;
 using log4net.Core;

@@ -1,4 +1,5 @@
 using Horizonte.Services;
+using Horizonte.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,25 +47,24 @@ public static class EnvExtensions
     public static void ConfigureContext(this HostApplicationBuilder hostBuilder, string contextName = "",
         string rootPath = "")
     {
-        //0. Establecemos ruta de trabajo
+        // Establecemos ruta de trabajo
         if (string.IsNullOrEmpty(rootPath)) rootPath = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])!;
         Directory.SetCurrentDirectory(rootPath);
     
-        // 1. Cargamos contexto
+        // Cargamos contexto
         if (string.IsNullOrEmpty(contextName)) contextName = ContextNameKey;
         var hContext = new HContext(contextName, rootPath);
         hostBuilder.Services.AddSingleton<IHContext>(hContext);
 
-        // 2. Configuramos logger
+        // Configuramos logger
         var log4NetSettings = hContext.Get<Log4NetSettings>() ?? new Log4NetSettings();
         log4NetSettings.Configure();
         hostBuilder.Logging.ClearProviders();
         hostBuilder.Logging.AddLog4Net(new Log4NetProviderOptions() { ExternalConfigurationSetup = true });
 
-        // 3. Cargamos gestores principales
+        // Cargamos gestores principales
         hostBuilder.Services.AddSingleton<IHCredManager, HCredManager>();
         hostBuilder.Services.AddSingleton<ISymLinkScafolder, SymLinkScafolder>();
-        hostBuilder.Services.AddSingleton<IHtrans, Htrans>();
         hostBuilder.Services.AddSingleton<IhAssemblyManager, HAssemblyManager>();
         hostBuilder.Services.AddSingleton<IHGesCom, HGesCom>();
         hostBuilder.Services.AddSingleton<IhWorkersManager, HWorkersManager>();
