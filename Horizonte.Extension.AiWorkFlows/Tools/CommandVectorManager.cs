@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using OpenAI;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace Horizonte.Ai.Agent;
 
 public class CommandVectorManager
@@ -20,11 +20,11 @@ public class CommandVectorManager
     private List<ActiveCommandDefinition> _activeCommands = new();
     private Microsoft.Extensions.VectorData.VectorStoreCollection<int, CommandVectorRecord>? _commandVectorCollection;
     private readonly string _embedderModel;
-    public CommandVectorManager(IHorizonteEnv env, OpenAIClient openAiClient, string embedderModel )
+    public CommandVectorManager(IServiceProvider serviceProvider, OpenAIClient openAiClient, string embedderModel )
     {
         _embedderModel = embedderModel;
-        _commandManager =env.GetService<IHGesCom>()! ;
-        _logService = env.GetService<ILoggerFactory>()!.CreateLogger<CommandVectorManager>();
+        _commandManager =serviceProvider.GetService<IHGesCom>()! ;
+        _logService = serviceProvider.GetService<ILoggerFactory>()!.CreateLogger<CommandVectorManager>();
         _openAiClient = openAiClient;
         //Task.Run(InitializeManagerAsync);
         //_logService.LogInformation("Inicializando CommandVectorManager...");

@@ -51,7 +51,7 @@
         var env = Context.Get<IHorizonteEnv>() ?? ServiceProvider.GetService<IHorizonteEnv>();
         if (env != null)
         {
-            await _config.Scripts.LoadScriptModules(env);
+            await _config.Scripts.LoadScriptModules(ServiceProvider);
         }
     }
 

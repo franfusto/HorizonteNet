@@ -12,10 +12,10 @@
 @using ChatResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat
 @inject IHGesCom GesCom
 @inject IHCredManager CredManager
-@inject IHorizonteEnv HorizonteEnv
 @inject DialogService DialogService
 @inject IHContext Context
 @inject  ILogger<ChatWidget> Logger
+@inject  IServiceProvider serviceprovider
 
 <RadzenStack Style="width: 100%; height: 100%;" Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
 
@@ -112,7 +112,7 @@ Serializa la respuesta en Output usando el siguiente formato para la salida estr
 
         _chatconfig.AgentDef.Instructions += AGENT_OUTPUT_FORMAT;
 
-        HCommandToolSet toolSet = new(HorizonteEnv, client, _chatconfig.AgentDef.EmbedderModel);
+        HCommandToolSet toolSet = new(serviceprovider, client, _chatconfig.AgentDef.EmbedderModel);
         IList<AITool> tools = new[]
         {
             toolSet.GetSystemTime(),

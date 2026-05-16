@@ -172,7 +172,7 @@ public static class Extensions
     }
 
 
-    public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef, IHorizonteEnv env)
+    public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef,IhAssemblyManager assemblyManager)
     {
         var response = new ScriptDefCompileResponse();
         try
@@ -181,7 +181,6 @@ public static class Extensions
             var lines = code.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             var cleanCodeLines = new List<string>();
             var additionalReferences = new List<MetadataReference>();
-            var assemblyManager = env.GetService<IhAssemblyManager>();
 
             foreach (var line in lines)
             {
@@ -362,29 +361,29 @@ public static class Extensions
         return response;
     }
 
-    public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IHorizonteEnv env)
+    public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IServiceProvider serviceProvider)
     {
-        var  logger = env.GetService<ILogger<PanelModulo>>();
+        var  logger = serviceProvider.GetService<ILogger<PanelModulo>>();
         try
         {
             var scriptasmlist = new List<byte[]>();
             foreach (var script in scriptDefs.Where(x=> x.Active))
             {
                 logger?.LogInformation($"Loading script {script.Name}...");
-                var compileresponse = await script.Compile(env);
+                var compileresponse = await script.Compile(serviceProvider.GetService<IhAssemblyManager>());
                 var asm =  compileresponse.Assembly;
                 if (asm.Length>0) scriptasmlist.Add(asm);
             }
             if (scriptasmlist.Count==0) return;
 
-            var asmmanager = env.GetService<IhAssemblyManager>();
+            var asmmanager = serviceProvider.GetService<IhAssemblyManager>();
             if (asmmanager != null)
             {
                 asmmanager.UnloadDomain("scripts");
                 asmmanager.LoadDomain("scripts", scriptasmlist);
                 
                 // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
-                var gesCom = env.GetService<IHGesCom>();
+                var gesCom = serviceProvider.GetService<IHGesCom>();
                 if (gesCom != null)
                 {
                     foreach (var item in gesCom.GetRoleCommands("init"))

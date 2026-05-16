@@ -2,8 +2,8 @@
 @using Radzen
 @using Radzen.Blazor
 @inject IHContext Context
-@inject IHorizonteEnv HorizonteEnv
 @inject DialogService DialogService
+@inject IhAssemblyManager AssemblyManager
 @using BlazorMonaco
 @using BlazorMonaco.Editor
 @using BlazorMonaco.Languages
@@ -136,7 +136,7 @@ else
     private async Task OnCompile()
     {
         if (Script == null) return;
-        var res = await Script.Compile(HorizonteEnv);
+        var res = await Script.Compile(AssemblyManager);
         if (res.Errors.Count() == 0)
         {
             await DialogService.Alert("Script compilado correctamente", "Éxito");

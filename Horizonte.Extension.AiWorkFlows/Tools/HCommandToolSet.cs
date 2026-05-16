@@ -3,7 +3,7 @@ using Horizonte.Ai.Agent;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace Horizonte.Extension.AiWorkFlows.Tools;
 
 public class HCommandToolSet
@@ -11,11 +11,11 @@ public class HCommandToolSet
     private CommandVectorManager _commandVectorManager;
     private IHGesCom _gesCom;
     private ILogger _logger;
-    public HCommandToolSet(IHorizonteEnv env, OpenAIClient embedderCliente, string emmbedderModel)
+    public HCommandToolSet(IServiceProvider serviceProvider, OpenAIClient embedderCliente, string emmbedderModel)
     {
-        _gesCom = env.GetService<IHGesCom>();
-        _logger = env.GetService<ILogger<HCommandToolSet>>();
-        _commandVectorManager = new CommandVectorManager(env, embedderCliente, emmbedderModel);
+        _gesCom = serviceProvider.GetService<IHGesCom>();
+        _logger = serviceProvider.GetService<ILogger<HCommandToolSet>>();
+        _commandVectorManager = new CommandVectorManager(serviceProvider, embedderCliente, emmbedderModel);
         _commandVectorManager.InitializeManagerAsync();
         
     }

@@ -1,8 +1,8 @@
 @implements IDisposable
 
 @using Point = Blazor.Diagrams.Core.Geometry.Point
-@inject IHorizonteEnv HorizonteEnv
 @inject ILogger<HGesCom> Logger
+@inject IServiceProvider ServiceProvider
 <style>
 
     .node {
@@ -420,7 +420,7 @@
     {
         try
         {
-            _ = WorkFlowDef?.Build<string>(HorizonteEnv);
+            _ = WorkFlowDef?.Build<string>(ServiceProvider);
         }
         catch (Exception e)
         {
@@ -438,7 +438,7 @@
             CleanLastRun(false);
             // todo: serializar deserealizar set default to json
             _logmessage = string.Empty;
-            var workflow = WorkFlowDef?.Build<string>(HorizonteEnv, _cts.Token);
+            var workflow = WorkFlowDef?.Build<string>(ServiceProvider, _cts.Token);
             if (workflow != null)
             {
                 var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);

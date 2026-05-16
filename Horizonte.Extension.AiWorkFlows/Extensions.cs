@@ -1,14 +1,14 @@
 using Horizonte;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace Horizonte.Extension.AiWorkFlows;
 
 public static class Extensions
 {
-    public static Workflow Build<T>(this WorkFlowDef def, IHorizonteEnv env, CancellationToken token = default)
+    public static Workflow Build<T>(this WorkFlowDef def, IServiceProvider serviceProvider, CancellationToken token = default)
     {
-        var gesCom = env.HHost.Services.GetService<IHGesCom>();
+        var gesCom = serviceProvider.GetService<IHGesCom>();
         if (gesCom == null)
         {
             throw new InvalidOperationException("IHGesCom service not found.");

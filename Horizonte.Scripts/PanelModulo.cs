@@ -10,18 +10,18 @@ public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
     private readonly IHContext _context;
-    private readonly IHorizonteEnv _env;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Clase que representa un módulo denominado "PanelModulo" dentro de la aplicación Horizonte.
     /// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
     /// modular de Horizonte, tales como inicializar servicios y registrar widgets personalizados.
     /// </summary>
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IServiceProvider serviceProvider)
     {
         _logger = logger;
         _context = context;
-        _env = env;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public class PanelModulo
     private void LoadScriptModules(ScriptsConfig config)
     {
         var scripts = config.Scripts;
-        scripts.LoadScriptModules(_env);
+        scripts.LoadScriptModules(_serviceProvider);
 
     }
 }
