@@ -6,16 +6,15 @@ using log4net;
 
 namespace Horizonte;
 
-public static class Extensions_refac
+public static class EnvExtensions
 {
     public const string ContextNameKey = "horizonte";
 
     public static void ConfigureContext(this HostApplicationBuilder hostBuilder, string contextName = "",
-        string workDirectory = "")
+        string rootPath = "")
     {
         //0. Establecemos ruta de trabajo
-        var rootPath = workDirectory;
-        if (string.IsNullOrEmpty(rootPath)) rootPath = System.IO.Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])!;
+        if (string.IsNullOrEmpty(rootPath)) rootPath = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])!;
         Directory.SetCurrentDirectory(rootPath);
         
         // 1. Cargamos contexto
@@ -44,19 +43,21 @@ public static class Extensions_refac
         var workersManager = scope.ServiceProvider.GetRequiredService<IhWorkersManager>();
 
 
-        // Antes de iniciar workers, debemos asegurar que los módulos estén cargados e inicializados
+        // Cargamos e iniciamos los modulos
         var gescom = scope.ServiceProvider.GetRequiredService<IHGesCom>();
         gescom.LoadModules();
         gescom.InitzializeModules();
 
-        // También el andamio de archivos simbólicos
+        // Creamos el andamio de enlaces simbolicos
         var symLinkScafolder = scope.ServiceProvider.GetRequiredService<ISymLinkScafolder>();
         var hContext = scope.ServiceProvider.GetRequiredService<IHContext>();
         var symLinkSettings = hContext.Get<SymLinkSettings>() ?? new SymLinkSettings();
         symLinkScafolder.BuildScafolder(symLinkSettings.SymLinkDefs);
 
-        // Finalmente configuramos y arrancamos workers
+        // Configuramos y arrancamos workers
         workersManager.ConfigureWorkers();
         workersManager.StartWorkers();
     }
+    
+    
 }
