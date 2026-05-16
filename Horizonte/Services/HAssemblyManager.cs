@@ -2,19 +2,17 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Xml.Linq;
 using Horizonte.Interfaces;
-using log4net;
-using log4net.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyModel;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 
 namespace Horizonte;
 
 public class HAssemblyManager : IhAssemblyManager
 {
-    private static readonly ILog Log = LogManager.GetLogger(typeof(HAssemblyManager));
+    private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
     private List<string> _searchPaths = new List<string>();
     private readonly ISymLinkScafolder _linkScafolder;
@@ -44,7 +42,8 @@ public class HAssemblyManager : IhAssemblyManager
     public HAssemblyManager( ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
         StaticFileRegistry = new StaticFileRegistry();
-        _settings = serviceProvider.GetService<IHContext>().Get<ModulesSettings>();
+        _logger = serviceProvider.GetService<ILogger<HAssemblyManager>>()!;
+        _settings = serviceProvider.GetService<IHContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
         SetUpAssemblyPaths();
@@ -98,7 +97,7 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     if (!_domains.ContainsKey(domainName))
                     {
-                        Log.Info($"Creando dominio (ALC): {domainName}");
+                        _logger.LogInformation($"Creando dominio (ALC): {domainName}");
                         var alc = new AssemblyLoadContext(domainName, isCollectible: true);
                         alc.Resolving += ResolveAssemblyFromALC;
                         _domains[domainName] = alc;
@@ -108,7 +107,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception e)
         {
-            Log.Error(e);
+            _logger.LogError(e.ToString());
         }
     }
 
@@ -123,7 +122,7 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            Log.Info("Resolving assembly: " + args.Name);
+            _logger.LogInformation("Resolving assembly: " + args.Name);
             string? resAssemblyPath = null;
             
             var (name, version) = ParseAssemblyName(args.Name);
@@ -139,7 +138,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (AssemblyHelpers.ShouldSkipNuGetResolution(name))
             {
-                Log.Info($"Skipping NuGet resolution for runtime assembly: {name}");
+                _logger.LogInformation($"Skipping NuGet resolution for runtime assembly: {name}");
                 return null;
             }
             ////
@@ -164,7 +163,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (resAssemblyPath == null)
             {
-                Log.Error($"Could not resolve assembly: {args.Name}");
+                _logger.LogError($"Could not resolve assembly: {args.Name}");
                 return null;
             }
 
@@ -190,7 +189,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception ex)
             {
-                Log.Error($"Error processing MSBuild targets for symlinks: {ex.Message}");
+                _logger.LogError($"Error processing MSBuild targets for symlinks: {ex.Message}");
             }
 
             // Cargar y devolver el ensamblado seleccionado
@@ -203,7 +202,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Log.Error($"Error trying to resolve assembly from repository: {ex.Message}");
+            _logger.LogError($"Error trying to resolve assembly from repository: {ex.Message}");
         }
 
         // Devolver null si no se pudo resolver
@@ -234,7 +233,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (domainName == "Default") return;
         if (_domains.TryGetValue(domainName, out var alc))
         {
-            Log.Info($"Unloading domain: {domainName}");
+            _logger.LogInformation($"Unloading domain: {domainName}");
             UnloadService(domainName);
             UnloadModule(domainName);
             alc.Unload();
@@ -250,7 +249,7 @@ public class HAssemblyManager : IhAssemblyManager
         // Si no existe, lo creamos
         if (!_domains.ContainsKey(domainName))
         {
-            Log.Info($"Loading/Creating domain: {domainName}");
+            _logger.LogInformation($"Loading/Creating domain: {domainName}");
             var alc = new AssemblyLoadContext(domainName, isCollectible: true);
             alc.Resolving += ResolveAssemblyFromALC;
             _domains[domainName] = alc;
@@ -280,7 +279,7 @@ public class HAssemblyManager : IhAssemblyManager
         // Si no existe, lo creamos
         if (!_domains.TryGetValue(domainName, out var alc))
         {
-            Log.Info($"Creating domain from memory: {domainName}");
+            _logger.LogInformation($"Creating domain from memory: {domainName}");
             alc = new AssemblyLoadContext(domainName, isCollectible: true);
             alc.Resolving += ResolveAssemblyFromALC;
             _domains[domainName] = alc;
@@ -295,7 +294,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception ex)
             {
-                Log.Error($"Error loading assembly from stream into domain {domainName}: {ex.Message}");
+                _logger.LogError($"Error loading assembly from stream into domain {domainName}: {ex.Message}");
             }
         }
 
@@ -308,14 +307,14 @@ public class HAssemblyManager : IhAssemblyManager
     public void ReloadDomain(string domainName)
     {
         if (domainName == "Default") return;
-        Log.Info($"Reloading domain: {domainName}");
+        _logger.LogInformation($"Reloading domain: {domainName}");
         UnloadDomain(domainName);
         LoadDomain(domainName);
     }
 
     public void UnloadModule(string domainName)
     {
-        Log.Info($"UnloadModule for domain: {domainName}");
+        _logger.LogInformation($"UnloadModule for domain: {domainName}");
         UnloadCommandsByDomain(domainName);
     }
 
@@ -331,7 +330,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void UnloadService(string domainName)
     {
-        Log.Info($"Unloading services for domain: {domainName}");
+        _logger.LogInformation($"Unloading services for domain: {domainName}");
         if (domainName == "Default") return;
 
         if (_domains.TryGetValue(domainName, out var alc))
@@ -347,7 +346,7 @@ public class HAssemblyManager : IhAssemblyManager
 
                 if (domainAssemblies.Any(a => a.FullName == serviceAssembly.FullName))
                 {
-                    Log.Info($"Stopping service: {serviceType.FullName} in domain {domainName}");
+                    _logger.LogInformation($"Stopping service: {serviceType.FullName} in domain {domainName}");
                     try
                     {
                         service.StopAsync(CancellationToken.None).Wait();
@@ -359,7 +358,7 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Error stopping service {serviceType.FullName}: {ex.Message}");
+                        _logger.LogError($"Error stopping service {serviceType.FullName}: {ex.Message}");
                     }
                 }
             }
@@ -368,7 +367,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void LoadModule(string domainName)
     {
-        Log.Info($"LoadModule for domain: {domainName}");
+        _logger.LogInformation($"LoadModule for domain: {domainName}");
         LoadCommandsByDomain(domainName);
     }
 
@@ -385,17 +384,17 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
             {
-                Log.Info($"Cargando comandos para el dominio: {domainName}");
+                _logger.LogInformation($"Cargando comandos para el dominio: {domainName}");
                 ProcessAssemblies(assemblies, domainName, processedAssemblies);
             }
             else
             {
-                Log.Warn($"No se encontraron ensamblados para el dominio {domainName}");
+                _logger.LogWarning($"No se encontraron ensamblados para el dominio {domainName}");
             }
         }
         catch (Exception e)
         {
-            Log.Error($"Error en LoadCommandsByDomain para {domainName}: {e.Message}");
+            _logger.LogError($"Error en LoadCommandsByDomain para {domainName}: {e.Message}");
         }
     }
 
@@ -427,7 +426,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception e)
             {
-                Log.Error($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
+                _logger.LogError($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
                 continue;
             }
 
@@ -443,13 +442,13 @@ public class HAssemblyManager : IhAssemblyManager
                     object? modInstance;
                     try
                     {
-                        Log.Info($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
+                        _logger.LogInformation($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
 
                         modInstance = CreateInstance(modtype);
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
+                        _logger.LogError($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
                         continue;
                     }
 
@@ -464,7 +463,7 @@ public class HAssemblyManager : IhAssemblyManager
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e.ToString());
+                    _logger.LogError(e.ToString());
                 }
             }
         }
@@ -503,7 +502,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void LoadService(string domainName)
     {
-        Log.Info($"LoadService for domain: {domainName}");
+        _logger.LogInformation($"LoadService for domain: {domainName}");
         if (domainName == "Default") return;
 
         if (_domains.TryGetValue(domainName, out var alc))
@@ -522,7 +521,7 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     try
                     {
-                        Log.Info($"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
+                        _logger.LogInformation($"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
                         if (CreateInstance(type) is BackgroundService worker)
                         {
                             worker.StartAsync(CancellationToken.None).Wait();
@@ -531,7 +530,7 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
+                        _logger.LogError($"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
                     }
                 }
             }
@@ -688,7 +687,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception e)
         {
-            Log.Error(e);
+            _logger.LogError(e.ToString());
         }
 
         return result;
@@ -776,7 +775,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             System.IO.Compression.ZipFile.ExtractToDirectory(packageFileName, targetDirectory, true);
-            Log.Info($"Package successfully extracted in: {targetDirectory}");
+            _logger.LogInformation($"Package successfully extracted in: {targetDirectory}");
 
             // Borrar el archivo temporal
             if (File.Exists(packageFileName))
@@ -784,7 +783,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Log.Error($"Error extracting package from repository: {ex.Message}");
+            _logger.LogError($"Error extracting package from repository: {ex.Message}");
         }
     }
 
@@ -796,7 +795,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             // 1. Intentar descarga directa (Exact Match)
             var directUrl = GetDownloadUrl(nugetServer, packageName, version);
-            Log.Info($"Trying direct download of '{packageName}' version '{version}' from {directUrl}");
+            _logger.LogInformation($"Trying direct download of '{packageName}' version '{version}' from {directUrl}");
             var result = DownloadPackage(directUrl, packageName, version);
             if (result != null) return result;
 
@@ -808,14 +807,14 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     var normalizedVersion = string.Join(".", parts.Take(3));
                     var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
-                    Log.Info($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
+                    _logger.LogInformation($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
                     result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
                     if (result != null) return result;
                 }
             }
 
             // 3. Si falla, aplicar heurística consultando versiones al servidor
-            Log.Info($"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
+            _logger.LogInformation($"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
             var availableVersions = GetRemotePackageVersions(nugetServer, packageName);
             if (!availableVersions.Any()) continue;
 
@@ -823,7 +822,7 @@ public class HAssemblyManager : IhAssemblyManager
             if (bestVersion != null && bestVersion != version)
             {
                 var heuristicUrl = GetDownloadUrl(nugetServer, packageName, bestVersion);
-                Log.Info($"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
+                _logger.LogInformation($"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
                 result = DownloadPackage(heuristicUrl, packageName, bestVersion);
                 if (result != null) return result;
             }
@@ -877,12 +876,12 @@ public class HAssemblyManager : IhAssemblyManager
                 response.Content.CopyToAsync(fileStream).Wait();
             }
 
-            Log.Info($"Package downloaded successfully: {packageFileName}");
+            _logger.LogInformation($"Package downloaded successfully: {packageFileName}");
             return packageFileName;
         }
         catch (Exception ex)
         {
-            Log.Error($"Error downloading package from {url}: {ex.Message}");
+            _logger.LogError($"Error downloading package from {url}: {ex.Message}");
             return null;
         }
     }
@@ -972,14 +971,14 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     else
                     {
-                        Log.Warn($"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
+                        _logger.LogWarning($"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Log.Error($"Error fetching versions for {packageName} from {server.Name}: {ex.Message}");
+            _logger.LogError($"Error fetching versions for {packageName} from {server.Name}: {ex.Message}");
         }
         return versions.Distinct().ToList();
     }
@@ -1064,7 +1063,7 @@ public class HAssemblyManager : IhAssemblyManager
         catch (Exception exception)
         {
             // Manejo básico de errores; imprime el error y retorna un arreglo vacío.
-            Log.Error(exception);
+            _logger.LogError(exception.ToString());
         }
     }
 
@@ -1074,7 +1073,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             try
             {
-                Log.Info($"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
+                _logger.LogInformation($"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
                 
                 // Intentar resolver localmente con versión y framework exactos
                 var dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
@@ -1092,7 +1091,7 @@ public class HAssemblyManager : IhAssemblyManager
                     if (!Path.IsPathRooted(dllPath))
                         dllPath = Path.GetFullPath(dllPath);
 
-                    Log.Info($"Forced package {package.PackageId} resolved to: {dllPath}");
+                    _logger.LogInformation($"Forced package {package.PackageId} resolved to: {dllPath}");
                     
                     var alc = AssemblyLoadContext.Default;
                     if (!string.IsNullOrEmpty(package.Domain) && package.Domain != "Default")
@@ -1119,17 +1118,17 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
+                        _logger.LogError($"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
                     }
                 }
                 else
                 {
-                    Log.Error($"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
+                    _logger.LogError($"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Error loading forced package {package.PackageId}: {ex.Message}");
+                _logger.LogError($"Error loading forced package {package.PackageId}: {ex.Message}");
             }
         }
     }
@@ -1158,7 +1157,7 @@ public class HAssemblyManager : IhAssemblyManager
                     ? moduleItem.Path 
                     : Path.GetFullPath(moduleItem.Path);
 
-                Log.Info($"Loading module from: {fullPath}");
+                _logger.LogInformation($"Loading module from: {fullPath}");
 
                 // Carga el ensamblado desde la ruta especificada.
                 var loadedassembly = alc.LoadFromAssemblyPath(fullPath);
@@ -1174,13 +1173,13 @@ public class HAssemblyManager : IhAssemblyManager
 
                 var nugetassembly = ResolveAssemblyFromNuGetPackages(alc, args);
                 if (nugetassembly == null)
-                    Log.Error($"Can't find: {moduleItem.Path}");
+                    _logger.LogError($"Can't find: {moduleItem.Path}");
             }
         }
         catch (Exception exception)
         {
             // Manejo de errores al intentar cargar un módulo.
-            Log.Error($"Error on loading {moduleItem.ModuleName}: {exception}");
+            _logger.LogError($"Error on loading {moduleItem.ModuleName}: {exception}");
         }
     }
 
@@ -1206,7 +1205,7 @@ public class HAssemblyManager : IhAssemblyManager
                         var fullDllPath = Path.GetFullPath(dllFile);
                         // Si no, lo carga en el ALC por defecto (comportamiento legacy para DLLs adicionales en la misma carpeta)
                         AssemblyLoadContext.Default.LoadFromAssemblyPath(fullDllPath);
-                        Log.Info($"--Loading additional dll: {fullDllPath}");
+                        _logger.LogInformation($"--Loading additional dll: {fullDllPath}");
                     }
                     else
                     {
@@ -1217,7 +1216,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception e)
         {
-            Log.Error($"Error on load additional dll from module: {modulePath}" +
+            _logger.LogError($"Error on load additional dll from module: {modulePath}" +
                               Environment.NewLine + e);
         }
     }
@@ -1344,7 +1343,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            Log.Error($"Error extracting content mappings: {ex.Message}");
+            _logger.LogError($"Error extracting content mappings: {ex.Message}");
         }
 
         return mappings;

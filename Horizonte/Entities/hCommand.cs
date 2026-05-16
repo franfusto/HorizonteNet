@@ -1,10 +1,10 @@
 using System.Reflection;
 
-/// <summary>
-/// Representa un comando configurable que incluye su metadata, acción asociada y roles permitidos.
-/// </summary>
 namespace Horizonte
 {
+    /// <summary>
+    /// Representa un comando configurable que incluye su metadata, acción asociada y roles permitidos.
+    /// </summary>
     public class HCommand
     {
         /// <summary>
