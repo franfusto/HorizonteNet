@@ -1,4 +1,6 @@
-﻿namespace LinuxApp;
+﻿using Horizonte.Extensions;
+
+namespace LinuxApp;
 
 using System.IO.Compression;
 using System.Reflection;

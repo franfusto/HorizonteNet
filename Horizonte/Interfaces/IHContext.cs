@@ -1,43 +1,82 @@
 namespace Horizonte
 {
     /// <summary>
-    /// Representa una interfaz de contexto utilizada para gestionar y recuperar datos con nombres contextuales opcionales.
-    /// Proporciona funcionalidades para obtener y actualizar valores, admitiendo tanto actualizaciones directas 
-    /// como actualizaciones mediante acciones específicas.
+    /// Define un contrato para acceder y modificar datos de contexto tipados.
     /// </summary>
+    /// <remarks>
+    /// Las implementaciones de esta interfaz permiten recuperar y actualizar secciones de configuración
+    /// o estado usando el nombre del tipo <typeparamref name="T"/> como identificador de sección.
+    /// También pueden soportar múltiples contextos mediante un nombre opcional y priorizar orígenes
+    /// alternativos, como sobrescrituras locales.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// var config = context.Get<MyConfig>();
+    /// context.Update(new MyConfig { Enabled = true });
+    /// context.Update<MyConfig>(cfg => cfg.Enabled = false);
+    /// var source = context.Source<MyConfig>();
+    /// </code>
+    /// </example>
     public interface IHContext
     {
         /// <summary>
-        /// Recupera un objeto del tipo especificado desde el archivo de contexto, utilizando el
-        /// nombre del contexto proporcionado o el nombre de contexto predeterminado si no se especifica.
+        /// Recupera la sección asociada al tipo especificado.
         /// </summary>
-        /// <typeparam name="T">El tipo de objeto a recuperar.</typeparam>
-        /// <param name="contextname">Opcional. El nombre específico del contexto.</param>
-        /// <returns>El objeto deserializado o el valor predeterminado si no se encuentra.</returns>
+        /// <typeparam name="T">Tipo de la sección que se desea recuperar.</typeparam>
+        /// <param name="contextname">
+        /// Nombre opcional del contexto. Si no se especifica, la implementación utilizará el contexto predeterminado.
+        /// </param>
+        /// <returns>
+        /// La instancia deserializada de <typeparamref name="T"/> si existe; en caso contrario, <see langword="default"/>.
+        /// </returns>
+        /// <remarks>
+        /// La implementación puede decidir el origen de los datos, por ejemplo priorizando una sobrescritura local
+        /// frente al archivo de contexto principal.
+        /// </remarks>
         T? Get<T>(string? contextname = null);
 
         /// <summary>
-        /// Actualiza el archivo de contexto con un nuevo valor para el tipo especificado.
+        /// Reemplaza o crea la sección asociada al tipo especificado con el valor proporcionado.
         /// </summary>
-        /// <typeparam name="T">El tipo de los datos a actualizar.</typeparam>
-        /// <param name="value">El nuevo valor a guardar.</param>
-        /// <param name="contextname">Opcional. El nombre específico del contexto.</param>
+        /// <typeparam name="T">Tipo de los datos que se desean guardar.</typeparam>
+        /// <param name="value">Valor que se almacenará en la sección correspondiente.</param>
+        /// <param name="contextname">
+        /// Nombre opcional del contexto. Si no se especifica, la implementación utilizará el contexto predeterminado.
+        /// </param>
+        /// <remarks>
+        /// La sección a actualizar se identifica normalmente mediante <c>typeof(T).Name</c>.
+        /// El destino de escritura depende de la implementación y del origen efectivo de la sección.
+        /// </remarks>
         void Update<T>(T value, string? contextname = null);
 
         /// <summary>
-        /// Actualiza una sección específica del archivo de contexto mediante una acción de modificación.
+        /// Actualiza la sección asociada al tipo especificado aplicando una acción sobre su valor actual.
         /// </summary>
-        /// <typeparam name="T">El tipo de la sección a actualizar.</typeparam>
-        /// <param name="update">Acción que modifica los datos existentes.</param>
-        /// <param name="contextname">Opcional. El nombre específico del contexto.</param>
-        public void Update<T>(Action<T> update, string? contextname = null);
+        /// <typeparam name="T">Tipo de la sección que se desea modificar.</typeparam>
+        /// <param name="update">Acción que modifica el valor actual de la sección.</param>
+        /// <param name="contextname">
+        /// Nombre opcional del contexto. Si no se especifica, la implementación utilizará el contexto predeterminado.
+        /// </param>
+        /// <remarks>
+        /// Este método es útil cuando se desea modificar parcialmente una sección existente sin reemplazar
+        /// explícitamente el objeto desde el código consumidor.
+        /// </remarks>
+        void Update<T>(Action<T> update, string? contextname = null);
 
         /// <summary>
-        /// Determina el origen de los datos para la sección del tipo especificado.
+        /// Obtiene el origen efectivo de la sección asociada al tipo especificado.
         /// </summary>
-        /// <typeparam name="T">El tipo de la sección a consultar.</typeparam>
-        /// <param name="contextname">Opcional. El nombre específico del contexto.</param>
-        /// <returns>El origen de la sección (Contexto o LocalOverride).</returns>
-        public SectionSource Source<T>(string? contextname = null);
+        /// <typeparam name="T">Tipo de la sección cuyo origen se desea consultar.</typeparam>
+        /// <param name="contextname">
+        /// Nombre opcional del contexto. Si no se especifica, la implementación utilizará el contexto predeterminado.
+        /// </param>
+        /// <returns>
+        /// Un valor de <see cref="SectionSource"/> que indica desde dónde se resolverá la sección.
+        /// </returns>
+        /// <remarks>
+        /// Este método permite conocer si una sección se obtiene desde el contexto principal o desde una
+        /// sobrescritura local, lo que resulta útil para depuración y trazabilidad.
+        /// </remarks>
+        SectionSource Source<T>(string? contextname = null);
     }
 }
