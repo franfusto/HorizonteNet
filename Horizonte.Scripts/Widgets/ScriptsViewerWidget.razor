@@ -48,11 +48,7 @@
 
     private async Task OnReloadScripts()
     {
-        var env = Context.Get<IHorizonteEnv>() ?? ServiceProvider.GetService<IHorizonteEnv>();
-        if (env != null)
-        {
             await _config.Scripts.LoadScriptModules(ServiceProvider);
-        }
     }
 
     private void OnAddScript()

@@ -8,13 +8,12 @@ namespace Horizonte.Ai.Agent;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHorizonteEnv _env;
     private AgentsDen? _agentsDen;
+    private IServiceProvider _serviceProvider;
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHorizonteEnv env)
+    public PanelModulo(ILogger<PanelModulo> logger)
     {
         _logger = logger;
-        _env = env;
     }
 
     [HorizonteRole("init")]
@@ -22,7 +21,7 @@ public class PanelModulo
     public bool Init()
     {
         _logger.LogInformation("Horizonte.Ai.Agent Iniciado");
-        _agentsDen = new AgentsDen(_env);
+        _agentsDen = new AgentsDen(_serviceProvider);
         return true;
     }
 

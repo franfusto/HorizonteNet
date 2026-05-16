@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 /// Esta interfaz proporciona métodos y propiedades para administrar el ciclo de vida de la aplicación, 
 /// acceder a servicios y manejar componentes modulares.
 /// </summary>
-public interface IHorizonteEnv
+public interface IHorizonteEnvXXX
 {
     IHost HHost { get; }
     string RootPath { get; }

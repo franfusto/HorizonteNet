@@ -34,7 +34,7 @@ public static class Extensions_refac
         hostBuilder.Services.AddSingleton<IHtrans, Htrans>();
         
         // Registramos HorizonteEnv como servicio (legado/wrapper)
-       hostBuilder.Services.AddSingleton<IHorizonteEnv>(sp => new HorizonteEnv(contextName, hostBuilder.Configuration["args"]?.Split(' ') ?? Array.Empty<string>()));
+       //hostBuilder.Services.AddSingleton<IHorizonteEnv>(sp => new HorizonteEnv(contextName, hostBuilder.Configuration["args"]?.Split(' ') ?? Array.Empty<string>()));
         
         var modulesSettings = hContext.Get<ModulesSettings>() ?? new ModulesSettings();
        hostBuilder.Services.AddSingleton(modulesSettings);
@@ -57,8 +57,8 @@ public static class Extensions_refac
         var workersManager = scope.ServiceProvider.GetRequiredService<IhWorkersManager>();
         
         // Sincronizar HorizonteEnv legado si existe
-        var hEnv = scope.ServiceProvider.GetService<IHorizonteEnv>() as HorizonteEnv;
-        hEnv?.SetHost(host);
+        //var hEnv = scope.ServiceProvider.GetService<IHorizonteEnv>() as HorizonteEnv;
+        //hEnv?.SetHost(host);
 
         // Antes de iniciar workers, debemos asegurar que los módulos estén cargados e inicializados
         var gescom = scope.ServiceProvider.GetRequiredService<IHGesCom>();

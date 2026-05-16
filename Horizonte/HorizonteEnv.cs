@@ -20,7 +20,7 @@ namespace Horizonte;
 /// gestionar la carga de módulos e inicializar el marco de alojamiento.
 /// Sirve como el punto central para gestionar el ciclo de vida de la aplicación modular.
 /// </summary>
-public class HorizonteEnv : IHorizonteEnv
+public class HorizonteEnvXXX : IHorizonteEnvXXX
 {
     public IHost HHost { get; private set; }
     public string RootPath { get; private set; }
@@ -51,7 +51,7 @@ public class HorizonteEnv : IHorizonteEnv
     /// gestionar la carga de módulos e inicializar el marco de alojamiento.
     /// Sirve como el punto central para gestionar el ciclo de vida de la aplicación modular.
     /// </summary>
-    public HorizonteEnv(string contextname, string[] appargs)
+    public HorizonteEnvXXX(string contextname, string[] appargs)
     {
 
         _args = appargs;
@@ -189,7 +189,7 @@ public class HorizonteEnv : IHorizonteEnv
                 FileAppenderStaticLogFileName = true,
             }.Configure();*/
 
-            _startlogger = LogManager.GetLogger(typeof(HorizonteEnv));
+            //_startlogger = LogManager.GetLogger(typeof(HorizonteEnv));
             _startlogger.Info("******** STAGE 0 - INIT START LOGGER **********");
 
         }
@@ -322,7 +322,7 @@ public class HorizonteEnv : IHorizonteEnv
             _builder.Services.AddSingleton<IHtrans, Htrans>();
 
             //gestor de entorno
-            _builder.Services.AddSingleton<IHorizonteEnv>(this);
+            //_builder.Services.AddSingleton<IHorizonteEnv>(this);
 
             //gestor de commandos
             if (_gescom == null) _gescom = new HGesCom(_builder.Services.BuildServiceProvider());
@@ -335,7 +335,7 @@ public class HorizonteEnv : IHorizonteEnv
             //_builder.Services.AddSingleton<IHModManager, HModManager>();
 
             //Workers
-            _builder.ConfigureWorkers(_workerSettings, this);
+            //_builder.ConfigureWorkers(_workerSettings, this);
 
             //Host Build
             HHost = _builder.Build();

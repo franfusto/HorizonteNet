@@ -40,7 +40,7 @@ public static class Extensions
             csharpKernel.AddHorizonteMiddleware(serviceProvider);
 
             // Obtener la versión del ensamblado Horizonte actualmente cargado
-            var horizonteAssembly = typeof(IHorizonteEnv).Assembly;
+            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; ///// revisar*********************************************************
             var horizonteVersion = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
             AssemblyNameInfo currenthorzonte = new AssemblyNameInfo("Horizonte", new Version(horizonteVersion));
             await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:{currenthorzonte.Name},{currenthorzonte.Version}\""));
@@ -290,7 +290,7 @@ public static class Extensions
             }
 
             // Añadir Horizonte
-            var horizonteAssembly = typeof(IHorizonteEnv).Assembly;
+            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; //revisar***********************************
             var horizonteLoc = horizonteAssembly.Location;
             
             if (string.IsNullOrEmpty(horizonteLoc) && assemblyManager != null)

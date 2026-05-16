@@ -32,15 +32,8 @@ public static class HostBuilderExtensions
     }
 
 
-    /// <summary>
-    /// Configura los trabajadores (workers) para la instancia especificada de HostApplicationBuilder utilizando los WorkerSettings y el entorno proporcionados.
-    /// </summary>
-    /// <param name="builder">La instancia de HostApplicationBuilder para la que se configurarán los trabajadores.</param>
-    /// <param name="modset">La instancia de WorkerSettings que contiene los detalles de configuración para los trabajadores.</param>
-    /// <param name="env">La instancia de IHorizonteEnv que representa el entorno en el cual se ejecutará la configuración.</param>
     [Obsolete("Utilice IhWorkersManager.ConfigureWorkers() en su lugar.")]
-    public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerSettings modset,
-        IHorizonteEnv env)
+    public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerSettings modset)
     {
         /*
         var types = (env.AssemblyManager?.Assemblies ?? AssemblyLoadContext.Default.Assemblies)
@@ -62,11 +55,11 @@ public static class HostBuilderExtensions
             {
                 try
                 {
-                    if (ActivatorUtilities.CreateInstance(builder.Services.BuildServiceProvider(), servicetype, env, workeritem.ServiceName,
+                    if (ActivatorUtilities.CreateInstance(builder.Services.BuildServiceProvider(), servicetype, workeritem.ServiceName,
                             workeritem.RunOnStart) is BackgroundService worker)
                     {
                         builder.Services.AddSingleton(worker);
-                        env.AddOnStartWorker(worker);
+                        //env.AddOnStartWorker(worker);
                     }
                 }
                 catch (Exception e)

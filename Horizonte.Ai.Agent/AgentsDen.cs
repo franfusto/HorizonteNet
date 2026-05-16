@@ -14,10 +14,10 @@ public class AgentsDen
     private readonly IHGesCom? _gesCom; // Componente externo para gestionar comandos.
     private readonly ILogger<AgentsDen>? _logger; // Logger para registrar eventos y errores.
 
-    public AgentsDen(IHorizonteEnv env)
+    public AgentsDen(IServiceProvider serviceProvider)
     {
-        _gesCom = env.GetService<IHGesCom>(); // Obtiene instancia del servicio IHGesCom.
-        _logger = env.GetService<ILogger<AgentsDen>>(); // Obtiene logger para la clase.
+        _gesCom = serviceProvider.GetService<IHGesCom>(); // Obtiene instancia del servicio IHGesCom.
+        _logger = serviceProvider.GetService<ILogger<AgentsDen>>(); // Obtiene logger para la clase.
     }
 
     /// <summary>
