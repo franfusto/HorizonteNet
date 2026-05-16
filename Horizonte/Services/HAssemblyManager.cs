@@ -40,10 +40,10 @@ public class HAssemblyManager : IhAssemblyManager
 
     public event Action? DomainChanged;
 
-    public HAssemblyManager(ModulesSettings settings, ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
+    public HAssemblyManager( ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
         StaticFileRegistry = new StaticFileRegistry();
-        _settings = settings;
+        _settings = serviceProvider.GetService<IHContext>().Get<ModulesSettings>();
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
         SetUpAssemblyPaths();

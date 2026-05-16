@@ -16,22 +16,10 @@ public class HContext : IHContext
     private static readonly object _fileLock = new();
     private string? _userDirectory = null;
 
-    /// <summary>
-    /// Proporciona un marco contextual para gestionar y recuperar archivos de datos
-    /// con capacidades de serialización y deserialización. Permite realizar actualizaciones 
-    /// utilizando datos o acciones específicas, garantizando la seguridad en el acceso concurrente
-    /// a través de mecanismos de bloqueo.
-    /// </summary>
-    /// <param name="contextName">
-    /// Un valor opcional que define el nombre del contexto. Si se omite, se utiliza un nombre predeterminado.
-    /// </param>
-    /// <param name="defaultSerializerOptions">
-    /// Opciones de serialización predeterminadas. Si se omiten, se usan las opciones por defecto.
-    /// </param>
-    public HContext(string? contextName = null, JsonSerializerOptions? defaultSerializerOptions = null)
+    public HContext(string contextName , string rootPath )
     {
         _contextName = contextName ?? _contextName;
-        _serializerOptions = defaultSerializerOptions ?? new JsonSerializerOptions();
+        _serializerOptions =  new JsonSerializerOptions();
         _userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(_userDirectory))
         {
@@ -39,20 +27,6 @@ public class HContext : IHContext
         }
     }
 
-    /// <summary>
-    /// Recupera la ruta de archivo para un archivo JSON correspondiente a un tipo específico.
-    /// </summary>
-    /// <typeparam name="T">
-    /// El tipo asociado con el archivo JSON.
-    /// </typeparam>
-    /// <param name="contextName">
-    /// El nombre del contexto que determina la estructura del directorio y el nombre del archivo.
-    /// Si es nulo, se utiliza un nombre de contexto predeterminado.
-    /// </param>
-    /// <returns>
-    /// La ruta de archivo del archivo JSON para el tipo especificado. Retorna la ruta de archivo
-    /// predeterminada si no existe el archivo en el directorio del usuario.
-    /// </returns>
     private string GetJsonFilePath<T>(string? contextName)
     {
         // Definir el nombre de la carpeta que empieza con un punto
@@ -77,12 +51,6 @@ public class HContext : IHContext
         return (contextName ?? _contextName) + ".json";
     }
 
-    /// <summary>
-    /// Obtiene el directorio de sobrescrituras locales para el contexto especificado.
-    /// Crea el directorio si no existe.
-    /// </summary>
-    /// <param name="contextName">Nombre del contexto. Si es nulo, utiliza el predeterminado.</param>
-    /// <returns>La ruta completa al directorio de sobrescrituras locales.</returns>
     private string GetLocalOverridesDir(string? contextName = null)
     {
         string localOverridesDir = Path.Combine(_userDirectory!, "." + (contextName ?? _contextName), "localoverrides");
@@ -94,24 +62,11 @@ public class HContext : IHContext
         return localOverridesDir;
     }
 
-    /// <summary>
-    /// Obtiene la ruta del archivo de sobrescritura local para un tipo específico y contexto.
-    /// </summary>
-    /// <typeparam name="T">El tipo asociado con el archivo de sobrescritura.</typeparam>
-    /// <param name="contextName">Nombre del contexto. Si es nulo, utiliza el predeterminado.</param>
-    /// <returns>La ruta completa al archivo JSON de sobrescritura local.</returns>
     private string GetLocalOverrideFilePath<T>(string? contextName = null)
     {
         return Path.Combine(GetLocalOverridesDir(contextName), typeof(T).Name + ".json");
     }
 
-    /// <summary>
-    /// Determina el origen de los datos para la sección del tipo especificado.
-    /// Comprueba si existe un archivo de sobrescritura local antes de recurrir al contexto general.
-    /// </summary>
-    /// <typeparam name="T">El tipo de la sección a consultar.</typeparam>
-    /// <param name="contextname">Nombre del contexto opcional.</param>
-    /// <returns>El origen de la sección: <see cref="SectionSource.LocalOverride"/> o <see cref="SectionSource.Context"/>.</returns>
     public SectionSource Source<T>(string? contextname = null)
     {
         lock (_fileLock)
@@ -122,21 +77,6 @@ public class HContext : IHContext
     }
 
 
-    /// <summary>
-    /// Recupera un objeto del tipo especificado desde el archivo de contexto, utilizando el
-    /// nombre del contexto proporcionado o el nombre de contexto predeterminado si no se especifica.
-    /// La deserialización se realiza con base en las opciones de serialización definidas en el contexto.
-    /// </summary>
-    /// <typeparam name="T">
-    /// El tipo de objeto a recuperar del archivo de contexto.
-    /// </typeparam>
-    /// <param name="contextname">
-    /// Opcional. El nombre específico del contexto con el cual sobrescribir el predeterminado.
-    /// </param>
-    /// <returns>
-    /// Devuelve el objeto del tipo <typeparamref name="T"/> si la obtención y deserialización
-    /// son exitosas; de lo contrario, devuelve el valor predeterminado para el tipo <typeparamref name="T"/>.
-    /// </returns>
     public T? Get<T>(string? contextname = null)
     {
         try
@@ -159,21 +99,6 @@ public class HContext : IHContext
         }
     }
 
-    /// <summary>
-    /// Actualiza una sección específica del archivo de contexto con la acción proporcionada.
-    /// Garantiza la seguridad durante el proceso de actualización y permite modificaciones
-    /// del contenido de la sección dentro del archivo de contexto.
-    /// </summary>
-    /// <typeparam name="T">
-    /// El tipo de la sección que se está actualizando dentro del archivo de contexto.
-    /// </typeparam>
-    /// <param name="update">
-    /// La acción que define las modificaciones que se deben realizar en la sección.
-    /// </param>
-    /// <param name="contextname">
-    /// Parámetro opcional que especifica el nombre del archivo de contexto a actualizar.
-    /// Si es nulo, se utiliza el nombre de contexto predeterminado.
-    /// </param>
     public void Update<T>(Action<T> update, string? contextname = null)
     {
         try
@@ -198,22 +123,6 @@ public class HContext : IHContext
     }
 
 
-    /// <summary>
-    /// Actualiza el archivo de contexto con un nuevo valor para el tipo especificado.
-    /// La actualización se aplica serializando el nuevo valor y escribiéndolo
-    /// al archivo JSON designado que corresponde al nombre del contexto y tipo especificado.
-    /// Garantiza la seguridad durante la operación mediante mecanismos de bloqueo.
-    /// </summary>
-    /// <typeparam name="T">
-    /// El tipo de los datos a actualizar en el contexto.
-    /// </typeparam>
-    /// <param name="newvalue">
-    /// El nuevo valor a actualizar en el archivo de contexto.
-    /// </param>
-    /// <param name="contextname">
-    /// El nombre específico del contexto para usar en la actualización. 
-    /// Por defecto, se utiliza el nombre de contexto global si no se especifica.
-    /// </param>
     public void Update<T>(T newvalue, string? contextname = null)
     {
         try
@@ -238,10 +147,6 @@ public class HContext : IHContext
     }
 
 
-    /// <summary>
-    /// Proporciona métodos auxiliares para manipular archivos JSON, incluyendo funciones para leer,
-    /// actualizar y escribir secciones dentro de archivos JSON.
-    /// </summary>
     public static class JsonFileHelper
     {
         /// <summary>

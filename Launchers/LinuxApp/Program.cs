@@ -27,7 +27,7 @@ class Program
         builder.ConfigureContext(contextname);
 
         var host = builder.Build();
-        host.StartWorkers();
+        host.LoadEnviroment();
         await host.RunAsync();
     }
 }
