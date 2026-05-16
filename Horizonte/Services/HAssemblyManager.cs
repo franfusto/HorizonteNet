@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Xml.Linq;
+using Horizonte.Interfaces;
 using log4net;
 using log4net.Core;
 using Microsoft.Extensions.Configuration;

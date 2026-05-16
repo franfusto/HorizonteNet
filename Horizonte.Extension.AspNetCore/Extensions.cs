@@ -1,3 +1,5 @@
+using Horizonte.Interfaces;
+
 namespace Horizonte.Extension.AspNetCore;
 
 public static class Extensions
@@ -16,8 +18,7 @@ public static class Extensions
         var context = legacyServiceProvider. GetService<IHContext>();
         if (context != null) services.AddSingleton<IHContext>(context);
         
-        var trans = legacyServiceProvider.GetService<IHtrans>();
-        if (trans != null) services.AddSingleton<IHtrans>(trans);        
+
         
         var gescom = legacyServiceProvider.GetService<IHGesCom>();
         if (gescom != null) services.AddSingleton<IHGesCom>(gescom); 

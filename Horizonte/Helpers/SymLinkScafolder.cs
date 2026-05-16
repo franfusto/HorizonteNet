@@ -1,48 +1,219 @@
-using System.IO;
-using System.Text;
-using log4net;
 
-namespace Horizonte;
+using Horizonte.Interfaces;
+using Microsoft.Extensions.Logging;
 
+namespace Horizonte.Helpers;
+
+/// <summary>
+/// Implementa la creación, consulta y limpieza de un andamio de enlaces simbólicos
+/// dentro del directorio de trabajo actual.
+/// </summary>
+/// <remarks>
+/// Esta clase mantiene una colección en memoria con las definiciones de enlaces creados
+/// durante la ejecución y utiliza un archivo de bloqueo para evitar que varias instancias
+/// modifiquen simultáneamente el mismo andamio.
+/// </remarks>
 public class SymLinkScafolder :ISymLinkScafolder
 {
-    private static readonly ILog Log = LogManager.GetLogger(typeof(SymLinkScafolder));
+    private readonly ILogger<PanelModulo> _logger;
+    private const string LockFileName = ".symlink.lock";
+    private readonly int _currentPid = Environment.ProcessId;
+    private string? _ownedLockFilePath;
     private List<SymLinkDef> _symLinkDefs = new List<SymLinkDef>();
+
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="SymLinkScafolder"/>.
+    /// </summary>
+    /// <param name="logger">
+    /// Registrador utilizado para informar de operaciones, incidencias y errores
+    /// relacionados con la gestión de enlaces simbólicos.
+    /// </param>
+    public SymLinkScafolder(ILogger<PanelModulo> logger)
+    {
+        _logger = logger;
+    }
     
+    /// <summary>
+    /// Devuelve la colección de definiciones de enlaces simbólicos registradas
+    /// por esta instancia del andamio.
+    /// </summary>
+    /// <returns>
+    /// Secuencia con las definiciones de enlaces simbólicos creadas o cargadas en memoria.
+    /// </returns>
+    public IEnumerable<SymLinkDef> GetScafolder() => _symLinkDefs;
+    
+    /// <summary>
+    /// Limpia el andamio actual eliminando los enlaces simbólicos encontrados de forma recursiva
+    /// desde el directorio de trabajo.
+    /// </summary>
+    /// <remarks>
+    /// Antes de realizar la limpieza se intenta adquirir un archivo de bloqueo exclusivo.
+    /// Si otra instancia posee el bloqueo, la operación se omite.
+    /// </remarks>
     public void CleanScafolder()
     {
+        string currentDirectory = Directory.GetCurrentDirectory();
+
         try
         {
-            if (IsAnotherInstanceRunning())
+            if (!TryAcquireScafolderLock(currentDirectory))
             {
-                Log.Info("Otra instancia de la aplicación está en ejecución. Se mantiene el andamio de enlaces simbólicos.");
+                _logger.LogInformation("Otra instancia activa es propietaria del andamio de enlaces simbólicos de este directorio. Se omite la limpieza.");
                 return;
             }
 
             _symLinkDefs.Clear();
-            string currentDirectory = Directory.GetCurrentDirectory();
             DeleteSymLinksRecursively(currentDirectory);
         }
         catch (Exception e)
         {
-            Log.Error(e);
+            _logger.LogError(e.ToString());
+        }
+        finally
+        {
+            ReleaseScafolderLock();
         }
     }
 
-    // esta función la podemos cambiar de sitio y hacerla publica para horizonte
-    // y poner una variable en configuración para permitir o no multiples instancias de la aplicacin   
-    private bool IsAnotherInstanceRunning() 
+    private static string GetLockFilePath(string currentDirectory)
     {
-        string currentProcessName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
-        var processes = System.Diagnostics.Process.GetProcessesByName(currentProcessName);
-        return processes.Length > 1;
+        return Path.Combine(currentDirectory, LockFileName);
+    }
+
+    private bool TryAcquireScafolderLock(string currentDirectory)
+    {
+        string lockFilePath = GetLockFilePath(currentDirectory);
+
+        while (true)
+        {
+            try
+            {
+                using FileStream stream = new FileStream(lockFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                using StreamWriter writer = new StreamWriter(stream);
+                writer.Write(_currentPid);
+                writer.Flush();
+
+                _ownedLockFilePath = lockFilePath;
+                return true;
+            }
+            catch (IOException)
+            {
+                if (!File.Exists(lockFilePath))
+                {
+                    continue;
+                }
+
+                if (!TryReadLockPid(lockFilePath, out int lockPid))
+                {
+                    _logger.LogWarning($"El archivo lock {lockFilePath} es inválido. Se intentará recuperar.");
+                    TryDeleteStaleLock(lockFilePath);
+                    continue;
+                }
+
+                if (lockPid == _currentPid)
+                {
+                    _ownedLockFilePath = lockFilePath;
+                    return true;
+                }
+
+                if (!ProcessExists(lockPid))
+                {
+                    _logger.LogWarning($"Se encontró un lock huérfano en {lockFilePath} con PID {lockPid}. Se intentará recuperar.");
+                    TryDeleteStaleLock(lockFilePath);
+                    continue;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error adquiriendo el lock del andamio en {lockFilePath}: {ex.Message}");
+                return false;
+            }
+        }
+    }
+
+    private bool TryReadLockPid(string lockFilePath, out int pid)
+    {
+        pid = 0;
+
+        try
+        {
+            string content = File.ReadAllText(lockFilePath).Trim();
+            return int.TryParse(content, out pid);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error leyendo el archivo lock {lockFilePath}: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static bool ProcessExists(int pid)
+    {
+        try
+        {
+            var process = System.Diagnostics.Process.GetProcessById(pid);
+            return !process.HasExited;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void TryDeleteStaleLock(string lockFilePath)
+    {
+        try
+        {
+            File.Delete(lockFilePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error eliminando lock huérfano {lockFilePath}: {ex.Message}");
+        }
+    }
+
+    private void ReleaseScafolderLock()
+    {
+        if (string.IsNullOrEmpty(_ownedLockFilePath))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!File.Exists(_ownedLockFilePath))
+            {
+                _ownedLockFilePath = null;
+                return;
+            }
+
+            if (!TryReadLockPid(_ownedLockFilePath, out int lockPid))
+            {
+                _logger.LogWarning($"No se pudo validar el PID del lock {_ownedLockFilePath}. No se liberará automáticamente.");
+                return;
+            }
+
+            if (lockPid != _currentPid)
+            {
+                _logger.LogWarning($"El lock {_ownedLockFilePath} pertenece al PID {lockPid} y no al actual {_currentPid}. No se liberará.");
+                return;
+            }
+
+            File.Delete(_ownedLockFilePath);
+            _ownedLockFilePath = null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error liberando el lock del andamio {_ownedLockFilePath}: {ex.Message}");
+        }
     }
 
     private void DeleteSymLinksRecursively(string path)
     {
         DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
-        // Procesar archivos en el directorio actual
         foreach (FileInfo file in directoryInfo.GetFiles())
         {
             if (file.Attributes.HasFlag(FileAttributes.ReparsePoint))
@@ -53,12 +224,11 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Error eliminando enlace simbólico (archivo) {file.FullName}: {e.Message}");
+                    _logger.LogError($"Error eliminando enlace simbólico (archivo) {file.FullName}: {e.Message}");
                 }
             }
         }
 
-        // Procesar subdirectorios
         foreach (DirectoryInfo subDir in directoryInfo.GetDirectories())
         {
             if (subDir.Attributes.HasFlag(FileAttributes.ReparsePoint))
@@ -69,18 +239,16 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Error eliminando enlace simbólico (directorio) {subDir.FullName}: {e.Message}");
+                    _logger.LogError($"Error eliminando enlace simbólico (directorio) {subDir.FullName}: {e.Message}");
                 }
             }
             else
             {
-                // Si no es un enlace simbólico, entrar recursivamente
                 DeleteSymLinksRecursively(subDir.FullName);
 
-                // Después de procesar, si la carpeta está vacía, la eliminamos
                 try
                 {
-                    subDir.Refresh(); // Actualizar el estado del objeto DirectoryInfo
+                    subDir.Refresh();
                     if (subDir.Exists && !subDir.EnumerateFileSystemInfos().Any())
                     {
                         subDir.Delete();
@@ -88,32 +256,42 @@ public class SymLinkScafolder :ISymLinkScafolder
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Error eliminando directorio vacío {subDir.FullName}: {e.Message}");
+                    _logger.LogError($"Error eliminando directorio vacío {subDir.FullName}: {e.Message}");
                 }
             }
         }
     }
-
+    /// <summary>
+    /// Construye el andamio de enlaces simbólicos a partir de una colección de definiciones.
+    /// </summary>
+    /// <param name="symlinklist">
+    /// Colección de definiciones que describen el origen, el destino y el tipo
+    /// de cada enlace simbólico a crear.
+    /// </param>
+    /// <remarks>
+    /// Los destinos deben ser rutas relativas al directorio de trabajo actual.
+    /// Si una definición apunta fuera de dicho directorio o produce un error durante
+    /// la creación, se registra la incidencia y se continúa con el resto.
+    /// </remarks>
     public void BuildScafolder(IEnumerable<SymLinkDef> symlinklist)
     {
+        string currentDirectory = Directory.GetCurrentDirectory();
+
         try
         {
-            if (IsAnotherInstanceRunning())
+            if (!TryAcquireScafolderLock(currentDirectory))
             {
-                Log.Info("Otra instancia de la aplicación está en ejecución. Se asume que el andamio de enlaces simbólicos ya está construido.");
+                _logger.LogInformation("Otra instancia activa es propietaria del andamio de enlaces simbólicos de este directorio. Se omite la construcción.");
                 return;
             }
-
-            string currentDirectory = Directory.GetCurrentDirectory();
 
             foreach (var symLinkDef in symlinklist)
             {
                 try
                 {
-                    // Validar que el destino sea relativo y no salga del directorio actual
                     if (Path.IsPathRooted(symLinkDef.Destination))
                     {
-                        Log.Error($"Error: El destino debe ser una ruta relativa: {symLinkDef.Destination}");
+                        _logger.LogError($"Error: El destino debe ser una ruta relativa: {symLinkDef.Destination}");
                         continue;
                     }
 
@@ -121,11 +299,10 @@ public class SymLinkScafolder :ISymLinkScafolder
 
                     if (!fullDestinationPath.StartsWith(currentDirectory, StringComparison.OrdinalIgnoreCase))
                     {
-                        Log.Error($"Error: El destino está fuera del directorio actual: {symLinkDef.Destination}");
+                        _logger.LogError($"Error: El destino está fuera del directorio actual: {symLinkDef.Destination}");
                         continue;
                     }
 
-                    // Asegurarse de que el directorio padre del destino existe
                     string? parentDir = Path.GetDirectoryName(fullDestinationPath);
                     if (parentDir != null && !Directory.Exists(parentDir))
                     {
@@ -138,6 +315,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                         {
                             Directory.Delete(fullDestinationPath);
                         }
+
                         Directory.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
                     }
                     else
@@ -146,26 +324,23 @@ public class SymLinkScafolder :ISymLinkScafolder
                         {
                             File.Delete(fullDestinationPath);
                         }
+
                         File.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
                     }
 
                     _symLinkDefs.Add(symLinkDef);
-                    Log.Info($"Creado enlace simbólico: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                    _logger.LogInformation($"Creado enlace simbólico: {symLinkDef.Destination} -> {symLinkDef.Source}");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error creando enlace simbólico {symLinkDef.Destination}: {ex.Message}");
+                    _logger.LogError($"Error creando enlace simbólico {symLinkDef.Destination}: {ex.Message}");
                 }
             }
         }
         catch (Exception e)
         {
-            Log.Error(e);
+            _logger.LogError(e.ToString());
         }
     }
-
-    public IEnumerable<SymLinkDef> GetScafolder() => _symLinkDefs;
-
-
 
 }

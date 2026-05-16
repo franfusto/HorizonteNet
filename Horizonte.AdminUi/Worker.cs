@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 using Radzen;
 using Radzen.Blazor;
 using Horizonte.Extensions;
+using Horizonte.Interfaces;
+
 namespace Horizonte.AdminUi;
 
 public sealed class Worker : BackgroundService, IHorizonteBackgroundService

@@ -1,6 +1,5 @@
 namespace Horizonte;
 
-[HConfigOption]
 public class WorkerSettings
 {
     public WorkerSettings()
