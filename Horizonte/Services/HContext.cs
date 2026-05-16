@@ -33,10 +33,27 @@ namespace Horizonte.Services;
 public class HContext : IHContext
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(HContext));
-    private readonly string _contextName = "horizonte";
     private JsonSerializerOptions _serializerOptions = new();
     private static readonly object _fileLock = new();
     private string? _userDirectory = null;
+    
+    /// <summary>
+    /// Obtiene la ruta raíz asociada al contexto actual.
+    /// </summary>
+    /// <remarks>
+    /// Esta propiedad identifica la ubicación base utilizada por la implementación para resolver
+    /// archivos, recursos o rutas relacionadas con el contexto.
+    /// </remarks>
+    public string RootPath { get; }
+    
+    /// <summary>
+    /// Obtiene el nombre del contexto actual.
+    /// </summary>
+    /// <remarks>
+    /// Este valor representa el identificador lógico del contexto predeterminado que utilizará
+    /// la implementación cuando no se especifique uno explícitamente en las operaciones.
+    /// </remarks>
+    public string ContextName { get; }
 
     /// <summary>
     /// Inicializa una nueva instancia de la clase <see cref="HContext"/>.
@@ -51,7 +68,8 @@ public class HContext : IHContext
     /// </remarks>
     public HContext(string contextName , string rootPath )
     {
-        _contextName = contextName ?? _contextName;
+        ContextName = contextName;
+        RootPath = rootPath;
         _serializerOptions =  new JsonSerializerOptions();
         _userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(_userDirectory))
@@ -76,7 +94,7 @@ public class HContext : IHContext
     /// </remarks>
     private string GetJsonFilePath<T>(string? contextName)
     {
-        string contextFolder = Path.Combine(_userDirectory!, "." + (contextName ?? _contextName));
+        string contextFolder = Path.Combine(_userDirectory!, "." +ContextName);
 
         if (Directory.Exists(contextFolder))
         {
@@ -89,7 +107,7 @@ public class HContext : IHContext
             }
         }
 
-        return (contextName ?? _contextName) + ".json";
+        return ContextName + ".json";
     }
 
     /// <summary>
@@ -102,7 +120,7 @@ public class HContext : IHContext
     /// </remarks>
     private string GetLocalOverridesDir(string? contextName = null)
     {
-        string localOverridesDir = Path.Combine(_userDirectory!, "." + (contextName ?? _contextName), "localoverrides");
+        string localOverridesDir = Path.Combine(_userDirectory!, "." +ContextName, "localoverrides");
         if (!Directory.Exists(localOverridesDir))
         {
             Directory.CreateDirectory(localOverridesDir);
@@ -161,7 +179,7 @@ public class HContext : IHContext
             {
                 var filePath = Source<T>(contextname) == SectionSource.LocalOverride
                     ? GetLocalOverrideFilePath<T>(contextname)
-                    : GetJsonFilePath<T>(contextname ?? _contextName);
+                    : GetJsonFilePath<T>(ContextName);
 
                 return JsonFileHelper.TryGet(filePath, typeof(T).Name, out T? value, _serializerOptions)
                     ? value
@@ -193,7 +211,7 @@ public class HContext : IHContext
             {
                 var filePath = Source<T>(contextname) == SectionSource.LocalOverride
                     ? GetLocalOverrideFilePath<T>(contextname)
-                    : GetJsonFilePath<T>(contextname ?? _contextName);
+                    : GetJsonFilePath<T>(ContextName);
 
                 JsonFileHelper.AddOrUpdateSection(
                     jsonFilePath: filePath,
@@ -226,7 +244,7 @@ public class HContext : IHContext
             {
                 var filePath = Source<T>(contextname) == SectionSource.LocalOverride
                     ? GetLocalOverrideFilePath<T>(contextname)
-                    : GetJsonFilePath<T>(contextname ?? _contextName);
+                    : GetJsonFilePath<T>(ContextName);
 
                 JsonFileHelper.AddOrUpdateSection(
                     jsonFilePath: filePath,

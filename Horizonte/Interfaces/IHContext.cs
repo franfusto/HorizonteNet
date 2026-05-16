@@ -19,6 +19,25 @@ namespace Horizonte
     /// </example>
     public interface IHContext
     {
+
+        /// <summary>
+        /// Obtiene la ruta raíz asociada al contexto actual.
+        /// </summary>
+        /// <remarks>
+        /// Esta propiedad identifica la ubicación base utilizada por la implementación para resolver
+        /// archivos, recursos o rutas relacionadas con el contexto.
+        /// </remarks>
+        public string RootPath { get; }
+        
+        /// <summary>
+        /// Obtiene el nombre del contexto actual.
+        /// </summary>
+        /// <remarks>
+        /// Este valor representa el identificador lógico del contexto predeterminado que utilizará
+        /// la implementación cuando no se especifique uno explícitamente en las operaciones.
+        /// </remarks>
+        public string ContextName {get;}
+        
         /// <summary>
         /// Recupera la sección asociada al tipo especificado.
         /// </summary>
