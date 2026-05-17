@@ -19,7 +19,6 @@ namespace Horizonte;
 [HorizonteModule("Horizonte")]
 public class PanelModulo
 {
-
     private readonly IHGesCom _gesCom;
     private readonly ILogger<PanelModulo> _logger;
     private IServiceProvider _serviceProvider;
@@ -71,7 +70,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Quit", description: "Cierra el sistema")]
     public void Quit()
     {
-       // _env.Quit();
+        // _env.Quit();
     }
 
     //Memory Log
@@ -186,17 +185,21 @@ public class PanelModulo
     [HorizonteCommand("Workers_GetServicesRunning", "Obtiene la lista de Workers que se están ejecutando")]
     public List<RunningServiceInfo> Workers_GetServicesRunning()
     {
+        /*
         return _serviceProvider.GetServices<BackgroundService>()
             .Select(service => new RunningServiceInfo(
                 Typename: service.GetType().Name,
                 Isrunning: IsRunning(service),
                 Name: (service as IHorizonteBackgroundService)?.ServiceName ?? string.Empty))
             .ToList();
+            */
+        return null!;
     }
 
     [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
     public List<Type> Workers_GetAvailablesServices()
     {
+        /*
         var assemblymanager = _serviceProvider.GetService<IhAssemblyManager>();
         if (assemblymanager == null) return new List<Type>();
 
@@ -206,6 +209,8 @@ public class PanelModulo
             .ToList();
 
         return types;
+        */
+        return null!;
     }
 
     /// <summary>
@@ -215,12 +220,15 @@ public class PanelModulo
     /// <returns>True si el servicio está en ejecución; de lo contrario, false.</returns>
     private bool IsRunning(BackgroundService service)
     {
+        return false;
+        /*
         bool running;
         if (service is IHorizonteBackgroundService)
             running = (bool)(service as IHorizonteBackgroundService)?.IsRunning;
         else
             running = false;
         return running;
+        */
     }
 
     /// <summary>
@@ -245,7 +253,7 @@ public class PanelModulo
     /// </remarks>
     [HorizonteCommand("Workers_StartService", "Inicia un servicio")]
     public bool Workers_StartService(string servicename)
-    {
+    {/*
         try
         {
             // Obtenemos todos los servicios que implementan BackgroundService
@@ -276,8 +284,8 @@ public class PanelModulo
         catch (Exception e)
         {
             _logger?.LogError(e, $"Error al iniciar el servicio '{servicename}'");
+        }*/
             return false;
-        }
     }
 
     /// <summary>
@@ -303,6 +311,7 @@ public class PanelModulo
     [HorizonteCommand("Workers_StopService", "Detiene un servicio")]
     public bool Workers_StopService(string servicename)
     {
+        /*
         try
         {
             // Obtenemos todos los servicios que implementan BackgroundService
@@ -310,7 +319,7 @@ public class PanelModulo
                            Enumerable.Empty<BackgroundService>();
 
             // Buscamos el servicio que implementa IHservice y cuyo nombre coincide
-            var service = services.OfType<IHorizonteBackgroundService>()
+            var service = services.OfType<BackgroundService>()
                 .FirstOrDefault(x => x.ServiceName.Equals(servicename, StringComparison.OrdinalIgnoreCase));
 
             // Si no encontramos el servicio, salimos de la función
@@ -333,8 +342,9 @@ public class PanelModulo
         catch (Exception e)
         {
             _logger?.LogError(e, $"Error al detener el servicio '{servicename}'");
-            return false;
         }
+*/
+        return false;
     }
 
     //contexto
@@ -348,7 +358,7 @@ public class PanelModulo
     public string Context_GetJsonContent()
     {
         //string fileContent = File.ReadAllText(_env!.Contextname + ".json"); // TODO: 
-        string fileContent = File.ReadAllText( "horizonte.json"); // TODO: 
+        string fileContent = File.ReadAllText("horizonte.json"); // TODO: 
         object? jsonObject = JsonSerializer.Deserialize<object>(fileContent);
         string formattedJsonString = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions
         {
@@ -364,7 +374,7 @@ public class PanelModulo
     [HorizonteCommand("Context_SetJsonContent", "Establece el contexto de la aplicación")]
     public void Context_SetJsonContent(string content)
     {
-        File.WriteAllText("horizonte.json", content);//todo
+        File.WriteAllText("horizonte.json", content); //todo
     }
 
     /// <summary>
@@ -396,7 +406,7 @@ public class PanelModulo
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()
                          .OrderBy(x => Path.GetDirectoryName(x.Location)))
             {
-                string line = assembly.Location + "=>  " + assembly.FullName ;
+                string line = assembly.Location + "=>  " + assembly.FullName;
                 _logger?.LogInformation(line);
             }
         }

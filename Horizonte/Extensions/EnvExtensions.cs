@@ -105,7 +105,6 @@ public static class EnvExtensions
         symLinkScafolder.BuildScafolder(symLinkSettings.SymLinkDefs);
 
         // Configuramos y arrancamos workers
-        workersManager.ConfigureWorkers();
         workersManager.StartWorkers();
     }
     

@@ -4,7 +4,7 @@ namespace Horizonte;
 /// Representa una interfaz de servicio genérica que proporciona las propiedades esenciales 
 /// para gestionar el estado y el comportamiento de un servicio.
 /// </summary>
-public interface IHorizonteBackgroundService
+public interface IHorizonteBackgroundServiceXXX
 {
     /// <summary>
     /// Representa el nombre del servicio. Esta propiedad se utiliza para identificar 

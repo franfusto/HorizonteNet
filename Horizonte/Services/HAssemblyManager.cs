@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Xml.Linq;
+using Horizonte.Entities;
 using Horizonte.Interfaces;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,9 +20,12 @@ public class HAssemblyManager : IhAssemblyManager
     private string _installFolder = String.Empty;
     private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
     private List<BackgroundService> _dynamicServices = new List<BackgroundService>();
-    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies.Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
+
+    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
+        .Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
+
     public StaticFileRegistry StaticFileRegistry { get; private set; }
-    
+
     public Dictionary<string, List<Assembly>> AssembliesByDomain
     {
         get
@@ -33,13 +36,14 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 result[domain.Key] = domain.Value.Assemblies.ToList();
             }
+
             return result;
         }
     }
 
     public event Action? DomainChanged;
 
-    public HAssemblyManager( ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
+    public HAssemblyManager(ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
         StaticFileRegistry = new StaticFileRegistry();
         _logger = serviceProvider.GetService<ILogger<HAssemblyManager>>()!;
@@ -124,9 +128,9 @@ public class HAssemblyManager : IhAssemblyManager
         {
             _logger.LogInformation("Resolving assembly: " + args.Name);
             string? resAssemblyPath = null;
-            
+
             var (name, version) = ParseAssemblyName(args.Name);
-            
+
             ///
             var alreadyLoaded = Assemblies.FirstOrDefault(a =>
                 string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
@@ -149,7 +153,6 @@ public class HAssemblyManager : IhAssemblyManager
             if (resAssemblyPath == null)
             {
                 resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
-                
             }
 
             //
@@ -197,7 +200,7 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 return context.LoadFromAssemblyPath(resAssemblyPath);
             }
-            
+
             return Assembly.LoadFrom(resAssemblyPath);
         }
         catch (Exception ex)
@@ -245,7 +248,7 @@ public class HAssemblyManager : IhAssemblyManager
     public void LoadDomain(string domainName)
     {
         if (domainName == "Default") return;
-        
+
         // Si no existe, lo creamos
         if (!_domains.ContainsKey(domainName))
         {
@@ -426,13 +429,14 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception e)
             {
-                _logger.LogError($"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
+                _logger.LogError(
+                    $"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
                 continue;
             }
 
             var modulostypes = (from type in types
-                                where Attribute.IsDefined(type, typeof(HorizonteModule))
-                                select type).ToList();
+                where Attribute.IsDefined(type, typeof(HorizonteModule))
+                select type).ToList();
 
             foreach (var modtype in modulostypes)
             {
@@ -442,7 +446,8 @@ public class HAssemblyManager : IhAssemblyManager
                     object? modInstance;
                     try
                     {
-                        _logger.LogInformation($">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
+                        _logger.LogInformation(
+                            $">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
 
                         modInstance = CreateInstance(modtype);
                     }
@@ -487,9 +492,9 @@ public class HAssemblyManager : IhAssemblyManager
             Instance = instance,
             InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
             InNames = method.GetParameters()
-                            .Where(x => x.Name != null)
-                            .Select(parameter => parameter.Name!)
-                            .ToList(),
+                .Where(x => x.Name != null)
+                .Select(parameter => parameter.Name!)
+                .ToList(),
             OutType = method.ReturnType,
             Roles = roleAttrib,
             IsAsync = method.ReturnType == typeof(Task) ||
@@ -508,8 +513,8 @@ public class HAssemblyManager : IhAssemblyManager
         if (_domains.TryGetValue(domainName, out var alc))
         {
             var hContext = _serviceProvider.GetService<IHContext>();
-            var workerSettings = hContext?.Get<WorkerSettings>() ?? new WorkerSettings();
-            
+            var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
+
             foreach (var workerSetting in workerSettings.List)
             {
                 if (!workerSetting.RunOnStart) continue;
@@ -517,11 +522,13 @@ public class HAssemblyManager : IhAssemblyManager
                 var typeName = workerSetting.WorkerType.Split(',')[0].Trim();
                 var type = alc.Assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
 
-                if (type != null && typeof(IHorizonteBackgroundService).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsInterface &&
+                    !type.IsAbstract)
                 {
                     try
                     {
-                        _logger.LogInformation($"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
+                        _logger.LogInformation(
+                            $"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
                         if (CreateInstance(type) is BackgroundService worker)
                         {
                             worker.StartAsync(CancellationToken.None).Wait();
@@ -530,20 +537,19 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
+                        _logger.LogError(
+                            $"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
                     }
                 }
             }
         }
     }
 
-   
 
     public object? CreateInstance(Type type)
     {
         try
         {
-
             // Intentar crear instancia con el constructor que acepta IServiceProvider o default
             return ActivatorUtilities.CreateInstance(_serviceProvider, type);
         }
@@ -555,15 +561,13 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
 
-
-
     private string GetRequestedFramework()
     {
         var frameworkName = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
         // FrameworkDescription suele ser ".NET 10.0.0" o similar.
         // AppContext.TargetFrameworkName suele ser ".NETCoreApp,Version=v10.0"
         var targetFramework = AppContext.TargetFrameworkName;
-        
+
         if (string.IsNullOrEmpty(targetFramework))
         {
             // Fallback si no está disponible
@@ -579,12 +583,13 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 return $"net{version}";
             }
+
             if (parts[0].Contains(".NETStandard"))
             {
                 return $"netstandard{version}";
             }
         }
-        
+
         return "net10.0";
     }
 
@@ -601,10 +606,12 @@ public class HAssemblyManager : IhAssemblyManager
                 break;
             }
         }
+
         return (name, version);
     }
 
-    private string? ResolveNugetFromLocalDirectory(string name, string version, string? framework = null, bool exactmatch = true)
+    private string? ResolveNugetFromLocalDirectory(string name, string version, string? framework = null,
+        bool exactmatch = true)
     {
         if (string.IsNullOrEmpty(name)) return null;
         if (string.IsNullOrEmpty(version)) return null;
@@ -624,14 +631,16 @@ public class HAssemblyManager : IhAssemblyManager
                 if (Directory.Exists(pathConVersion))
                 {
                     var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
-                    var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, true, exactFramework);
+                    var versionSeleccionada =
+                        SelectedVersion(version, frameworkSolicitado, versionList, true, exactFramework);
                     if (versionSeleccionada != null) return versionSeleccionada.DllPath;
                 }
             }
             else
             {
                 var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
-                var versionSeleccionada = SelectedVersion(version, frameworkSolicitado, versionList, false, exactFramework);
+                var versionSeleccionada =
+                    SelectedVersion(version, frameworkSolicitado, versionList, false, exactFramework);
                 if (versionSeleccionada != null) return versionSeleccionada.DllPath;
             }
         }
@@ -713,6 +722,7 @@ public class HAssemblyManager : IhAssemblyManager
                     info.VersionString.Equals(versionSolicitadaRaw, StringComparison.OrdinalIgnoreCase));
                 if (encontrada != null) return encontrada;
             }
+
             return null;
         }
 
@@ -762,7 +772,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.IsNullOrEmpty(version)) return;
 
         var packageFileName = ResolveNugetFromRemoteServer(packageName, version);
-        
+
         if (string.IsNullOrEmpty(packageFileName)) return;
 
         try
@@ -807,14 +817,16 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     var normalizedVersion = string.Join(".", parts.Take(3));
                     var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
-                    _logger.LogInformation($"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
+                    _logger.LogInformation(
+                        $"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
                     result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
                     if (result != null) return result;
                 }
             }
 
             // 3. Si falla, aplicar heurística consultando versiones al servidor
-            _logger.LogInformation($"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
+            _logger.LogInformation(
+                $"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
             var availableVersions = GetRemotePackageVersions(nugetServer, packageName);
             if (!availableVersions.Any()) continue;
 
@@ -822,7 +834,8 @@ public class HAssemblyManager : IhAssemblyManager
             if (bestVersion != null && bestVersion != version)
             {
                 var heuristicUrl = GetDownloadUrl(nugetServer, packageName, bestVersion);
-                _logger.LogInformation($"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
+                _logger.LogInformation(
+                    $"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
                 result = DownloadPackage(heuristicUrl, packageName, bestVersion);
                 if (result != null) return result;
             }
@@ -847,15 +860,16 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     baseDownloadUrl = baseDownloadUrl.Substring(0, baseDownloadUrl.Length - 10).TrimEnd('/');
                 }
-                
+
                 // Si la URL no contiene 'package' y no es nuget.org, intentamos añadirlo como fallback común para BaGet
-                if (!baseDownloadUrl.Contains("/package", StringComparison.OrdinalIgnoreCase) && 
+                if (!baseDownloadUrl.Contains("/package", StringComparison.OrdinalIgnoreCase) &&
                     !baseDownloadUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
                 {
                     baseDownloadUrl = baseDownloadUrl.TrimEnd('/') + "/package";
                 }
 
-                return $"{baseDownloadUrl.TrimEnd('/')}/{packageName.ToLower()}/{version}/{packageName.ToLower()}.{version}.nupkg";
+                return
+                    $"{baseDownloadUrl.TrimEnd('/')}/{packageName.ToLower()}/{version}/{packageName.ToLower()}.{version}.nupkg";
             default:
                 return string.Empty;
         }
@@ -904,10 +918,10 @@ public class HAssemblyManager : IhAssemblyManager
                 XNamespace m = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
                 XNamespace d = "http://schemas.microsoft.com/ado/2007/08/dataservices";
                 versions = doc.Descendants(m + "properties")
-                              .Select(p => p.Element(d + "Version")?.Value)
-                              .Where(v => v != null)
-                              .Cast<string>()
-                              .ToList();
+                    .Select(p => p.Element(d + "Version")?.Value)
+                    .Where(v => v != null)
+                    .Cast<string>()
+                    .ToList();
             }
             else if (server.Version == 3)
             {
@@ -929,10 +943,12 @@ public class HAssemblyManager : IhAssemblyManager
                     {
                         var serviceIndexResponse = httpClient.GetStringAsync(serviceIndexUrl).Result;
                         // Buscamos "@type": "RegistrationsBaseUrl" o similar
-                        var regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse, "\"@id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"");
+                        var regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse,
+                            "\"@id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"");
                         if (!regMatch.Success)
                         {
-                            regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse, "\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"[^}]*\"@id\"\\s*:\\s*\"([^\"]+)\"");
+                            regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse,
+                                "\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"[^}]*\"@id\"\\s*:\\s*\"([^\"]+)\"");
                             if (regMatch.Success && regMatch.Groups.Count > 2)
                             {
                                 registrationUrl = regMatch.Groups[2].Value;
@@ -949,7 +965,7 @@ public class HAssemblyManager : IhAssemblyManager
                         registrationUrl = server.Server.TrimEnd('/');
                         if (registrationUrl.EndsWith("/index.json", StringComparison.OrdinalIgnoreCase))
                             registrationUrl = registrationUrl.Substring(0, registrationUrl.Length - 11);
-                        
+
                         if (!registrationUrl.EndsWith("/registration", StringComparison.OrdinalIgnoreCase))
                             registrationUrl += "/registration";
                     }
@@ -962,7 +978,8 @@ public class HAssemblyManager : IhAssemblyManager
                     if (responseMessage.IsSuccessStatusCode)
                     {
                         var response = responseMessage.Content.ReadAsStringAsync().Result;
-                        var matches = System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                        var matches =
+                            System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
                         foreach (System.Text.RegularExpressions.Match match in matches)
                         {
                             if (match.Groups.Count > 1)
@@ -971,7 +988,8 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     else
                     {
-                        _logger.LogWarning($"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
+                        _logger.LogWarning(
+                            $"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
                     }
                 }
             }
@@ -980,6 +998,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             _logger.LogError($"Error fetching versions for {packageName} from {server.Name}: {ex.Message}");
         }
+
         return versions.Distinct().ToList();
     }
 
@@ -991,15 +1010,16 @@ public class HAssemblyManager : IhAssemblyManager
         if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
         if (!Version.TryParse(vParsable, out var vS)) return null;
 
-        var parsedVersions = versionesDisponibles.Select(v => {
+        var parsedVersions = versionesDisponibles.Select(v =>
+        {
             string vp = v;
             if (vp.Contains("-")) vp = vp.Split("-")[0];
             Version.TryParse(vp, out var ver);
-            return new { Raw = v, Parsed = ver ?? new Version(0,0,0) };
+            return new { Raw = v, Parsed = ver ?? new Version(0, 0, 0) };
         }).ToList();
 
         // 1. Intentar Exacta Major.Minor.Build
-        var match = parsedVersions.FirstOrDefault(v => 
+        var match = parsedVersions.FirstOrDefault(v =>
             v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor && v.Parsed.Build == vS.Build);
         if (match != null) return match.Raw;
 
@@ -1045,7 +1065,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             //Primero cargamos los paquetes forzados
             LoadForecedPackages(_settings.ForcedPackages);
-            
+
             // Itera sobre los módulos activos en la configuración.
             foreach (var moduleItem in _settings.List.Where(item => item.Active))
             {
@@ -1073,17 +1093,20 @@ public class HAssemblyManager : IhAssemblyManager
         {
             try
             {
-                _logger.LogInformation($"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
-                
+                _logger.LogInformation(
+                    $"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
+
                 // Intentar resolver localmente con versión y framework exactos
-                var dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
-                
+                var dllPath =
+                    ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
+
                 if (dllPath == null)
                 {
                     // Intentar descargar si no se encuentra localmente
                     DownloadAndExtractPackage(package.PackageId, package.Version);
                     // Volver a intentar resolver después de la descarga
-                    dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
+                    dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework,
+                        true);
                 }
 
                 if (dllPath != null)
@@ -1092,7 +1115,7 @@ public class HAssemblyManager : IhAssemblyManager
                         dllPath = Path.GetFullPath(dllPath);
 
                     _logger.LogInformation($"Forced package {package.PackageId} resolved to: {dllPath}");
-                    
+
                     var alc = AssemblyLoadContext.Default;
                     if (!string.IsNullOrEmpty(package.Domain) && package.Domain != "Default")
                     {
@@ -1101,9 +1124,9 @@ public class HAssemblyManager : IhAssemblyManager
                             alc = customAlc;
                         }
                     }
-                    
+
                     alc.LoadFromAssemblyPath(dllPath);
-                    
+
                     // Registrar assets del paquete
                     StaticFileRegistry.RegisterPackageDirectory(dllPath);
 
@@ -1118,12 +1141,14 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
+                        _logger.LogError(
+                            $"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
                     }
                 }
                 else
                 {
-                    _logger.LogError($"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
+                    _logger.LogError(
+                        $"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
                 }
             }
             catch (Exception ex)
@@ -1132,7 +1157,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
         }
     }
-    
+
 
     /// <summary>
     /// Carga un ensamblado individual del módulo especificado y registra sus activos y documentación.
@@ -1153,8 +1178,8 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (File.Exists(moduleItem.Path))
             {
-                var fullPath = Path.IsPathRooted(moduleItem.Path) 
-                    ? moduleItem.Path 
+                var fullPath = Path.IsPathRooted(moduleItem.Path)
+                    ? moduleItem.Path
                     : Path.GetFullPath(moduleItem.Path);
 
                 _logger.LogInformation($"Loading module from: {fullPath}");
@@ -1217,7 +1242,7 @@ public class HAssemblyManager : IhAssemblyManager
         catch (Exception e)
         {
             _logger.LogError($"Error on load additional dll from module: {modulePath}" +
-                              Environment.NewLine + e);
+                             Environment.NewLine + e);
         }
     }
 
@@ -1229,9 +1254,9 @@ public class HAssemblyManager : IhAssemblyManager
             // resAssemblyPath: [ruta nuget packages]/[nombre del paquete]/[version del paquete]/lib/[framework]/[ensamblado].dll
             // Subir tres directorios desde el archivo resAssemblyPath para obtener el path del paquete (ej: /.../porcupine/3.0.10/)
             var libDir = Directory.GetParent(resAssemblyPath); // [framework]
-            var pkgVersionDir = libDir?.Parent;               // lib
+            var pkgVersionDir = libDir?.Parent; // lib
             var packagePath = pkgVersionDir?.Parent?.FullName; // [version del paquete]
-            
+
             if (string.IsNullOrEmpty(packagePath)) return mappings;
 
             // Determinar el framework a partir de la ruta del ensamblado
@@ -1325,7 +1350,7 @@ public class HAssemblyManager : IhAssemblyManager
                         }
                         else if (Directory.Exists(resolvedInclude))
                         {
-                             string finalDest = !string.IsNullOrEmpty(linkTemplate)
+                            string finalDest = !string.IsNullOrEmpty(linkTemplate)
                                 ? linkTemplate.Replace('\\', Path.DirectorySeparatorChar)
                                 : Path.GetFileName(resolvedInclude.TrimEnd(Path.DirectorySeparatorChar));
 
@@ -1349,5 +1374,55 @@ public class HAssemblyManager : IhAssemblyManager
         return mappings;
     }
 
-   
+    public bool StartBackgroundService(string workerType)
+    {
+        var typeName = workerType.Split(',')[0].Trim();
+        Type? serviceType = null;
+
+
+        serviceType = Assemblies.Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
+            .FirstOrDefault(t => t != null);
+
+        serviceType ??= AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
+            .FirstOrDefault(t => t != null);
+
+        serviceType ??= Type.GetType(workerType, throwOnError: false);
+
+        if (serviceType != null)
+        {
+            try
+            {
+                // Intentamos crear la instancia usando ActivatorUtilities para soportar DI
+                var worker = ActivatorUtilities.CreateInstance(_serviceProvider, serviceType) as BackgroundService;
+                if (worker != null)
+                {
+                    _logger.LogInformation($"Iniciando worker: {worker.GetType().Name}");
+                    worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,
+                    $"Error al configurar el worker  de tipo '{serviceType.Name}'");
+            }
+        }
+        else
+        {
+            _logger.LogWarning($"Tipo de worker '{serviceType.Name}' no encontrado.");
+        }
+
+        return false;
+    }
+
+    public bool StopBackgroundService(string serviceType)
+    {
+        return false;
+    }
+
+    public bool BackgroundServiceRunning(string serviceType)
+    {
+        return false;
+    }
 }

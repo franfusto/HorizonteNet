@@ -1,38 +1,10 @@
-namespace Horizonte;
+namespace Horizonte.Entities;
 
-public class WorkerSettings
-{
-    public WorkerSettings()
-    {
-        List.Add(new WorkerSettingsItem()
-        {
-            ServiceName = "HorizonteNet GUI",
-            WorkerType = "Horizonte.AdminUi.Worker,Horizonte.AdminUi",
-            RunOnStart = true,
-            Order = 1
-        });
-        List.Add(new WorkerSettingsItem()
-        {
-            ServiceName = "Fake Worker Contador",
-            WorkerType = "Horizonte.FakeWorker,Horizonte",
-            RunOnStart = true,
-            Order = 2
-        });
-        List.Add(new WorkerSettingsItem()
-        {
-            ServiceName = "Start/End Worker",
-            WorkerType = "Horizonte.StartEndWorker,Horizonte",
-            RunOnStart = true,
-            Order = 3
-        }); 
-    }
-    public List<WorkerSettingsItem> List { get; set; } = [];
-}
 
 /// <summary>
 /// Represents an individual worker configuration item within the system.
 /// </summary>
-public class WorkerSettingsItem
+public class WorkerDefItem
 {
     /// <summary>
     /// Especifica el tipo de trabajador que será instanciado y ejecutado en el marco de trabajo Horizonte.
@@ -61,5 +33,5 @@ public class WorkerSettingsItem
     /// Representa el orden de ejecución para los servicios del trabajador.
     /// Determina la secuencia en la cual se iniciaran y ejecutarán los trabajadores.
     /// </summary>
-    public int Order { get; set; } = 0;
+    public int Order { get; set; } = 99999;
 }

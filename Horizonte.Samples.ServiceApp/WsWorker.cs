@@ -5,11 +5,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Horizonte.Samples.ServiceApp;
 
-public class WsWorker : BackgroundService, IHorizonteBackgroundService
+public class WsWorker : BackgroundService
 {
-    public string ServiceName { get; set; } = "Web Service Worker";
-    public bool IsRunning { get; set; }
-    public bool RunOnStart { get; set; }
+
    
     private WebApplication? _app;
     private ILogger? _log;
@@ -17,14 +15,13 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
     private IHContext? _context;
     private ServiceConfig _config = new();
     
-    public WsWorker(IServiceProvider serviceProvider, string serviceName, bool runOnStart)
+    public WsWorker(IServiceProvider serviceProvider)
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
         _gesCom = serviceProvider?.GetService<IHGesCom>();
         _context = serviceProvider?.GetService<IHContext>();
         //Horizonte.Samples.ServiceApp.WsWorker
-        ServiceName = serviceName;
-        RunOnStart = runOnStart;
+
     }
 
     //https://medium.com/@mayoorakasri20/building-a-minimal-web-api-with-asp-net-core-and-net-8-c2df508b0c8a
@@ -66,7 +63,7 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
         _app.MapGet("/time", () => DateTime.Now);
         _app.MapGet("/workers", (CancellationToken ct) => _gesCom?.RunCommandAsync("Workers_GetServicesRunning"));
         _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
-        IsRunning = true;
+  
         return _app.RunAsync(stoppingToken);
     }
 
@@ -82,7 +79,7 @@ public class WsWorker : BackgroundService, IHorizonteBackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Web Service Worker");
-        IsRunning = false;
+
         return _app?.StopAsync(cancellationToken) ?? Task.CompletedTask;
     }
 }

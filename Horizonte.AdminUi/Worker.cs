@@ -12,7 +12,7 @@ using Horizonte.Interfaces;
 
 namespace Horizonte.AdminUi;
 
-public sealed class Worker : BackgroundService, IHorizonteBackgroundService
+public sealed class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _log;
     private readonly IHGesCom _gesCom;
@@ -27,9 +27,7 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
                   IHContext context, 
                   IHCredManager credManager, 
                   ISymLinkScafolder linkScafolder, 
-                  IhAssemblyManager assemblyManager,
-                  string serviceName, 
-                  bool runOnStart)
+                  IhAssemblyManager assemblyManager)
     {
         _log = log;
         _gesCom = gesCom;
@@ -37,8 +35,6 @@ public sealed class Worker : BackgroundService, IHorizonteBackgroundService
         _credManager = credManager;
         _linkScafolder = linkScafolder;
         _assemblyManager = assemblyManager;
-        ServiceName = serviceName;
-        RunOnStart = runOnStart;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)

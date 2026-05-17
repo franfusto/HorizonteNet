@@ -25,6 +25,9 @@ public static class Extensions
         
         var symLinkScafolder = legacyServiceProvider.GetService<ISymLinkScafolder>();
         if (symLinkScafolder != null) services.AddSingleton<ISymLinkScafolder>(symLinkScafolder);   
+                
+        var assemblyManager = legacyServiceProvider.GetService<IhAssemblyManager>();
+        if (assemblyManager != null) services.AddSingleton<IhAssemblyManager>(assemblyManager);   
         
         /*
         var modmanager = instanceEnv.GetService<IHModManager>();

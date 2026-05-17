@@ -1,3 +1,4 @@
+@using Horizonte.Entities
 @inject IHContext Context
 @inject  DialogService DialogService
 <RadzenCard>
@@ -11,7 +12,7 @@
     <br/>
     <RadzenStack Orientation="Orientation.Vertical">
         <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false" AllowSorting="true"
-                        EditMode="DataGridEditMode.Single" Data="_workerlist" TItem="WorkerSettingsItem"
+                        EditMode="DataGridEditMode.Single" Data="_workerlist" TItem="WorkerDefItem"
                         RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Horizontal">
@@ -20,22 +21,22 @@
                 </RadzenStack>
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(WorkerSettingsItem.Order)" Title="Order">
+                <RadzenDataGridColumn Property="@nameof(WorkerDefItem.Order)" Title="Order">
                     <EditTemplate Context="item">
                         <RadzenNumeric @bind-Value="item.Order"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(WorkerSettingsItem.ServiceName)" Title="ServiceName">
+                <RadzenDataGridColumn Property="@nameof(WorkerDefItem.ServiceName)" Title="ServiceName">
                     <EditTemplate Context="item">
                         <RadzenTextBox @bind-Value="item.ServiceName"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(WorkerSettingsItem.WorkerType)" Title="Type">
+                <RadzenDataGridColumn Property="@nameof(WorkerDefItem.WorkerType)" Title="Type">
                     <EditTemplate Context="item">
                         <RadzenTextBox @bind-Value="item.WorkerType"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(WorkerSettingsItem.RunOnStart)" Title="Activo">
+                <RadzenDataGridColumn Property="@nameof(WorkerDefItem.RunOnStart)" Title="Activo">
                     <EditTemplate Context="item">
                         <RadzenCheckBox @bind-Value="item.RunOnStart"/>
                     </EditTemplate>
@@ -69,9 +70,9 @@
 </RadzenCard>
 
 @code {
-    WorkerSettings _workerSettings = new WorkerSettings();
-    List<WorkerSettingsItem> _workerlist = new List<WorkerSettingsItem>();
-    RadzenDataGrid<WorkerSettingsItem> _grid = new RadzenDataGrid<WorkerSettingsItem>();
+    WorkerDef _workerDef = new WorkerDef();
+    List<WorkerDefItem> _workerlist = new List<WorkerDefItem>();
+    RadzenDataGrid<WorkerDefItem> _grid = new RadzenDataGrid<WorkerDefItem>();
 
 
     protected override void OnInitialized()
@@ -82,19 +83,19 @@
 
     private void Update()
     {
-        _workerSettings.List = _workerlist;
-        Context.Update(_workerSettings);
+        _workerDef.List = _workerlist;
+        Context.Update(_workerDef);
     }
 
     private void Get()
     {
-        _workerSettings = Context.Get<WorkerSettings>() ?? new WorkerSettings();
-        _workerlist = _workerSettings.List;
+        _workerDef = Context.Get<WorkerDef>() ?? new WorkerDef();
+        _workerlist = _workerDef.List;
     }
 
     private async Task FindWorkers()
     {
-        WorkerSettingsItem? result = await DialogService.OpenAsync<FindWorkers>($"Workers Disponibles",
+        WorkerDefItem? result = await DialogService.OpenAsync<FindWorkers>($"Workers Disponibles",
             null,
             new DialogOptions() 
             {
@@ -109,7 +110,7 @@
     
     async Task InsertRow()
     {
-        var item = new WorkerSettingsItem()
+        var item = new WorkerDefItem()
         {
             WorkerType = "Worker.Type",
             RunOnStart = false,
@@ -119,7 +120,7 @@
     }
 
 
-    void OnUpdateRow(WorkerSettingsItem item)
+    void OnUpdateRow(WorkerDefItem item)
     {
         //var selitem = _workerlist.FirstOrDefault(x => x.WorkerType == item.WorkerType);
         //if (selitem == null) return;
@@ -130,28 +131,28 @@
         _grid.Reload();
     }
 
-    void OnCreateRow(WorkerSettingsItem item)
+    void OnCreateRow(WorkerDefItem item)
     {
         _workerlist.Add(item);
     }
 
-    async Task EditRow(WorkerSettingsItem item)
+    async Task EditRow(WorkerDefItem item)
     {
         await _grid.EditRow(item);
     }
 
-    async Task SaveRow(WorkerSettingsItem item)
+    async Task SaveRow(WorkerDefItem item)
     {
         await _grid.UpdateRow(item);
     }
 
-    void CancelEdit(WorkerSettingsItem item)
+    void CancelEdit(WorkerDefItem item)
     {
         _grid.CancelEditRow(item);
         _grid.Reload();
     }
 
-    async Task DeleteRow(WorkerSettingsItem item)
+    async Task DeleteRow(WorkerDefItem item)
     {
         var selitem = _workerlist.FirstOrDefault(x => x.WorkerType == item.WorkerType);
         if (selitem != null) _workerlist.Remove(selitem);

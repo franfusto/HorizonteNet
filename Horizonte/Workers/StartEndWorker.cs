@@ -13,10 +13,9 @@ namespace Horizonte;
 /// al comienzo y al final de su ciclo de vida. Extiende la clase BackgroundService para una ejecución
 /// asincrónica e implementa la interfaz IHservice para funcionalidades adicionales y garantizar el cumplimiento del contrato.
 /// StartEndWorker está equipada con inyección de dependencias para acceder a los servicios y configuraciones necesarios.
-/// Mantiene propiedades como <c>IsRunning</c>, <c>RunOnStart</c> y <c>ServiceName</c> para rastrear
-/// su estado y configuraciones operativas.
+
 /// </remarks>
-public class StartEndWorker : BackgroundService, IHorizonteBackgroundService
+public class StartEndWorker : BackgroundService
 {
     /// <summary>
     /// Indica si el servicio se encuentra actualmente en ejecución.

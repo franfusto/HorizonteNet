@@ -5,11 +5,9 @@ using Pv;
 
 namespace Horizonte.PorcupineMod;
 
-public class Worker : BackgroundService, IHorizonteBackgroundService
+public class Worker : BackgroundService
 {
-    public string ServiceName { get; set; } = "Porcupine Service";
-    public bool IsRunning { get; set; }
-    public bool RunOnStart { get; set; }
+
     private ILogger? _log;
     private IHGesCom? _gesCom;
     private IHContext? _context;
@@ -19,15 +17,14 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     private PvRecorder _recorder;
     private IHCredManager? _credManager;
     
-    public Worker(ILogger<Worker> logger,IHGesCom gesCom,IHContext context,IHCredManager credManager,  string serviceName, bool runOnStart)
+    public Worker(ILogger<Worker> logger,IHGesCom gesCom,IHContext context,IHCredManager credManager)
     {
         _log = logger;
         _gesCom = gesCom;
         _context = context;
         _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
         _credManager = credManager;
-        ServiceName = serviceName;
-        RunOnStart = runOnStart;
+
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -82,7 +79,6 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
         {
 
             _log?.LogInformation("Starting Service Porcupine");
-            IsRunning = true;
 
             List<BuiltInKeyword> commands = new List<BuiltInKeyword>
             {
@@ -123,7 +119,6 @@ public class Worker : BackgroundService, IHorizonteBackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Service Porcupine");
-        IsRunning = false;
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         Thread.Sleep(500); // esperar recorder

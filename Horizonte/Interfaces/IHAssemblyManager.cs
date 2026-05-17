@@ -30,4 +30,8 @@ public interface IhAssemblyManager
     public void LoadCommandsByDomain(string domainName);
 
     public object? CreateInstance(Type type);
+    
+    public bool StartBackgroundService(string serviceType);
+    public bool StopBackgroundService(string serviceType);
+    public bool BackgroundServiceRunning(string serviceType);
 }

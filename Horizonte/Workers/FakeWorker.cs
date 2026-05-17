@@ -1,5 +1,4 @@
-using System.Reflection.Metadata.Ecma335;
-using Microsoft.Extensions.DependencyInjection;
+
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -9,19 +8,16 @@ namespace Horizonte;
 /// FakeWorker es un servicio en segundo planode ejemplo, que implementa la interfaz IHservice.
 /// Está diseñado para ejecutar lógica de trabajo personalizada como un servicio de larga duración dentro de un entorno de hospedaje.
 /// </summary>
-public class FakeWorker : BackgroundService, IHorizonteBackgroundService
+public class FakeWorker : BackgroundService
 {
-    public bool IsRunning { get; set; } = false;
-    public bool RunOnStart { get; set; }
-    public string ServiceName { get; set; }
+
     
     private ILogger? _log;
 
-    public FakeWorker(ILogger<FakeWorker> logger,string serviceName,bool runOnStart)
+    public FakeWorker(ILogger<FakeWorker> logger)
     {
         _log = logger;
-        ServiceName = serviceName;
-        RunOnStart = runOnStart;
+
     }
 
     private void DoWork(CancellationToken stoppingToken)
@@ -38,7 +34,6 @@ public class FakeWorker : BackgroundService, IHorizonteBackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log?.LogInformation("Ejecutando FakeWorker");
-        IsRunning = true;
         return Task.Run(() => DoWork(stoppingToken), stoppingToken);
     }
 
@@ -52,7 +47,6 @@ public class FakeWorker : BackgroundService, IHorizonteBackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Finalizando FakeWorker");
-        IsRunning = false;
         return base.StopAsync(cancellationToken);
     }
 

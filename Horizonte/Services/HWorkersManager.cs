@@ -1,112 +1,138 @@
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Horizonte.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte;
 
+/// <summary>
+/// Implementa la gestión de workers de Horizonte a partir de la configuración disponible en el contexto.
+/// </summary>
+/// <remarks>
+/// Esta clase resuelve definiciones de workers mediante <see cref="IHContext"/> y delega en
+/// <see cref="IhAssemblyManager"/> el inicio, detención y consulta del estado de los servicios
+/// en segundo plano. También registra en el sistema de logging los eventos relevantes del ciclo
+/// de vida de cada worker.
+/// </remarks>
 public class HWorkersManager : IhWorkersManager
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IHContext _context;
     private readonly ILogger<HWorkersManager> _logger;
-    private readonly List<BackgroundService> _managedWorkers = new();
     private readonly IhAssemblyManager _assemblyManager;
+    
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="HWorkersManager"/>.
+    /// </summary>
+    /// <param name="assemblyManager">
+    /// Gestor encargado de arrancar, detener y consultar servicios en segundo plano a partir
+    /// del tipo configurado para cada worker.
+    /// </param>
+    /// <param name="context">
+    /// Contexto de Horizonte desde el que se obtienen las definiciones de workers disponibles.
+    /// </param>
+    /// <param name="logger">
+    /// Registrador utilizado para informar de errores, advertencias y eventos de ejecución
+    /// relacionados con los workers.
+    /// </param>
 
-    public HWorkersManager(IServiceProvider serviceProvider, IHContext context, ILogger<HWorkersManager> logger)
+    public HWorkersManager(
+        IhAssemblyManager assemblyManager,
+        IHContext context,
+        ILogger<HWorkersManager> logger)
     {
-        _serviceProvider = serviceProvider;
         _context = context;
         _logger = logger;
-        _assemblyManager = _serviceProvider.GetService<IhAssemblyManager>();
+        _assemblyManager = assemblyManager;
     }
 
-    public void ConfigureWorkers()
-    {
-        _managedWorkers.Clear();
-        var workerSettings = _context.Get<WorkerSettings>() ?? new WorkerSettings();
-
-        foreach (var workerItem in workerSettings.List.OrderBy(item => item.Order))
-        {
-            /*
-            Type? serviceType = Type.GetType(workerItem.WorkerType);
-            
-            if (serviceType == null && assemblyManager != null)
-            {
-                // Intentar buscar en los ensamblados cargados si no se encuentra por nombre completo
-                var typeName = workerItem.WorkerType.Split(',')[0].Trim();
-                serviceType = assemblyManager.Assemblies
-                    .Select(a => a.GetType(typeName))
-                    .FirstOrDefault(t => t != null);
-            }
-            */
-            var typeName = workerItem.WorkerType.Split(',')[0].Trim();
-            Type? serviceType = null;
-
-            if (_assemblyManager != null)
-            {
-                serviceType = _assemblyManager.Assemblies
-                    .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
-                    .FirstOrDefault(t => t != null);
-            }
-
-            serviceType ??= AppDomain.CurrentDomain.GetAssemblies()
-                .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
-                .FirstOrDefault(t => t != null);
-
-            serviceType ??= Type.GetType(workerItem.WorkerType, throwOnError: false);
-
-            if (serviceType != null)
-            {
-                try
-                {
-                    // Intentamos crear la instancia usando ActivatorUtilities para soportar DI
-                    var worker = ActivatorUtilities.CreateInstance(_serviceProvider, serviceType, workerItem.ServiceName, workerItem.RunOnStart) as BackgroundService;
-                    if (worker != null)
-                    {
-                        _managedWorkers.Add(worker);
-                        _logger.LogInformation($"Worker '{workerItem.ServiceName}' ({serviceType.Name}) configurado correctamente.");
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Error al configurar el worker '{workerItem.ServiceName}' de tipo '{workerItem.WorkerType}'");
-                }
-            }
-            else
-            {
-                _logger.LogWarning($"Tipo de worker '{workerItem.WorkerType}' no encontrado.");
-            }
-        }
-    }
-
+    /// <inheritdoc />
     public void StartWorkers()
     {
-        foreach (var worker in _managedWorkers)
+        var workers = _context.Get<WorkerDef>()?.List ?? new List<WorkerDefItem>();
+
+        foreach (var worker in workers.Where(x => x.RunOnStart))
         {
-            if (worker is IHorizonteBackgroundService hService && hService.RunOnStart)
+            try
             {
-                _logger.LogInformation($"Iniciando worker: {hService.ServiceName}");
-                //worker.StartAsync(CancellationToken.None);
-                worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
+                var started = StartWorker(worker.ServiceName);
+
+                if (!started)
+                {
+                    _logger.LogWarning("No se pudo iniciar el worker '{ServiceName}'.", worker.ServiceName);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation($"Worker configurado pero no marcado para iniciar automáticamente: {worker.GetType().Name}");
+                _logger.LogError(ex, "Error al iniciar el worker '{ServiceName}'.", worker.ServiceName);
             }
         }
     }
 
-    public void StopWorkers()
+    /// <inheritdoc />
+    public List<WorkerDefItem> GetAvailableWorkers()
     {
-        foreach (var worker in _managedWorkers)
+        return _context.Get<WorkerDef>()?.List ?? new List<WorkerDefItem>();
+    }
+    
+    /// <inheritdoc />
+    public bool WorkerIsRunning(string serviceName)
+    {
+        if (string.IsNullOrWhiteSpace(serviceName))
+            return false;
+
+        var worker = GetWorkerByServiceName(serviceName);
+        if (worker == null)
+            return false;
+
+        return _assemblyManager.BackgroundServiceRunning(worker.WorkerType);
+    }
+    
+    /// <inheritdoc />
+    public bool StartWorker(string serviceName)
+    {
+        if (string.IsNullOrWhiteSpace(serviceName))
+            return false;
+
+        var worker = GetWorkerByServiceName(serviceName);
+        if (worker == null)
         {
-            worker.StopAsync(CancellationToken.None).Wait();
+            _logger.LogWarning("Worker no encontrado: '{ServiceName}'.", serviceName);
+            return false;
         }
+
+        var started = _assemblyManager.StartBackgroundService(worker.WorkerType);
+
+        if (started)
+            _logger.LogInformation("Worker iniciado: '{ServiceName}'.", serviceName);
+        else
+            _logger.LogWarning("No se pudo iniciar el worker: '{ServiceName}'.", serviceName);
+
+        return started;
+    }
+    /// <inheritdoc />
+    public bool StopWorker(string serviceName)
+    {
+        if (string.IsNullOrWhiteSpace(serviceName))
+            return false;
+
+        var worker = GetWorkerByServiceName(serviceName);
+        if (worker == null)
+        {
+            _logger.LogWarning("Worker no encontrado: '{ServiceName}'.", serviceName);
+            return false;
+        }
+
+        var stopped = _assemblyManager.StopBackgroundService(worker.WorkerType);
+
+        if (stopped)
+            _logger.LogInformation("Worker detenido: '{ServiceName}'.", serviceName);
+        else
+            _logger.LogWarning("No se pudo detener el worker: '{ServiceName}'.", serviceName);
+
+        return stopped;
     }
 
-    public List<BackgroundService> GetRunningWorkers()
+    private WorkerDefItem? GetWorkerByServiceName(string serviceName)
     {
-        return _managedWorkers;
+        return _context.Get<WorkerDef>()?.List
+            .FirstOrDefault(x => string.Equals(x.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase));
     }
 }

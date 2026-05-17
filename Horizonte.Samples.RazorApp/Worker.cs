@@ -1,31 +1,27 @@
 using System.Reflection;
 using Horizonte;
 using Horizonte.Extension.AspNetCore;
+using Horizonte.Samples.RazorApp;
 using Horizonte.Samples.RazorApp.Data;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Radzen;
 
-namespace Horizonte.Samples.RazorApp;
+namespace Horizonte.Samples;
 
 
-public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
+public class BlazorWorker : BackgroundService
 {
-    public bool IsRunning { get; set; } = false;
-    public bool RunOnStart { get; set; }
-    public string ServiceName { get; set; }
     
     private ILogger? _log;
     private WebApplication app;
     private RazorAppConfig _config = new();
     private IServiceProvider _services;
 
-    public BlazorWorker(IServiceProvider services,string serviceName,bool runOnStart)
+    public BlazorWorker(IServiceProvider services)
     {
         _log = services?.GetService<ILogger<BlazorWorker>>();
         _services = services;
-        ServiceName = serviceName;
-        RunOnStart = runOnStart;
     }
 
     private void GetConfiguration()
@@ -37,13 +33,17 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var enviroment = _config.DevelMode ? Environments.Development : Environments.Production;
-        
+        string location = Assembly.GetExecutingAssembly().Location;
+        string dir = Path.GetDirectoryName(location)!;
         var builder = WebApplication.CreateSlimBuilder(
-            new WebApplicationOptions { ApplicationName = "Horizonte.Samples.RazorApp",
-             EnvironmentName = enviroment
-        });
-        builder.Services.AddRazorPages();
-        builder.Services.AddServerSideBlazor();
+            new WebApplicationOptions
+            {
+                ApplicationName = "Horizonte.Samples.RazorApp",
+                ContentRootPath = dir,
+                WebRootPath = Path.Combine(dir, "wwwroot")
+            });
+        //builder.Services.AddRazorPages();
+        //builder.Services.AddServerSideBlazor();
         if (_log != null)
         {
             builder.Logging.ClearProviders();
@@ -59,10 +59,9 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
         app = builder.Build();
         app.UseHorizonteStaticFiles(); //-> Add Horizonte static files
         app.UseRouting();
-        app.MapBlazorHub();
-        app.MapFallbackToPage("/_Host");
+        //app.MapBlazorHub();
+        //app.MapFallbackToPage("/_Host");
 
-        IsRunning = true;
         return app.RunAsync(_config.Url);
     }
 
@@ -77,7 +76,6 @@ public class BlazorWorker : BackgroundService, IHorizonteBackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Finalizando RazorApp");
-        IsRunning = false;
         app?.DisposeAsync();
         return base.StopAsync(cancellationToken);
     }

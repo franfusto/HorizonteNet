@@ -1,4 +1,5 @@
 using System.Runtime.Loader;
+using Horizonte.Entities;
 using Horizonte.Services;
 using Horizonte.Settings;
 using log4net;
@@ -35,7 +36,7 @@ public static class HostBuilderExtensions
 
 
     [Obsolete("Utilice IhWorkersManager.ConfigureWorkers() en su lugar.")]
-    public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerSettings modset)
+    public static void ConfigureWorkers(this HostApplicationBuilder builder, WorkerDef modset)
     {
         /*
         var types = (env.AssemblyManager?.Assemblies ?? AssemblyLoadContext.Default.Assemblies)
