@@ -15,16 +15,14 @@ public class WsWorker : BackgroundService
     private IHContext? _context;
     private ServiceConfig _config = new();
     
+
     public WsWorker(IServiceProvider serviceProvider)
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
         _gesCom = serviceProvider?.GetService<IHGesCom>();
         _context = serviceProvider?.GetService<IHContext>();
-        //Horizonte.Samples.ServiceApp.WsWorker
 
     }
-
-    //https://medium.com/@mayoorakasri20/building-a-minimal-web-api-with-asp-net-core-and-net-8-c2df508b0c8a
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var builder = WebApplication.CreateBuilder();

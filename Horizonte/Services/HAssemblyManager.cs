@@ -7,19 +7,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-
 namespace Horizonte;
 
 public class HAssemblyManager : IhAssemblyManager
 {
+    private sealed class BackgroundServiceState
+    {
+        public string WorkerType { get; init; } = string.Empty;
+        public string DomainName { get; set; } = string.Empty;
+        public BackgroundService? Instance { get; set; }
+        public bool IsRunning { get; set; }
+        public bool RestartOnDomainLoad { get; set; }
+    }
+
     private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
-    private List<string> _searchPaths = new List<string>();
+    private readonly List<string> _searchPaths = new();
     private readonly ISymLinkScafolder _linkScafolder;
     private readonly IServiceProvider _serviceProvider;
-    private string _installFolder = String.Empty;
-    private Dictionary<string, AssemblyLoadContext> _domains = new Dictionary<string, AssemblyLoadContext>();
-    private List<BackgroundService> _dynamicServices = new List<BackgroundService>();
+    private readonly Dictionary<string, AssemblyLoadContext> _domains = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly Dictionary<string, BackgroundServiceState> _backgroundServices =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private string _installFolder = string.Empty;
 
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
         .Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
@@ -30,8 +41,11 @@ public class HAssemblyManager : IhAssemblyManager
     {
         get
         {
-            var result = new Dictionary<string, List<Assembly>>();
-            result["Default"] = AssemblyLoadContext.Default.Assemblies.ToList();
+            var result = new Dictionary<string, List<Assembly>>
+            {
+                ["Default"] = AssemblyLoadContext.Default.Assemblies.ToList()
+            };
+
             foreach (var domain in _domains)
             {
                 result[domain.Key] = domain.Value.Assemblies.ToList();
@@ -50,6 +64,7 @@ public class HAssemblyManager : IhAssemblyManager
         _settings = serviceProvider.GetService<IHContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
+
         SetUpAssemblyPaths();
         SetUpDomains();
         LoadModulesFromEnvironment();
@@ -57,8 +72,11 @@ public class HAssemblyManager : IhAssemblyManager
 
     private void SetUpAssemblyPaths()
     {
-        string systemNugetPackagesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages");
+        string systemNugetPackagesPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget",
+            "packages");
+
         if (Directory.Exists(systemNugetPackagesPath))
         {
             _searchPaths.Add(systemNugetPackagesPath);
@@ -68,6 +86,7 @@ public class HAssemblyManager : IhAssemblyManager
         foreach (var folderItem in _settings.NugetFolders.OrderBy(x => x.Order))
         {
             if (!folderItem.Active) continue;
+
             if (folderItem.InstallFolder)
             {
                 if (!Directory.Exists(folderItem.Folder))
@@ -91,97 +110,122 @@ public class HAssemblyManager : IhAssemblyManager
         {
             foreach (var domainName in _settings.Domains)
             {
-                if (domainName == "Default")
+                if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Default es el ALC por defecto, nos aseguramos de que tenga el resolve
                     AssemblyLoadContext.Default.Resolving -= ResolveAssemblyFromALC;
                     AssemblyLoadContext.Default.Resolving += ResolveAssemblyFromALC;
+                    continue;
                 }
-                else
-                {
-                    if (!_domains.ContainsKey(domainName))
-                    {
-                        _logger.LogInformation($"Creando dominio (ALC): {domainName}");
-                        var alc = new AssemblyLoadContext(domainName, isCollectible: true);
-                        alc.Resolving += ResolveAssemblyFromALC;
-                        _domains[domainName] = alc;
-                    }
-                }
+
+                if (_domains.ContainsKey(domainName))
+                    continue;
+
+                _logger.LogInformation("Creando dominio (ALC): {DomainName}", domainName);
+                var alc = new AssemblyLoadContext(domainName, isCollectible: true);
+                alc.Resolving += ResolveAssemblyFromALC;
+                _domains[domainName] = alc;
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e.ToString());
+            _logger.LogError(e, "Error configurando dominios.");
         }
     }
-
 
     public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName)
     {
         return ResolveAssemblyFromNuGetPackages(context, new ResolveEventArgs(assemblyName.FullName));
     }
 
-
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
     {
         try
         {
-            _logger.LogInformation("Resolving assembly: " + args.Name);
-            string? resAssemblyPath = null;
+            var requesterDomain = sender is AssemblyLoadContext senderAlc
+                ? GetDomainNameForAssemblyLoadContext(senderAlc)
+                : "Default";
+
+            _logger.LogInformation(
+                "Resolving assembly: {AssemblyName} requested by domain {DomainName}",
+                args.Name,
+                requesterDomain);
+
+            var requestedAssemblyName = new AssemblyName(args.Name);
+            var sharedAssembly = TryGetSharedAssemblyFromDefault(requestedAssemblyName);
+            if (sharedAssembly != null)
+                return sharedAssembly;
 
             var (name, version) = ParseAssemblyName(args.Name);
+            string? resAssemblyPath;
 
-            ///
-            var alreadyLoaded = Assemblies.FirstOrDefault(a =>
-                string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+            Assembly? alreadyLoaded = null;
+
+            if (sender is AssemblyLoadContext requestAlc)
+            {
+                alreadyLoaded = requestAlc.Assemblies.FirstOrDefault(a =>
+                    string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                alreadyLoaded = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a =>
+                    string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+            }
 
             if (alreadyLoaded != null)
             {
+                var loadedAlc = AssemblyLoadContext.GetLoadContext(alreadyLoaded);
+                _logger.LogInformation(
+                    "Assembly {AssemblyName} ya estaba cargado en el dominio solicitado {DomainName}",
+                    alreadyLoaded.FullName,
+                    loadedAlc != null ? GetDomainNameForAssemblyLoadContext(loadedAlc) : "Default");
+
                 return alreadyLoaded;
             }
 
             if (AssemblyHelpers.ShouldSkipNuGetResolution(name))
             {
-                _logger.LogInformation($"Skipping NuGet resolution for runtime assembly: {name}");
+                _logger.LogInformation(
+                    "Skipping NuGet resolution for runtime assembly: {AssemblyName} requested by domain {DomainName}",
+                    name,
+                    requesterDomain);
                 return null;
             }
-            ////
 
-            //try load from local directory
             resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, true);
-            //
+
             if (resAssemblyPath == null)
             {
                 resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
             }
 
-            //
             if (resAssemblyPath == null)
             {
-                // try download and install 
                 DownloadAndExtractPackage(name, version);
-                //try load from local directory, now approx version
                 resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
             }
 
             if (resAssemblyPath == null)
             {
-                _logger.LogError($"Could not resolve assembly: {args.Name}");
+                _logger.LogError(
+                    "Could not resolve assembly: {AssemblyName} requested by domain {DomainName}",
+                    args.Name,
+                    requesterDomain);
                 return null;
             }
 
-            // Asegurarse de que el path sea absoluto
             if (!Path.IsPathRooted(resAssemblyPath))
             {
-                // Intentar resolverlo relativo al directorio de ejecución o a los search paths
-                // Pero lo más seguro para ALC es Path.GetFullPath
                 resAssemblyPath = Path.GetFullPath(resAssemblyPath);
             }
 
-            //registras assets
+            _logger.LogInformation(
+                "Assembly {AssemblyName} resolved to path {AssemblyPath} for domain {DomainName}",
+                args.Name,
+                resAssemblyPath,
+                requesterDomain);
+
             StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
 
-            // Procesar archivos .targets / .props para crear enlaces simbólicos
             try
             {
                 var symLinks = GetContentMappingsFromPackage(resAssemblyPath);
@@ -192,34 +236,38 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error processing MSBuild targets for symlinks: {ex.Message}");
+                _logger.LogError(ex, "Error processing MSBuild targets for symlinks.");
             }
 
-            // Cargar y devolver el ensamblado seleccionado
             if (sender is AssemblyLoadContext context)
             {
-                return context.LoadFromAssemblyPath(resAssemblyPath);
+                var loadedAssembly = context.LoadFromAssemblyPath(resAssemblyPath);
+                _logger.LogInformation(
+                    "Assembly {AssemblyName} loaded into domain {DomainName}",
+                    loadedAssembly.FullName,
+                    GetDomainNameForAssemblyLoadContext(context));
+                return loadedAssembly;
             }
 
-            return Assembly.LoadFrom(resAssemblyPath);
+            var defaultAssembly = Assembly.LoadFrom(resAssemblyPath);
+            _logger.LogInformation(
+                "Assembly {AssemblyName} loaded into domain Default",
+                defaultAssembly.FullName);
+            return defaultAssembly;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error trying to resolve assembly from repository: {ex.Message}");
+            _logger.LogError(ex, "Error trying to resolve assembly from repository.");
+            return null;
         }
-
-        // Devolver null si no se pudo resolver
-        return null;
     }
-
 
     public string? ResolveAssemblyDllPath(string packageName, string version)
     {
-        // Intentar resolver localmente con versión exacta primero
         var path = ResolveNugetFromLocalDirectory(packageName, version, null, true);
+
         if (path == null)
         {
-            // Intentar con coincidencia aproximada si falla la exacta
             path = ResolveNugetFromLocalDirectory(packageName, version, null, false);
         }
 
@@ -233,39 +281,46 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void UnloadDomain(string domainName)
     {
-        if (domainName == "Default") return;
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
+
         if (_domains.TryGetValue(domainName, out var alc))
         {
-            _logger.LogInformation($"Unloading domain: {domainName}");
+            _logger.LogInformation("Unloading domain: {DomainName}", domainName);
+
             UnloadService(domainName);
             UnloadModule(domainName);
+
+            alc.Resolving -= ResolveAssemblyFromALC;
             alc.Unload();
             _domains.Remove(domainName);
+
             DomainChanged?.Invoke();
         }
     }
 
     public void LoadDomain(string domainName)
     {
-        if (domainName == "Default") return;
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
 
-        // Si no existe, lo creamos
         if (!_domains.ContainsKey(domainName))
         {
-            _logger.LogInformation($"Loading/Creating domain: {domainName}");
+            _logger.LogInformation("Loading/Creating domain: {DomainName}", domainName);
             var alc = new AssemblyLoadContext(domainName, isCollectible: true);
             alc.Resolving += ResolveAssemblyFromALC;
             _domains[domainName] = alc;
         }
 
-        // Cargamos los módulos y paquetes forzados para este dominio
         LoadForecedPackages(_settings.ForcedPackages.Where(x => x.Domain == domainName).ToList());
+
         foreach (var moduleItem in _settings.List.Where(item => item.Active && item.Domain == domainName))
         {
             LoadModuleAssembly(moduleItem);
+
             if (moduleItem.LoadAdditionalDlls == true && moduleItem.Path != null)
             {
-                LoadAdditinalAssemblies(moduleItem.Path);
+                LoadAdditinalAssemblies(moduleItem.Path, domainName);
             }
         }
 
@@ -277,12 +332,12 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
     {
-        if (domainName == "Default") return;
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
 
-        // Si no existe, lo creamos
         if (!_domains.TryGetValue(domainName, out var alc))
         {
-            _logger.LogInformation($"Creating domain from memory: {domainName}");
+            _logger.LogInformation("Creating domain from memory: {DomainName}", domainName);
             alc = new AssemblyLoadContext(domainName, isCollectible: true);
             alc.Resolving += ResolveAssemblyFromALC;
             _domains[domainName] = alc;
@@ -297,7 +352,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error loading assembly from stream into domain {domainName}: {ex.Message}");
+                _logger.LogError(ex, "Error loading assembly from stream into domain {DomainName}", domainName);
             }
         }
 
@@ -309,22 +364,20 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void ReloadDomain(string domainName)
     {
-        if (domainName == "Default") return;
-        _logger.LogInformation($"Reloading domain: {domainName}");
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _logger.LogInformation("Reloading domain: {DomainName}", domainName);
         UnloadDomain(domainName);
         LoadDomain(domainName);
     }
 
     public void UnloadModule(string domainName)
     {
-        _logger.LogInformation($"UnloadModule for domain: {domainName}");
+        _logger.LogInformation("UnloadModule for domain: {DomainName}", domainName);
         UnloadCommandsByDomain(domainName);
     }
 
-    /// <summary>
-    /// Elimina de la lista de comandos aquellos que pertenezcan al dominio especificado.
-    /// </summary>
-    /// <param name="domainName">Nombre del dominio (ALC).</param>
     public void UnloadCommandsByDomain(string domainName)
     {
         var gesCom = _serviceProvider.GetService<IHGesCom>();
@@ -333,80 +386,74 @@ public class HAssemblyManager : IhAssemblyManager
 
     public void UnloadService(string domainName)
     {
-        _logger.LogInformation($"Unloading services for domain: {domainName}");
-        if (domainName == "Default") return;
+        _logger.LogInformation("Unloading services for domain: {DomainName}", domainName);
 
-        if (_domains.TryGetValue(domainName, out var alc))
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var keysToProcess = _backgroundServices
+            .Where(x => string.Equals(x.Value.DomainName, domainName, StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keysToProcess)
         {
-            var domainAssemblies = alc.Assemblies.ToList();
-            //var hhost = _serviceProvider.GetService<IHorizonteEnv>()?.HHost;
-            var services = _serviceProvider.GetServices<BackgroundService>().ToList() ?? new List<BackgroundService>();
+            if (!_backgroundServices.TryGetValue(key, out var state))
+                continue;
 
-            foreach (var service in services)
+            try
             {
-                var serviceType = service.GetType();
-                var serviceAssembly = serviceType.Assembly;
-
-                if (domainAssemblies.Any(a => a.FullName == serviceAssembly.FullName))
+                if (state.Instance != null)
                 {
-                    _logger.LogInformation($"Stopping service: {serviceType.FullName} in domain {domainName}");
-                    try
-                    {
-                        service.StopAsync(CancellationToken.None).Wait();
+                    _logger.LogInformation(
+                        "Stopping service {WorkerType} in domain {DomainName}",
+                        state.WorkerType,
+                        state.DomainName);
 
-                        if (_dynamicServices.Contains(service))
-                        {
-                            _dynamicServices.Remove(service);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Error stopping service {serviceType.FullName}: {ex.Message}");
-                    }
+                    state.Instance.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping service {WorkerType}", state.WorkerType);
+            }
+            finally
+            {
+                state.Instance = null;
+                state.IsRunning = false;
             }
         }
     }
 
     public void LoadModule(string domainName)
     {
-        _logger.LogInformation($"LoadModule for domain: {domainName}");
+        _logger.LogInformation("LoadModule for domain: {DomainName}", domainName);
         LoadCommandsByDomain(domainName);
     }
 
-    /// <summary>
-    /// Cargamos los comandos de los ensamblados asociados a un dominio específico.
-    /// </summary>
-    /// <param name="domainName">El nombre del dominio (ALC).</param>
     public void LoadCommandsByDomain(string domainName)
     {
         try
         {
             var processedAssemblies = new HashSet<string>();
-            var assembliesByDomain = this.AssembliesByDomain;
+            var assembliesByDomain = AssembliesByDomain;
 
             if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
             {
-                _logger.LogInformation($"Cargando comandos para el dominio: {domainName}");
+                _logger.LogInformation("Cargando comandos para el dominio: {DomainName}", domainName);
                 ProcessAssemblies(assemblies, domainName, processedAssemblies);
             }
             else
             {
-                _logger.LogWarning($"No se encontraron ensamblados para el dominio {domainName}");
+                _logger.LogWarning("No se encontraron ensamblados para el dominio {DomainName}", domainName);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError($"Error en LoadCommandsByDomain para {domainName}: {e.Message}");
+            _logger.LogError(e, "Error en LoadCommandsByDomain para {DomainName}", domainName);
         }
     }
 
-    /// <summary>
-    /// Procesa una lista de ensamblados para buscar y cargar módulos de Horizonte.
-    /// </summary>
-    /// <param name="assemblies">Lista de ensamblados a procesar.</param>
-    /// <param name="domainName">Nombre del dominio (Application Load Context) al que pertenecen los ensamblados.</param>
-    /// <param name="processedAssemblies">Conjunto de nombres completos de ensamblados que ya han sido procesados para evitar duplicados.</param>
     private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies)
     {
         var assembliesToProcess = new Queue<Assembly>(assemblies);
@@ -415,8 +462,11 @@ public class HAssemblyManager : IhAssemblyManager
         while (assembliesToProcess.Count > 0)
         {
             var assembly = assembliesToProcess.Dequeue();
-            if (processedAssemblies.Contains(assembly.FullName!)) continue;
-            processedAssemblies.Add(assembly.FullName!);
+
+            if (assembly.FullName == null || processedAssemblies.Contains(assembly.FullName))
+                continue;
+
+            processedAssemblies.Add(assembly.FullName);
 
             Type[] types;
             try
@@ -430,35 +480,45 @@ public class HAssemblyManager : IhAssemblyManager
             catch (Exception e)
             {
                 _logger.LogError(
-                    $"Error al obtener tipos del ensamblado {assembly.FullName} en dominio {domainName}: {e.Message}");
+                    e,
+                    "Error al obtener tipos del ensamblado {AssemblyName} en dominio {DomainName}",
+                    assembly.FullName,
+                    domainName);
                 continue;
             }
 
-            var modulostypes = (from type in types
+            var modulesTypes = (from type in types
                 where Attribute.IsDefined(type, typeof(HorizonteModule))
                 select type).ToList();
 
-            foreach (var modtype in modulostypes)
+            foreach (var modType in modulesTypes)
             {
                 try
                 {
-                    if (modtype == null) continue;
+                    if (modType == null) continue;
+
                     object? modInstance;
                     try
                     {
                         _logger.LogInformation(
-                            $">>>> Loading modules from '{modtype.FullName}' in domain '{domainName}'");
+                            ">>>> Loading modules from '{ModuleType}' in domain '{DomainName}'",
+                            modType.FullName,
+                            domainName);
 
-                        modInstance = CreateInstance(modtype);
+                        modInstance = CreateInstance(modType);
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError($"Error al crear instancia: {modtype.FullName} en dominio {domainName}", e);
+                        _logger.LogError(
+                            e,
+                            "Error al crear instancia: {ModuleType} en dominio {DomainName}",
+                            modType.FullName,
+                            domainName);
                         continue;
                     }
 
-                    var metodos = modtype.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
-                    foreach (var method in metodos)
+                    var methods = modType.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
+                    foreach (var method in methods)
                     {
                         if (modInstance != null)
                         {
@@ -468,7 +528,7 @@ public class HAssemblyManager : IhAssemblyManager
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e.ToString());
+                    _logger.LogError(e, "Error procesando módulo {ModuleType}", modType?.FullName);
                 }
             }
         }
@@ -481,8 +541,10 @@ public class HAssemblyManager : IhAssemblyManager
         var hAttrib = method.GetCustomAttribute<HorizonteCommand>();
         if (hAttrib == null) return;
 
-        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false)
-            as HorizonteRole[] ?? []).ToList().Select(x => x.Role).ToList();
+        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false) as HorizonteRole[] ?? [])
+            .ToList()
+            .Select(x => x.Role)
+            .ToList();
 
         var miCmd = new HCommand
         {
@@ -502,83 +564,215 @@ public class HAssemblyManager : IhAssemblyManager
                        method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
             Domain = domain
         };
+
         gesCom.RegisterCommand(miCmd);
     }
 
     public void LoadService(string domainName)
     {
-        _logger.LogInformation($"LoadService for domain: {domainName}");
-        if (domainName == "Default") return;
+        _logger.LogInformation("LoadService for domain: {DomainName}", domainName);
 
-        if (_domains.TryGetValue(domainName, out var alc))
+        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (!_domains.ContainsKey(domainName))
+            return;
+
+        var hContext = _serviceProvider.GetService<IHContext>();
+        var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
+
+        foreach (var workerSetting in workerSettings.List.OrderBy(x => x.Order))
         {
-            var hContext = _serviceProvider.GetService<IHContext>();
-            var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
+            var shouldRestart = workerSetting.RunOnStart;
 
-            foreach (var workerSetting in workerSettings.List)
+            if (_backgroundServices.TryGetValue(GetBackgroundServiceKey(workerSetting.WorkerType), out var state))
             {
-                if (!workerSetting.RunOnStart) continue;
-
-                var typeName = workerSetting.WorkerType.Split(',')[0].Trim();
-                var type = alc.Assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
-
-                if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsInterface &&
-                    !type.IsAbstract)
-                {
-                    try
-                    {
-                        _logger.LogInformation(
-                            $"Instantiating and starting service: {workerSetting.ServiceName} in domain {domainName}");
-                        if (CreateInstance(type) is BackgroundService worker)
-                        {
-                            worker.StartAsync(CancellationToken.None).Wait();
-                            _dynamicServices.Add(worker);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(
-                            $"Error starting service {type.FullName} in domain {domainName}: {ex.Message}");
-                    }
-                }
+                shouldRestart = shouldRestart || state.RestartOnDomainLoad;
             }
+
+            if (!shouldRestart)
+                continue;
+
+            var resolved = ResolveBackgroundServiceType(workerSetting.WorkerType);
+            if (resolved == null)
+                continue;
+
+            var (_, resolvedDomainName) = resolved.Value;
+
+            if (!string.Equals(resolvedDomainName, domainName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            StartBackgroundService(workerSetting.WorkerType);
         }
     }
-
 
     public object? CreateInstance(Type type)
     {
         try
         {
-            // Intentar crear instancia con el constructor que acepta IServiceProvider o default
             return ActivatorUtilities.CreateInstance(_serviceProvider, type);
         }
-        catch
+        catch (Exception ex)
         {
-            // Fallback a constructor por defecto si falla
-            return Activator.CreateInstance(type);
+            _logger.LogDebug(ex,
+                "ActivatorUtilities no pudo crear la instancia de {TypeName}. Se intentará resolución manual.",
+                type.FullName);
         }
+
+        var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+            .OrderByDescending(c => c.GetParameters().Length)
+            .ToList();
+
+        if (constructors.Count == 0)
+        {
+            throw new MissingMethodException(
+                $"El tipo '{type.FullName}' no tiene constructores públicos utilizables.");
+        }
+
+        var errors = new List<string>();
+
+        foreach (var constructor in constructors)
+        {
+            var parameters = constructor.GetParameters();
+            var arguments = new object?[parameters.Length];
+            var canBuild = true;
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                if (TryResolveConstructorParameter(type, parameter, out var argument))
+                {
+                    arguments[i] = argument;
+                    continue;
+                }
+
+                canBuild = false;
+                errors.Add(
+                    $"No se pudo resolver el parámetro '{parameter.Name}' de tipo '{parameter.ParameterType.FullName}' para el constructor '{constructor}'.");
+                break;
+            }
+
+            if (!canBuild)
+                continue;
+
+            try
+            {
+                return constructor.Invoke(arguments);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(
+                    $"Error invocando el constructor '{constructor}' del tipo '{type.FullName}': {ex.InnerException?.Message ?? ex.Message}");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"No se pudo crear una instancia del tipo '{type.FullName}'. " +
+            $"Revise las dependencias del constructor y su registro en DI. " +
+            $"Detalles: {string.Join(" | ", errors)}");
     }
 
+      private bool TryResolveConstructorParameter(Type implementationType, ParameterInfo parameter, out object? argument)
+        {
+            argument = null;
+
+            if (parameter.ParameterType == typeof(IServiceProvider))
+            {
+                argument = _serviceProvider;
+                return true;
+            }
+
+            if (parameter.ParameterType == typeof(ILogger))
+            {
+                var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
+                if (loggerFactory != null)
+                {
+                    argument = loggerFactory.CreateLogger(implementationType.FullName ?? implementationType.Name);
+                    return true;
+                }
+            }
+
+            if (parameter.ParameterType.IsGenericType &&
+                parameter.ParameterType.GetGenericTypeDefinition() == typeof(ILogger<>))
+            {
+                var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
+                if (loggerFactory != null)
+                {
+                    var categoryType = parameter.ParameterType.GetGenericArguments()[0];
+                    var createLoggerMethod = typeof(LoggerFactoryExtensions)
+                        .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .First(m =>
+                            m.Name == nameof(LoggerFactoryExtensions.CreateLogger) &&
+                            m.IsGenericMethod &&
+                            m.GetParameters().Length == 1);
+
+                    argument = createLoggerMethod
+                        .MakeGenericMethod(categoryType)
+                        .Invoke(null, [loggerFactory]);
+
+                    return true;
+                }
+            }
+
+            var resolved = _serviceProvider.GetService(parameter.ParameterType);
+            if (resolved != null)
+            {
+                argument = resolved;
+                return true;
+            }
+
+            var defaultDomainType = TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
+            if (defaultDomainType != null)
+            {
+                var defaultDomainResolved = _serviceProvider.GetService(defaultDomainType);
+
+                if (defaultDomainResolved != null && parameter.ParameterType.IsInstanceOfType(defaultDomainResolved))
+                {
+                    argument = defaultDomainResolved;
+                    return true;
+                }
+
+                if (defaultDomainResolved != null)
+                {
+                    var parameterAssemblyAlc = AssemblyLoadContext.GetLoadContext(parameter.ParameterType.Assembly);
+                    var defaultTypeAssemblyAlc = AssemblyLoadContext.GetLoadContext(defaultDomainType.Assembly);
+                    var implementationAssemblyAlc = AssemblyLoadContext.GetLoadContext(implementationType.Assembly);
+
+                    _logger.LogWarning(
+                        "Se encontró una instancia raíz para {DefaultDomainType}, pero no es asignable al parámetro {ParameterType}. " +
+                        "Esto indica una duplicidad de ensamblado core entre ALCs. ParameterDomain={ParameterDomain}, DefaultTypeDomain={DefaultTypeDomain}, ImplementationDomain={ImplementationDomain}.",
+                        defaultDomainType.FullName,
+                        parameter.ParameterType.FullName,
+                        parameterAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(parameterAssemblyAlc) : "Unknown",
+                        defaultTypeAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(defaultTypeAssemblyAlc) : "Unknown",
+                        implementationAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(implementationAssemblyAlc) : "Unknown");
+                }
+            }
+
+            if (parameter.HasDefaultValue)
+            {
+                argument = parameter.DefaultValue;
+                return true;
+            }
+
+            return false;
+        }
 
     private string GetRequestedFramework()
     {
-        var frameworkName = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
-        // FrameworkDescription suele ser ".NET 10.0.0" o similar.
-        // AppContext.TargetFrameworkName suele ser ".NETCoreApp,Version=v10.0"
         var targetFramework = AppContext.TargetFrameworkName;
 
         if (string.IsNullOrEmpty(targetFramework))
         {
-            // Fallback si no está disponible
             return "net10.0";
         }
 
-        // ".NETCoreApp,Version=v10.0" -> "net10.0"
         var parts = targetFramework.Split(',');
         if (parts.Length > 1 && parts[1].Trim().StartsWith("Version=v"))
         {
             var version = parts[1].Trim().Substring("Version=v".Length);
+
             if (parts[0].Contains(".NETCoreApp"))
             {
                 return $"net{version}";
@@ -598,6 +792,7 @@ public class HAssemblyManager : IhAssemblyManager
         string name = assemblyFullName.Split(',')[0].Trim();
         string version = string.Empty;
         var parts = assemblyFullName.Split(',');
+
         foreach (var part in parts)
         {
             if (part.Trim().StartsWith("Version="))
@@ -610,7 +805,10 @@ public class HAssemblyManager : IhAssemblyManager
         return (name, version);
     }
 
-    private string? ResolveNugetFromLocalDirectory(string name, string version, string? framework = null,
+    private string? ResolveNugetFromLocalDirectory(
+        string name,
+        string version,
+        string? framework = null,
         bool exactmatch = true)
     {
         if (string.IsNullOrEmpty(name)) return null;
@@ -621,26 +819,27 @@ public class HAssemblyManager : IhAssemblyManager
 
         foreach (var searchPath in _searchPaths)
         {
-            var directoriopaquete = Directory.GetDirectories(searchPath, name.ToLower());
-            if (!directoriopaquete.Any()) continue;
+            var directorioPaquete = Directory.GetDirectories(searchPath, name.ToLower());
+            if (!directorioPaquete.Any()) continue;
 
             if (exactmatch)
             {
-                // Buscar directamente en el directorio con el nombre completo (package/version)
-                var pathConVersion = Path.Combine(directoriopaquete.First(), version);
+                var pathConVersion = Path.Combine(directorioPaquete.First(), version);
                 if (Directory.Exists(pathConVersion))
                 {
-                    var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
+                    var versionList = GetNugetPackageVersionInformation(directorioPaquete.First());
                     var versionSeleccionada =
                         SelectedVersion(version, frameworkSolicitado, versionList, true, exactFramework);
+
                     if (versionSeleccionada != null) return versionSeleccionada.DllPath;
                 }
             }
             else
             {
-                var versionList = GetNugetPackageVersionInformation(directoriopaquete.First());
+                var versionList = GetNugetPackageVersionInformation(directorioPaquete.First());
                 var versionSeleccionada =
                     SelectedVersion(version, frameworkSolicitado, versionList, false, exactFramework);
+
                 if (versionSeleccionada != null) return versionSeleccionada.DllPath;
             }
         }
@@ -648,38 +847,44 @@ public class HAssemblyManager : IhAssemblyManager
         return null;
     }
 
-    private class NugetPackageVersionInformation
+    private sealed class NugetPackageVersionInformation
     {
         public string PackageId { get; set; } = string.Empty;
         public string VersionString { get; set; } = string.Empty;
-        public Version Version { get; set; } = new Version(0, 0, 0);
+        public Version Version { get; set; } = new(0, 0, 0);
         public string Framework { get; set; } = string.Empty;
         public string DllPath { get; set; } = string.Empty;
     }
 
-    private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string PackageDirectory)
+    private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string packageDirectory)
     {
         var result = new List<NugetPackageVersionInformation>();
+
         try
         {
-            // Obtenemos la lista de archivos .dll en el directorio del paquete
-            var list = Directory.EnumerateFiles(PackageDirectory, "*.dll", SearchOption.AllDirectories)
-                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\")).ToList();
+            var list = Directory.EnumerateFiles(packageDirectory, "*.dll", SearchOption.AllDirectories)
+                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\"))
+                .ToList();
 
             foreach (var dllPath in list)
             {
-                // Dividimos el path en segmentos para extraer la información necesaria
                 var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
 
-                var packageId = pathSegments[pathSegments.Length - 5];
-                var versionRaw = pathSegments[pathSegments.Length - 4];
-                var framework = pathSegments[pathSegments.Length - 2];
+                var packageId = pathSegments[^5];
+                var versionRaw = pathSegments[^4];
+                var framework = pathSegments[^2];
 
-                if (dllPath.Contains("/buildTransitive/") || dllPath.Contains(@"\buildTransitive\")) continue;
-                if (dllPath.Contains("/build/") || dllPath.Contains(@"\build\")) continue;
+                if (dllPath.Contains("/buildTransitive/") || dllPath.Contains(@"\buildTransitive\"))
+                    continue;
+
+                if (dllPath.Contains("/build/") || dllPath.Contains(@"\build\"))
+                    continue;
 
                 string versionForParsing = versionRaw;
-                if (versionForParsing.Contains("-")) versionForParsing = versionForParsing.Split("-")[0];
+                if (versionForParsing.Contains('-'))
+                {
+                    versionForParsing = versionForParsing.Split('-')[0];
+                }
 
                 if (Version.TryParse(versionForParsing, out var parsedVersion))
                 {
@@ -696,7 +901,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception e)
         {
-            _logger.LogError(e.ToString());
+            _logger.LogError(e, "Error obteniendo información de versiones NuGet.");
         }
 
         return result;
@@ -710,8 +915,11 @@ public class HAssemblyManager : IhAssemblyManager
         bool exactFramework = false)
     {
         var prioridadFrameworks = new List<string> { frameworkSolicitado };
+
         if (!exactFramework)
+        {
             prioridadFrameworks.AddRange(_settings.FrameworkPriorities);
+        }
 
         if (exactmatch)
         {
@@ -720,16 +928,21 @@ public class HAssemblyManager : IhAssemblyManager
                 var encontrada = versionesDisponibles.FirstOrDefault(info =>
                     info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase) &&
                     info.VersionString.Equals(versionSolicitadaRaw, StringComparison.OrdinalIgnoreCase));
+
                 if (encontrada != null) return encontrada;
             }
 
             return null;
         }
 
-        // Heurística para no exactmatch
         string vParsable = versionSolicitadaRaw;
-        if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
-        if (!Version.TryParse(vParsable, out var vS)) return null;
+        if (vParsable.Contains('-'))
+        {
+            vParsable = vParsable.Split('-')[0];
+        }
+
+        if (!Version.TryParse(vParsable, out var vS))
+            return null;
 
         foreach (var framework in prioridadFrameworks)
         {
@@ -739,32 +952,32 @@ public class HAssemblyManager : IhAssemblyManager
 
             if (!versionesFiltradas.Any()) continue;
 
-            // Intentar 1.0.0 (Exacta Major.Minor.Build)
             var match = versionesFiltradas.FirstOrDefault(info =>
-                info.Version.Major == vS.Major && info.Version.Minor == vS.Minor && info.Version.Build == vS.Build);
+                info.Version.Major == vS.Major &&
+                info.Version.Minor == vS.Minor &&
+                info.Version.Build == vS.Build);
+
             if (match != null) return match;
 
-            // Intentar 1.0.? (Superior más cercana en el mismo Major.Minor)
             match = versionesFiltradas
                 .Where(info => info.Version.Major == vS.Major && info.Version.Minor == vS.Minor)
                 .OrderBy(info => info.Version)
                 .FirstOrDefault(info => info.Version >= vS);
+
             if (match != null) return match;
 
-            // Intentar 1.? (Superior más cercana en el mismo Major)
             match = versionesFiltradas
                 .Where(info => info.Version.Major == vS.Major)
                 .OrderBy(info => info.Version)
                 .FirstOrDefault(info => info.Version >= vS);
+
             if (match != null) return match;
 
-            // Si no, la más reciente de ese framework
             return versionesFiltradas.OrderByDescending(info => info.Version).First();
         }
 
         return null;
     }
-
 
     private void DownloadAndExtractPackage(string packageName, string version)
     {
@@ -772,28 +985,28 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.IsNullOrEmpty(version)) return;
 
         var packageFileName = ResolveNugetFromRemoteServer(packageName, version);
-
         if (string.IsNullOrEmpty(packageFileName)) return;
 
         try
         {
-            // Extraer el contenido del paquete
             string targetDirectory = Path.Combine(_installFolder, packageName.ToLower(), version);
+
             if (!Directory.Exists(targetDirectory))
             {
                 Directory.CreateDirectory(targetDirectory);
             }
 
             System.IO.Compression.ZipFile.ExtractToDirectory(packageFileName, targetDirectory, true);
-            _logger.LogInformation($"Package successfully extracted in: {targetDirectory}");
+            _logger.LogInformation("Package successfully extracted in: {TargetDirectory}", targetDirectory);
 
-            // Borrar el archivo temporal
             if (File.Exists(packageFileName))
+            {
                 File.Delete(packageFileName);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error extracting package from repository: {ex.Message}");
+            _logger.LogError(ex, "Error extracting package from repository.");
         }
     }
 
@@ -803,13 +1016,16 @@ public class HAssemblyManager : IhAssemblyManager
         {
             if (!nugetServer.Active) continue;
 
-            // 1. Intentar descarga directa (Exact Match)
             var directUrl = GetDownloadUrl(nugetServer, packageName, version);
-            _logger.LogInformation($"Trying direct download of '{packageName}' version '{version}' from {directUrl}");
+            _logger.LogInformation(
+                "Trying direct download of '{PackageName}' version '{Version}' from {Url}",
+                packageName,
+                version,
+                directUrl);
+
             var result = DownloadPackage(directUrl, packageName, version);
             if (result != null) return result;
 
-            // 2. Si falla, intentar normalizar la versión (ej. 1.0.0.0 -> 1.0.0)
             if (version.EndsWith(".0"))
             {
                 var parts = version.Split('.');
@@ -817,16 +1033,24 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     var normalizedVersion = string.Join(".", parts.Take(3));
                     var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
+
                     _logger.LogInformation(
-                        $"Trying normalized version download of '{packageName}' version '{normalizedVersion}' from {normalizedUrl}");
+                        "Trying normalized version download of '{PackageName}' version '{Version}' from {Url}",
+                        packageName,
+                        normalizedVersion,
+                        normalizedUrl);
+
                     result = DownloadPackage(normalizedUrl, packageName, normalizedVersion);
                     if (result != null) return result;
                 }
             }
 
-            // 3. Si falla, aplicar heurística consultando versiones al servidor
             _logger.LogInformation(
-                $"Exact version '{version}' not found for '{packageName}' on {nugetServer.Name}. Fetching available versions...");
+                "Exact version '{Version}' not found for '{PackageName}' on {ServerName}. Fetching available versions...",
+                version,
+                packageName,
+                nugetServer.Name);
+
             var availableVersions = GetRemotePackageVersions(nugetServer, packageName);
             if (!availableVersions.Any()) continue;
 
@@ -834,8 +1058,13 @@ public class HAssemblyManager : IhAssemblyManager
             if (bestVersion != null && bestVersion != version)
             {
                 var heuristicUrl = GetDownloadUrl(nugetServer, packageName, bestVersion);
+
                 _logger.LogInformation(
-                    $"Heuristic match: version '{bestVersion}' for '{packageName}'. Downloading from {heuristicUrl}");
+                    "Heuristic match: version '{BestVersion}' for '{PackageName}'. Downloading from {Url}",
+                    bestVersion,
+                    packageName,
+                    heuristicUrl);
+
                 result = DownloadPackage(heuristicUrl, packageName, bestVersion);
                 if (result != null) return result;
             }
@@ -851,17 +1080,15 @@ public class HAssemblyManager : IhAssemblyManager
             case 1:
             case 2:
                 return Path.Combine(server.Server, "package", packageName, version);
+
             case 3:
-                // Nota: V3 suele requerir una estructura más compleja.
-                // Usamos una ruta común para el recurso FlatContainer que es lo que espera BaGet y NuGet.org para descargas directas.
-                // server.Server suele ser la base de la API V3 o el service index.
                 var baseDownloadUrl = server.Server;
+
                 if (baseDownloadUrl.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
                 {
-                    baseDownloadUrl = baseDownloadUrl.Substring(0, baseDownloadUrl.Length - 10).TrimEnd('/');
+                    baseDownloadUrl = baseDownloadUrl[..^10].TrimEnd('/');
                 }
 
-                // Si la URL no contiene 'package' y no es nuget.org, intentamos añadirlo como fallback común para BaGet
                 if (!baseDownloadUrl.Contains("/package", StringComparison.OrdinalIgnoreCase) &&
                     !baseDownloadUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
                 {
@@ -870,6 +1097,7 @@ public class HAssemblyManager : IhAssemblyManager
 
                 return
                     $"{baseDownloadUrl.TrimEnd('/')}/{packageName.ToLower()}/{version}/{packageName.ToLower()}.{version}.nupkg";
+
             default:
                 return string.Empty;
         }
@@ -878,24 +1106,28 @@ public class HAssemblyManager : IhAssemblyManager
     private string? DownloadPackage(string url, string packageName, string version)
     {
         if (string.IsNullOrEmpty(url)) return null;
+
         var packageFileName = Path.Combine(Path.GetTempPath(), $"{packageName}.{version}.nupkg");
+
         try
         {
             using var httpClient = new HttpClient();
             using var response = httpClient.GetAsync(url).Result;
-            if (!response.IsSuccessStatusCode) return null;
+
+            if (!response.IsSuccessStatusCode)
+                return null;
 
             using (var fileStream = new FileStream(packageFileName, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 response.Content.CopyToAsync(fileStream).Wait();
             }
 
-            _logger.LogInformation($"Package downloaded successfully: {packageFileName}");
+            _logger.LogInformation("Package downloaded successfully: {PackageFileName}", packageFileName);
             return packageFileName;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error downloading package from {url}: {ex.Message}");
+            _logger.LogError(ex, "Error downloading package from {Url}", url);
             return null;
         }
     }
@@ -903,20 +1135,20 @@ public class HAssemblyManager : IhAssemblyManager
     private List<string> GetRemotePackageVersions(NugetServerItem server, string packageName)
     {
         var versions = new List<string>();
+
         try
         {
             using var httpClient = new HttpClient();
+
             if (server.Version <= 2)
             {
-                // NuGet V2: FindPackagesById
-                // Usualmente: {server.Server}/FindPackagesById()?id='{packageName}'
-                // Pero basándonos en el código previo, server.Server parece ser la base para /package/
-                // Intentamos una ruta común para OData
                 var url = $"{server.Server.Replace("/package", "")}/FindPackagesById()?id='{packageName}'";
                 var response = httpClient.GetStringAsync(url).Result;
                 var doc = XDocument.Parse(response);
+
                 XNamespace m = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
                 XNamespace d = "http://schemas.microsoft.com/ado/2007/08/dataservices";
+
                 versions = doc.Descendants(m + "properties")
                     .Select(p => p.Element(d + "Version")?.Value)
                     .Where(v => v != null)
@@ -925,14 +1157,15 @@ public class HAssemblyManager : IhAssemblyManager
             }
             else if (server.Version == 3)
             {
-                // NuGet V3: Registration Resource
                 var serviceIndexUrl = server.Server;
+
                 if (!serviceIndexUrl.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
                 {
                     serviceIndexUrl = serviceIndexUrl.TrimEnd('/') + "/index.json";
                 }
 
                 string? registrationUrl = null;
+
                 if (serviceIndexUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
                 {
                     registrationUrl = "https://api.nuget.org/v3/registration5-semver1";
@@ -942,13 +1175,17 @@ public class HAssemblyManager : IhAssemblyManager
                     try
                     {
                         var serviceIndexResponse = httpClient.GetStringAsync(serviceIndexUrl).Result;
-                        // Buscamos "@type": "RegistrationsBaseUrl" o similar
-                        var regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse,
+
+                        var regMatch = System.Text.RegularExpressions.Regex.Match(
+                            serviceIndexResponse,
                             "\"@id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"");
+
                         if (!regMatch.Success)
                         {
-                            regMatch = System.Text.RegularExpressions.Regex.Match(serviceIndexResponse,
+                            regMatch = System.Text.RegularExpressions.Regex.Match(
+                                serviceIndexResponse,
                                 "\"@type\"\\s*:\\s*\"RegistrationsBaseUrl(/[^\"]+)?\"[^}]*\"@id\"\\s*:\\s*\"([^\"]+)\"");
+
                             if (regMatch.Success && regMatch.Groups.Count > 2)
                             {
                                 registrationUrl = regMatch.Groups[2].Value;
@@ -961,13 +1198,17 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch
                     {
-                        // Fallback heurístico para BaGet: si el server es .../v3, la registración suele estar en .../v3/registration
                         registrationUrl = server.Server.TrimEnd('/');
+
                         if (registrationUrl.EndsWith("/index.json", StringComparison.OrdinalIgnoreCase))
-                            registrationUrl = registrationUrl.Substring(0, registrationUrl.Length - 11);
+                        {
+                            registrationUrl = registrationUrl[..^11];
+                        }
 
                         if (!registrationUrl.EndsWith("/registration", StringComparison.OrdinalIgnoreCase))
+                        {
                             registrationUrl += "/registration";
+                        }
                     }
                 }
 
@@ -975,28 +1216,36 @@ public class HAssemblyManager : IhAssemblyManager
                 {
                     var url = $"{registrationUrl.TrimEnd('/')}/{packageName.ToLower()}/index.json";
                     using var responseMessage = httpClient.GetAsync(url).Result;
+
                     if (responseMessage.IsSuccessStatusCode)
                     {
                         var response = responseMessage.Content.ReadAsStringAsync().Result;
-                        var matches =
-                            System.Text.RegularExpressions.Regex.Matches(response, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                        var matches = System.Text.RegularExpressions.Regex.Matches(
+                            response,
+                            "\"version\"\\s*:\\s*\"([^\"]+)\"");
+
                         foreach (System.Text.RegularExpressions.Match match in matches)
                         {
                             if (match.Groups.Count > 1)
+                            {
                                 versions.Add(match.Groups[1].Value);
+                            }
                         }
                     }
                     else
                     {
                         _logger.LogWarning(
-                            $"Failed to fetch versions from {url}. Status: {responseMessage.StatusCode}");
+                            "Failed to fetch versions from {Url}. Status: {StatusCode}",
+                            url,
+                            responseMessage.StatusCode);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error fetching versions for {packageName} from {server.Name}: {ex.Message}");
+            _logger.LogError(ex, "Error fetching versions for {PackageName} from {ServerName}", packageName,
+                server.Name);
         }
 
         return versions.Distinct().ToList();
@@ -1007,37 +1256,52 @@ public class HAssemblyManager : IhAssemblyManager
         if (!versionesDisponibles.Any()) return null;
 
         string vParsable = versionSolicitadaRaw;
-        if (vParsable.Contains("-")) vParsable = vParsable.Split("-")[0];
-        if (!Version.TryParse(vParsable, out var vS)) return null;
+        if (vParsable.Contains('-'))
+        {
+            vParsable = vParsable.Split('-')[0];
+        }
+
+        if (!Version.TryParse(vParsable, out var vS))
+            return null;
 
         var parsedVersions = versionesDisponibles.Select(v =>
         {
             string vp = v;
-            if (vp.Contains("-")) vp = vp.Split("-")[0];
+            if (vp.Contains('-'))
+            {
+                vp = vp.Split('-')[0];
+            }
+
             Version.TryParse(vp, out var ver);
-            return new { Raw = v, Parsed = ver ?? new Version(0, 0, 0) };
+
+            return new
+            {
+                Raw = v,
+                Parsed = ver ?? new Version(0, 0, 0)
+            };
         }).ToList();
 
-        // 1. Intentar Exacta Major.Minor.Build
         var match = parsedVersions.FirstOrDefault(v =>
-            v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor && v.Parsed.Build == vS.Build);
+            v.Parsed.Major == vS.Major &&
+            v.Parsed.Minor == vS.Minor &&
+            v.Parsed.Build == vS.Build);
+
         if (match != null) return match.Raw;
 
-        // 2. Superior más cercana en el mismo Major.Minor
         match = parsedVersions
             .Where(v => v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor)
             .OrderBy(v => v.Parsed)
             .FirstOrDefault(v => v.Parsed >= vS);
+
         if (match != null) return match.Raw;
 
-        // 3. Superior más cercana en el mismo Major
         match = parsedVersions
             .Where(v => v.Parsed.Major == vS.Major)
             .OrderBy(v => v.Parsed)
             .FirstOrDefault(v => v.Parsed >= vS);
+
         if (match != null) return match.Raw;
 
-        // 4. Si es una versión 1.0.0.0, intentar buscar 1.0.0 exactamente
         if (versionSolicitadaRaw.EndsWith(".0"))
         {
             var parts = versionSolicitadaRaw.Split('.');
@@ -1045,92 +1309,126 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 var v3 = string.Join(".", parts.Take(3));
                 var match3 = parsedVersions.FirstOrDefault(v => v.Raw == v3);
+
                 if (match3 != null) return match3.Raw;
             }
         }
 
-        // 5. La más reciente
         return parsedVersions.OrderByDescending(v => v.Parsed).FirstOrDefault()?.Raw;
     }
 
-
-    /// <summary>
-    /// Carga los ensamblados desde el entorno utilizando la configuración
-    /// y los módulos activos. También asegura que el directorio de módulos existe.
-    /// </summary>
-    /// <returns>El arreglo de ensamblados cargados en el dominio de la aplicación.</returns>
     private void LoadModulesFromEnvironment()
     {
         try
         {
-            //Primero cargamos los paquetes forzados
             LoadForecedPackages(_settings.ForcedPackages);
 
-            // Itera sobre los módulos activos en la configuración.
             foreach (var moduleItem in _settings.List.Where(item => item.Active))
             {
                 LoadModuleAssembly(moduleItem);
-                if (moduleItem.LoadAdditionalDlls != null && moduleItem.LoadAdditionalDlls.Value &&
-                    moduleItem.Path !=
-                    null) // debemos tener en cuenta que si el path es null no se carga nada.... verificar nombre y version del módulo
+
+                if (moduleItem.LoadAdditionalDlls == true && moduleItem.Path != null)
                 {
-                    LoadAdditinalAssemblies(moduleItem.Path);
+                    LoadAdditinalAssemblies(moduleItem.Path, moduleItem.Domain);
                 }
             }
-
-            // Retorna todos los ensamblados actualmente cargados en el dominio de la aplicación.
         }
         catch (Exception exception)
         {
-            // Manejo básico de errores; imprime el error y retorna un arreglo vacío.
-            _logger.LogError(exception.ToString());
+            _logger.LogError(exception, "Error loading modules from environment.");
         }
     }
 
-    private void LoadForecedPackages(List<ForcedPackageItem> ForcedPackages)
+    private void LoadForecedPackages(List<ForcedPackageItem> forcedPackages)
     {
-        foreach (var package in ForcedPackages)
+        foreach (var package in forcedPackages)
         {
             try
             {
                 _logger.LogInformation(
-                    $"Loading forced package: {package.PackageId} version {package.Version} framework {package.Framework}");
+                    "Loading forced package: {PackageId} version {Version} framework {Framework} target domain {DomainName}",
+                    package.PackageId,
+                    package.Version,
+                    package.Framework,
+                    string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
 
-                // Intentar resolver localmente con versión y framework exactos
-                var dllPath =
-                    ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework, true);
+                var dllPath = ResolveNugetFromLocalDirectory(
+                    package.PackageId,
+                    package.Version,
+                    package.Framework,
+                    true);
 
                 if (dllPath == null)
                 {
-                    // Intentar descargar si no se encuentra localmente
                     DownloadAndExtractPackage(package.PackageId, package.Version);
-                    // Volver a intentar resolver después de la descarga
-                    dllPath = ResolveNugetFromLocalDirectory(package.PackageId, package.Version, package.Framework,
+                    dllPath = ResolveNugetFromLocalDirectory(
+                        package.PackageId,
+                        package.Version,
+                        package.Framework,
                         true);
                 }
 
                 if (dllPath != null)
                 {
                     if (!Path.IsPathRooted(dllPath))
-                        dllPath = Path.GetFullPath(dllPath);
-
-                    _logger.LogInformation($"Forced package {package.PackageId} resolved to: {dllPath}");
-
-                    var alc = AssemblyLoadContext.Default;
-                    if (!string.IsNullOrEmpty(package.Domain) && package.Domain != "Default")
                     {
-                        if (_domains.TryGetValue(package.Domain, out var customAlc))
-                        {
-                            alc = customAlc;
-                        }
+                        dllPath = Path.GetFullPath(dllPath);
                     }
 
-                    alc.LoadFromAssemblyPath(dllPath);
+                    _logger.LogInformation(
+                        "Forced package {PackageId} resolved to path {DllPath} for target domain {DomainName}",
+                        package.PackageId,
+                        dllPath,
+                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
 
-                    // Registrar assets del paquete
+                    var alc = AssemblyLoadContext.Default;
+                    if (!string.IsNullOrEmpty(package.Domain) &&
+                        !string.Equals(package.Domain, "Default", StringComparison.OrdinalIgnoreCase) &&
+                        _domains.TryGetValue(package.Domain, out var customAlc))
+                    {
+                        alc = customAlc;
+                    }
+
+                    var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
+                    var assemblyName = AssemblyName.GetAssemblyName(dllPath);
+
+                    var alreadyLoadedInTargetAlc = alc.Assemblies.FirstOrDefault(a =>
+                        string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (alreadyLoadedInTargetAlc == null)
+                    {
+                        var loadedAssembly = alc.LoadFromAssemblyPath(dllPath);
+                        _logger.LogInformation(
+                            "Forced package {PackageId} ({AssemblyName}) loaded into domain {DomainName} from {DllPath}",
+                            package.PackageId,
+                            loadedAssembly.FullName,
+                            targetDomainName,
+                            dllPath);
+                    }
+                    else
+                    {
+                        _logger.LogInformation(
+                            "Forced package {PackageId} ({AssemblyName}) ya estaba cargado en dominio {DomainName}",
+                            package.PackageId,
+                            alreadyLoadedInTargetAlc.FullName,
+                            targetDomainName);
+                    }
+
+                    foreach (var loadedAssembly in Assemblies
+                                 .Where(a => string.Equals(a.GetName().Name, assemblyName.Name,
+                                     StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var loadedAssemblyAlc = AssemblyLoadContext.GetLoadContext(loadedAssembly);
+                        _logger.LogInformation(
+                            "Forced package inventory => Assembly {AssemblyName} currently visible in domain {DomainName}",
+                            loadedAssembly.FullName,
+                            loadedAssemblyAlc != null
+                                ? GetDomainNameForAssemblyLoadContext(loadedAssemblyAlc)
+                                : "Default");
+                    }
+
                     StaticFileRegistry.RegisterPackageDirectory(dllPath);
 
-                    // Procesar archivos .targets / .props para crear enlaces simbólicos
                     try
                     {
                         var symLinks = GetContentMappingsFromPackage(dllPath);
@@ -1141,40 +1439,32 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(
-                            $"Error processing MSBuild targets for symlinks in forced package: {ex.Message}");
+                        _logger.LogError(ex, "Error processing MSBuild targets for symlinks in forced package.");
                     }
                 }
                 else
                 {
                     _logger.LogError(
-                        $"Could not resolve forced package: {package.PackageId} {package.Version} for framework {package.Framework}");
+                        "Could not resolve forced package: {PackageId} {Version} for framework {Framework} target domain {DomainName}",
+                        package.PackageId,
+                        package.Version,
+                        package.Framework,
+                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error loading forced package {package.PackageId}: {ex.Message}");
+                _logger.LogError(ex, "Error loading forced package {PackageId}", package.PackageId);
             }
         }
     }
 
-
-    /// <summary>
-    /// Carga un ensamblado individual del módulo especificado y registra sus activos y documentación.
-    /// </summary>
-    /// <param name="moduleItem">El módulo que se debe procesar.</param>
     private void LoadModuleAssembly(ModulesSettingsItem moduleItem)
     {
         try
         {
-            var alc = AssemblyLoadContext.Default;
-            if (!string.IsNullOrEmpty(moduleItem.Domain) && moduleItem.Domain != "Default")
-            {
-                if (_domains.TryGetValue(moduleItem.Domain, out var customAlc))
-                {
-                    alc = customAlc;
-                }
-            }
+            var alc = GetAssemblyLoadContextByDomain(moduleItem.Domain);
+            var domainName = GetDomainNameForAssemblyLoadContext(alc);
 
             if (File.Exists(moduleItem.Path))
             {
@@ -1182,87 +1472,116 @@ public class HAssemblyManager : IhAssemblyManager
                     ? moduleItem.Path
                     : Path.GetFullPath(moduleItem.Path);
 
-                _logger.LogInformation($"Loading module from: {fullPath}");
+                _logger.LogInformation(
+                    "Loading module {ModuleName} from {FullPath} into domain {DomainName}",
+                    moduleItem.ModuleName,
+                    fullPath,
+                    domainName);
 
-                // Carga el ensamblado desde la ruta especificada.
-                var loadedassembly = alc.LoadFromAssemblyPath(fullPath);
+                var loadedAssembly = alc.LoadFromAssemblyPath(fullPath);
 
-                // Agrega los activos y el archivo de documentación al entorno.
+                _logger.LogInformation(
+                    "Module assembly {AssemblyName} loaded into domain {DomainName}",
+                    loadedAssembly.FullName,
+                    domainName);
+
                 StaticFileRegistry.RegisterModuleDirectory(moduleItem);
-                //AddAssetsFolder(moduleItem);
             }
             else
             {
-                var args = new ResolveEventArgs(
-                    $"{moduleItem.ModuleName}, Version={moduleItem.ModuleVersion}"); //, Culture=neutral, PublicKeyToken=null
+                var args = new ResolveEventArgs($"{moduleItem.ModuleName}, Version={moduleItem.ModuleVersion}");
+                var nugetAssembly = ResolveAssemblyFromNuGetPackages(alc, args);
 
-                var nugetassembly = ResolveAssemblyFromNuGetPackages(alc, args);
-                if (nugetassembly == null)
-                    _logger.LogError($"Can't find: {moduleItem.Path}");
+                if (nugetAssembly == null)
+                {
+                    _logger.LogError(
+                        "Can't find module {ModuleName} for domain {DomainName}. Path: {ModulePath}",
+                        moduleItem.ModuleName,
+                        domainName,
+                        moduleItem.Path);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "Module assembly {AssemblyName} resolved for domain {DomainName}",
+                        nugetAssembly.FullName,
+                        domainName);
+                }
             }
         }
         catch (Exception exception)
         {
-            // Manejo de errores al intentar cargar un módulo.
-            _logger.LogError($"Error on loading {moduleItem.ModuleName}: {exception}");
+            _logger.LogError(exception, "Error on loading {ModuleName}", moduleItem.ModuleName);
         }
     }
 
-
-    private void LoadAdditinalAssemblies(string modulePath)
-
-    {
-        try
+   private void LoadAdditinalAssemblies(string modulePath, string? domainName)
         {
-            // Obtiene el directorio donde se encuentra el módulo
-            string directoryPath = Path.GetDirectoryName(modulePath) ?? string.Empty;
-            if (Directory.Exists(directoryPath))
+            try
             {
-                // Encuentra todos los archivos .dll en el directorio
+                string directoryPath = Path.GetDirectoryName(modulePath) ?? string.Empty;
+                if (!Directory.Exists(directoryPath))
+                    return;
+
+                var alc = GetAssemblyLoadContextByDomain(domainName);
+                var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
+
                 foreach (var dllFile in Directory.EnumerateFiles(directoryPath, "*.dll"))
                 {
-                    // Obtiene el nombre del ensamblado
-                    string assemblyName = AssemblyName.GetAssemblyName(dllFile).FullName;
+                    var assemblyNameInfo = AssemblyName.GetAssemblyName(dllFile);
 
-                    // Verifica si el ensamblado ya está cargado
-                    if (!this.Assemblies.Any(a => a.FullName == assemblyName))
+                    if (ShouldShareAssemblyFromDefault(assemblyNameInfo.Name))
                     {
-                        var fullDllPath = Path.GetFullPath(dllFile);
-                        // Si no, lo carga en el ALC por defecto (comportamiento legacy para DLLs adicionales en la misma carpeta)
-                        AssemblyLoadContext.Default.LoadFromAssemblyPath(fullDllPath);
-                        _logger.LogInformation($"--Loading additional dll: {fullDllPath}");
+                        _logger.LogInformation(
+                            "Skipping additional dll {AssemblyName} for domain {DomainName} because it is shared from Default.",
+                            assemblyNameInfo.FullName,
+                            targetDomainName);
+                        continue;
                     }
-                    else
+
+                    string assemblyName = assemblyNameInfo.FullName!;
+
+                    var isAlreadyLoadedInTargetAlc = alc.Assemblies.Any(a => a.FullName == assemblyName);
+                    if (isAlreadyLoadedInTargetAlc)
                     {
-                        // Log.Info($">>>Ensamblado adicionales ya cargado: {dllFile}");
+                        _logger.LogInformation(
+                            "Additional dll {AssemblyName} ya estaba cargada en dominio {DomainName}",
+                            assemblyName,
+                            targetDomainName);
+                        continue;
                     }
+
+                    var fullDllPath = Path.GetFullPath(dllFile);
+                    var loadedAssembly = alc.LoadFromAssemblyPath(fullDllPath);
+
+                    _logger.LogInformation(
+                        "Additional dll {AssemblyName} loaded from {FullDllPath} into domain {DomainName}",
+                        loadedAssembly.FullName,
+                        fullDllPath,
+                        targetDomainName);
                 }
             }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error on load additional dll from module: {ModulePath}", modulePath);
+            }
         }
-        catch (Exception e)
-        {
-            _logger.LogError($"Error on load additional dll from module: {modulePath}" +
-                             Environment.NewLine + e);
-        }
-    }
 
     private List<SymLinkDef> GetContentMappingsFromPackage(string resAssemblyPath)
     {
         var mappings = new List<SymLinkDef>();
+
         try
         {
-            // resAssemblyPath: [ruta nuget packages]/[nombre del paquete]/[version del paquete]/lib/[framework]/[ensamblado].dll
-            // Subir tres directorios desde el archivo resAssemblyPath para obtener el path del paquete (ej: /.../porcupine/3.0.10/)
-            var libDir = Directory.GetParent(resAssemblyPath); // [framework]
-            var pkgVersionDir = libDir?.Parent; // lib
-            var packagePath = pkgVersionDir?.Parent?.FullName; // [version del paquete]
+            var libDir = Directory.GetParent(resAssemblyPath);
+            var pkgVersionDir = libDir?.Parent;
+            var packagePath = pkgVersionDir?.Parent?.FullName;
 
-            if (string.IsNullOrEmpty(packagePath)) return mappings;
+            if (string.IsNullOrEmpty(packagePath))
+                return mappings;
 
-            // Determinar el framework a partir de la ruta del ensamblado
             var framework = libDir?.Name ?? "net10.0";
 
-            // 1. Localizar la carpeta de construcción (preferiblemente buildTransitive)
             string buildDir = Path.Combine(packagePath, "buildTransitive", framework);
             if (!Directory.Exists(buildDir))
             {
@@ -1270,7 +1589,6 @@ public class HAssemblyManager : IhAssemblyManager
                 if (!Directory.Exists(buildDir)) return mappings;
             }
 
-            // 2. Buscar archivos de definición de MSBuild (.targets o .props)
             var definitionFiles = Directory.GetFiles(buildDir, "*.targets")
                 .Concat(Directory.GetFiles(buildDir, "*.props"));
 
@@ -1280,7 +1598,6 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 var doc = XDocument.Load(defFile);
 
-                // Buscamos elementos <Content> que tengan <CopyToOutputDirectory>
                 var contentItems = doc.Descendants(ns + "Content")
                     .Where(c => c.Element(ns + "CopyToOutputDirectory") != null);
 
@@ -1291,16 +1608,12 @@ public class HAssemblyManager : IhAssemblyManager
 
                     if (string.IsNullOrEmpty(include)) continue;
 
-                    // Resolver la variable $(MSBuildThisFileDirectory) que apunta a la carpeta del .targets
                     string targetsFolder = buildDir.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
                     string resolvedInclude = include.Replace("$(MSBuildThisFileDirectory)", targetsFolder);
-
-                    // Normalizar la ruta para resolver ".." y separadores correctos del sistema
                     resolvedInclude = Path.GetFullPath(resolvedInclude.Replace('\\', Path.DirectorySeparatorChar));
 
                     if (resolvedInclude.Contains('*'))
                     {
-                        // --- CASO CON COMODINES (Ej: resources\**) ---
                         string baseDir = resolvedInclude.Split('*')[0];
                         if (!Directory.Exists(baseDir)) continue;
 
@@ -1310,9 +1623,10 @@ public class HAssemblyManager : IhAssemblyManager
                             string relativePath = Path.GetRelativePath(baseDir, file);
                             string recursiveDir = Path.GetDirectoryName(relativePath) ?? "";
                             if (!string.IsNullOrEmpty(recursiveDir))
+                            {
                                 recursiveDir += Path.DirectorySeparatorChar;
+                            }
 
-                            // Reemplazar placeholders de MSBuild en el Link
                             string finalDest = linkTemplate
                                 .Replace("%(RecursiveDir)", recursiveDir)
                                 .Replace("%(Filename)", Path.GetFileNameWithoutExtension(file))
@@ -1320,7 +1634,9 @@ public class HAssemblyManager : IhAssemblyManager
                                 .Replace('\\', Path.DirectorySeparatorChar);
 
                             if (string.IsNullOrEmpty(finalDest))
+                            {
                                 finalDest = relativePath;
+                            }
 
                             mappings.Add(new SymLinkDef
                             {
@@ -1333,7 +1649,6 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     else
                     {
-                        // --- CASO ARCHIVO INDIVIDUAL ---
                         if (File.Exists(resolvedInclude))
                         {
                             string finalDest = !string.IsNullOrEmpty(linkTemplate)
@@ -1368,7 +1683,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error extracting content mappings: {ex.Message}");
+            _logger.LogError(ex, "Error extracting content mappings.");
         }
 
         return mappings;
@@ -1376,53 +1691,274 @@ public class HAssemblyManager : IhAssemblyManager
 
     public bool StartBackgroundService(string workerType)
     {
-        var typeName = workerType.Split(',')[0].Trim();
-        Type? serviceType = null;
+        if (string.IsNullOrWhiteSpace(workerType))
+            return false;
 
+        var key = GetBackgroundServiceKey(workerType);
 
-        serviceType = Assemblies.Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
-            .FirstOrDefault(t => t != null);
-
-        serviceType ??= AppDomain.CurrentDomain.GetAssemblies()
-            .Select(a => a.GetType(typeName, throwOnError: false, ignoreCase: false))
-            .FirstOrDefault(t => t != null);
-
-        serviceType ??= Type.GetType(workerType, throwOnError: false);
-
-        if (serviceType != null)
+        if (_backgroundServices.TryGetValue(key, out var existingState) && existingState.IsRunning)
         {
-            try
+            _logger.LogInformation(
+                "El worker {WorkerType} ya está en ejecución en dominio {DomainName}.",
+                workerType,
+                existingState.DomainName);
+            return true;
+        }
+
+        var resolved = ResolveBackgroundServiceType(workerType);
+        if (resolved == null)
+        {
+            _logger.LogWarning("Tipo de worker '{WorkerType}' no encontrado.", workerType);
+            return false;
+        }
+
+        var (serviceType, resolvedDomainName) = resolved.Value;
+
+        _logger.LogInformation(
+            "Resolved worker type {WorkerType} to runtime type {RuntimeType} in domain {DomainName}",
+            workerType,
+            serviceType.FullName,
+            resolvedDomainName);
+
+        if (string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation(
+                "El worker {WorkerType} pertenece al dominio Default. Queda fuera del ciclo de hot reload.",
+                workerType);
+        }
+
+        try
+        {
+            if (CreateInstance(serviceType) is not BackgroundService worker)
             {
-                // Intentamos crear la instancia usando ActivatorUtilities para soportar DI
-                var worker = ActivatorUtilities.CreateInstance(_serviceProvider, serviceType) as BackgroundService;
-                if (worker != null)
+                _logger.LogWarning("No se pudo crear la instancia del worker {WorkerType}.", workerType);
+                return false;
+            }
+
+            _logger.LogInformation(
+                "Iniciando worker {WorkerType} en dominio {DomainName}",
+                workerType,
+                resolvedDomainName);
+
+            worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            if (_backgroundServices.TryGetValue(key, out var state))
+            {
+                state.DomainName = resolvedDomainName;
+                state.Instance = worker;
+                state.IsRunning = true;
+                state.RestartOnDomainLoad =
+                    !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                _backgroundServices[key] = new BackgroundServiceState
                 {
-                    _logger.LogInformation($"Iniciando worker: {worker.GetType().Name}");
-                    worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
-                    return true;
-                }
+                    WorkerType = workerType,
+                    DomainName = resolvedDomainName,
+                    Instance = worker,
+                    IsRunning = true,
+                    RestartOnDomainLoad =
+                        !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase)
+                };
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e,
-                    $"Error al configurar el worker  de tipo '{serviceType.Name}'");
-            }
-        }
-        else
-        {
-            _logger.LogWarning($"Tipo de worker '{serviceType.Name}' no encontrado.");
-        }
 
-        return false;
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error al configurar el worker de tipo '{WorkerType}'", workerType);
+            return false;
+        }
     }
 
     public bool StopBackgroundService(string serviceType)
     {
-        return false;
+        if (string.IsNullOrWhiteSpace(serviceType))
+            return false;
+
+        var key = GetBackgroundServiceKey(serviceType);
+
+        if (!_backgroundServices.TryGetValue(key, out var state))
+        {
+            _logger.LogWarning("No existe registro para el worker {WorkerType}.", serviceType);
+            return false;
+        }
+
+        if (state.Instance == null || !state.IsRunning)
+        {
+            _logger.LogInformation(
+                "El worker {WorkerType} ya no estaba ejecutándose en dominio {DomainName}.",
+                serviceType,
+                state.DomainName);
+            state.IsRunning = false;
+            state.RestartOnDomainLoad = false;
+            return true;
+        }
+
+        try
+        {
+            _logger.LogInformation(
+                "Deteniendo worker {WorkerType} en dominio {DomainName}",
+                serviceType,
+                state.DomainName);
+
+            state.Instance.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+            state.Instance = null;
+            state.IsRunning = false;
+            state.RestartOnDomainLoad = false;
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deteniendo worker {WorkerType}", serviceType);
+            return false;
+        }
     }
 
     public bool BackgroundServiceRunning(string serviceType)
     {
-        return false;
+        if (string.IsNullOrWhiteSpace(serviceType))
+            return false;
+
+        var key = GetBackgroundServiceKey(serviceType);
+
+        return _backgroundServices.TryGetValue(key, out var state) &&
+               state.IsRunning &&
+               state.Instance != null;
+    }
+
+    private string GetBackgroundServiceKey(string workerType)
+    {
+        return workerType.Trim();
+    }
+
+    private AssemblyLoadContext GetAssemblyLoadContextByDomain(string? domainName)
+    {
+        if (string.IsNullOrWhiteSpace(domainName) ||
+            string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        {
+            return AssemblyLoadContext.Default;
+        }
+
+        if (_domains.TryGetValue(domainName, out var alc))
+        {
+            return alc;
+        }
+
+        return AssemblyLoadContext.Default;
+    }
+
+  private string GetDomainNameForAssemblyLoadContext(AssemblyLoadContext alc)
+        {
+            if (ReferenceEquals(alc, AssemblyLoadContext.Default))
+                return "Default";
+
+            foreach (var item in _domains)
+            {
+                if (ReferenceEquals(item.Value, alc))
+                    return item.Key;
+            }
+
+            return alc.Name ?? "Default";
+        }
+
+        private bool ShouldShareAssemblyFromDefault(string? assemblyName)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyName))
+                return false;
+
+            var coreAssemblyName = typeof(IhAssemblyManager).Assembly.GetName().Name;
+
+            return string.Equals(assemblyName, coreAssemblyName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Assembly? TryGetSharedAssemblyFromDefault(AssemblyName assemblyName)
+        {
+            if (!ShouldShareAssemblyFromDefault(assemblyName.Name))
+                return null;
+
+            var sharedAssembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a =>
+                string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (sharedAssembly != null)
+            {
+                _logger.LogInformation(
+                    "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
+                    sharedAssembly.FullName);
+            }
+
+            return sharedAssembly;
+        }
+
+        private Type? TryGetDefaultDomainTypeEquivalent(Type type)
+        {
+            var assemblyName = type.Assembly.GetName().Name;
+            if (!ShouldShareAssemblyFromDefault(assemblyName))
+                return null;
+
+            return AssemblyLoadContext.Default.Assemblies
+                .Where(a => string.Equals(a.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                .Select(a => a.GetType(type.FullName ?? string.Empty, throwOnError: false, ignoreCase: false))
+                .FirstOrDefault(t => t != null);
+        }
+
+    private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
+    {
+        var typeName = workerType.Split(',')[0].Trim();
+
+        foreach (var assembly in AssemblyLoadContext.Default.Assemblies)
+        {
+            var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
+            if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
+                !type.IsInterface)
+            {
+                _logger.LogInformation(
+                    "Worker type {WorkerType} resolved in domain Default from assembly {AssemblyName}",
+                    workerType,
+                    assembly.FullName);
+                return (type, "Default");
+            }
+        }
+
+        foreach (var domain in _domains)
+        {
+            foreach (var assembly in domain.Value.Assemblies)
+            {
+                var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
+                if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
+                    !type.IsInterface)
+                {
+                    _logger.LogInformation(
+                        "Worker type {WorkerType} resolved in domain {DomainName} from assembly {AssemblyName}",
+                        workerType,
+                        domain.Key,
+                        assembly.FullName);
+                    return (type, domain.Key);
+                }
+            }
+        }
+
+        var fallbackType = Type.GetType(workerType, throwOnError: false);
+        if (fallbackType != null &&
+            typeof(BackgroundService).IsAssignableFrom(fallbackType) &&
+            !fallbackType.IsAbstract &&
+            !fallbackType.IsInterface)
+        {
+            var alc = AssemblyLoadContext.GetLoadContext(fallbackType.Assembly) ?? AssemblyLoadContext.Default;
+            var domainName = GetDomainNameForAssemblyLoadContext(alc);
+
+            _logger.LogInformation(
+                "Worker type {WorkerType} resolved by fallback in domain {DomainName} from assembly {AssemblyName}",
+                workerType,
+                domainName,
+                fallbackType.Assembly.FullName);
+
+            return (fallbackType, domainName);
+        }
+
+        _logger.LogWarning("Worker type {WorkerType} could not be resolved in any domain.", workerType);
+        return null;
     }
 }

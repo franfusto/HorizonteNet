@@ -1,15 +1,15 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Pv;
 
 namespace Horizonte.PorcupineMod;
 
-public class Worker : BackgroundService
+public class PorcupineWorker : BackgroundService
 {
 
     private ILogger? _log;
-    private IHGesCom? _gesCom;
     private IHContext? _context;
     private PorcupineConfig _config = new();
     private CancellationTokenSource? _cancellationTokenSource;
@@ -17,16 +17,15 @@ public class Worker : BackgroundService
     private PvRecorder _recorder;
     private IHCredManager? _credManager;
     
-    public Worker(ILogger<Worker> logger,IHGesCom gesCom,IHContext context,IHCredManager credManager)
+
+    public PorcupineWorker(ILogger<PorcupineWorker> logger,IHContext context,IHCredManager credManager)
     {
         _log = logger;
-        _gesCom = gesCom;
         _context = context;
         _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
         _credManager = credManager;
 
     }
-
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Task.Run(() =>
