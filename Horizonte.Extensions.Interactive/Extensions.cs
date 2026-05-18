@@ -378,8 +378,8 @@ public static class Extensions
             var asmmanager = serviceProvider.GetService<IhAssemblyManager>();
             if (asmmanager != null)
             {
-                asmmanager.UnloadDomain("scripts");
-                asmmanager.LoadDomain("scripts", scriptasmlist);
+                asmmanager.UnloadDomain("Script");
+                asmmanager.LoadDomain("Script", scriptasmlist);
                 
                 // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
                 var gesCom = serviceProvider.GetService<IHGesCom>();
@@ -389,7 +389,7 @@ public static class Extensions
                     {
                         // Solo ejecutamos si el comando pertenece al dominio "scripts"
                         var hCmd = gesCom.GetHCommand(item.CommandName);
-                        if (hCmd != null && hCmd.Domain == "scripts")
+                        if (hCmd != null && hCmd.Domain == "Script")
                         {
                             logger?.LogInformation($"Ejecutando Init de script: {item.CommandName}");
                             gesCom.RunCommand(item.CommandName);

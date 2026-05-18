@@ -23,6 +23,7 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
     private static readonly TimeSpan BackgroundServiceStopTimeout = TimeSpan.FromSeconds(30);
+    private const string ScriptDomainName = "Script";
 
     private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
@@ -30,6 +31,8 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly ISymLinkScafolder _linkScafolder;
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<string, AssemblyLoadContext> _domains = new(StringComparer.OrdinalIgnoreCase);
+
+    private List<byte[]> _scriptAssemblyCache = new();
 
     private readonly Dictionary<string, BackgroundServiceState> _backgroundServices =
         new(StringComparer.OrdinalIgnoreCase);
@@ -310,6 +313,9 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
+        if (IsScriptDomain(domainName))
+            return LoadScriptDomain(domainName);
+
         if (!_domains.ContainsKey(domainName))
         {
             _logger.LogInformation("Loading/Creating domain: {DomainName}", domainName);
@@ -342,6 +348,16 @@ public class HAssemblyManager : IhAssemblyManager
     {
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
+
+        if (IsScriptDomain(domainName))
+        {
+            _scriptAssemblyCache = assemblies
+                .Where(x => x.Length > 0)
+                .Select(x => x.ToArray())
+                .ToList();
+
+            return LoadScriptDomain(domainName);
+        }
 
         if (!_domains.TryGetValue(domainName, out var alc))
         {
@@ -380,6 +396,65 @@ public class HAssemblyManager : IhAssemblyManager
         _logger.LogInformation("Reloading domain: {DomainName}", domainName);
         await UnloadDomain(domainName);
         await LoadDomain(domainName);
+    }
+
+    private static bool IsScriptDomain(string domainName)
+    {
+        return string.Equals(domainName, ScriptDomainName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private Task LoadScriptDomain(string domainName)
+    {
+        if (!_domains.TryGetValue(domainName, out var alc))
+        {
+            _logger.LogInformation("Loading/Creating script domain: {DomainName}", domainName);
+            alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
+        }
+
+        LoadForecedPackages(_settings.ForcedPackages
+            .Where(x => string.Equals(x.Domain, domainName, StringComparison.OrdinalIgnoreCase))
+            .ToList());
+
+        LoadCachedScriptAssemblies(domainName, alc);
+
+        LoadModule(domainName);
+        LoadService(domainName);
+
+        DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
+    }
+
+    private void LoadCachedScriptAssemblies(string domainName, AssemblyLoadContext alc)
+    {
+        if (_scriptAssemblyCache.Count == 0)
+        {
+            _logger.LogInformation("No cached script assemblies found for domain {DomainName}", domainName);
+            return;
+        }
+
+        foreach (var asmData in _scriptAssemblyCache)
+        {
+            try
+            {
+                using var ms = new MemoryStream(asmData);
+                var loadedAssembly = alc.LoadFromStream(ms);
+
+                _logger.LogInformation(
+                    "Cached script assembly {AssemblyName} loaded into domain {DomainName}",
+                    loadedAssembly.FullName,
+                    domainName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error loading cached script assembly into domain {DomainName}",
+                    domainName);
+            }
+        }
     }
 
     public void UnloadModule(string domainName)
