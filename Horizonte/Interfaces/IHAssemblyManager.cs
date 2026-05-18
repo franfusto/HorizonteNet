@@ -15,10 +15,11 @@ public interface IhAssemblyManager
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args);
     public string? ResolveAssemblyDllPath(string packageName, string version);
 
-    public void UnloadDomain(string domainName);
-    public void LoadDomain(string domainName);
-    public void LoadDomain(string domainName, IEnumerable<byte[]> assemblies);
-    public void ReloadDomain(string domainName);
+    public Task UnloadDomain(string domainName);
+    public Task LoadDomain(string domainName);
+    public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies);
+    public Task ReloadDomain(string domainName);
+
 
     public void UnloadModule(string domainName);
     public void UnloadService(string domainName);

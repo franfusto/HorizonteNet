@@ -138,18 +138,18 @@
         await _grid.Reload();
     }
 
-    private void UnloadDomain(DomainItem item)
+    private async Task UnloadDomain(DomainItem item)
     {
-        AssemblyManager.UnloadDomain(item.Domain);
+        await AssemblyManager.UnloadDomain(item.Domain);
     }
 
-    private void LoadDomain(DomainItem item)
+    private async Task LoadDomain(DomainItem item)
     {
-        AssemblyManager.LoadDomain(item.Domain);
+        await AssemblyManager.LoadDomain(item.Domain);
     }
 
-    private void ReloadDomain(DomainItem item)
+    private async Task ReloadDomain(DomainItem item)
     {
-        AssemblyManager.ReloadDomain(item.Domain);
+        await AssemblyManager.ReloadDomain(item.Domain);
     }
 }

@@ -1,28 +1,27 @@
 using Horizonte;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
+
 //using Microsoft.OpenApi.Models;
 
 namespace Horizonte.Samples.ServiceApp;
 
 public class WsWorker : BackgroundService
 {
-
-   
     private WebApplication? _app;
     private ILogger? _log;
     private IHGesCom? _gesCom;
     private IHContext? _context;
     private ServiceConfig _config = new();
-    
+
 
     public WsWorker(IServiceProvider serviceProvider)
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
         _gesCom = serviceProvider?.GetService<IHGesCom>();
         _context = serviceProvider?.GetService<IHContext>();
-
     }
+
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var builder = WebApplication.CreateBuilder();
@@ -31,11 +30,12 @@ public class WsWorker : BackgroundService
         {
             builder.Logging.ClearProviders();
             builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
-           // builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
-           // builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+            // builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+            // builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
             builder.Logging.SetMinimumLevel(LogLevel.Information);
             builder.Services.AddSingleton(_log);
         }
+
         if (_config.EnableSwagger)
         {
             builder.Services.AddEndpointsApiExplorer();
@@ -43,10 +43,11 @@ public class WsWorker : BackgroundService
             {
                 //c.SwaggerDoc("v1", new OpenApiInfo
                 //{
-                   // Title = "Web Service", Description = "Sample web service worker", Version = "v1"
+                // Title = "Web Service", Description = "Sample web service worker", Version = "v1"
                 //});
             });
         }
+
         _app = builder.Build();
         if (_config.EnableSwagger)
         {
@@ -56,28 +57,33 @@ public class WsWorker : BackgroundService
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sample web service worker API V1");
             });
         }
+
         //todo: cancelation token
         _app.MapGet("/", () => "Hello World!");
         _app.MapGet("/time", () => DateTime.Now);
         _app.MapGet("/workers", (CancellationToken ct) => _gesCom?.RunCommandAsync("Workers_GetServicesRunning"));
         _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
-  
-        return _app.RunAsync(stoppingToken);
+
+        return _app.RunAsync();
+        ;
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-
         _config = _context?.Get<ServiceConfig>() ?? new ServiceConfig();
-        
+
         _log?.LogInformation("Starting Web Service Worker");
-        return base.StartAsync(cancellationToken);  
+        return base.StartAsync(cancellationToken);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Web Service Worker");
+        if (_app != null)
+        {
+            _app?.StopAsync();
+        }
 
-        return _app?.StopAsync(cancellationToken) ?? Task.CompletedTask;
+        return base.StopAsync(cancellationToken);
     }
 }

@@ -16,9 +16,13 @@ public class HAssemblyManager : IhAssemblyManager
         public string WorkerType { get; init; } = string.Empty;
         public string DomainName { get; set; } = string.Empty;
         public BackgroundService? Instance { get; set; }
+        public CancellationTokenSource? RunCancellationTokenSource { get; set; }
+        public CancellationTokenSource? StopCancellationTokenSource { get; set; }
         public bool IsRunning { get; set; }
         public bool RestartOnDomainLoad { get; set; }
     }
+
+    private static readonly TimeSpan BackgroundServiceStopTimeout = TimeSpan.FromSeconds(30);
 
     private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
@@ -279,10 +283,10 @@ public class HAssemblyManager : IhAssemblyManager
         return path;
     }
 
-    public void UnloadDomain(string domainName)
+    public Task UnloadDomain(string domainName)
     {
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
-            return;
+            return Task.CompletedTask;
 
         if (_domains.TryGetValue(domainName, out var alc))
         {
@@ -297,12 +301,14 @@ public class HAssemblyManager : IhAssemblyManager
 
             DomainChanged?.Invoke();
         }
+
+        return Task.CompletedTask;
     }
 
-    public void LoadDomain(string domainName)
+    public Task LoadDomain(string domainName)
     {
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
-            return;
+            return Task.CompletedTask;
 
         if (!_domains.ContainsKey(domainName))
         {
@@ -328,12 +334,14 @@ public class HAssemblyManager : IhAssemblyManager
         LoadService(domainName);
 
         DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
     }
 
-    public void LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
+    public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
     {
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
-            return;
+            return Task.CompletedTask;
 
         if (!_domains.TryGetValue(domainName, out var alc))
         {
@@ -360,16 +368,18 @@ public class HAssemblyManager : IhAssemblyManager
         LoadService(domainName);
 
         DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
     }
 
-    public void ReloadDomain(string domainName)
+    public async Task ReloadDomain(string domainName)
     {
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
             return;
 
         _logger.LogInformation("Reloading domain: {DomainName}", domainName);
-        UnloadDomain(domainName);
-        LoadDomain(domainName);
+        await UnloadDomain(domainName);
+        await LoadDomain(domainName);
     }
 
     public void UnloadModule(string domainName)
@@ -410,7 +420,15 @@ public class HAssemblyManager : IhAssemblyManager
                         state.WorkerType,
                         state.DomainName);
 
-                    state.Instance.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+                    state.RunCancellationTokenSource?.Cancel();
+
+                    state.StopCancellationTokenSource?.Dispose();
+                    state.StopCancellationTokenSource = new CancellationTokenSource(BackgroundServiceStopTimeout);
+
+                    state.Instance
+                        .StopAsync(state.StopCancellationTokenSource.Token)
+                        .GetAwaiter()
+                        .GetResult();
                 }
             }
             catch (Exception ex)
@@ -419,6 +437,12 @@ public class HAssemblyManager : IhAssemblyManager
             }
             finally
             {
+                state.StopCancellationTokenSource?.Dispose();
+                state.StopCancellationTokenSource = null;
+
+                state.RunCancellationTokenSource?.Dispose();
+                state.RunCancellationTokenSource = null;
+
                 state.Instance = null;
                 state.IsRunning = false;
             }
@@ -673,91 +697,97 @@ public class HAssemblyManager : IhAssemblyManager
             $"Detalles: {string.Join(" | ", errors)}");
     }
 
-      private bool TryResolveConstructorParameter(Type implementationType, ParameterInfo parameter, out object? argument)
+    private bool TryResolveConstructorParameter(Type implementationType, ParameterInfo parameter, out object? argument)
+    {
+        argument = null;
+
+        if (parameter.ParameterType == typeof(IServiceProvider))
         {
-            argument = null;
-
-            if (parameter.ParameterType == typeof(IServiceProvider))
-            {
-                argument = _serviceProvider;
-                return true;
-            }
-
-            if (parameter.ParameterType == typeof(ILogger))
-            {
-                var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
-                if (loggerFactory != null)
-                {
-                    argument = loggerFactory.CreateLogger(implementationType.FullName ?? implementationType.Name);
-                    return true;
-                }
-            }
-
-            if (parameter.ParameterType.IsGenericType &&
-                parameter.ParameterType.GetGenericTypeDefinition() == typeof(ILogger<>))
-            {
-                var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
-                if (loggerFactory != null)
-                {
-                    var categoryType = parameter.ParameterType.GetGenericArguments()[0];
-                    var createLoggerMethod = typeof(LoggerFactoryExtensions)
-                        .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                        .First(m =>
-                            m.Name == nameof(LoggerFactoryExtensions.CreateLogger) &&
-                            m.IsGenericMethod &&
-                            m.GetParameters().Length == 1);
-
-                    argument = createLoggerMethod
-                        .MakeGenericMethod(categoryType)
-                        .Invoke(null, [loggerFactory]);
-
-                    return true;
-                }
-            }
-
-            var resolved = _serviceProvider.GetService(parameter.ParameterType);
-            if (resolved != null)
-            {
-                argument = resolved;
-                return true;
-            }
-
-            var defaultDomainType = TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
-            if (defaultDomainType != null)
-            {
-                var defaultDomainResolved = _serviceProvider.GetService(defaultDomainType);
-
-                if (defaultDomainResolved != null && parameter.ParameterType.IsInstanceOfType(defaultDomainResolved))
-                {
-                    argument = defaultDomainResolved;
-                    return true;
-                }
-
-                if (defaultDomainResolved != null)
-                {
-                    var parameterAssemblyAlc = AssemblyLoadContext.GetLoadContext(parameter.ParameterType.Assembly);
-                    var defaultTypeAssemblyAlc = AssemblyLoadContext.GetLoadContext(defaultDomainType.Assembly);
-                    var implementationAssemblyAlc = AssemblyLoadContext.GetLoadContext(implementationType.Assembly);
-
-                    _logger.LogWarning(
-                        "Se encontró una instancia raíz para {DefaultDomainType}, pero no es asignable al parámetro {ParameterType}. " +
-                        "Esto indica una duplicidad de ensamblado core entre ALCs. ParameterDomain={ParameterDomain}, DefaultTypeDomain={DefaultTypeDomain}, ImplementationDomain={ImplementationDomain}.",
-                        defaultDomainType.FullName,
-                        parameter.ParameterType.FullName,
-                        parameterAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(parameterAssemblyAlc) : "Unknown",
-                        defaultTypeAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(defaultTypeAssemblyAlc) : "Unknown",
-                        implementationAssemblyAlc != null ? GetDomainNameForAssemblyLoadContext(implementationAssemblyAlc) : "Unknown");
-                }
-            }
-
-            if (parameter.HasDefaultValue)
-            {
-                argument = parameter.DefaultValue;
-                return true;
-            }
-
-            return false;
+            argument = _serviceProvider;
+            return true;
         }
+
+        if (parameter.ParameterType == typeof(ILogger))
+        {
+            var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
+            if (loggerFactory != null)
+            {
+                argument = loggerFactory.CreateLogger(implementationType.FullName ?? implementationType.Name);
+                return true;
+            }
+        }
+
+        if (parameter.ParameterType.IsGenericType &&
+            parameter.ParameterType.GetGenericTypeDefinition() == typeof(ILogger<>))
+        {
+            var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
+            if (loggerFactory != null)
+            {
+                var categoryType = parameter.ParameterType.GetGenericArguments()[0];
+                var createLoggerMethod = typeof(LoggerFactoryExtensions)
+                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .First(m =>
+                        m.Name == nameof(LoggerFactoryExtensions.CreateLogger) &&
+                        m.IsGenericMethod &&
+                        m.GetParameters().Length == 1);
+
+                argument = createLoggerMethod
+                    .MakeGenericMethod(categoryType)
+                    .Invoke(null, [loggerFactory]);
+
+                return true;
+            }
+        }
+
+        var resolved = _serviceProvider.GetService(parameter.ParameterType);
+        if (resolved != null)
+        {
+            argument = resolved;
+            return true;
+        }
+
+        var defaultDomainType = TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
+        if (defaultDomainType != null)
+        {
+            var defaultDomainResolved = _serviceProvider.GetService(defaultDomainType);
+
+            if (defaultDomainResolved != null && parameter.ParameterType.IsInstanceOfType(defaultDomainResolved))
+            {
+                argument = defaultDomainResolved;
+                return true;
+            }
+
+            if (defaultDomainResolved != null)
+            {
+                var parameterAssemblyAlc = AssemblyLoadContext.GetLoadContext(parameter.ParameterType.Assembly);
+                var defaultTypeAssemblyAlc = AssemblyLoadContext.GetLoadContext(defaultDomainType.Assembly);
+                var implementationAssemblyAlc = AssemblyLoadContext.GetLoadContext(implementationType.Assembly);
+
+                _logger.LogWarning(
+                    "Se encontró una instancia raíz para {DefaultDomainType}, pero no es asignable al parámetro {ParameterType}. " +
+                    "Esto indica una duplicidad de ensamblado core entre ALCs. ParameterDomain={ParameterDomain}, DefaultTypeDomain={DefaultTypeDomain}, ImplementationDomain={ImplementationDomain}.",
+                    defaultDomainType.FullName,
+                    parameter.ParameterType.FullName,
+                    parameterAssemblyAlc != null
+                        ? GetDomainNameForAssemblyLoadContext(parameterAssemblyAlc)
+                        : "Unknown",
+                    defaultTypeAssemblyAlc != null
+                        ? GetDomainNameForAssemblyLoadContext(defaultTypeAssemblyAlc)
+                        : "Unknown",
+                    implementationAssemblyAlc != null
+                        ? GetDomainNameForAssemblyLoadContext(implementationAssemblyAlc)
+                        : "Unknown");
+            }
+        }
+
+        if (parameter.HasDefaultValue)
+        {
+            argument = parameter.DefaultValue;
+            return true;
+        }
+
+        return false;
+    }
 
     private string GetRequestedFramework()
     {
@@ -1515,57 +1545,57 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
-   private void LoadAdditinalAssemblies(string modulePath, string? domainName)
+    private void LoadAdditinalAssemblies(string modulePath, string? domainName)
+    {
+        try
         {
-            try
+            string directoryPath = Path.GetDirectoryName(modulePath) ?? string.Empty;
+            if (!Directory.Exists(directoryPath))
+                return;
+
+            var alc = GetAssemblyLoadContextByDomain(domainName);
+            var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
+
+            foreach (var dllFile in Directory.EnumerateFiles(directoryPath, "*.dll"))
             {
-                string directoryPath = Path.GetDirectoryName(modulePath) ?? string.Empty;
-                if (!Directory.Exists(directoryPath))
-                    return;
+                var assemblyNameInfo = AssemblyName.GetAssemblyName(dllFile);
 
-                var alc = GetAssemblyLoadContextByDomain(domainName);
-                var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
-
-                foreach (var dllFile in Directory.EnumerateFiles(directoryPath, "*.dll"))
+                if (ShouldShareAssemblyFromDefault(assemblyNameInfo.Name))
                 {
-                    var assemblyNameInfo = AssemblyName.GetAssemblyName(dllFile);
-
-                    if (ShouldShareAssemblyFromDefault(assemblyNameInfo.Name))
-                    {
-                        _logger.LogInformation(
-                            "Skipping additional dll {AssemblyName} for domain {DomainName} because it is shared from Default.",
-                            assemblyNameInfo.FullName,
-                            targetDomainName);
-                        continue;
-                    }
-
-                    string assemblyName = assemblyNameInfo.FullName!;
-
-                    var isAlreadyLoadedInTargetAlc = alc.Assemblies.Any(a => a.FullName == assemblyName);
-                    if (isAlreadyLoadedInTargetAlc)
-                    {
-                        _logger.LogInformation(
-                            "Additional dll {AssemblyName} ya estaba cargada en dominio {DomainName}",
-                            assemblyName,
-                            targetDomainName);
-                        continue;
-                    }
-
-                    var fullDllPath = Path.GetFullPath(dllFile);
-                    var loadedAssembly = alc.LoadFromAssemblyPath(fullDllPath);
-
                     _logger.LogInformation(
-                        "Additional dll {AssemblyName} loaded from {FullDllPath} into domain {DomainName}",
-                        loadedAssembly.FullName,
-                        fullDllPath,
+                        "Skipping additional dll {AssemblyName} for domain {DomainName} because it is shared from Default.",
+                        assemblyNameInfo.FullName,
                         targetDomainName);
+                    continue;
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error on load additional dll from module: {ModulePath}", modulePath);
+
+                string assemblyName = assemblyNameInfo.FullName!;
+
+                var isAlreadyLoadedInTargetAlc = alc.Assemblies.Any(a => a.FullName == assemblyName);
+                if (isAlreadyLoadedInTargetAlc)
+                {
+                    _logger.LogInformation(
+                        "Additional dll {AssemblyName} ya estaba cargada en dominio {DomainName}",
+                        assemblyName,
+                        targetDomainName);
+                    continue;
+                }
+
+                var fullDllPath = Path.GetFullPath(dllFile);
+                var loadedAssembly = alc.LoadFromAssemblyPath(fullDllPath);
+
+                _logger.LogInformation(
+                    "Additional dll {AssemblyName} loaded from {FullDllPath} into domain {DomainName}",
+                    loadedAssembly.FullName,
+                    fullDllPath,
+                    targetDomainName);
             }
         }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error on load additional dll from module: {ModulePath}", modulePath);
+        }
+    }
 
     private List<SymLinkDef> GetContentMappingsFromPackage(string resAssemblyPath)
     {
@@ -1727,6 +1757,8 @@ public class HAssemblyManager : IhAssemblyManager
                 workerType);
         }
 
+        CancellationTokenSource? runCancellationTokenSource = null;
+
         try
         {
             if (CreateInstance(serviceType) is not BackgroundService worker)
@@ -1740,12 +1772,20 @@ public class HAssemblyManager : IhAssemblyManager
                 workerType,
                 resolvedDomainName);
 
-            worker.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
+            runCancellationTokenSource = new CancellationTokenSource();
+
+            worker.StartAsync(runCancellationTokenSource.Token).GetAwaiter().GetResult();
 
             if (_backgroundServices.TryGetValue(key, out var state))
             {
+                state.StopCancellationTokenSource?.Dispose();
+                state.StopCancellationTokenSource = null;
+
+                state.RunCancellationTokenSource?.Dispose();
                 state.DomainName = resolvedDomainName;
                 state.Instance = worker;
+                state.RunCancellationTokenSource = runCancellationTokenSource;
+                runCancellationTokenSource = null;
                 state.IsRunning = true;
                 state.RestartOnDomainLoad =
                     !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase);
@@ -1757,16 +1797,20 @@ public class HAssemblyManager : IhAssemblyManager
                     WorkerType = workerType,
                     DomainName = resolvedDomainName,
                     Instance = worker,
+                    RunCancellationTokenSource = runCancellationTokenSource,
                     IsRunning = true,
                     RestartOnDomainLoad =
                         !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase)
                 };
+
+                runCancellationTokenSource = null;
             }
 
             return true;
         }
         catch (Exception e)
         {
+            runCancellationTokenSource?.Dispose();
             _logger.LogError(e, "Error al configurar el worker de tipo '{WorkerType}'", workerType);
             return false;
         }
@@ -1850,59 +1894,59 @@ public class HAssemblyManager : IhAssemblyManager
         return AssemblyLoadContext.Default;
     }
 
-  private string GetDomainNameForAssemblyLoadContext(AssemblyLoadContext alc)
+    private string GetDomainNameForAssemblyLoadContext(AssemblyLoadContext alc)
+    {
+        if (ReferenceEquals(alc, AssemblyLoadContext.Default))
+            return "Default";
+
+        foreach (var item in _domains)
         {
-            if (ReferenceEquals(alc, AssemblyLoadContext.Default))
-                return "Default";
-
-            foreach (var item in _domains)
-            {
-                if (ReferenceEquals(item.Value, alc))
-                    return item.Key;
-            }
-
-            return alc.Name ?? "Default";
+            if (ReferenceEquals(item.Value, alc))
+                return item.Key;
         }
 
-        private bool ShouldShareAssemblyFromDefault(string? assemblyName)
+        return alc.Name ?? "Default";
+    }
+
+    private bool ShouldShareAssemblyFromDefault(string? assemblyName)
+    {
+        if (string.IsNullOrWhiteSpace(assemblyName))
+            return false;
+
+        var coreAssemblyName = typeof(IhAssemblyManager).Assembly.GetName().Name;
+
+        return string.Equals(assemblyName, coreAssemblyName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private Assembly? TryGetSharedAssemblyFromDefault(AssemblyName assemblyName)
+    {
+        if (!ShouldShareAssemblyFromDefault(assemblyName.Name))
+            return null;
+
+        var sharedAssembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a =>
+            string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (sharedAssembly != null)
         {
-            if (string.IsNullOrWhiteSpace(assemblyName))
-                return false;
-
-            var coreAssemblyName = typeof(IhAssemblyManager).Assembly.GetName().Name;
-
-            return string.Equals(assemblyName, coreAssemblyName, StringComparison.OrdinalIgnoreCase);
+            _logger.LogInformation(
+                "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
+                sharedAssembly.FullName);
         }
 
-        private Assembly? TryGetSharedAssemblyFromDefault(AssemblyName assemblyName)
-        {
-            if (!ShouldShareAssemblyFromDefault(assemblyName.Name))
-                return null;
+        return sharedAssembly;
+    }
 
-            var sharedAssembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a =>
-                string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+    private Type? TryGetDefaultDomainTypeEquivalent(Type type)
+    {
+        var assemblyName = type.Assembly.GetName().Name;
+        if (!ShouldShareAssemblyFromDefault(assemblyName))
+            return null;
 
-            if (sharedAssembly != null)
-            {
-                _logger.LogInformation(
-                    "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
-                    sharedAssembly.FullName);
-            }
-
-            return sharedAssembly;
-        }
-
-        private Type? TryGetDefaultDomainTypeEquivalent(Type type)
-        {
-            var assemblyName = type.Assembly.GetName().Name;
-            if (!ShouldShareAssemblyFromDefault(assemblyName))
-                return null;
-
-            return AssemblyLoadContext.Default.Assemblies
-                .Where(a => string.Equals(a.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
-                .Select(a => a.GetType(type.FullName ?? string.Empty, throwOnError: false, ignoreCase: false))
-                .FirstOrDefault(t => t != null);
-        }
+        return AssemblyLoadContext.Default.Assemblies
+            .Where(a => string.Equals(a.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+            .Select(a => a.GetType(type.FullName ?? string.Empty, throwOnError: false, ignoreCase: false))
+            .FirstOrDefault(t => t != null);
+    }
 
     private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
     {

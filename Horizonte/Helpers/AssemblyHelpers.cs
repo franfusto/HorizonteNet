@@ -4,6 +4,7 @@ public static class AssemblyHelpers
 {
     public static readonly HashSet<string> RuntimeAssemblyNames = new(StringComparer.OrdinalIgnoreCase)
     {
+        "Horizonte",
         "System.Runtime",
         "System.Private.CoreLib",
         "mscorlib",
