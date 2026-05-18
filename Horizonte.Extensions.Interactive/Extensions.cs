@@ -91,7 +91,6 @@ public static class Extensions
                     {
                         var packageName = nugetMatch.Groups[1].Value.Trim();
                         var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0"; // Versión por defecto si no se especifica
-                        //HAssemblyManager assemblyManager = serviceProvider.GetService<IhAssemblyManager>();
                         var assemblyManager = serviceProvider.GetService<IhAssemblyManager>() ;
                         if (assemblyManager != null)
                         {

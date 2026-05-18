@@ -197,20 +197,19 @@ public class PanelModulo
     }
 
     [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
-    public List<Type> Workers_GetAvailablesServices()
+    public List<string> Workers_GetAvailablesServices()
     {
-        /*
         var assemblymanager = _serviceProvider.GetService<IhAssemblyManager>();
-        if (assemblymanager == null) return new List<Type>();
+        if (assemblymanager == null) return new List<string>();
 
         var types = assemblymanager.Assemblies
             .SelectMany(a => a.GetTypes())
-            .Where(t => typeof(IHorizonteBackgroundService).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .Where(t => typeof(BackgroundService).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .Select(t => t.FullName)
+            .OfType<string>()
             .ToList();
 
         return types;
-        */
-        return null!;
     }
 
     /// <summary>
