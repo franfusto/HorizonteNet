@@ -360,26 +360,44 @@ public static class Extensions
         return response;
     }
 
-    public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IServiceProvider serviceProvider)
-    {
-        var  logger = serviceProvider.GetService<ILogger<PanelModulo>>();
-        try
+ public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IServiceProvider serviceProvider)
         {
-            var scriptasmlist = new List<byte[]>();
-            foreach (var script in scriptDefs.Where(x=> x.Active))
+            var  logger = serviceProvider.GetService<ILogger<PanelModulo>>();
+            try
             {
-                logger?.LogInformation($"Loading script {script.Name}...");
-                var compileresponse = await script.Compile(serviceProvider.GetService<IhAssemblyManager>());
-                var asm =  compileresponse.Assembly;
-                if (asm.Length>0) scriptasmlist.Add(asm);
-            }
-            if (scriptasmlist.Count==0) return;
+                var asmmanager = serviceProvider.GetService<IhAssemblyManager>();
+                if (asmmanager == null)
+                {
+                    logger?.LogWarning("No se encontró IhAssemblyManager. No se pueden cargar scripts.");
+                    return;
+                }
 
-            var asmmanager = serviceProvider.GetService<IhAssemblyManager>();
-            if (asmmanager != null)
-            {
-                asmmanager.UnloadDomain("Script");
-                asmmanager.LoadDomain("Script", scriptasmlist);
+                var scriptasmlist = new List<byte[]>();
+
+                foreach (var script in scriptDefs.Where(x => x.Active))
+                {
+                    logger?.LogInformation($"Loading script {script.Name}...");
+
+                    var compileresponse = await script.Compile(asmmanager);
+
+                    if (compileresponse.Errors.Any() )
+                    {
+                        logger?.LogError(
+                            "Error compilando script {ScriptName}: {Errors}",
+                            script.Name,
+                            string.Join(Environment.NewLine, compileresponse.Errors));
+
+                        continue;
+                    }
+
+                    if (compileresponse.Assembly is { Length: > 0 } asm)
+                    {
+                        scriptasmlist.Add(asm);
+                    }
+                }
+
+                await asmmanager.UnloadDomain("Script");
+                await asmmanager.LoadDomain("Script", scriptasmlist);
                 
                 // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
                 var gesCom = serviceProvider.GetService<IHGesCom>();
@@ -387,9 +405,9 @@ public static class Extensions
                 {
                     foreach (var item in gesCom.GetRoleCommands("init"))
                     {
-                        // Solo ejecutamos si el comando pertenece al dominio "scripts"
                         var hCmd = gesCom.GetHCommand(item.CommandName);
-                        if (hCmd != null && hCmd.Domain == "Script")
+                        if (hCmd != null &&
+                            string.Equals(hCmd.Domain, "Script", StringComparison.OrdinalIgnoreCase))
                         {
                             logger?.LogInformation($"Ejecutando Init de script: {item.CommandName}");
                             gesCom.RunCommand(item.CommandName);
@@ -397,14 +415,12 @@ public static class Extensions
                     }
                 }
             }
+            catch (Exception e)
+            {
+                logger?.LogError(e.Message);
+            }
+        }
 
-            
-            
-        }
-        catch (Exception e)
-        {
-            logger?.LogError(e.Message);
-        }
     }
+       
 
-}
