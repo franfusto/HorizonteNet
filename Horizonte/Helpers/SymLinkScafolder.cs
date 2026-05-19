@@ -7,6 +7,9 @@ namespace Horizonte.Helpers;
 /// <summary>
 /// Implementa la creación, consulta y limpieza de un andamio de enlaces simbólicos
 /// dentro del directorio de trabajo actual.
+/// Horizonte soporta aislamiento de ensamblados administrados por dominio ALC y aislamiento de assets web mediante StaticFileRegistry.
+/// Los recursos nativos, bitcode, archivos resueltos por rutas relativas, librerías no administradas y artefactos procesados desde .targets se materializan a nivel de proceso/directorio de aplicación. Por tanto, no se garantiza la coexistencia de dos versiones de un paquete que requieran archivos nativos o recursos con el mismo nombre/ruta efectiva.
+/// Si varios dominios requieren el mismo recurso nativo, deben usar versiones compatibles o rutas/nombres diferenciados.
 /// </summary>
 /// <remarks>
 /// Esta clase mantiene una colección en memoria con las definiciones de enlaces creados
@@ -313,7 +316,16 @@ public class SymLinkScafolder :ISymLinkScafolder
                     {
                         if (Directory.Exists(fullDestinationPath))
                         {
-                            Directory.Delete(fullDestinationPath);
+                            if (IsSameLinkTarget(fullDestinationPath, symLinkDef.Source))
+                            {
+                                _logger.LogInformation($"El enlace simbólico ya existe: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                                continue;
+                            }
+
+                            _logger.LogWarning(
+                                $"Conflicto de enlace simbólico para {symLinkDef.Destination}. " +
+                                $"Ya existe un destino en {fullDestinationPath} y no se sobrescribirá con {symLinkDef.Source}.");
+                            continue;
                         }
 
                         Directory.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
@@ -322,7 +334,16 @@ public class SymLinkScafolder :ISymLinkScafolder
                     {
                         if (File.Exists(fullDestinationPath))
                         {
-                            File.Delete(fullDestinationPath);
+                            if (IsSameLinkTarget(fullDestinationPath, symLinkDef.Source))
+                            {
+                                _logger.LogInformation($"El enlace simbólico ya existe: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                                continue;
+                            }
+
+                            _logger.LogWarning(
+                                $"Conflicto de enlace simbólico para {symLinkDef.Destination}. " +
+                                $"Ya existe un destino en {fullDestinationPath} y no se sobrescribirá con {symLinkDef.Source}.");
+                            continue;
                         }
 
                         File.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
@@ -342,5 +363,50 @@ public class SymLinkScafolder :ISymLinkScafolder
             _logger.LogError(e.ToString());
         }
     }
+    private static bool IsSameLinkTarget(string linkPath, string expectedTarget)
+    {
+        try
+        {
+            var fileInfo = new FileInfo(linkPath);
+            if (fileInfo.Exists && fileInfo.LinkTarget != null)
+            {
+                return PathsEqual(fileInfo.LinkTarget, expectedTarget);
+            }
 
+            var directoryInfo = new DirectoryInfo(linkPath);
+            if (directoryInfo.Exists && directoryInfo.LinkTarget != null)
+            {
+                return PathsEqual(directoryInfo.LinkTarget, expectedTarget);
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        try
+        {
+            return string.Equals(
+                Path.GetFullPath(left),
+                Path.GetFullPath(right),
+                OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal);
+        }
+        catch
+        {
+            return string.Equals(
+                left,
+                right,
+                OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal);
+        }
+    }
+    
 }
