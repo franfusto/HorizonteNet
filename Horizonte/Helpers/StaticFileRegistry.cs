@@ -13,6 +13,9 @@ namespace Horizonte;
 /// </summary>
 public class StaticFileRegistry
 {
+    
+    private static ConcurrentDictionary<string, string> _filesByDomain = new ConcurrentDictionary<string, string>();
+
     private static readonly ILog Log = LogManager.GetLogger(typeof(StaticFileRegistry));
     /// <summary>
     /// Almacena un diccionario concurrente que asocia rutas relativas en minúsculas
@@ -42,67 +45,62 @@ public class StaticFileRegistry
     {
     }
 
-
+    public ConcurrentDictionary<string, string> FilesByDomain
+    {
+        get => _filesByDomain;
+    }
+    
     public ConcurrentDictionary<string, string> Files
     {
         get => _files;
     }
 
-    /// Registra los directorios de contenido estático y de recursos web estáticos dentro
-    /// del directorio que corresponde al paquete especificado.
-    /// Este método busca subdirectorios específicos en el directorio base del paquete, tales como
-    /// "Content" y "staticwebassets", los cuales son sensibles para entornos de aplicaciones.
-    /// Si estos subdirectorios existen, se registran para su utilización como recursos accesibles a través
-    /// de prefijos específicos, permitiendo una gestión adecuada de archivos estáticos asociados al paquete.
     /// <param name="packagepath">Ruta del paquete desde donde se intentarán identificar y registrar
-    /// los directorios. Debe ser una ruta válida que apunte a un archivo o directorio existente.
-    /// Si la ruta es inválida, nula o vacía, no se realizará ninguna acción.</param>
-    public void RegisterPackageDirectory(string packagepath)
-    {
-        // Validar que el path no sea nulo o vacío
-        if (string.IsNullOrWhiteSpace(packagepath) || (!File.Exists(packagepath) && !Directory.Exists(packagepath)))
-            return;
-
-        // Subir dos directorios desde el archivo packagepath
-        var currentDirectory = GetParentDirectory(Path.GetDirectoryName(packagepath), 2);
-
-        if (currentDirectory == null) return;
-
-        //obtener nombre del paquete
-        string prefix = StaticWebAssetsPath + Path.GetFileName(GetParentDirectory(currentDirectory, 1));
-
-        // Listar todos los subdirectorios en el directorio actual
-        var directories = Directory.GetDirectories(currentDirectory);
-
-        // Buscar directorio Content (insensible a mayúsculas/minúsculas)
-        var contentDir = directories.FirstOrDefault(d =>
-            string.Equals(Path.GetFileName(d), "Content", StringComparison.OrdinalIgnoreCase));
-
-        if (contentDir != null && Directory.Exists(contentDir))
+        /// los directorios. Debe ser una ruta válida que apunte a un archivo o directorio existente.
+        /// Si la ruta es inválida, nula o vacía, no se realizará ninguna acción.</param>
+        /// <param name="domainName">Dominio lógico/ALC donde se ha cargado el paquete.</param>
+        public void RegisterPackageDirectory(string packagepath, string? domainName = null)
         {
-            Log.Info($"Directory Content found: {contentDir}");
-            RegisterDirectory(contentDir, prefix);
+            // Validar que el path no sea nulo o vacío
+            if (string.IsNullOrWhiteSpace(packagepath) || (!File.Exists(packagepath) && !Directory.Exists(packagepath)))
+                return;
+
+            // Subir dos directorios desde el archivo packagepath
+            var currentDirectory = GetParentDirectory(Path.GetDirectoryName(packagepath), 2);
+
+            if (currentDirectory == null) return;
+
+            //obtener nombre del paquete
+            string prefix = StaticWebAssetsPath + Path.GetFileName(GetParentDirectory(currentDirectory, 1));
+
+            // Listar todos los subdirectorios en el directorio actual
+            var directories = Directory.GetDirectories(currentDirectory);
+
+            // Buscar directorio Content (insensible a mayúsculas/minúsculas)
+            var contentDir = directories.FirstOrDefault(d =>
+                string.Equals(Path.GetFileName(d), "Content", StringComparison.OrdinalIgnoreCase));
+
+            if (contentDir != null && Directory.Exists(contentDir))
+            {
+                Log.Info($"Directory Content found: {contentDir}");
+                RegisterDirectory(contentDir, prefix, domainName);
+            }
+
+            // Buscar directorio staticwebassets (insensible a mayúsculas/minúsculas)
+            var staticWebAssetsDir = directories.FirstOrDefault(d =>
+                string.Equals(Path.GetFileName(d), "staticwebassets", StringComparison.OrdinalIgnoreCase));
+
+            if (staticWebAssetsDir != null && Directory.Exists(staticWebAssetsDir))
+            {
+                Log.Info ($"Found staticwebassets folder: {staticWebAssetsDir}");
+                RegisterDirectory(staticWebAssetsDir, prefix, domainName);
+            }
         }
 
-        // Buscar directorio staticwebassets (insensible a mayúsculas/minúsculas)
-        var staticWebAssetsDir = directories.FirstOrDefault(d =>
-            string.Equals(Path.GetFileName(d), "staticwebassets", StringComparison.OrdinalIgnoreCase));
-
-        if (staticWebAssetsDir != null && Directory.Exists(staticWebAssetsDir))
-        {
-            Log.Info ($"Found staticwebassets folder: {staticWebAssetsDir}");
-            RegisterDirectory(staticWebAssetsDir, prefix);
-        }
-    }
-
-    /// Registra el directorio de un módulo en el sistema para que se puedan servir archivos estáticos desde este.
-    /// Este método localiza de manera recursiva la carpeta "wwwroot" asociada al módulo cuyo archivo DLL se encuentra
-    /// en la ruta especificada en `moduleSettingsItem.Path`. Si encuentra dicha carpeta, registra su contenido
-    /// en el sistema con un prefijo que incluye el nombre del módulo.
-    /// Si la ruta del DLL no es válida o no existe, se registra un mensaje de error en el sistema de log.
     /// <param name="moduleSettingsItem">Una instancia de `ModulesSettingsItem` que contiene información sobre el módulo,
     /// incluyendo su nombre, versión, estado de actividad y la ruta al archivo DLL correspondiente.</param>
-    public void RegisterModuleDirectory(ModulesSettingsItem moduleSettingsItem)
+    /// <param name="domainName">Dominio lógico/ALC donde se ha cargado el módulo.</param>
+    public void RegisterModuleDirectory(ModulesSettingsItem moduleSettingsItem, string? domainName = null)
     {
         string? dllPath = moduleSettingsItem.Path;
 
@@ -125,7 +123,7 @@ public class StaticFileRegistry
                 wwwRootPath = potentialPath;
                 Log.Info
                     ($"Found wwwroot folder: {wwwRootPath}");
-                RegisterDirectory(wwwRootPath, prefix);
+                RegisterDirectory(wwwRootPath, prefix, domainName);
                 break;
             }
 
@@ -153,7 +151,29 @@ public class StaticFileRegistry
         if (file != null) return new FileInfo(file);
         return null;
     }
+    public FileInfo? GetFile(string path, string? domainName)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
 
+        var normalizedPath = NormalizeRegistryPath(path);
+
+        if (!string.IsNullOrWhiteSpace(domainName))
+        {
+            var domainKey = BuildDomainKey(domainName, normalizedPath);
+            if (_filesByDomain.TryGetValue(domainKey, out var domainFile))
+            {
+                return new FileInfo(domainFile);
+            }
+        }
+
+        if (_files.TryGetValue(normalizedPath.ToLowerInvariant(), out var file))
+        {
+            return new FileInfo(file);
+        }
+
+        return null;
+    }
     /// Obtiene el directorio ascendente de un directorio dado, subiendo un número especificado de niveles.
     /// <param name="path">Ruta del directorio base desde el cual se buscará el directorio padre.</param>
     /// <param name="levelsUp">Cantidad de niveles que se subirán en el árbol de directorios desde el directorio base.</param>
@@ -171,19 +191,12 @@ public class StaticFileRegistry
     }
 
 
-    /// Registra todos los archivos de un directorio y sus subdirectorios en un diccionario interno,
-    /// almacenando las rutas relativas con un prefijo especificado.
-    /// Este método permite recorrer recursivamente todos los archivos en un directorio dado y
-    /// asociarlos a una clave generada mediante una ruta relativa con un prefijo personalizado.
-    /// Si el directorio especificado no existe, se registrará un error en los registros.
-    /// <param name="path">
-    /// Ruta al directorio que se desea registrar. Si el directorio no existe, no se realizará ninguna operación.
-    /// </param>
     /// <param name="prefix">
     /// Prefijo que se añadirá al comienzo de las rutas relativas de los archivos encontrados.
     /// El valor predeterminado es una cadena vacía.
     /// </param>
-    private void RegisterDirectory(string path, string prefix = "")
+    /// <param name="domainName">Dominio lógico/ALC asociado a los archivos registrados.</param>
+    private void RegisterDirectory(string path, string prefix = "", string? domainName = null)
     {
         if (!Directory.Exists(path))
         {
@@ -198,8 +211,32 @@ public class StaticFileRegistry
             string relativePath =
                 prefix + "/" + Path.GetRelativePath(path, file).Replace(Path.DirectorySeparatorChar, '/');
 
-            //añadir a la cache
-            _files[relativePath.ToLowerInvariant()] = file;
+            var normalizedPath = NormalizeRegistryPath(relativePath);
+
+            // Cache legacy/global. Se mantiene por compatibilidad.
+            _files[normalizedPath.ToLowerInvariant()] = file;
+
+            if (!string.IsNullOrWhiteSpace(domainName))
+            {
+                _filesByDomain[BuildDomainKey(domainName, normalizedPath)] = file;
+            }
         }
+    }
+
+    private static string BuildDomainKey(string domainName, string path)
+    {
+        return $"{domainName.Trim().ToLowerInvariant()}::{NormalizeRegistryPath(path).ToLowerInvariant()}";
+    }
+
+    private static string NormalizeRegistryPath(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+
+        if (!normalized.StartsWith("/", StringComparison.Ordinal))
+        {
+            normalized = "/" + normalized;
+        }
+
+        return normalized;
     }
 }

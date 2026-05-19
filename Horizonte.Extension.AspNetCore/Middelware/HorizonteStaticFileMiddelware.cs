@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -17,7 +18,7 @@ public class HorizonteStaticFileMiddelware
     private readonly IFileProvider _fileProvider;
     private readonly IContentTypeProvider _contentTypeProvider;
     private readonly IhAssemblyManager _assemblyManager;
-
+    private readonly string? _domainName;
 
     /// <summary>
     /// Creates a new instance of the StaticFileMiddleware.
@@ -27,7 +28,8 @@ public class HorizonteStaticFileMiddelware
     /// <param name="options">The configuration options.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
     public HorizonteStaticFileMiddelware(RequestDelegate next, IWebHostEnvironment hostingEnv,
-        IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger,IhAssemblyManager assemblyManager)
+        IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger,IhAssemblyManager assemblyManager,
+        Assembly? registeringAssembly = null)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(hostingEnv);
@@ -35,6 +37,7 @@ public class HorizonteStaticFileMiddelware
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(assemblyManager);
         _assemblyManager = assemblyManager;
+        _domainName = ResolveRegisteringAssemblyDomain(registeringAssembly, assemblyManager);
         _next = next;
         _options = options.Value;
         _contentTypeProvider = _options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
@@ -48,6 +51,10 @@ public class HorizonteStaticFileMiddelware
             _logger.LogWarning(
                 "The web root file provider is not available, falling back to the content root file provider.");
         }
+
+        _logger.LogInformation(
+            "Horizonte static file middleware registered for domain {DomainName}",
+            _domainName ?? "Default");
     }
 
 
@@ -134,7 +141,7 @@ public class HorizonteStaticFileMiddelware
     private async Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
     {
         if (subPath.Value == null) return;
-        FileInfo? fileInfo = _assemblyManager.StaticFileRegistry.GetFile(subPath.Value);
+        FileInfo? fileInfo = _assemblyManager.StaticFileRegistry.GetFile(subPath.Value, _domainName);
         if (fileInfo != null)
         {
             context.Response.ContentType = contentType;
@@ -144,9 +151,33 @@ public class HorizonteStaticFileMiddelware
         }
         else
         {
-            _logger.LogWarning($"File not found {subPath}");
+            _logger.LogWarning($"File not found {subPath} for domain {_domainName ?? "Default"}");
         }
 
         await _next(context);
+    }
+
+    private static string? ResolveRegisteringAssemblyDomain(
+        Assembly? registeringAssembly,
+        IhAssemblyManager assemblyManager)
+    {
+        if (registeringAssembly == null)
+            return null;
+
+        foreach (var domain in assemblyManager.AssembliesByDomain)
+        {
+            if (domain.Value.Any(assembly => ReferenceEquals(assembly, registeringAssembly)))
+            {
+                return domain.Key;
+            }
+
+            if (domain.Value.Any(assembly =>
+                    string.Equals(assembly.FullName, registeringAssembly.FullName, StringComparison.Ordinal)))
+            {
+                return domain.Key;
+            }
+        }
+
+        return null;
     }
 }

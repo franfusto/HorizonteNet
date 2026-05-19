@@ -57,7 +57,7 @@ public class BlazorWorker : BackgroundService
         builder.Services.AddHorizonteLegacyServices(_services); //-> Add Horizonte services
         builder.Services.AddRadzenComponents();
         app = builder.Build();
-        app.UseHorizonteStaticFiles(); //-> Add Horizonte static files
+        app.UseHorizonteStaticFiles(typeof(BlazorWorker).Assembly); //-> Add Horizonte static files
         app.UseRouting();
         //app.MapBlazorHub();
         //app.MapFallbackToPage("/_Host");

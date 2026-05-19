@@ -231,7 +231,7 @@ public class HAssemblyManager : IhAssemblyManager
                 resAssemblyPath,
                 requesterDomain);
 
-            StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath);
+            StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath, requesterDomain);
 
             try
             {
@@ -1532,7 +1532,7 @@ public class HAssemblyManager : IhAssemblyManager
                                 : "Default");
                     }
 
-                    StaticFileRegistry.RegisterPackageDirectory(dllPath);
+                    StaticFileRegistry.RegisterPackageDirectory(dllPath, targetDomainName);
 
                     try
                     {
@@ -1590,7 +1590,7 @@ public class HAssemblyManager : IhAssemblyManager
                     loadedAssembly.FullName,
                     domainName);
 
-                StaticFileRegistry.RegisterModuleDirectory(moduleItem);
+                StaticFileRegistry.RegisterModuleDirectory(moduleItem, domainName);
             }
             else
             {

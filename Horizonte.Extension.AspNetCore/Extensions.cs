@@ -1,15 +1,22 @@
+using System.Reflection;
 using Horizonte.Interfaces;
 
 namespace Horizonte.Extension.AspNetCore;
 
 public static class Extensions
 {
+    public static IApplicationBuilder UseHorizonteStaticFiles(
+        this IApplicationBuilder app,
+        Assembly registeringAssembly)
+    {
+        return app.UseMiddleware<HorizonteStaticFileMiddelware>(registeringAssembly);
+    }
+    /*
     public static IApplicationBuilder UseHorizonteStaticFiles(this IApplicationBuilder app)
     {
-        ArgumentNullException.ThrowIfNull(app);
         return app.UseMiddleware<HorizonteStaticFileMiddelware>();
     }
-
+    */
     public static IServiceCollection AddHorizonteLegacyServices(
         this IServiceCollection services, IServiceProvider legacyServiceProvider)
         
