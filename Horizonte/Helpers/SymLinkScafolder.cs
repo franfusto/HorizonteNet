@@ -337,6 +337,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                             if (IsSameLinkTarget(fullDestinationPath, symLinkDef.Source))
                             {
                                 _logger.LogInformation($"El enlace simbólico ya existe: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                                _symLinkDefs.Add(symLinkDef);
                                 continue;
                             }
 
