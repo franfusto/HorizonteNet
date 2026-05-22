@@ -39,8 +39,12 @@
     <RadzenCard>
         @if (!_isDiagramView)
         {
-            <RadzenTree Data="@_fsTree" Style="width: 100%; height: calc(100vh - 250px); overflow: auto;">
+            <RadzenTree Data="@_fsTree"
+                        Expand="@(args => OnNodeExpanded(args.Value, true))"
+                        Collapse="@(args => OnNodeExpanded(args.Value, false))"
+                        Style="width: 100%; height: calc(100vh - 250px); overflow: auto;">
                 <RadzenTreeLevel Text="@(node => ((FsNode)node).Name)" ChildrenProperty="Children"
+                                 Expanded="@(node => ((FsNode)node).IsExpanded)"
                                  HasChildren="@(node => ((FsNode)node).Children.Any())">
                     <Template>
                         @{
@@ -123,6 +127,9 @@
     IEnumerable<FsItemType> _selectedFilters = Enum.GetValues<FsItemType>().Where(v => v != FsItemType.directory);
     string _appPRootPath = Directory.GetCurrentDirectory();
 
+    private readonly Dictionary<string, bool> _expandedFolderStates = new(StringComparer.OrdinalIgnoreCase);
+    private bool _initialExpandedFoldersConfigured;
+
     private bool _isDiagramView = false;
     private BlazorDiagram? Diagram { get; set; }
 
@@ -189,10 +196,13 @@
             .ToList();
     }
 
-    private void BuildTree()
+private void BuildTree()
     {
+        SaveExpandedFolderStates(_fsTree);
+        EnsureCurrentDirectoryExpandedAtStartup();
+
         _fsTree.Clear();
-        var root = new FsNode { Name = "Root", itemType = FsItemType.directory };
+        var root = new FsNode { Name = "Root", itemType = FsItemType.directory, Path = "", IsExpanded = true };
 
         if (_selectedFilters.Contains(FsItemType.assemblies))
             AddNodes(root, _assembliesfilelist, FsItemType.assemblies, "extension");
@@ -206,20 +216,83 @@
         if (_selectedFilters.Contains(FsItemType.appfiles))
             AddNodes(root, _appfileslist, FsItemType.appfiles, "description");
 
+        root.IsExpanded = true;
+
         _fsTree = root.Children;
     }
 
+    private void SaveExpandedFolderStates(IEnumerable<FsNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.itemType == FsItemType.directory || node.Children.Any())
+            {
+                _expandedFolderStates[node.Path] = node.IsExpanded;
+            }
+
+            if (node.Children.Any())
+            {
+                SaveExpandedFolderStates(node.Children);
+            }
+        }
+    }
+
+    private void EnsureCurrentDirectoryExpandedAtStartup()
+    {
+        if (_initialExpandedFoldersConfigured)
+        {
+            return;
+        }
+
+        var parts = SplitPath(_appPRootPath);
+
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var currentPath = string.Join("/", parts.Take(i + 1));
+            _expandedFolderStates[currentPath] = true;
+        }
+
+        _initialExpandedFoldersConfigured = true;
+    }
+
+    private void OnNodeExpanded(object? value, bool isExpanded)
+    {
+        if (value is not FsNode node)
+        {
+            return;
+        }
+
+        node.IsExpanded = isExpanded;
+
+        if (node.itemType == FsItemType.directory || node.Children.Any())
+        {
+            _expandedFolderStates[node.Path] = isExpanded;
+        }
+    }
+
+    private bool IsFolderExpanded(string path)
+    {
+        return _expandedFolderStates.TryGetValue(path, out var isExpanded) && isExpanded;
+    }
+
+    private static string[] SplitPath(string path)
+    {
+        return path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+    }
+// Cambiar AddNodes para aceptar expandedStates y restaurar IsExpanded
     private void AddNodes(FsNode root, List<string> paths, FsItemType type, string icon)
     {
         foreach (var path in paths)
         {
-            var parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = SplitPath(path);
             var currentNode = root;
 
             for (int i = 0; i < parts.Length; i++)
             {
                 var part = parts[i];
                 var isLast = i == parts.Length - 1;
+                var isDirectory = !isLast || Directory.Exists(path);
+                var currentPath = string.Join("/", parts.Take(i + 1));
 
                 var existingNode = currentNode.Children.FirstOrDefault(n => n.Name == part);
                 if (existingNode == null)
@@ -227,15 +300,23 @@
                     var newNode = new FsNode
                     {
                         Name = part,
-                        Path = string.Join("/", parts.Take(i + 1)),
-                        itemType = isLast ? type : FsItemType.directory,
-                        Icon = isLast ? icon : "folder",
+                        Path = currentPath,
+                        itemType = isDirectory ? FsItemType.directory : type,
+                        Icon = isDirectory ? "folder" : icon,
+                        IsExpanded = isDirectory && IsFolderExpanded(currentPath)
                     };
                     currentNode.Children.Add(newNode);
                     currentNode = newNode;
                 }
                 else
                 {
+                    if (isDirectory)
+                    {
+                        existingNode.itemType = FsItemType.directory;
+                        existingNode.Icon = "folder";
+                        existingNode.IsExpanded = IsFolderExpanded(currentPath);
+                    }
+
                     currentNode = existingNode;
                 }
             }
@@ -294,6 +375,7 @@
         public string Path { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Icon { get; set; } = "folder";
+        public bool IsExpanded { get; set; }
         //public string Color { get; set; } = "#000000";
         public List<FsNode> Children { get; set; } = new();
     }
