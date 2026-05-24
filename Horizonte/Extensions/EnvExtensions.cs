@@ -99,11 +99,6 @@ public static class EnvExtensions
         gescom.LoadModules();
         gescom.InitzializeModules();
 
-        // Creamos el andamio de enlaces simbolicos
-        var symLinkScafolder = scope.ServiceProvider.GetRequiredService<ISymLinkScafolder>();
-        var hContext = scope.ServiceProvider.GetRequiredService<IHContext>();
-        var symLinkSettings = hContext.Get<SymLinkSettings>() ?? new SymLinkSettings();
-        symLinkScafolder.BuildScafolder(symLinkSettings.SymLinkDefs);
 
         // Configuramos y arrancamos workers
         workersManager.StartWorkers();

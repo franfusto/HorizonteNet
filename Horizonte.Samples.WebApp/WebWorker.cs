@@ -73,7 +73,7 @@ public class WebWorker :BackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Ending Horizonte.Samples.WebApp.WebWorker");
-        _app?.StopAsync(cancellationToken);
+        _app?.StopAsync();
         return base.StopAsync(cancellationToken);
     }
 }

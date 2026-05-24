@@ -20,6 +20,7 @@
       <Content Remove="horizonte.default.json" />
       <Content Include="bin\Debug\net10.0\cache_commands.csv" />
       <Content Include="bin\Debug\net10.0\horizonte.json" />
+      <Content Include="bin\Debug\net10.0\horizonte_backup.json" />
       <EmbeddedResource Include="horizonte.default.json">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </EmbeddedResource>
