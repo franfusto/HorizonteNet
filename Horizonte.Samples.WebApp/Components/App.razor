@@ -1,0 +1,24 @@
+﻿@inject IHContext HContext
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="/_content/Horizonte.Samples.WebApp/app.css"/>
+    <link rel="stylesheet" href="/_content/Horizonte.Samples.WebApp/MainLayout.css"/>
+    <HeadOutlet @rendermode="InteractiveServer"/>
+    <RadzenTheme Theme="material" @rendermode="InteractiveServer"/>
+</head>
+
+<body>
+<Routes @rendermode="InteractiveServer"/>
+<script src="/_content/Horizonte.Samples.WebApp/blazor.web.js"></script>
+<script src="_content/Horizonte.Samples.WebApp/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+
+</body>
+
+</html>
+
