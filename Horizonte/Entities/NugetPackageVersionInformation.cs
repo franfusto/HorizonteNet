@@ -9,6 +9,10 @@ namespace Horizonte;
 /// </remarks>
 public class NugetPackageVersionInformation()
 {
+    /// La propiedad `VersionString` representa la cadena de texto de la versión de un paquete NuGet en la clase `NugetPackageVersionInformation`.
+    /// Se utiliza para almacenar la información de la versión en formato de cadena, tal como se encuentra en la estructura del directorio del paquete.
+    /// Esta propiedad es útil para mantener la representación exacta de la versión del paquete que puede incluir etiquetas de pre-lanzamiento o metadatos no disponibles en el objeto `Version`.
+    public string VersionString { get; set; } = string.Empty;
     /// Representa la versión de un paquete NuGet.
     /// La propiedad `Version` se utiliza para definir la versión asociada a un paquete NuGet específico que se describe en la clase `NugetPackageVersionInformation`.
     /// Esta versión juega un papel crucial en la identificación y gestión de las dependencias de software, asegurando que las aplicaciones utilicen las versiones correctas de las bibliotecas.
@@ -33,3 +37,4 @@ public class NugetPackageVersionInformation()
     /// /
     public string DllPath { get; set; }= string.Empty;
 }
+

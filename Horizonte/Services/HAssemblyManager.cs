@@ -394,8 +394,6 @@ public class HAssemblyManager : IhAssemblyManager
         await LoadDomain(domainName);
     }
 
-
-
     private Task LoadScriptDomain(string domainName)
     {
         if (!_domains.TryGetValue(domainName, out var alc))
@@ -857,10 +855,6 @@ public class HAssemblyManager : IhAssemblyManager
         return false;
     }
 
-
-
-
-
     private string? ResolveNugetFromLocalDirectory(
         string name,
         string version,
@@ -901,15 +895,6 @@ public class HAssemblyManager : IhAssemblyManager
         }
 
         return null;
-    }
-
-    private sealed class NugetPackageVersionInformation
-    {
-        public string PackageId { get; set; } = string.Empty;
-        public string VersionString { get; set; } = string.Empty;
-        public Version Version { get; set; } = new(0, 0, 0);
-        public string Framework { get; set; } = string.Empty;
-        public string DllPath { get; set; } = string.Empty;
     }
 
     private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string packageDirectory)

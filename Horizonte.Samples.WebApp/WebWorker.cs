@@ -54,7 +54,7 @@ public class WebWorker :BackgroundService
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
         _app = builder.Build();
-        _app.UseHorizonteStaticFiles(typeof(WebWorker).Assembly);
+        _app.UseMiddleware<HorizonteStaticFileMiddelware>(typeof(WebWorker).Assembly);
         _app.UseAntiforgery();
         _app.UseStaticFiles();
 

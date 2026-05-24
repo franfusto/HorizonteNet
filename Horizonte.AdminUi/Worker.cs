@@ -69,7 +69,7 @@ public sealed class Worker : BackgroundService
         builder.Services.AddRadzenComponents();
         
         _app = builder.Build();
-        _app.UseHorizonteStaticFiles(typeof(Worker).Assembly);
+        _app.UseMiddleware<HorizonteStaticFileMiddelware>(typeof(Worker).Assembly);
         _app.UseAntiforgery();
         _app.UseStaticFiles();
 
