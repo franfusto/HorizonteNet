@@ -11,19 +11,10 @@ namespace Horizonte;
 
 public class HAssemblyManager : IhAssemblyManager
 {
-    private sealed class BackgroundServiceState
-    {
-        public string WorkerType { get; init; } = string.Empty;
-        public string DomainName { get; set; } = string.Empty;
-        public BackgroundService? Instance { get; set; }
-        public CancellationTokenSource? RunCancellationTokenSource { get; set; }
-        public CancellationTokenSource? StopCancellationTokenSource { get; set; }
-        public bool IsRunning { get; set; }
-        public bool RestartOnDomainLoad { get; set; }
-    }
+
 
     private static readonly TimeSpan BackgroundServiceStopTimeout = TimeSpan.FromSeconds(30);
-    private const string ScriptDomainName = "Script";
+    
 
     private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
@@ -149,7 +140,7 @@ public class HAssemblyManager : IhAssemblyManager
         try
         {
             var requesterDomain = sender is AssemblyLoadContext senderAlc
-                ? GetDomainNameForAssemblyLoadContext(senderAlc)
+                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,senderAlc)
                 : "Default";
 
             _logger.LogInformation(
@@ -158,11 +149,16 @@ public class HAssemblyManager : IhAssemblyManager
                 requesterDomain);
 
             var requestedAssemblyName = new AssemblyName(args.Name);
-            var sharedAssembly = TryGetSharedAssemblyFromDefault(requestedAssemblyName);
+            var sharedAssembly =AssemblyHelpers.TryGetSharedAssemblyFromDefault(requestedAssemblyName);
             if (sharedAssembly != null)
+            {
+                _logger.LogInformation(
+                    "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
+                    sharedAssembly.FullName);
                 return sharedAssembly;
+            }
 
-            var (name, version) = ParseAssemblyName(args.Name);
+            var (name, version) = AssemblyHelpers.ParseAssemblyName(args.Name);
             string? resAssemblyPath;
 
             Assembly? alreadyLoaded = null;
@@ -184,7 +180,7 @@ public class HAssemblyManager : IhAssemblyManager
                 _logger.LogInformation(
                     "Assembly {AssemblyName} ya estaba cargado en el dominio solicitado {DomainName}",
                     alreadyLoaded.FullName,
-                    loadedAlc != null ? GetDomainNameForAssemblyLoadContext(loadedAlc) : "Default");
+                    loadedAlc != null ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAlc) : "Default");
 
                 return alreadyLoaded;
             }
@@ -252,7 +248,7 @@ public class HAssemblyManager : IhAssemblyManager
                 _logger.LogInformation(
                     "Assembly {AssemblyName} loaded into domain {DomainName}",
                     loadedAssembly.FullName,
-                    GetDomainNameForAssemblyLoadContext(context));
+                    AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,context));
                 return loadedAssembly;
             }
 
@@ -313,7 +309,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
-        if (IsScriptDomain(domainName))
+        if (AssemblyHelpers.IsScriptDomain(domainName))
             return LoadScriptDomain(domainName);
 
         if (!_domains.ContainsKey(domainName))
@@ -349,7 +345,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
-        if (IsScriptDomain(domainName))
+        if (AssemblyHelpers.IsScriptDomain(domainName))
         {
             _scriptAssemblyCache = assemblies
                 .Where(x => x.Length > 0)
@@ -398,10 +394,7 @@ public class HAssemblyManager : IhAssemblyManager
         await LoadDomain(domainName);
     }
 
-    private static bool IsScriptDomain(string domainName)
-    {
-        return string.Equals(domainName, ScriptDomainName, StringComparison.OrdinalIgnoreCase);
-    }
+
 
     private Task LoadScriptDomain(string domainName)
     {
@@ -684,7 +677,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             var shouldRestart = workerSetting.RunOnStart;
 
-            if (_backgroundServices.TryGetValue(GetBackgroundServiceKey(workerSetting.WorkerType), out var state))
+            if (_backgroundServices.TryGetValue(workerSetting.WorkerType, out var state))
             {
                 shouldRestart = shouldRestart || state.RestartOnDomainLoad;
             }
@@ -821,7 +814,7 @@ public class HAssemblyManager : IhAssemblyManager
             return true;
         }
 
-        var defaultDomainType = TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
+        var defaultDomainType =AssemblyHelpers.TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
         if (defaultDomainType != null)
         {
             var defaultDomainResolved = _serviceProvider.GetService(defaultDomainType);
@@ -844,13 +837,13 @@ public class HAssemblyManager : IhAssemblyManager
                     defaultDomainType.FullName,
                     parameter.ParameterType.FullName,
                     parameterAssemblyAlc != null
-                        ? GetDomainNameForAssemblyLoadContext(parameterAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,parameterAssemblyAlc)
                         : "Unknown",
                     defaultTypeAssemblyAlc != null
-                        ? GetDomainNameForAssemblyLoadContext(defaultTypeAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,defaultTypeAssemblyAlc)
                         : "Unknown",
                     implementationAssemblyAlc != null
-                        ? GetDomainNameForAssemblyLoadContext(implementationAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,implementationAssemblyAlc)
                         : "Unknown");
             }
         }
@@ -864,51 +857,9 @@ public class HAssemblyManager : IhAssemblyManager
         return false;
     }
 
-    private string GetRequestedFramework()
-    {
-        var targetFramework = AppContext.TargetFrameworkName;
 
-        if (string.IsNullOrEmpty(targetFramework))
-        {
-            return "net10.0";
-        }
 
-        var parts = targetFramework.Split(',');
-        if (parts.Length > 1 && parts[1].Trim().StartsWith("Version=v"))
-        {
-            var version = parts[1].Trim().Substring("Version=v".Length);
 
-            if (parts[0].Contains(".NETCoreApp"))
-            {
-                return $"net{version}";
-            }
-
-            if (parts[0].Contains(".NETStandard"))
-            {
-                return $"netstandard{version}";
-            }
-        }
-
-        return "net10.0";
-    }
-
-    private (string Name, string Version) ParseAssemblyName(string assemblyFullName)
-    {
-        string name = assemblyFullName.Split(',')[0].Trim();
-        string version = string.Empty;
-        var parts = assemblyFullName.Split(',');
-
-        foreach (var part in parts)
-        {
-            if (part.Trim().StartsWith("Version="))
-            {
-                version = part.Trim().Substring("Version=".Length);
-                break;
-            }
-        }
-
-        return (name, version);
-    }
 
     private string? ResolveNugetFromLocalDirectory(
         string name,
@@ -919,7 +870,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (string.IsNullOrEmpty(name)) return null;
         if (string.IsNullOrEmpty(version)) return null;
 
-        string frameworkSolicitado = framework ?? GetRequestedFramework();
+        string frameworkSolicitado = framework ?? AssemblyHelpers.GetRequestedFramework();
         bool exactFramework = !string.IsNullOrEmpty(framework);
 
         foreach (var searchPath in _searchPaths)
@@ -1505,7 +1456,7 @@ public class HAssemblyManager : IhAssemblyManager
                         alc = customAlc;
                     }
 
-                    var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
+                    var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
                     var assemblyName = AssemblyName.GetAssemblyName(dllPath);
 
                     var alreadyLoadedInTargetAlc = alc.Assemblies.FirstOrDefault(a =>
@@ -1539,7 +1490,7 @@ public class HAssemblyManager : IhAssemblyManager
                             "Forced package inventory => Assembly {AssemblyName} currently visible in domain {DomainName}",
                             loadedAssembly.FullName,
                             loadedAssemblyAlc != null
-                                ? GetDomainNameForAssemblyLoadContext(loadedAssemblyAlc)
+                                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAssemblyAlc)
                                 : "Default");
                     }
 
@@ -1579,8 +1530,8 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            var alc = GetAssemblyLoadContextByDomain(moduleItem.Domain);
-            var domainName = GetDomainNameForAssemblyLoadContext(alc);
+            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains,moduleItem.Domain);
+            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
 
             if (File.Exists(moduleItem.Path))
             {
@@ -1639,14 +1590,14 @@ public class HAssemblyManager : IhAssemblyManager
             if (!Directory.Exists(directoryPath))
                 return;
 
-            var alc = GetAssemblyLoadContextByDomain(domainName);
-            var targetDomainName = GetDomainNameForAssemblyLoadContext(alc);
+            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains,domainName);
+            var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
 
             foreach (var dllFile in Directory.EnumerateFiles(directoryPath, "*.dll"))
             {
                 var assemblyNameInfo = AssemblyName.GetAssemblyName(dllFile);
 
-                if (ShouldShareAssemblyFromDefault(assemblyNameInfo.Name))
+                if (AssemblyHelpers.ShouldShareAssemblyFromDefault(assemblyNameInfo.Name))
                 {
                     _logger.LogInformation(
                         "Skipping additional dll {AssemblyName} for domain {DomainName} because it is shared from Default.",
@@ -1807,12 +1758,12 @@ public class HAssemblyManager : IhAssemblyManager
 
     public bool StartBackgroundService(string workerType)
     {
+        workerType = workerType.Trim();
         if (string.IsNullOrWhiteSpace(workerType))
             return false;
 
-        var key = GetBackgroundServiceKey(workerType);
 
-        if (_backgroundServices.TryGetValue(key, out var existingState) && existingState.IsRunning)
+        if (_backgroundServices.TryGetValue(workerType, out var existingState) && existingState.IsRunning)
         {
             _logger.LogInformation(
                 "El worker {WorkerType} ya está en ejecución en dominio {DomainName}.",
@@ -1862,7 +1813,7 @@ public class HAssemblyManager : IhAssemblyManager
 
             worker.StartAsync(runCancellationTokenSource.Token).GetAwaiter().GetResult();
 
-            if (_backgroundServices.TryGetValue(key, out var state))
+            if (_backgroundServices.TryGetValue(workerType, out var state))
             {
                 state.StopCancellationTokenSource?.Dispose();
                 state.StopCancellationTokenSource = null;
@@ -1878,7 +1829,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
             else
             {
-                _backgroundServices[key] = new BackgroundServiceState
+                _backgroundServices[workerType] = new BackgroundServiceState
                 {
                     WorkerType = workerType,
                     DomainName = resolvedDomainName,
@@ -1904,12 +1855,12 @@ public class HAssemblyManager : IhAssemblyManager
 
     public bool StopBackgroundService(string serviceType)
     {
+        serviceType =  serviceType.Trim();
         if (string.IsNullOrWhiteSpace(serviceType))
             return false;
 
-        var key = GetBackgroundServiceKey(serviceType);
 
-        if (!_backgroundServices.TryGetValue(key, out var state))
+        if (!_backgroundServices.TryGetValue(serviceType, out var state))
         {
             _logger.LogWarning("No existe registro para el worker {WorkerType}.", serviceType);
             return false;
@@ -1949,89 +1900,14 @@ public class HAssemblyManager : IhAssemblyManager
 
     public bool BackgroundServiceRunning(string serviceType)
     {
+        serviceType = serviceType.Trim();
         if (string.IsNullOrWhiteSpace(serviceType))
             return false;
 
-        var key = GetBackgroundServiceKey(serviceType);
 
-        return _backgroundServices.TryGetValue(key, out var state) &&
+        return _backgroundServices.TryGetValue(serviceType, out var state) &&
                state.IsRunning &&
                state.Instance != null;
-    }
-
-    private string GetBackgroundServiceKey(string workerType)
-    {
-        return workerType.Trim();
-    }
-
-    private AssemblyLoadContext GetAssemblyLoadContextByDomain(string? domainName)
-    {
-        if (string.IsNullOrWhiteSpace(domainName) ||
-            string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
-        {
-            return AssemblyLoadContext.Default;
-        }
-
-        if (_domains.TryGetValue(domainName, out var alc))
-        {
-            return alc;
-        }
-
-        return AssemblyLoadContext.Default;
-    }
-
-    private string GetDomainNameForAssemblyLoadContext(AssemblyLoadContext alc)
-    {
-        if (ReferenceEquals(alc, AssemblyLoadContext.Default))
-            return "Default";
-
-        foreach (var item in _domains)
-        {
-            if (ReferenceEquals(item.Value, alc))
-                return item.Key;
-        }
-
-        return alc.Name ?? "Default";
-    }
-
-    private bool ShouldShareAssemblyFromDefault(string? assemblyName)
-    {
-        if (string.IsNullOrWhiteSpace(assemblyName))
-            return false;
-
-        var coreAssemblyName = typeof(IhAssemblyManager).Assembly.GetName().Name;
-
-        return string.Equals(assemblyName, coreAssemblyName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private Assembly? TryGetSharedAssemblyFromDefault(AssemblyName assemblyName)
-    {
-        if (!ShouldShareAssemblyFromDefault(assemblyName.Name))
-            return null;
-
-        var sharedAssembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a =>
-            string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
-
-        if (sharedAssembly != null)
-        {
-            _logger.LogInformation(
-                "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
-                sharedAssembly.FullName);
-        }
-
-        return sharedAssembly;
-    }
-
-    private Type? TryGetDefaultDomainTypeEquivalent(Type type)
-    {
-        var assemblyName = type.Assembly.GetName().Name;
-        if (!ShouldShareAssemblyFromDefault(assemblyName))
-            return null;
-
-        return AssemblyLoadContext.Default.Assemblies
-            .Where(a => string.Equals(a.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
-            .Select(a => a.GetType(type.FullName ?? string.Empty, throwOnError: false, ignoreCase: false))
-            .FirstOrDefault(t => t != null);
     }
 
     private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
@@ -2077,7 +1953,7 @@ public class HAssemblyManager : IhAssemblyManager
             !fallbackType.IsInterface)
         {
             var alc = AssemblyLoadContext.GetLoadContext(fallbackType.Assembly) ?? AssemblyLoadContext.Default;
-            var domainName = GetDomainNameForAssemblyLoadContext(alc);
+            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
 
             _logger.LogInformation(
                 "Worker type {WorkerType} resolved by fallback in domain {DomainName} from assembly {AssemblyName}",
