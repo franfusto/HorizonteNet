@@ -1450,6 +1450,17 @@ public class HAssemblyManager : IhAssemblyManager
         {
             try
             {
+                if (!package.Active)
+                {
+                    _logger.LogInformation(
+                        "Skipping inactive forced package: {PackageId} version {Version} framework {Framework} target domain {DomainName}",
+                        package.PackageId,
+                        package.Version,
+                        package.Framework,
+                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
+
+                    continue;
+                }
                 _logger.LogInformation(
                     "Loading forced package: {PackageId} version {Version} framework {Framework} target domain {DomainName}",
                     package.PackageId,

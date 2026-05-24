@@ -12,6 +12,14 @@
             </RadzenStack>
         </HeaderTemplate>
         <Columns>
+            <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.Active)" Title="Activo" Width="90px">
+                <Template Context="item">
+                    <RadzenCheckBox TValue="bool" Value="@item.Active" Disabled="true"/>
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenCheckBox TValue="bool" @bind-Value="item.Active"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn Property="@nameof(ForcedPackageItem.PackageId)" Title="Paquete NuGet">
                 <EditTemplate Context="item">
                     <RadzenTextBox @bind-Value="item.PackageId" Style="width: 100%"/>
@@ -84,6 +92,7 @@
     {
         var item = new ForcedPackageItem()
         {
+            Active = true,
             PackageId = "Nombre.Paquete",
             Version = "1.0.0",
             Framework = "net10.0"

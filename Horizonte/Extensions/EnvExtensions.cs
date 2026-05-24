@@ -70,6 +70,7 @@ public static class EnvExtensions
         hostBuilder.Services.AddSingleton<IhAssemblyManager, HAssemblyManager>();
         hostBuilder.Services.AddSingleton<IHGesCom, HGesCom>();
         hostBuilder.Services.AddSingleton<IhWorkersManager, HWorkersManager>();
+        hostBuilder.Services.AddSingleton<IAppManager, AppManager>();
     }
 
     /// <summary>

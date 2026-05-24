@@ -54,6 +54,7 @@ public class ModulesSettings
 
 public class ForcedPackageItem
 {
+    public bool Active { get; set; } = true;
     public string PackageId { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
     public string Framework { get; set; } = string.Empty;

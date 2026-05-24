@@ -1,42 +1,111 @@
+@using Horizonte.Entities
+@using Radzen
+@using Radzen.Blazor
 
 @inject IHGesCom GesCom
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Servicios"/>
+
+        <RadzenButton Text="Refrescar"
+                      Icon="sync"
+                      Size="ButtonSize.Small"
+                      Variant="Variant.Outlined"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Click="@RefreshServices"/>
+    </RadzenStack>
+</RadzenCard>
+
+<br/>
 @if (_services != null)
 {
-    @foreach (var item in _services)
-    {
-        <RadzenCard >
-            <RadzenStack Orientation="Orientation.Vertical">
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-            
-                    <div>
+    <RadzenDataGrid Data="@_services"
+                    TItem="WorkerDefItem"
+                    AllowPaging="true"
+                    PageSize="10"
+                    AllowSorting="true"
+                    AllowFiltering="true"
+                    FilterMode="FilterMode.Simple"
+                    ColumnWidth="180px">
 
-                        @if (@item.Isrunning)
-                        {
-                            <RadzenIcon  Icon="sync" IconStyle="IconStyle.Success"></RadzenIcon>
-                        }
-                        else
-                        {
-                            <RadzenIcon  Icon="sync_disabled" IconStyle="IconStyle.Danger"></RadzenIcon>
-                        }
-                    </div>
-                        @item.Name
-                </RadzenStack>
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-                    <RadzenButton Variant="Variant.Outlined" Text="Iniciar" Click="() => { StartService(item.Name); }"></RadzenButton>
-                    <RadzenButton Variant="Variant.Outlined" Text="Detener" Click="() => { StopService(item.Name); }"></RadzenButton>
-                </RadzenStack>
-            </RadzenStack>
+        <Columns>
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Property="ServiceName"
+                                  Title="Servicio"/>
 
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Property="WorkerType"
+                                  Title="Tipo"/>
 
-        </RadzenCard>
-        <br/>
-        <br/>
-    }
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Property="Order"
+                                  Title="Orden"
+                                  Width="100px"/>
+
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Property="RunOnStart"
+                                  Title="Inicio automático"
+                                  Width="160px">
+                <Template Context="service">
+                    <RadzenBadge
+                        Variant="Variant.Outlined"
+                        BadgeStyle="@(service.RunOnStart ? BadgeStyle.Info : BadgeStyle.Light)"
+                                 Text="@(service.RunOnStart ? "Sí" : "No")"/>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Title="Estado"
+                                  Width="130px">
+                <Template Context="service">
+                    @{
+                        var running = IsRunning(service.ServiceName);
+                    }
+
+                    <RadzenBadge
+                        Variant="Variant.Outlined"
+                        BadgeStyle="@(running ? BadgeStyle.Success : BadgeStyle.Danger)"
+                                 Text="@(running ? "En ejecución" : "Detenido")"/>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="WorkerDefItem"
+                                  Title="Acciones"
+                                  Width="220px"
+                                  Sortable="false"
+                                  Filterable="false">
+                <Template Context="service">
+                    @{
+                        var running = IsRunning(service.ServiceName);
+                    }
+
+                    <RadzenButton Text="Start"
+                                  Icon="play_arrow"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Variant="Variant.Outlined"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Disabled="@running"
+                                  Click="@(() => StartService(service.ServiceName))"/>
+
+                    <RadzenButton Text="Stop"
+                                  Icon="stop"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Variant="Variant.Outlined"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Disabled="@(!running)"
+                                  Style="margin-left: 0.5rem"
+                                  Click="@(() => StopService(service.ServiceName))"/>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {
-    private List<RunningServiceInfo>? _services;
-
+    private List<WorkerDefItem>? _services;
+    private readonly Dictionary<string, bool> _serviceStates = new();
 
     protected override Task OnInitializedAsync()
     {
@@ -44,9 +113,27 @@
         return base.OnInitializedAsync();
     }
 
+    private void RefreshServices()
+    {
+        LoadData();
+        StateHasChanged();
+    }
+
     private void LoadData()
     {
-        _services = GesCom.RunCommand("Workers_GetServicesRunning") as List<RunningServiceInfo>;
+        _services = GesCom.RunCommand<List<WorkerDefItem>>("Workers_GetAvailableWorkers");
+
+        _serviceStates.Clear();
+
+        if (_services == null)
+        {
+            return;
+        }
+
+        foreach (var service in _services)
+        {
+            _serviceStates[service.ServiceName] = IsRunning(service.ServiceName);
+        }
     }
 
     private void StartService(string servicename)
@@ -61,6 +148,12 @@
         UpdateState();
     }
 
+    private bool IsRunning(string servicename)
+    {
+        return GesCom.RunCommand<bool>("Workers_IsRunning", new object[] { servicename });
+    }
+
+
     private void UpdateState()
     {
         Task.Run(() =>
@@ -70,6 +163,5 @@
             InvokeAsync(StateHasChanged);
         });
     }
-
 
 }

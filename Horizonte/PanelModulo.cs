@@ -1,6 +1,8 @@
 using System.Diagnostics.Eventing.Reader;
 using System.Reflection;
 using System.Text.Json;
+using Horizonte.Entities;
+using Horizonte.Interfaces;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
@@ -22,6 +24,8 @@ public class PanelModulo
     private readonly IHGesCom _gesCom;
     private readonly ILogger<PanelModulo> _logger;
     private IServiceProvider _serviceProvider;
+    private IAppManager _appManager;
+    private IhWorkersManager _workersManager;
 
     /// <summary>
     /// Represent un panel de módulo en el framework Horizonte que funciona como una interfaz 
@@ -29,11 +33,17 @@ public class PanelModulo
     /// como comandos (HorizonteCommand), cada uno de los cuales tiene una clave única y, opcionalmente, 
     /// una descripción.
     /// </summary>
-    public PanelModulo(IServiceProvider serviceProvider, IHGesCom gesCom, ILogger<PanelModulo> logger)
+    public PanelModulo(IServiceProvider serviceProvider,
+        IAppManager appManager,
+        IhWorkersManager workersManager,
+        IHGesCom gesCom,
+        ILogger<PanelModulo> logger)
     {
         _serviceProvider = serviceProvider;
         _gesCom = gesCom;
         _logger = logger;
+        _appManager =  appManager;
+        _workersManager = workersManager;
     }
 
     /// <summary>
@@ -60,7 +70,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Reboot", Description = "Reinicia el sistema")]
     public void Reboot()
     {
-        //_env.Reboot();
+        _appManager.Reboot();
     }
 
     /// <summary>
@@ -70,7 +80,7 @@ public class PanelModulo
     [HorizonteCommand("Horizonte_Quit", description: "Cierra el sistema")]
     public void Quit()
     {
-        // _env.Quit();
+        _appManager.Quit();
     }
 
     //Memory Log
@@ -169,34 +179,14 @@ public class PanelModulo
 
     //Workers
 
-    /// <summary>
-    /// Recupera una lista de servicios en segundo plano (Workers) actualmente en ejecución con su información.
-    /// </summary>
-    /// <remarks>
-    /// Este método devuelve una lista de los servicios que se están ejecutando en el entorno de la aplicación, 
-    /// incluyendo el nombre del tipo del servicio, su estado de ejecución y su nombre (si está disponible).
-    /// </remarks>
-    /// <returns>
-    /// Una lista de objetos RunningServiceInfo. Cada objeto contiene:
-    /// - Typename: El nombre del tipo del servicio.
-    /// - Isrunning: Un booleano que indica si el servicio está ejecutándose.
-    /// - Name: El nombre del servicio, o una cadena vacía si no está disponible.
-    /// </returns>
-    [HorizonteCommand("Workers_GetServicesRunning", "Obtiene la lista de Workers que se están ejecutando")]
-    public List<RunningServiceInfo> Workers_GetServicesRunning()
+
+    [HorizonteCommand("Workers_GetAvailableWorkers", "Obtiene la lista de Workers disponibles")]
+    public List<WorkerDefItem> Workers_GetAvailableWorkers()
     {
-        /*
-        return _serviceProvider.GetServices<BackgroundService>()
-            .Select(service => new RunningServiceInfo(
-                Typename: service.GetType().Name,
-                Isrunning: IsRunning(service),
-                Name: (service as IHorizonteBackgroundService)?.ServiceName ?? string.Empty))
-            .ToList();
-            */
-        return null!;
+        return _workersManager.GetAvailableWorkers();
     }
 
-    [HorizonteCommand("Workers_GetAvailablesServices", "Obtiene los Tipos de los Workers disponibles en el sistema")]
+    [HorizonteCommand("Workers_GetAvailablesBackServices", "Obtiene los Tipos de los BackgroundService registrados en el sistema")]
     public List<string> Workers_GetAvailablesServices()
     {
         var assemblymanager = _serviceProvider.GetService<IhAssemblyManager>();
@@ -212,138 +202,25 @@ public class PanelModulo
         return types;
     }
 
-    /// <summary>
-    /// Determina si el servicio en segundo plano especificado está actualmente en ejecución.
-    /// </summary>
-    /// <param name="service">El servicio en segundo plano a verificar.</param>
-    /// <returns>True si el servicio está en ejecución; de lo contrario, false.</returns>
-    private bool IsRunning(BackgroundService service)
+    [HorizonteCommand("Workers_IsRunning", "Obtiene el estado de ejecución de un servico")]
+    public bool IsRunning(string servicename)
     {
-        return false;
-        /*
-        bool running;
-        if (service is IHorizonteBackgroundService)
-            running = (bool)(service as IHorizonteBackgroundService)?.IsRunning;
-        else
-            running = false;
-        return running;
-        */
+        return _workersManager.WorkerIsRunning(servicename);
     }
 
-    /// <summary>
-    /// Inicia un servicio de trabajador específico por su nombre.
-    /// </summary>
-    /// <param name="servicename">El nombre del servicio a iniciar.</param>
-    /// <returns>
-    /// Devuelve un valor de tipo <see cref="bool" /> que indica si el servicio se ha iniciado correctamente o no:
-    /// <list type="bullet">
-    /// <item>
-    /// <description><c>true</c> si el servicio fue iniciado correctamente o ya estaba en ejecución.</description>
-    /// </item>
-    /// <item>
-    /// <description><c>false</c> si no se pudo encontrar el servicio, ocurrió un error durante el proceso, o ya estaba en ejecución.</description>
-    /// </item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// Este método busca entre todos los servicios registrados en el host que implementan <see cref="BackgroundService"/>.
-    /// Si el servicio especificado se encuentra y no está en ejecución, intentará iniciarlo llamando a su método <c>StartAsync</c>.
-    /// Cualquier error durante el proceso se registra con el logger.
-    /// </remarks>
+
     [HorizonteCommand("Workers_StartService", "Inicia un servicio")]
     public bool Workers_StartService(string servicename)
-    {/*
-        try
-        {
-            // Obtenemos todos los servicios que implementan BackgroundService
-            var services = _serviceProvider.GetServices<BackgroundService>() ??
-                           Enumerable.Empty<BackgroundService>();
-
-            // Buscamos el servicio que implementa IHservice y cuyo nombre coincide
-            var service = services.OfType<IHorizonteBackgroundService>()
-                .FirstOrDefault(x => x.ServiceName.Equals(servicename, StringComparison.OrdinalIgnoreCase));
-
-            // Si no encontramos el servicio, salimos de la función
-            if (service == null)
-            {
-                return false;
-            }
-
-            // Verificamos si el servicio ya está en ejecución
-            if (!IsRunning((BackgroundService)service))
-            {
-                // Iniciamos el servicio
-                (service as BackgroundService)?.StartAsync(new CancellationToken());
-                _logger?.LogInformation($"Servicio '{servicename}' iniciado");
-                return true;
-            }
-
-            return false;
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e, $"Error al iniciar el servicio '{servicename}'");
-        }*/
-            return false;
+    {
+        return _workersManager.StartWorker(servicename);
     }
 
-    /// <summary>
-    /// Detiene un servicio de trabajador específico por su nombre.
-    /// </summary>
-    /// <param name="servicename">El nombre del servicio a detener.</param>
-    /// <returns>
-    /// Devuelve un valor de tipo <see cref="bool" /> que indica si el servicio se ha detenido correctamente o no:
-    /// <list type="bullet">
-    /// <item>
-    /// <description><c>true</c> si el servicio fue detenido correctamente o ya estaba detenido.</description>
-    /// </item>
-    /// <item>
-    /// <description><c>false</c> si no se pudo encontrar el servicio o ocurrió un error durante el proceso.</description>
-    /// </item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// Este método busca entre todos los servicios registrados en el host que implementan <see cref="BackgroundService"/>.
-    /// Si el servicio especificado se encuentra y está en ejecución, intentará detenerlo llamando a su método <c>StopAsync</c>.
-    /// Cualquier error durante el proceso se registra con el logger.
-    /// </remarks>
+
     [HorizonteCommand("Workers_StopService", "Detiene un servicio")]
     public bool Workers_StopService(string servicename)
     {
-        /*
-        try
-        {
-            // Obtenemos todos los servicios que implementan BackgroundService
-            var services = _serviceProvider.GetServices<BackgroundService>() ??
-                           Enumerable.Empty<BackgroundService>();
-
-            // Buscamos el servicio que implementa IHservice y cuyo nombre coincide
-            var service = services.OfType<BackgroundService>()
-                .FirstOrDefault(x => x.ServiceName.Equals(servicename, StringComparison.OrdinalIgnoreCase));
-
-            // Si no encontramos el servicio, salimos de la función
-            if (service == null)
-            {
-                return false;
-            }
-
-            // Verificamos si el servicio está en ejecución
-            if (IsRunning((BackgroundService)service))
-            {
-                // Detenemos el servicio
-                (service as BackgroundService)?.StopAsync(new CancellationToken());
-                _logger?.LogInformation($"Servicio '{servicename}' detenido");
-                return true;
-            }
-
-            return false; // Ya estaba detenido
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e, $"Error al detener el servicio '{servicename}'");
-        }
-*/
-        return false;
+       
+        return _workersManager.StopWorker(servicename);
     }
 
     //contexto

@@ -70,6 +70,7 @@
     
     void Onlicked(MenuItemEventArgs args)
     {
+        if(string.IsNullOrEmpty(args.Value?.ToString())) return;
         OnSelected.InvokeAsync(args);
     }
 

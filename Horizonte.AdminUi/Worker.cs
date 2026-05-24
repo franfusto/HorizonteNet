@@ -57,6 +57,7 @@ public sealed class Worker : BackgroundService
         builder.Services.AddSingleton(_credManager);
         builder.Services.AddSingleton(_linkScafolder);
         builder.Services.AddSingleton(_assemblyManager);
+        builder.Services.AddScoped<HGuiSession>();
         
         builder.Logging.ClearProviders();
         builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
@@ -66,7 +67,6 @@ public sealed class Worker : BackgroundService
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
-        builder.Services.AddScoped<HGuiSession>();
         
         _app = builder.Build();
         _app.UseHorizonteStaticFiles(typeof(Worker).Assembly);
