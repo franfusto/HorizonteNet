@@ -113,7 +113,7 @@ public class StaticFileRegistry
         string prefix = StaticWebAssetsPath + moduleSettingsItem.ModuleName;
 
         // Obtener el directorio donde se encuentra la DLL
-        var currentDirectory = Path.GetDirectoryName(dllPath);
+        var currentDirectory = Path.GetDirectoryName(dllPath)!;
         string? wwwRootPath = null;
         for (int i = 0; i <= 3; i++)
         {

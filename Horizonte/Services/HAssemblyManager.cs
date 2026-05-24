@@ -41,7 +41,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             var result = new Dictionary<string, List<Assembly>>
             {
-                ["Default"] = AssemblyLoadContext.Default.Assemblies.ToList()
+                [Const.DefaultDomainName] = AssemblyLoadContext.Default.Assemblies.ToList()
             };
 
             foreach (var domain in _domains)
@@ -108,7 +108,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             foreach (var domainName in _settings.Domains)
             {
-                if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
                 {
                     AssemblyLoadContext.Default.Resolving -= ResolveAssemblyFromALC;
                     AssemblyLoadContext.Default.Resolving += ResolveAssemblyFromALC;
@@ -141,7 +141,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             var requesterDomain = sender is AssemblyLoadContext senderAlc
                 ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,senderAlc)
-                : "Default";
+                : Const.DefaultDomainName;
 
             _logger.LogInformation(
                 "Resolving assembly: {AssemblyName} requested by domain {DomainName}",
@@ -180,7 +180,7 @@ public class HAssemblyManager : IhAssemblyManager
                 _logger.LogInformation(
                     "Assembly {AssemblyName} ya estaba cargado en el dominio solicitado {DomainName}",
                     alreadyLoaded.FullName,
-                    loadedAlc != null ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAlc) : "Default");
+                    loadedAlc != null ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAlc) : Const.DefaultDomainName);
 
                 return alreadyLoaded;
             }
@@ -284,7 +284,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public Task UnloadDomain(string domainName)
     {
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
         if (_domains.TryGetValue(domainName, out var alc))
@@ -306,7 +306,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public Task LoadDomain(string domainName)
     {
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
         if (AssemblyHelpers.IsScriptDomain(domainName))
@@ -342,7 +342,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
     {
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return Task.CompletedTask;
 
         if (AssemblyHelpers.IsScriptDomain(domainName))
@@ -386,7 +386,7 @@ public class HAssemblyManager : IhAssemblyManager
 
     public async Task ReloadDomain(string domainName)
     {
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return;
 
         _logger.LogInformation("Reloading domain: {DomainName}", domainName);
@@ -466,7 +466,7 @@ public class HAssemblyManager : IhAssemblyManager
     {
         _logger.LogInformation("Unloading services for domain: {DomainName}", domainName);
 
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return;
 
         var keysToProcess = _backgroundServices
@@ -664,7 +664,7 @@ public class HAssemblyManager : IhAssemblyManager
     {
         _logger.LogInformation("LoadService for domain: {DomainName}", domainName);
 
-        if (string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
             return;
 
         if (!_domains.ContainsKey(domainName))
@@ -1408,7 +1408,7 @@ public class HAssemblyManager : IhAssemblyManager
                         package.PackageId,
                         package.Version,
                         package.Framework,
-                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
+                        string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
 
                     continue;
                 }
@@ -1417,7 +1417,7 @@ public class HAssemblyManager : IhAssemblyManager
                     package.PackageId,
                     package.Version,
                     package.Framework,
-                    string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
+                    string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
 
                 var dllPath = ResolveNugetFromLocalDirectory(
                     package.PackageId,
@@ -1446,11 +1446,11 @@ public class HAssemblyManager : IhAssemblyManager
                         "Forced package {PackageId} resolved to path {DllPath} for target domain {DomainName}",
                         package.PackageId,
                         dllPath,
-                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
+                        string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
 
                     var alc = AssemblyLoadContext.Default;
                     if (!string.IsNullOrEmpty(package.Domain) &&
-                        !string.Equals(package.Domain, "Default", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(package.Domain, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase) &&
                         _domains.TryGetValue(package.Domain, out var customAlc))
                     {
                         alc = customAlc;
@@ -1491,7 +1491,7 @@ public class HAssemblyManager : IhAssemblyManager
                             loadedAssembly.FullName,
                             loadedAssemblyAlc != null
                                 ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAssemblyAlc)
-                                : "Default");
+                                : Const.DefaultDomainName);
                     }
 
                     StaticFileRegistry.RegisterPackageDirectory(dllPath, targetDomainName);
@@ -1516,7 +1516,7 @@ public class HAssemblyManager : IhAssemblyManager
                         package.PackageId,
                         package.Version,
                         package.Framework,
-                        string.IsNullOrWhiteSpace(package.Domain) ? "Default" : package.Domain);
+                        string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
                 }
             }
             catch (Exception ex)
@@ -1647,7 +1647,7 @@ public class HAssemblyManager : IhAssemblyManager
             if (string.IsNullOrEmpty(packagePath))
                 return mappings;
 
-            var framework = libDir?.Name ?? "net10.0";
+            var framework = libDir?.Name ?? Const.DefaultFramework;
 
             string buildDir = Path.Combine(packagePath, "buildTransitive", framework);
             if (!Directory.Exists(buildDir))
@@ -1787,7 +1787,7 @@ public class HAssemblyManager : IhAssemblyManager
             serviceType.FullName,
             resolvedDomainName);
 
-        if (string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogInformation(
                 "El worker {WorkerType} pertenece al dominio Default. Queda fuera del ciclo de hot reload.",
@@ -1825,7 +1825,7 @@ public class HAssemblyManager : IhAssemblyManager
                 runCancellationTokenSource = null;
                 state.IsRunning = true;
                 state.RestartOnDomainLoad =
-                    !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase);
+                    !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase);
             }
             else
             {
@@ -1837,7 +1837,7 @@ public class HAssemblyManager : IhAssemblyManager
                     RunCancellationTokenSource = runCancellationTokenSource,
                     IsRunning = true,
                     RestartOnDomainLoad =
-                        !string.Equals(resolvedDomainName, "Default", StringComparison.OrdinalIgnoreCase)
+                        !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase)
                 };
 
                 runCancellationTokenSource = null;
@@ -1924,7 +1924,7 @@ public class HAssemblyManager : IhAssemblyManager
                     "Worker type {WorkerType} resolved in domain Default from assembly {AssemblyName}",
                     workerType,
                     assembly.FullName);
-                return (type, "Default");
+                return (type, Const.DefaultDomainName);
             }
         }
 

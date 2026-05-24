@@ -13,7 +13,6 @@ namespace Horizonte;
 /// al comienzo y al final de su ciclo de vida. Extiende la clase BackgroundService para una ejecución
 /// asincrónica e implementa la interfaz IHservice para funcionalidades adicionales y garantizar el cumplimiento del contrato.
 /// StartEndWorker está equipada con inyección de dependencias para acceder a los servicios y configuraciones necesarios.
-
 /// </remarks>
 public class StartEndWorker : BackgroundService
 {

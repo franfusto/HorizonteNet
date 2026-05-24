@@ -9,14 +9,7 @@ namespace Horizonte
     /// También pueden soportar múltiples contextos mediante un nombre opcional y priorizar orígenes
     /// alternativos, como sobrescrituras locales.
     /// </remarks>
-    /// <example>
-    /// <code language="csharp">
-    /// var config = context.Get<MyConfig>();
-    /// context.Update(new MyConfig { Enabled = true });
-    /// context.Update<MyConfig>(cfg => cfg.Enabled = false);
-    /// var source = context.Source<MyConfig>();
-    /// </code>
-    /// </example>
+
     public interface IHContext
     {
 

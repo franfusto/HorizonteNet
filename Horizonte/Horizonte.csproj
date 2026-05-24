@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <ServerGarbageCollection>true</ServerGarbageCollection>
-        <!--
-        -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <DoNotCopyLocalIfInGac>true</DoNotCopyLocalIfInGac>
         <Description>Entorno modular para .NET 8 basado en Blazor y Radzen. Núcleo reutilizable para apps y servicios.</Description>
@@ -28,7 +26,6 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="Gelf4Net" Version="3.0.1.2" />
-      <PackageReference Include="System.Text.Json" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
