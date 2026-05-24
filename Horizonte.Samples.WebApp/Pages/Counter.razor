@@ -1,0 +1,17 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<RadzenText Text="Counter" TextStyle="TextStyle.H3"/>
+<RadzenText Text=@($"Current count: {currentCount}") />
+
+<RadzenButton Text="Click me" Click="IncrementCount"/>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

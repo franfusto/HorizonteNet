@@ -1,0 +1,76 @@
+﻿@page "/weather"
+@attribute [StreamRendering]
+
+<PageTitle>Weather</PageTitle>
+
+<RadzenText Text="Weather" TextStyle="TextStyle.H3"/>
+<RadzenText Text="This component demonstrates showing data." TextStyle="TextStyle.Body1"/>
+
+@if (forecasts == null)
+{
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem">
+        <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" ShowValue="false" Style="width: 200px"/>
+        <RadzenText Text="Loading..." TextStyle="TextStyle.Body2"/>
+    </RadzenStack>
+}
+else
+{
+    <RadzenDataGrid Data="@forecasts"
+                    TItem="WeatherForecast"
+                    AllowSorting="true"
+                    AllowPaging="true"
+                    PageSize="5"
+                    AllowFiltering="true"
+                    FilterMode="FilterMode.Simple">
+        <Columns>
+            <RadzenDataGridColumn TItem="WeatherForecast" Property="Date" Title="Date">
+                <Template Context="forecast">
+                    @forecast.Date.ToShortDateString()
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="WeatherForecast"
+                                  Property="TemperatureC"
+                                  Title="Temp. (C)"/>
+
+            <RadzenDataGridColumn TItem="WeatherForecast"
+                                  Property="TemperatureF"
+                                  Title="Temp. (F)"/>
+
+            <RadzenDataGridColumn TItem="WeatherForecast" Property="Summary" Title="Summary">
+                <Template Context="forecast">
+                    <RadzenBadge Text="@forecast.Summary" BadgeStyle="BadgeStyle.Info"/>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate streaming rendering
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+
+        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = startDate.AddDays(index),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = summaries[Random.Shared.Next(summaries.Length)]
+        }).ToArray();
+    }
+
+    private class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+}

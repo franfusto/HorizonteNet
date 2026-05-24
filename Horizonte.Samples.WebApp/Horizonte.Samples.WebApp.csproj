@@ -19,9 +19,6 @@
       <Content Update="wwwroot\blazor.web.js">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
-      <Content Update="wwwroot\MainLayout.css">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
     </ItemGroup>
 
 

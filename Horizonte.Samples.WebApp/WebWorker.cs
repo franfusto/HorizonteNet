@@ -46,11 +46,13 @@ public class WebWorker :BackgroundService
             });
         builder.Services.AddSingleton(_context);
         builder.Services.AddSingleton(_assemblyManager);
-        
+        builder.Logging.ClearProviders();
+        builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+        builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+        builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddRadzenComponents();
-        
         _app = builder.Build();
         _app.UseHorizonteStaticFiles(typeof(WebWorker).Assembly);
         _app.UseAntiforgery();
