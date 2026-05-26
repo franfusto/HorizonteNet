@@ -20,7 +20,7 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Title="Acciones ALC" TextAlign="TextAlign.Center" Width="180px">
                 <Template Context="item">
-                    @if (item.Domain != "Default")
+                    @if (item.Domain != Const.DefaultDomainName)
                     {
                         <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.Center">
                             <RadzenButton Icon="file_download_off" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat"
@@ -98,7 +98,7 @@
     {
         var item = new DomainItem()
         {
-            Domain = "Default"
+            Domain = Const.DefaultDomainName
         };
         await _grid.InsertRow(item);
     }

@@ -55,7 +55,7 @@ namespace Horizonte
         /// <summary>
         /// El dominio (ALC) al que pertenece el comando.
         /// </summary>
-        public string Domain { get; set; } = "Default";
+        public string Domain { get; set; } = Const.DefaultDomainName;
         
         
     }

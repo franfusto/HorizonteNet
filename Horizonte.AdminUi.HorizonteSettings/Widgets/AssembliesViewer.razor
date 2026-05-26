@@ -74,7 +74,7 @@
         treeItems = new();
         var assembliesByDomain = AssemblyManager.AssembliesByDomain;
 
-        foreach (var domain in assembliesByDomain.OrderBy(d => d.Key == "Default" ? 0 : 1).ThenBy(d => d.Key))
+        foreach (var domain in assembliesByDomain.OrderBy(d => d.Key == Const.DefaultDomainName ? 0 : 1).ThenBy(d => d.Key))
         {
             var domainNode = new TreeItem { Text = $"Dominio: {domain.Key}", Icon = "dns" };
             

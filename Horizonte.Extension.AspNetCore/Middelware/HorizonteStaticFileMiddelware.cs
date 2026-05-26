@@ -105,7 +105,7 @@ public class HorizonteStaticFileMiddelware
 
         _logger.LogInformation(
             "Horizonte static file middleware registered for domain {DomainName}",
-            _domainName ?? "Default");
+            _domainName ?? Const.DefaultDomainName);
     }
 
 
@@ -263,7 +263,7 @@ public class HorizonteStaticFileMiddelware
         }
         else
         {
-            _logger.LogWarning($"File not found {subPath} for domain {_domainName ?? "Default"}");
+            _logger.LogWarning($"File not found {subPath} for domain {_domainName ?? Const.DefaultDomainName}");
         }
 
         await _next(context);

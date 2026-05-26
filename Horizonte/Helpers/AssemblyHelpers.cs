@@ -134,7 +134,7 @@ public static class AssemblyHelpers
         Dictionary<string, AssemblyLoadContext> domains, string? domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
-            string.Equals(domainName, "Default", StringComparison.OrdinalIgnoreCase))
+            string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
         {
             return AssemblyLoadContext.Default;
         }
@@ -157,7 +157,7 @@ public static class AssemblyHelpers
         Dictionary<string, AssemblyLoadContext> domains, AssemblyLoadContext alc)
     {
         if (ReferenceEquals(alc, AssemblyLoadContext.Default))
-            return "Default";
+            return Const.DefaultDomainName;
 
         foreach (var item in domains)
         {
@@ -165,7 +165,7 @@ public static class AssemblyHelpers
                 return item.Key;
         }
 
-        return alc.Name ?? "Default";
+        return alc.Name ?? Const.DefaultDomainName;
     }
 
     /// <summary>
