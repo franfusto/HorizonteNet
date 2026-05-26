@@ -1,7 +1,7 @@
 using Horizonte;
 using Horizonte.AdminUi.HorizonteSettings.Widgets;
 using Microsoft.Extensions.Logging;
-
+using Blazor.Diagrams;
 namespace Horizonte.AdminUi.HorizonteSettings;
 
 [HorizonteModule("Horizonte.AdminUi.HorizonteSettings")]
@@ -18,6 +18,7 @@ public class PanelModulo
     [HorizonteCommand("HorizonteConfig_Init")]
     public bool Init()
     {
+        _ = new BlazorDiagram();// forzamos la carga del ensamblado
         _logger.LogInformation("Módulo Horizonte.AdminUi.HorizonteSettings Iniciado");
         return true;
     }

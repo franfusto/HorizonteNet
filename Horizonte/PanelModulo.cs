@@ -26,6 +26,7 @@ public class PanelModulo
     private IServiceProvider _serviceProvider;
     private IAppManager _appManager;
     private IhWorkersManager _workersManager;
+    private IhAssemblyManager _assemblyManager;
 
     /// <summary>
     /// Represent un panel de módulo en el framework Horizonte que funciona como una interfaz 
@@ -34,6 +35,7 @@ public class PanelModulo
     /// una descripción.
     /// </summary>
     public PanelModulo(IServiceProvider serviceProvider,
+        IhAssemblyManager assemblyManager,
         IAppManager appManager,
         IhWorkersManager workersManager,
         IHGesCom gesCom,
@@ -44,6 +46,7 @@ public class PanelModulo
         _logger = logger;
         _appManager =  appManager;
         _workersManager = workersManager;
+        _assemblyManager = assemblyManager;
     }
 
     /// <summary>
@@ -61,6 +64,19 @@ public class PanelModulo
         return true;
     }
 
+
+
+    [HorizonteCommand("Horizonte_AssetsMap")]
+    public List<string> AssetsMap()
+    {
+        List<string> list = _assemblyManager.StaticFileRegistry.Files
+            .OrderBy(x => x.Key)
+            .Select(x => $"{x.Key} >> {x.Value}")
+            .ToList();
+        return list;
+    }
+    
+    
     //App
 
     /// <summary>
