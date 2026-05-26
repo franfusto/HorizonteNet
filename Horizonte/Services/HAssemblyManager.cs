@@ -2,27 +2,24 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Xml.Linq;
 using Horizonte.Entities;
+using Horizonte.Helpers;
 using Horizonte.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Horizonte;
+namespace Horizonte.Services;
 
 public class HAssemblyManager : IhAssemblyManager
 {
-
-
+    // propiedades privadas
     private static readonly TimeSpan BackgroundServiceStopTimeout = TimeSpan.FromSeconds(30);
-    
-
     private readonly ILogger<HAssemblyManager> _logger;
     private readonly ModulesSettings _settings;
     private readonly List<string> _searchPaths = new();
     private readonly ISymLinkScafolder _linkScafolder;
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<string, AssemblyLoadContext> _domains = new(StringComparer.OrdinalIgnoreCase);
-
     private List<byte[]> _scriptAssemblyCache = new();
 
     private readonly Dictionary<string, BackgroundServiceState> _backgroundServices =
@@ -30,11 +27,27 @@ public class HAssemblyManager : IhAssemblyManager
 
     private string _installFolder = string.Empty;
 
+    //propiedades púlicas
+
+    /// La propiedad `Assemblies` proporciona una lista de objetos `Assembly` que están cargados actualmente tanto en el contexto de carga de ensamblados predeterminado como en los contextos de dominio personalizados.
+    /// Esta propiedad combina los ensamblados del contexto de carga por defecto con aquellos cargados en los contextos de dominio adicionales administrados por la clase `HAssemblyManager`. Se usa principalmente para inspeccionar y gestionar los ensamblados cargados en tiempo de ejecución, permitiendo acciones como la resolución de dependencias, la carga forzada de paquetes y el registro de directorios de paquetes.
+    /// /
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
         .Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
 
+    /// <summary>
+    /// StaticFileRegistry es una propiedad de solo lectura utilizada dentro de la clase HAssemblyManager
+    /// que se encarga de manejar los registros de archivos estáticos asociados con los ensamblajes
+    /// gestionados por la aplicación. Proporciona un mecanismo para registrar directorios de paquetes
+    /// y facilitar su administración durante la carga y resolución de ensamblajes.
+    /// </summary>
     public StaticFileRegistry StaticFileRegistry { get; private set; }
 
+    /// <summary>
+    /// Propiedad que proporciona un diccionario de ensamblados agrupados por dominio dentro de la aplicación.
+    /// La clave del diccionario es el nombre del dominio y el valor es una lista de objetos <see cref="Assembly"/>
+    /// que pertenecen a ese dominio específico.
+    /// </summary>
     public Dictionary<string, List<Assembly>> AssembliesByDomain
     {
         get
@@ -53,8 +66,22 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
+    /// <summary>
+    /// Evento que se desencadena cuando ocurre un cambio en el dominio en el contexto de gestión de ensamblados.
+    /// </summary>
+    /// <remarks>
+    /// El evento <c>DomainChanged</c> se invoca después de que un dominio ha sido cargado o descargado.
+    /// Este evento es útil para recibir notificaciones sobre cambios en el estado de los dominios y realizar acciones consecuentes.
+    /// </remarks>
     public event Action? DomainChanged;
 
+    // Constructor
+    /// <summary>
+    /// Clase responsable de gestionar ensamblados en la aplicación utilizando distintos contextos de carga.
+    /// </summary>
+    /// <remarks>
+    /// La clase HAssemblyManager permite resolver y cargar ensamblados desde diferentes fuentes, tales como contextos de carga estándar y paquetes NuGet, además de administrar dominios de ensamblados.
+    /// </remarks>
     public HAssemblyManager(ISymLinkScafolder linkScafolder, IServiceProvider serviceProvider)
     {
         StaticFileRegistry = new StaticFileRegistry();
@@ -68,79 +95,32 @@ public class HAssemblyManager : IhAssemblyManager
         LoadModulesFromEnvironment();
     }
 
-    private void SetUpAssemblyPaths()
-    {
-        string systemNugetPackagesPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget",
-            "packages");
+    //Manejo de ensamblados
 
-        if (Directory.Exists(systemNugetPackagesPath))
-        {
-            _searchPaths.Add(systemNugetPackagesPath);
-            _installFolder = systemNugetPackagesPath;
-        }
-
-        foreach (var folderItem in _settings.NugetFolders.OrderBy(x => x.Order))
-        {
-            if (!folderItem.Active) continue;
-
-            if (folderItem.InstallFolder)
-            {
-                if (!Directory.Exists(folderItem.Folder))
-                {
-                    Directory.CreateDirectory(folderItem.Folder);
-                }
-
-                _installFolder = folderItem.Folder;
-            }
-
-            if (Directory.Exists(folderItem.Folder))
-            {
-                _searchPaths.Add(folderItem.Folder);
-            }
-        }
-    }
-
-    private void SetUpDomains()
-    {
-        try
-        {
-            foreach (var domainName in _settings.Domains)
-            {
-                if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-                {
-                    AssemblyLoadContext.Default.Resolving -= ResolveAssemblyFromALC;
-                    AssemblyLoadContext.Default.Resolving += ResolveAssemblyFromALC;
-                    continue;
-                }
-
-                if (_domains.ContainsKey(domainName))
-                    continue;
-
-                _logger.LogInformation("Creando dominio (ALC): {DomainName}", domainName);
-                var alc = new AssemblyLoadContext(domainName, isCollectible: true);
-                alc.Resolving += ResolveAssemblyFromALC;
-                _domains[domainName] = alc;
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error configurando dominios.");
-        }
-    }
-
+    /// <summary>
+    /// Método que intenta resolver y cargar un ensamblado dado su contexto de carga y su nombre.
+    /// </summary>
+    /// <param name="context">El contexto de carga de ensamblados actual, que representa el dominio de carga donde se está intentando resolver el ensamblado.</param>
+    /// <param name="assemblyName">El nombre del ensamblado que se está intentando cargar y resolver.</param>
+    /// <returns>Retorna el ensamblado que se pudo resolver y cargar, o <c>null</c> si no se pudo cargar el ensamblado especificado.</returns>
     public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName)
     {
         return ResolveAssemblyFromNuGetPackages(context, new ResolveEventArgs(assemblyName.FullName));
     }
 
+    /// <summary>
+    /// Método que intenta resolver y cargar un ensamblado a partir de los paquetes de NuGet, utilizando
+    /// un objeto de evento de resolución que contiene detalles sobre el ensamblado que se está intentando cargar.
+    /// </summary>
+    /// <param name="sender">El origen del evento de resolución, que puede ser nulo.</param>
+    /// <param name="args">Argumentos del evento que especifican el nombre completo del ensamblado que se está intentando resolver y cargar.</param>
+    /// <returns>Retorna el ensamblado que se pudo resolver y cargar desde los paquetes de NuGet, o <c>null</c> si no se pudo cargar el ensamblado especificado.</returns>
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
     {
         try
         {
             var requesterDomain = sender is AssemblyLoadContext senderAlc
-                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,senderAlc)
+                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, senderAlc)
                 : Const.DefaultDomainName;
 
             _logger.LogInformation(
@@ -149,7 +129,7 @@ public class HAssemblyManager : IhAssemblyManager
                 requesterDomain);
 
             var requestedAssemblyName = new AssemblyName(args.Name);
-            var sharedAssembly =AssemblyHelpers.TryGetSharedAssemblyFromDefault(requestedAssemblyName);
+            var sharedAssembly = AssemblyHelpers.TryGetSharedAssemblyFromDefault(requestedAssemblyName);
             if (sharedAssembly != null)
             {
                 _logger.LogInformation(
@@ -180,7 +160,9 @@ public class HAssemblyManager : IhAssemblyManager
                 _logger.LogInformation(
                     "Assembly {AssemblyName} ya estaba cargado en el dominio solicitado {DomainName}",
                     alreadyLoaded.FullName,
-                    loadedAlc != null ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAlc) : Const.DefaultDomainName);
+                    loadedAlc != null
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, loadedAlc)
+                        : Const.DefaultDomainName);
 
                 return alreadyLoaded;
             }
@@ -248,7 +230,7 @@ public class HAssemblyManager : IhAssemblyManager
                 _logger.LogInformation(
                     "Assembly {AssemblyName} loaded into domain {DomainName}",
                     loadedAssembly.FullName,
-                    AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,context));
+                    AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, context));
                 return loadedAssembly;
             }
 
@@ -265,6 +247,12 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
+    /// <summary>
+    /// Método que resuelve la ruta del archivo DLL de un paquete NuGet específico, dado su nombre y versión.
+    /// </summary>
+    /// <param name="packageName">El nombre del paquete NuGet del cual se desea obtener la ruta de su archivo DLL.</param>
+    /// <param name="version">La versión específica del paquete NuGet requerida.</param>
+    /// <returns>Retorna la ruta absoluta al archivo DLL del paquete si se encuentra; de lo contrario, retorna <c>null</c>.</returns>
     public string? ResolveAssemblyDllPath(string packageName, string version)
     {
         var path = ResolveNugetFromLocalDirectory(packageName, version, null, true);
@@ -282,420 +270,14 @@ public class HAssemblyManager : IhAssemblyManager
         return path;
     }
 
-    public Task UnloadDomain(string domainName)
-    {
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
-
-        if (_domains.TryGetValue(domainName, out var alc))
-        {
-            _logger.LogInformation("Unloading domain: {DomainName}", domainName);
-
-            UnloadService(domainName);
-            UnloadModule(domainName);
-
-            alc.Resolving -= ResolveAssemblyFromALC;
-            alc.Unload();
-            _domains.Remove(domainName);
-
-            DomainChanged?.Invoke();
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task LoadDomain(string domainName)
-    {
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
-
-        if (AssemblyHelpers.IsScriptDomain(domainName))
-            return LoadScriptDomain(domainName);
-
-        if (!_domains.ContainsKey(domainName))
-        {
-            _logger.LogInformation("Loading/Creating domain: {DomainName}", domainName);
-            var alc = new AssemblyLoadContext(domainName, isCollectible: true);
-            alc.Resolving += ResolveAssemblyFromALC;
-            _domains[domainName] = alc;
-        }
-
-        LoadForecedPackages(_settings.ForcedPackages.Where(x => x.Domain == domainName).ToList());
-
-        foreach (var moduleItem in _settings.List.Where(item => item.Active && item.Domain == domainName))
-        {
-            LoadModuleAssembly(moduleItem);
-
-            if (moduleItem.LoadAdditionalDlls == true && moduleItem.Path != null)
-            {
-                LoadAdditinalAssemblies(moduleItem.Path, domainName);
-            }
-        }
-
-        LoadModule(domainName);
-        LoadService(domainName);
-
-        DomainChanged?.Invoke();
-
-        return Task.CompletedTask;
-    }
-
-    public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
-    {
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
-
-        if (AssemblyHelpers.IsScriptDomain(domainName))
-        {
-            _scriptAssemblyCache = assemblies
-                .Where(x => x.Length > 0)
-                .Select(x => x.ToArray())
-                .ToList();
-
-            return LoadScriptDomain(domainName);
-        }
-
-        if (!_domains.TryGetValue(domainName, out var alc))
-        {
-            _logger.LogInformation("Creating domain from memory: {DomainName}", domainName);
-            alc = new AssemblyLoadContext(domainName, isCollectible: true);
-            alc.Resolving += ResolveAssemblyFromALC;
-            _domains[domainName] = alc;
-        }
-
-        foreach (var asmData in assemblies)
-        {
-            try
-            {
-                using var ms = new MemoryStream(asmData);
-                alc.LoadFromStream(ms);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading assembly from stream into domain {DomainName}", domainName);
-            }
-        }
-
-        LoadModule(domainName);
-        LoadService(domainName);
-
-        DomainChanged?.Invoke();
-
-        return Task.CompletedTask;
-    }
-
-    public async Task ReloadDomain(string domainName)
-    {
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        _logger.LogInformation("Reloading domain: {DomainName}", domainName);
-        await UnloadDomain(domainName);
-        await LoadDomain(domainName);
-    }
-
-    private Task LoadScriptDomain(string domainName)
-    {
-        if (!_domains.TryGetValue(domainName, out var alc))
-        {
-            _logger.LogInformation("Loading/Creating script domain: {DomainName}", domainName);
-            alc = new AssemblyLoadContext(domainName, isCollectible: true);
-            alc.Resolving += ResolveAssemblyFromALC;
-            _domains[domainName] = alc;
-        }
-
-        LoadForecedPackages(_settings.ForcedPackages
-            .Where(x => string.Equals(x.Domain, domainName, StringComparison.OrdinalIgnoreCase))
-            .ToList());
-
-        LoadCachedScriptAssemblies(domainName, alc);
-
-        LoadModule(domainName);
-        LoadService(domainName);
-
-        DomainChanged?.Invoke();
-
-        return Task.CompletedTask;
-    }
-
-    private void LoadCachedScriptAssemblies(string domainName, AssemblyLoadContext alc)
-    {
-        if (_scriptAssemblyCache.Count == 0)
-        {
-            _logger.LogInformation("No cached script assemblies found for domain {DomainName}", domainName);
-            return;
-        }
-
-        foreach (var asmData in _scriptAssemblyCache)
-        {
-            try
-            {
-                using var ms = new MemoryStream(asmData);
-                var loadedAssembly = alc.LoadFromStream(ms);
-
-                _logger.LogInformation(
-                    "Cached script assembly {AssemblyName} loaded into domain {DomainName}",
-                    loadedAssembly.FullName,
-                    domainName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Error loading cached script assembly into domain {DomainName}",
-                    domainName);
-            }
-        }
-    }
-
-    public void UnloadModule(string domainName)
-    {
-        _logger.LogInformation("UnloadModule for domain: {DomainName}", domainName);
-        UnloadCommandsByDomain(domainName);
-    }
-
-    public void UnloadCommandsByDomain(string domainName)
-    {
-        var gesCom = _serviceProvider.GetService<IHGesCom>();
-        gesCom?.UnloadCommandsByDomain(domainName);
-    }
-
-    public void UnloadService(string domainName)
-    {
-        _logger.LogInformation("Unloading services for domain: {DomainName}", domainName);
-
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        var keysToProcess = _backgroundServices
-            .Where(x => string.Equals(x.Value.DomainName, domainName, StringComparison.OrdinalIgnoreCase))
-            .Select(x => x.Key)
-            .ToList();
-
-        foreach (var key in keysToProcess)
-        {
-            if (!_backgroundServices.TryGetValue(key, out var state))
-                continue;
-
-            try
-            {
-                if (state.Instance != null)
-                {
-                    _logger.LogInformation(
-                        "Stopping service {WorkerType} in domain {DomainName}",
-                        state.WorkerType,
-                        state.DomainName);
-
-                    state.RunCancellationTokenSource?.Cancel();
-
-                    state.StopCancellationTokenSource?.Dispose();
-                    state.StopCancellationTokenSource = new CancellationTokenSource(BackgroundServiceStopTimeout);
-
-                    state.Instance
-                        .StopAsync(state.StopCancellationTokenSource.Token)
-                        .GetAwaiter()
-                        .GetResult();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping service {WorkerType}", state.WorkerType);
-            }
-            finally
-            {
-                state.StopCancellationTokenSource?.Dispose();
-                state.StopCancellationTokenSource = null;
-
-                state.RunCancellationTokenSource?.Dispose();
-                state.RunCancellationTokenSource = null;
-
-                state.Instance = null;
-                state.IsRunning = false;
-            }
-        }
-    }
-
-    public void LoadModule(string domainName)
-    {
-        _logger.LogInformation("LoadModule for domain: {DomainName}", domainName);
-        LoadCommandsByDomain(domainName);
-    }
-
-    public void LoadCommandsByDomain(string domainName)
-    {
-        try
-        {
-            var processedAssemblies = new HashSet<string>();
-            var assembliesByDomain = AssembliesByDomain;
-
-            if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
-            {
-                _logger.LogInformation("Cargando comandos para el dominio: {DomainName}", domainName);
-                ProcessAssemblies(assemblies, domainName, processedAssemblies);
-            }
-            else
-            {
-                _logger.LogWarning("No se encontraron ensamblados para el dominio {DomainName}", domainName);
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error en LoadCommandsByDomain para {DomainName}", domainName);
-        }
-    }
-
-    private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies)
-    {
-        var assembliesToProcess = new Queue<Assembly>(assemblies);
-        var gesCom = _serviceProvider.GetService<IHGesCom>();
-
-        while (assembliesToProcess.Count > 0)
-        {
-            var assembly = assembliesToProcess.Dequeue();
-
-            if (assembly.FullName == null || processedAssemblies.Contains(assembly.FullName))
-                continue;
-
-            processedAssemblies.Add(assembly.FullName);
-
-            Type[] types;
-            try
-            {
-                types = assembly.GetTypes();
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                types = ex.Types.Where(t => t != null).ToArray()!;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(
-                    e,
-                    "Error al obtener tipos del ensamblado {AssemblyName} en dominio {DomainName}",
-                    assembly.FullName,
-                    domainName);
-                continue;
-            }
-
-            var modulesTypes = (from type in types
-                where Attribute.IsDefined(type, typeof(HorizonteModule))
-                select type).ToList();
-
-            foreach (var modType in modulesTypes)
-            {
-                try
-                {
-                    if (modType == null) continue;
-
-                    object? modInstance;
-                    try
-                    {
-                        _logger.LogInformation(
-                            ">>>> Loading modules from '{ModuleType}' in domain '{DomainName}'",
-                            modType.FullName,
-                            domainName);
-
-                        modInstance = CreateInstance(modType);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(
-                            e,
-                            "Error al crear instancia: {ModuleType} en dominio {DomainName}",
-                            modType.FullName,
-                            domainName);
-                        continue;
-                    }
-
-                    var methods = modType.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
-                    foreach (var method in methods)
-                    {
-                        if (modInstance != null)
-                        {
-                            AddCommandToGesCom(gesCom, method, modInstance, domainName);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Error procesando módulo {ModuleType}", modType?.FullName);
-                }
-            }
-        }
-    }
-
-    private void AddCommandToGesCom(IHGesCom? gesCom, MethodInfo method, object instance, string domain)
-    {
-        if (gesCom == null) return;
-
-        var hAttrib = method.GetCustomAttribute<HorizonteCommand>();
-        if (hAttrib == null) return;
-
-        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false) as HorizonteRole[] ?? [])
-            .ToList()
-            .Select(x => x.Role)
-            .ToList();
-
-        var miCmd = new HCommand
-        {
-            CommandKey = hAttrib.Key,
-            Description = hAttrib.Description,
-            CommandAction = method,
-            Instance = instance,
-            InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
-            InNames = method.GetParameters()
-                .Where(x => x.Name != null)
-                .Select(parameter => parameter.Name!)
-                .ToList(),
-            OutType = method.ReturnType,
-            Roles = roleAttrib,
-            IsAsync = method.ReturnType == typeof(Task) ||
-                      (method.ReturnType.IsGenericType &&
-                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
-            Domain = domain
-        };
-
-        gesCom.RegisterCommand(miCmd);
-    }
-
-    public void LoadService(string domainName)
-    {
-        _logger.LogInformation("LoadService for domain: {DomainName}", domainName);
-
-        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        if (!_domains.ContainsKey(domainName))
-            return;
-
-        var hContext = _serviceProvider.GetService<IHContext>();
-        var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
-
-        foreach (var workerSetting in workerSettings.List.OrderBy(x => x.Order))
-        {
-            var shouldRestart = workerSetting.RunOnStart;
-
-            if (_backgroundServices.TryGetValue(workerSetting.WorkerType, out var state))
-            {
-                shouldRestart = shouldRestart || state.RestartOnDomainLoad;
-            }
-
-            if (!shouldRestart)
-                continue;
-
-            var resolved = ResolveBackgroundServiceType(workerSetting.WorkerType);
-            if (resolved == null)
-                continue;
-
-            var (_, resolvedDomainName) = resolved.Value;
-
-            if (!string.Equals(resolvedDomainName, domainName, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            StartBackgroundService(workerSetting.WorkerType);
-        }
-    }
-
+    /// <summary>
+    /// Crea una instancia de un tipo especificado utilizando el proveedor de servicios.
+    /// Intenta resolver los parámetros del constructor automáticamente.
+    /// </summary>
+    /// <param name="type">El tipo del cual se desea crear una instancia.</param>
+    /// <returns>Una instancia del tipo especificado si se pudo crear; de lo contrario, <c>null</c>.</returns>
+    /// <exception cref="MissingMethodException">Se lanza si el tipo no tiene constructores públicos.</exception>
+    /// <exception cref="InvalidOperationException">Se lanza si no se puede crear una instancia del tipo debido a la imposibilidad de resolver los parámetros del constructor.</exception>
     public object? CreateInstance(Type type)
     {
         try
@@ -763,6 +345,535 @@ public class HAssemblyManager : IhAssemblyManager
             $"Detalles: {string.Join(" | ", errors)}");
     }
 
+
+    //Manejo de dominios
+
+    /// <summary>
+    /// Método que intenta descargar un dominio dado su nombre.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio que se está intentando descargar.</param>
+    /// <returns>Una tarea completada cuando la descarga del dominio ha terminado. Si el dominio a descargar es el dominio predeterminado, el método no realiza ninguna acción.</returns>
+    public Task UnloadDomain(string domainName)
+    {
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return Task.CompletedTask;
+
+        if (_domains.TryGetValue(domainName, out var alc))
+        {
+            _logger.LogInformation("Unloading domain: {DomainName}", domainName);
+
+            UnloadService(domainName);
+            UnloadModule(domainName);
+
+            alc.Resolving -= ResolveAssemblyFromALC;
+            alc.Unload();
+            _domains.Remove(domainName);
+
+            DomainChanged?.Invoke();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Carga un dominio específico para su uso dentro del contexto de la aplicación.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio que se desea cargar o crear si no existe.</param>
+    /// <returns>Una tarea que representa la operación de carga. La tarea se completa inmediatamente si el dominio es el dominio por defecto o si ya está cargado.</returns>
+    public Task LoadDomain(string domainName)
+    {
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return Task.CompletedTask;
+
+        if (AssemblyHelpers.IsScriptDomain(domainName))
+            return LoadScriptDomain(domainName);
+
+        if (!_domains.ContainsKey(domainName))
+        {
+            _logger.LogInformation("Loading/Creating domain: {DomainName}", domainName);
+            var alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
+        }
+
+        LoadForecedPackages(_settings.ForcedPackages.Where(x => x.Domain == domainName).ToList());
+
+        foreach (var moduleItem in _settings.List.Where(item => item.Active && item.Domain == domainName))
+        {
+            LoadModuleAssembly(moduleItem);
+
+            if (moduleItem.LoadAdditionalDlls == true && moduleItem.Path != null)
+            {
+                LoadAdditinalAssemblies(moduleItem.Path, domainName);
+            }
+        }
+
+        LoadModule(domainName);
+        LoadService(domainName);
+
+        DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Método que carga un dominio específico con un conjunto de ensamblados proporcionados.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio que se va a cargar.</param>
+    /// <param name="assemblies">Una colección de arreglos de bytes que representan los ensamblados que se deben cargar en el dominio especificado.</param>
+    /// <returns>Un objeto <c>Task</c> que representa la operación asincrónica de carga del dominio.</returns
+    public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
+    {
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return Task.CompletedTask;
+
+        if (AssemblyHelpers.IsScriptDomain(domainName))
+        {
+            _scriptAssemblyCache = assemblies
+                .Where(x => x.Length > 0)
+                .Select(x => x.ToArray())
+                .ToList();
+
+            return LoadScriptDomain(domainName);
+        }
+
+        if (!_domains.TryGetValue(domainName, out var alc))
+        {
+            _logger.LogInformation("Creating domain from memory: {DomainName}", domainName);
+            alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
+        }
+
+        foreach (var asmData in assemblies)
+        {
+            try
+            {
+                using var ms = new MemoryStream(asmData);
+                alc.LoadFromStream(ms);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading assembly from stream into domain {DomainName}", domainName);
+            }
+        }
+
+        LoadModule(domainName);
+        LoadService(domainName);
+
+        DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Método que recarga el dominio de aplicación para aplicar cambios o actualizaciones en su configuración o contenido.
+    /// </summary>
+    /// <param name="domainName">El identificador único del dominio de aplicación que se debe recargar.</param>
+    /// <returns>Retorna un valor booleano indicando si el dominio se recargó correctamente (<c>true</c>) o si hubo algún error en el proceso (<c>false</c>).</returns>
+    public async Task ReloadDomain(string domainName)
+    {
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _logger.LogInformation("Reloading domain: {DomainName}", domainName);
+        await UnloadDomain(domainName);
+        await LoadDomain(domainName);
+    }
+
+    //Manejo de módulos
+
+    /// <summary>
+    /// Método que descarga un módulo asociado a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio del cual se debe descargar el módulo.</param>
+    public void UnloadModule(string domainName)
+    {
+        _logger.LogInformation("UnloadModule for domain: {DomainName}", domainName);
+        UnloadCommandsByDomain(domainName);
+    }
+
+    /// <summary>
+    /// Método que descarga los comandos asociados a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio cuyos comandos se deben descargar.</param>
+    public void UnloadCommandsByDomain(string domainName)
+    {
+        var gesCom = _serviceProvider.GetService<IHGesCom>();
+        gesCom?.UnloadCommandsByDomain(domainName);
+    }
+
+
+    /// <summary>
+    /// Método que carga los módulos asociados a un nombre de dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio para el cual se deben cargar los módulos.</param>
+    public void LoadModule(string domainName)
+    {
+        _logger.LogInformation("LoadModule for domain: {DomainName}", domainName);
+        LoadCommandsByDomain(domainName);
+    }
+
+    /// <summary>
+    /// Método que carga y procesa los comandos asociados a un dominio específico, identificando el conjunto de ensamblados pertinentes y gestionando cualquier error que pueda surgir durante el proceso.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio para el cual se cargan y procesan los comandos de ensamblados.</param>
+    public void LoadCommandsByDomain(string domainName)
+    {
+        try
+        {
+            var processedAssemblies = new HashSet<string>();
+            var assembliesByDomain = AssembliesByDomain;
+
+            if (assembliesByDomain.TryGetValue(domainName, out var assemblies))
+            {
+                _logger.LogInformation("Cargando comandos para el dominio: {DomainName}", domainName);
+                ProcessAssemblies(assemblies, domainName, processedAssemblies);
+            }
+            else
+            {
+                _logger.LogWarning("No se encontraron ensamblados para el dominio {DomainName}", domainName);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error en LoadCommandsByDomain para {DomainName}", domainName);
+        }
+    }
+
+    //Manejo de servicios
+    
+    /// <summary>
+    /// Método que carga y gestiona los servicios de fondo para un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio que se está cargando, para el cual se deben iniciar los servicios de fondo.</param>
+    public void LoadService(string domainName)
+    {
+        _logger.LogInformation("LoadService for domain: {DomainName}", domainName);
+
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (!_domains.ContainsKey(domainName))
+            return;
+
+        var hContext = _serviceProvider.GetService<IHContext>();
+        var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
+
+        foreach (var workerSetting in workerSettings.List.OrderBy(x => x.Order))
+        {
+            var shouldRestart = workerSetting.RunOnStart;
+
+            if (_backgroundServices.TryGetValue(workerSetting.WorkerType, out var state))
+            {
+                shouldRestart = shouldRestart || state.RestartOnDomainLoad;
+            }
+
+            if (!shouldRestart)
+                continue;
+
+            var resolved = ResolveBackgroundServiceType(workerSetting.WorkerType);
+            if (resolved == null)
+                continue;
+
+            var (_, resolvedDomainName) = resolved.Value;
+
+            if (!string.Equals(resolvedDomainName, domainName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            StartBackgroundService(workerSetting.WorkerType);
+        }
+    }
+
+    
+    /// <summary>
+    /// Método que se encarga de descargar los servicios asociados a un dominio específico.
+    /// </summary>
+    /// <param name="domainName">El nombre del dominio cuyas tareas de servicio se van a descargar.</param>
+    public void UnloadService(string domainName)
+    {
+        _logger.LogInformation("Unloading services for domain: {DomainName}", domainName);
+
+        if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var keysToProcess = _backgroundServices
+            .Where(x => string.Equals(x.Value.DomainName, domainName, StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keysToProcess)
+        {
+            if (!_backgroundServices.TryGetValue(key, out var state))
+                continue;
+
+            try
+            {
+                if (state.Instance != null)
+                {
+                    _logger.LogInformation(
+                        "Stopping service {WorkerType} in domain {DomainName}",
+                        state.WorkerType,
+                        state.DomainName);
+
+                    state.RunCancellationTokenSource?.Cancel();
+
+                    state.StopCancellationTokenSource?.Dispose();
+                    state.StopCancellationTokenSource = new CancellationTokenSource(BackgroundServiceStopTimeout);
+
+                    state.Instance
+                        .StopAsync(state.StopCancellationTokenSource.Token)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping service {WorkerType}", state.WorkerType);
+            }
+            finally
+            {
+                state.StopCancellationTokenSource?.Dispose();
+                state.StopCancellationTokenSource = null;
+
+                state.RunCancellationTokenSource?.Dispose();
+                state.RunCancellationTokenSource = null;
+
+                state.Instance = null;
+                state.IsRunning = false;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Método que inicia un servicio en segundo plano especificado por su tipo de trabajador.
+    /// </summary>
+    /// <param name="workerType">El tipo de trabajador del servicio en segundo plano que se desea iniciar.</param>
+    /// <returns>Retorna <c>true</c> si el servicio se inicia con éxito o ya está en ejecución; de lo contrario, retorna <c>false</c>.</returns>
+    public bool StartBackgroundService(string workerType)
+    {
+        workerType = workerType.Trim();
+        if (string.IsNullOrWhiteSpace(workerType))
+            return false;
+
+
+        if (_backgroundServices.TryGetValue(workerType, out var existingState) && existingState.IsRunning)
+        {
+            _logger.LogInformation(
+                "El worker {WorkerType} ya está en ejecución en dominio {DomainName}.",
+                workerType,
+                existingState.DomainName);
+            return true;
+        }
+
+        var resolved = ResolveBackgroundServiceType(workerType);
+        if (resolved == null)
+        {
+            _logger.LogWarning("Tipo de worker '{WorkerType}' no encontrado.", workerType);
+            return false;
+        }
+
+        var (serviceType, resolvedDomainName) = resolved.Value;
+
+        _logger.LogInformation(
+            "Resolved worker type {WorkerType} to runtime type {RuntimeType} in domain {DomainName}",
+            workerType,
+            serviceType.FullName,
+            resolvedDomainName);
+
+        if (string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation(
+                "El worker {WorkerType} pertenece al dominio Default. Queda fuera del ciclo de hot reload.",
+                workerType);
+        }
+
+        CancellationTokenSource? runCancellationTokenSource = null;
+
+        try
+        {
+            if (CreateInstance(serviceType) is not BackgroundService worker)
+            {
+                _logger.LogWarning("No se pudo crear la instancia del worker {WorkerType}.", workerType);
+                return false;
+            }
+
+            _logger.LogInformation(
+                "Iniciando worker {WorkerType} en dominio {DomainName}",
+                workerType,
+                resolvedDomainName);
+
+            runCancellationTokenSource = new CancellationTokenSource();
+
+            worker.StartAsync(runCancellationTokenSource.Token).GetAwaiter().GetResult();
+
+            if (_backgroundServices.TryGetValue(workerType, out var state))
+            {
+                state.StopCancellationTokenSource?.Dispose();
+                state.StopCancellationTokenSource = null;
+
+                state.RunCancellationTokenSource?.Dispose();
+                state.DomainName = resolvedDomainName;
+                state.Instance = worker;
+                state.RunCancellationTokenSource = runCancellationTokenSource;
+                runCancellationTokenSource = null;
+                state.IsRunning = true;
+                state.RestartOnDomainLoad =
+                    !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                _backgroundServices[workerType] = new BackgroundServiceState
+                {
+                    WorkerType = workerType,
+                    DomainName = resolvedDomainName,
+                    Instance = worker,
+                    RunCancellationTokenSource = runCancellationTokenSource,
+                    IsRunning = true,
+                    RestartOnDomainLoad =
+                        !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase)
+                };
+
+                runCancellationTokenSource = null;
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            runCancellationTokenSource?.Dispose();
+            _logger.LogError(e, "Error al configurar el worker de tipo '{WorkerType}'", workerType);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Método que intenta detener un servicio en segundo plano dado su tipo.
+    /// </summary>
+    /// <param name="serviceType">El tipo del servicio en segundo plano que se intenta detener.</param>
+    /// <returns>Retorna <c>true</c> si el servicio fue detenido exitosamente o ya estaba detenido; de lo contrario, retorna <c>false</c>.</returns>
+    public bool StopBackgroundService(string serviceType)
+    {
+        serviceType = serviceType.Trim();
+        if (string.IsNullOrWhiteSpace(serviceType))
+            return false;
+
+
+        if (!_backgroundServices.TryGetValue(serviceType, out var state))
+        {
+            _logger.LogWarning("No existe registro para el worker {WorkerType}.", serviceType);
+            return false;
+        }
+
+        if (state.Instance == null || !state.IsRunning)
+        {
+            _logger.LogInformation(
+                "El worker {WorkerType} ya no estaba ejecutándose en dominio {DomainName}.",
+                serviceType,
+                state.DomainName);
+            state.IsRunning = false;
+            state.RestartOnDomainLoad = false;
+            return true;
+        }
+
+        try
+        {
+            _logger.LogInformation(
+                "Deteniendo worker {WorkerType} en dominio {DomainName}",
+                serviceType,
+                state.DomainName);
+
+            state.Instance.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+            state.Instance = null;
+            state.IsRunning = false;
+            state.RestartOnDomainLoad = false;
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deteniendo worker {WorkerType}", serviceType);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Método que verifica si un servicio de fondo específico está en ejecución.
+    /// </summary>
+    /// <param name="serviceType">El tipo del servicio cuyo estado se desea verificar.</param>
+    /// <returns>Retorna <c>true</c> si el servicio de fondo está en ejecución y su instancia no es nula; de lo contrario, <c>false</c>.</returns>
+    public bool BackgroundServiceRunning(string serviceType)
+    {
+        serviceType = serviceType.Trim();
+        if (string.IsNullOrWhiteSpace(serviceType))
+            return false;
+
+
+        return _backgroundServices.TryGetValue(serviceType, out var state) &&
+               state.IsRunning &&
+               state.Instance != null;
+    }
+
+    // auxiliares
+    
+    private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
+    {
+        var typeName = workerType.Split(',')[0].Trim();
+
+        foreach (var assembly in AssemblyLoadContext.Default.Assemblies)
+        {
+            var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
+            if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
+                !type.IsInterface)
+            {
+                _logger.LogInformation(
+                    "Worker type {WorkerType} resolved in domain Default from assembly {AssemblyName}",
+                    workerType,
+                    assembly.FullName);
+                return (type, Const.DefaultDomainName);
+            }
+        }
+
+        foreach (var domain in _domains)
+        {
+            foreach (var assembly in domain.Value.Assemblies)
+            {
+                var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
+                if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
+                    !type.IsInterface)
+                {
+                    _logger.LogInformation(
+                        "Worker type {WorkerType} resolved in domain {DomainName} from assembly {AssemblyName}",
+                        workerType,
+                        domain.Key,
+                        assembly.FullName);
+                    return (type, domain.Key);
+                }
+            }
+        }
+
+        var fallbackType = Type.GetType(workerType, throwOnError: false);
+        if (fallbackType != null &&
+            typeof(BackgroundService).IsAssignableFrom(fallbackType) &&
+            !fallbackType.IsAbstract &&
+            !fallbackType.IsInterface)
+        {
+            var alc = AssemblyLoadContext.GetLoadContext(fallbackType.Assembly) ?? AssemblyLoadContext.Default;
+            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, alc);
+
+            _logger.LogInformation(
+                "Worker type {WorkerType} resolved by fallback in domain {DomainName} from assembly {AssemblyName}",
+                workerType,
+                domainName,
+                fallbackType.Assembly.FullName);
+
+            return (fallbackType, domainName);
+        }
+
+        _logger.LogWarning("Worker type {WorkerType} could not be resolved in any domain.", workerType);
+        return null;
+    }
+
     private bool TryResolveConstructorParameter(Type implementationType, ParameterInfo parameter, out object? argument)
     {
         argument = null;
@@ -812,7 +923,7 @@ public class HAssemblyManager : IhAssemblyManager
             return true;
         }
 
-        var defaultDomainType =AssemblyHelpers.TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
+        var defaultDomainType = AssemblyHelpers.TryGetDefaultDomainTypeEquivalent(parameter.ParameterType);
         if (defaultDomainType != null)
         {
             var defaultDomainResolved = _serviceProvider.GetService(defaultDomainType);
@@ -835,13 +946,13 @@ public class HAssemblyManager : IhAssemblyManager
                     defaultDomainType.FullName,
                     parameter.ParameterType.FullName,
                     parameterAssemblyAlc != null
-                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,parameterAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, parameterAssemblyAlc)
                         : "Unknown",
                     defaultTypeAssemblyAlc != null
-                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,defaultTypeAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, defaultTypeAssemblyAlc)
                         : "Unknown",
                     implementationAssemblyAlc != null
-                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,implementationAssemblyAlc)
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, implementationAssemblyAlc)
                         : "Unknown");
             }
         }
@@ -877,144 +988,24 @@ public class HAssemblyManager : IhAssemblyManager
                 var pathConVersion = Path.Combine(directorioPaquete.First(), version);
                 if (Directory.Exists(pathConVersion))
                 {
-                    var versionList = GetNugetPackageVersionInformation(directorioPaquete.First());
+                    var versionList =
+                        NugetHelpers.GetNugetPackageVersionInformation(_logger, directorioPaquete.First());
                     var versionSeleccionada =
-                        SelectedVersion(version, frameworkSolicitado, versionList, true, exactFramework);
+                        NugetHelpers.SelectedVersion(_settings.FrameworkPriorities, version, frameworkSolicitado,
+                            versionList, true, exactFramework);
 
                     if (versionSeleccionada != null) return versionSeleccionada.DllPath;
                 }
             }
             else
             {
-                var versionList = GetNugetPackageVersionInformation(directorioPaquete.First());
+                var versionList = NugetHelpers.GetNugetPackageVersionInformation(_logger, directorioPaquete.First());
                 var versionSeleccionada =
-                    SelectedVersion(version, frameworkSolicitado, versionList, false, exactFramework);
+                    NugetHelpers.SelectedVersion(_settings.FrameworkPriorities, version, frameworkSolicitado,
+                        versionList, false, exactFramework);
 
                 if (versionSeleccionada != null) return versionSeleccionada.DllPath;
             }
-        }
-
-        return null;
-    }
-
-    private List<NugetPackageVersionInformation> GetNugetPackageVersionInformation(string packageDirectory)
-    {
-        var result = new List<NugetPackageVersionInformation>();
-
-        try
-        {
-            var list = Directory.EnumerateFiles(packageDirectory, "*.dll", SearchOption.AllDirectories)
-                .Where(x => x.Contains("/lib/") || x.Contains(@"\lib\"))
-                .ToList();
-
-            foreach (var dllPath in list)
-            {
-                var pathSegments = dllPath.Split(Path.DirectorySeparatorChar);
-
-                var packageId = pathSegments[^5];
-                var versionRaw = pathSegments[^4];
-                var framework = pathSegments[^2];
-
-                if (dllPath.Contains("/buildTransitive/") || dllPath.Contains(@"\buildTransitive\"))
-                    continue;
-
-                if (dllPath.Contains("/build/") || dllPath.Contains(@"\build\"))
-                    continue;
-
-                string versionForParsing = versionRaw;
-                if (versionForParsing.Contains('-'))
-                {
-                    versionForParsing = versionForParsing.Split('-')[0];
-                }
-
-                if (Version.TryParse(versionForParsing, out var parsedVersion))
-                {
-                    result.Add(new NugetPackageVersionInformation
-                    {
-                        PackageId = packageId,
-                        VersionString = versionRaw,
-                        Version = parsedVersion,
-                        Framework = framework,
-                        DllPath = dllPath
-                    });
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error obteniendo información de versiones NuGet.");
-        }
-
-        return result;
-    }
-
-    private NugetPackageVersionInformation? SelectedVersion(
-        string versionSolicitadaRaw,
-        string frameworkSolicitado,
-        List<NugetPackageVersionInformation> versionesDisponibles,
-        bool exactmatch,
-        bool exactFramework = false)
-    {
-        var prioridadFrameworks = new List<string> { frameworkSolicitado };
-
-        if (!exactFramework)
-        {
-            prioridadFrameworks.AddRange(_settings.FrameworkPriorities);
-        }
-
-        if (exactmatch)
-        {
-            foreach (var framework in prioridadFrameworks)
-            {
-                var encontrada = versionesDisponibles.FirstOrDefault(info =>
-                    info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase) &&
-                    info.VersionString.Equals(versionSolicitadaRaw, StringComparison.OrdinalIgnoreCase));
-
-                if (encontrada != null) return encontrada;
-            }
-
-            return null;
-        }
-
-        string vParsable = versionSolicitadaRaw;
-        if (vParsable.Contains('-'))
-        {
-            vParsable = vParsable.Split('-')[0];
-        }
-
-        if (!Version.TryParse(vParsable, out var vS))
-            return null;
-
-        foreach (var framework in prioridadFrameworks)
-        {
-            var versionesFiltradas = versionesDisponibles
-                .Where(info => info.Framework.Equals(framework, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!versionesFiltradas.Any()) continue;
-
-            var match = versionesFiltradas.FirstOrDefault(info =>
-                info.Version.Major == vS.Major &&
-                info.Version.Minor == vS.Minor &&
-                info.Version.Build == vS.Build);
-
-            if (match != null) return match;
-
-            match = versionesFiltradas
-                .Where(info => info.Version.Major == vS.Major && info.Version.Minor == vS.Minor)
-                .OrderBy(info => info.Version)
-                .FirstOrDefault(info => info.Version >= vS);
-
-            if (match != null) return match;
-
-            match = versionesFiltradas
-                .Where(info => info.Version.Major == vS.Major)
-                .OrderBy(info => info.Version)
-                .FirstOrDefault(info => info.Version >= vS);
-
-            if (match != null) return match;
-
-            return versionesFiltradas.OrderByDescending(info => info.Version).First();
         }
 
         return null;
@@ -1057,7 +1048,7 @@ public class HAssemblyManager : IhAssemblyManager
         {
             if (!nugetServer.Active) continue;
 
-            var directUrl = GetDownloadUrl(nugetServer, packageName, version);
+            var directUrl = NugetHelpers.GetDownloadUrl(nugetServer, packageName, version);
             _logger.LogInformation(
                 "Trying direct download of '{PackageName}' version '{Version}' from {Url}",
                 packageName,
@@ -1073,7 +1064,7 @@ public class HAssemblyManager : IhAssemblyManager
                 if (parts.Length > 3)
                 {
                     var normalizedVersion = string.Join(".", parts.Take(3));
-                    var normalizedUrl = GetDownloadUrl(nugetServer, packageName, normalizedVersion);
+                    var normalizedUrl = NugetHelpers.GetDownloadUrl(nugetServer, packageName, normalizedVersion);
 
                     _logger.LogInformation(
                         "Trying normalized version download of '{PackageName}' version '{Version}' from {Url}",
@@ -1095,10 +1086,10 @@ public class HAssemblyManager : IhAssemblyManager
             var availableVersions = GetRemotePackageVersions(nugetServer, packageName);
             if (!availableVersions.Any()) continue;
 
-            var bestVersion = SelectBestRemoteVersion(version, availableVersions);
+            var bestVersion = NugetHelpers.SelectBestRemoteVersion(version, availableVersions);
             if (bestVersion != null && bestVersion != version)
             {
-                var heuristicUrl = GetDownloadUrl(nugetServer, packageName, bestVersion);
+                var heuristicUrl = NugetHelpers.GetDownloadUrl(nugetServer, packageName, bestVersion);
 
                 _logger.LogInformation(
                     "Heuristic match: version '{BestVersion}' for '{PackageName}'. Downloading from {Url}",
@@ -1112,36 +1103,6 @@ public class HAssemblyManager : IhAssemblyManager
         }
 
         return null;
-    }
-
-    private string GetDownloadUrl(NugetServerItem server, string packageName, string version)
-    {
-        switch (server.Version)
-        {
-            case 1:
-            case 2:
-                return Path.Combine(server.Server, "package", packageName, version);
-
-            case 3:
-                var baseDownloadUrl = server.Server;
-
-                if (baseDownloadUrl.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
-                {
-                    baseDownloadUrl = baseDownloadUrl[..^10].TrimEnd('/');
-                }
-
-                if (!baseDownloadUrl.Contains("/package", StringComparison.OrdinalIgnoreCase) &&
-                    !baseDownloadUrl.Contains("api.nuget.org", StringComparison.OrdinalIgnoreCase))
-                {
-                    baseDownloadUrl = baseDownloadUrl.TrimEnd('/') + "/package";
-                }
-
-                return
-                    $"{baseDownloadUrl.TrimEnd('/')}/{packageName.ToLower()}/{version}/{packageName.ToLower()}.{version}.nupkg";
-
-            default:
-                return string.Empty;
-        }
     }
 
     private string? DownloadPackage(string url, string packageName, string version)
@@ -1292,72 +1253,6 @@ public class HAssemblyManager : IhAssemblyManager
         return versions.Distinct().ToList();
     }
 
-    private string? SelectBestRemoteVersion(string versionSolicitadaRaw, List<string> versionesDisponibles)
-    {
-        if (!versionesDisponibles.Any()) return null;
-
-        string vParsable = versionSolicitadaRaw;
-        if (vParsable.Contains('-'))
-        {
-            vParsable = vParsable.Split('-')[0];
-        }
-
-        if (!Version.TryParse(vParsable, out var vS))
-            return null;
-
-        var parsedVersions = versionesDisponibles.Select(v =>
-        {
-            string vp = v;
-            if (vp.Contains('-'))
-            {
-                vp = vp.Split('-')[0];
-            }
-
-            Version.TryParse(vp, out var ver);
-
-            return new
-            {
-                Raw = v,
-                Parsed = ver ?? new Version(0, 0, 0)
-            };
-        }).ToList();
-
-        var match = parsedVersions.FirstOrDefault(v =>
-            v.Parsed.Major == vS.Major &&
-            v.Parsed.Minor == vS.Minor &&
-            v.Parsed.Build == vS.Build);
-
-        if (match != null) return match.Raw;
-
-        match = parsedVersions
-            .Where(v => v.Parsed.Major == vS.Major && v.Parsed.Minor == vS.Minor)
-            .OrderBy(v => v.Parsed)
-            .FirstOrDefault(v => v.Parsed >= vS);
-
-        if (match != null) return match.Raw;
-
-        match = parsedVersions
-            .Where(v => v.Parsed.Major == vS.Major)
-            .OrderBy(v => v.Parsed)
-            .FirstOrDefault(v => v.Parsed >= vS);
-
-        if (match != null) return match.Raw;
-
-        if (versionSolicitadaRaw.EndsWith(".0"))
-        {
-            var parts = versionSolicitadaRaw.Split('.');
-            if (parts.Length > 3)
-            {
-                var v3 = string.Join(".", parts.Take(3));
-                var match3 = parsedVersions.FirstOrDefault(v => v.Raw == v3);
-
-                if (match3 != null) return match3.Raw;
-            }
-        }
-
-        return parsedVersions.OrderByDescending(v => v.Parsed).FirstOrDefault()?.Raw;
-    }
-
     private void LoadModulesFromEnvironment()
     {
         try
@@ -1397,6 +1292,7 @@ public class HAssemblyManager : IhAssemblyManager
 
                     continue;
                 }
+
                 _logger.LogInformation(
                     "Loading forced package: {PackageId} version {Version} framework {Framework} target domain {DomainName}",
                     package.PackageId,
@@ -1416,8 +1312,7 @@ public class HAssemblyManager : IhAssemblyManager
                     dllPath = ResolveNugetFromLocalDirectory(
                         package.PackageId,
                         package.Version,
-                        package.Framework,
-                        true);
+                        package.Framework);
                 }
 
                 if (dllPath != null)
@@ -1441,7 +1336,7 @@ public class HAssemblyManager : IhAssemblyManager
                         alc = customAlc;
                     }
 
-                    var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
+                    var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, alc);
                     var assemblyName = AssemblyName.GetAssemblyName(dllPath);
 
                     var alreadyLoadedInTargetAlc = alc.Assemblies.FirstOrDefault(a =>
@@ -1475,7 +1370,7 @@ public class HAssemblyManager : IhAssemblyManager
                             "Forced package inventory => Assembly {AssemblyName} currently visible in domain {DomainName}",
                             loadedAssembly.FullName,
                             loadedAssemblyAlc != null
-                                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,loadedAssemblyAlc)
+                                ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, loadedAssemblyAlc)
                                 : Const.DefaultDomainName);
                     }
 
@@ -1515,8 +1410,8 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains,moduleItem.Domain);
-            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
+            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains, moduleItem.Domain);
+            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, alc);
 
             if (File.Exists(moduleItem.Path))
             {
@@ -1575,8 +1470,8 @@ public class HAssemblyManager : IhAssemblyManager
             if (!Directory.Exists(directoryPath))
                 return;
 
-            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains,domainName);
-            var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
+            var alc = AssemblyHelpers.GetAssemblyLoadContextByDomain(_domains, domainName);
+            var targetDomainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, alc);
 
             foreach (var dllFile in Directory.EnumerateFiles(directoryPath, "*.dll"))
             {
@@ -1741,215 +1636,233 @@ public class HAssemblyManager : IhAssemblyManager
         return mappings;
     }
 
-    public bool StartBackgroundService(string workerType)
+    private void SetUpAssemblyPaths()
     {
-        workerType = workerType.Trim();
-        if (string.IsNullOrWhiteSpace(workerType))
-            return false;
+        string systemNugetPackagesPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget",
+            "packages");
 
-
-        if (_backgroundServices.TryGetValue(workerType, out var existingState) && existingState.IsRunning)
+        if (Directory.Exists(systemNugetPackagesPath))
         {
-            _logger.LogInformation(
-                "El worker {WorkerType} ya está en ejecución en dominio {DomainName}.",
-                workerType,
-                existingState.DomainName);
-            return true;
+            _searchPaths.Add(systemNugetPackagesPath);
+            _installFolder = systemNugetPackagesPath;
         }
 
-        var resolved = ResolveBackgroundServiceType(workerType);
-        if (resolved == null)
+        foreach (var folderItem in _settings.NugetFolders.OrderBy(x => x.Order))
         {
-            _logger.LogWarning("Tipo de worker '{WorkerType}' no encontrado.", workerType);
-            return false;
+            if (!folderItem.Active) continue;
+
+            if (folderItem.InstallFolder)
+            {
+                if (!Directory.Exists(folderItem.Folder))
+                {
+                    Directory.CreateDirectory(folderItem.Folder);
+                }
+
+                _installFolder = folderItem.Folder;
+            }
+
+            if (Directory.Exists(folderItem.Folder))
+            {
+                _searchPaths.Add(folderItem.Folder);
+            }
         }
+    }
 
-        var (serviceType, resolvedDomainName) = resolved.Value;
-
-        _logger.LogInformation(
-            "Resolved worker type {WorkerType} to runtime type {RuntimeType} in domain {DomainName}",
-            workerType,
-            serviceType.FullName,
-            resolvedDomainName);
-
-        if (string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogInformation(
-                "El worker {WorkerType} pertenece al dominio Default. Queda fuera del ciclo de hot reload.",
-                workerType);
-        }
-
-        CancellationTokenSource? runCancellationTokenSource = null;
-
+    private void SetUpDomains()
+    {
         try
         {
-            if (CreateInstance(serviceType) is not BackgroundService worker)
+            foreach (var domainName in _settings.Domains)
             {
-                _logger.LogWarning("No se pudo crear la instancia del worker {WorkerType}.", workerType);
-                return false;
-            }
-
-            _logger.LogInformation(
-                "Iniciando worker {WorkerType} en dominio {DomainName}",
-                workerType,
-                resolvedDomainName);
-
-            runCancellationTokenSource = new CancellationTokenSource();
-
-            worker.StartAsync(runCancellationTokenSource.Token).GetAwaiter().GetResult();
-
-            if (_backgroundServices.TryGetValue(workerType, out var state))
-            {
-                state.StopCancellationTokenSource?.Dispose();
-                state.StopCancellationTokenSource = null;
-
-                state.RunCancellationTokenSource?.Dispose();
-                state.DomainName = resolvedDomainName;
-                state.Instance = worker;
-                state.RunCancellationTokenSource = runCancellationTokenSource;
-                runCancellationTokenSource = null;
-                state.IsRunning = true;
-                state.RestartOnDomainLoad =
-                    !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase);
-            }
-            else
-            {
-                _backgroundServices[workerType] = new BackgroundServiceState
+                if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
                 {
-                    WorkerType = workerType,
-                    DomainName = resolvedDomainName,
-                    Instance = worker,
-                    RunCancellationTokenSource = runCancellationTokenSource,
-                    IsRunning = true,
-                    RestartOnDomainLoad =
-                        !string.Equals(resolvedDomainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase)
-                };
+                    AssemblyLoadContext.Default.Resolving -= ResolveAssemblyFromALC;
+                    AssemblyLoadContext.Default.Resolving += ResolveAssemblyFromALC;
+                    continue;
+                }
 
-                runCancellationTokenSource = null;
+                if (_domains.ContainsKey(domainName))
+                    continue;
+
+                _logger.LogInformation("Creando dominio (ALC): {DomainName}", domainName);
+                var alc = new AssemblyLoadContext(domainName, isCollectible: true);
+                alc.Resolving += ResolveAssemblyFromALC;
+                _domains[domainName] = alc;
             }
-
-            return true;
         }
         catch (Exception e)
         {
-            runCancellationTokenSource?.Dispose();
-            _logger.LogError(e, "Error al configurar el worker de tipo '{WorkerType}'", workerType);
-            return false;
+            _logger.LogError(e, "Error configurando dominios.");
         }
     }
 
-    public bool StopBackgroundService(string serviceType)
+    private Task LoadScriptDomain(string domainName)
     {
-        serviceType =  serviceType.Trim();
-        if (string.IsNullOrWhiteSpace(serviceType))
-            return false;
-
-
-        if (!_backgroundServices.TryGetValue(serviceType, out var state))
+        if (!_domains.TryGetValue(domainName, out var alc))
         {
-            _logger.LogWarning("No existe registro para el worker {WorkerType}.", serviceType);
-            return false;
+            _logger.LogInformation("Loading/Creating script domain: {DomainName}", domainName);
+            alc = new AssemblyLoadContext(domainName, isCollectible: true);
+            alc.Resolving += ResolveAssemblyFromALC;
+            _domains[domainName] = alc;
         }
 
-        if (state.Instance == null || !state.IsRunning)
-        {
-            _logger.LogInformation(
-                "El worker {WorkerType} ya no estaba ejecutándose en dominio {DomainName}.",
-                serviceType,
-                state.DomainName);
-            state.IsRunning = false;
-            state.RestartOnDomainLoad = false;
-            return true;
-        }
+        LoadForecedPackages(_settings.ForcedPackages
+            .Where(x => string.Equals(x.Domain, domainName, StringComparison.OrdinalIgnoreCase))
+            .ToList());
 
-        try
-        {
-            _logger.LogInformation(
-                "Deteniendo worker {WorkerType} en dominio {DomainName}",
-                serviceType,
-                state.DomainName);
+        LoadCachedScriptAssemblies(domainName, alc);
 
-            state.Instance.StopAsync(CancellationToken.None).GetAwaiter().GetResult();
-            state.Instance = null;
-            state.IsRunning = false;
-            state.RestartOnDomainLoad = false;
+        LoadModule(domainName);
+        LoadService(domainName);
 
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deteniendo worker {WorkerType}", serviceType);
-            return false;
-        }
+        DomainChanged?.Invoke();
+
+        return Task.CompletedTask;
     }
 
-    public bool BackgroundServiceRunning(string serviceType)
+    private void LoadCachedScriptAssemblies(string domainName, AssemblyLoadContext alc)
     {
-        serviceType = serviceType.Trim();
-        if (string.IsNullOrWhiteSpace(serviceType))
-            return false;
-
-
-        return _backgroundServices.TryGetValue(serviceType, out var state) &&
-               state.IsRunning &&
-               state.Instance != null;
-    }
-
-    private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
-    {
-        var typeName = workerType.Split(',')[0].Trim();
-
-        foreach (var assembly in AssemblyLoadContext.Default.Assemblies)
+        if (_scriptAssemblyCache.Count == 0)
         {
-            var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
-            if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
-                !type.IsInterface)
+            _logger.LogInformation("No cached script assemblies found for domain {DomainName}", domainName);
+            return;
+        }
+
+        foreach (var asmData in _scriptAssemblyCache)
+        {
+            try
             {
+                using var ms = new MemoryStream(asmData);
+                var loadedAssembly = alc.LoadFromStream(ms);
+
                 _logger.LogInformation(
-                    "Worker type {WorkerType} resolved in domain Default from assembly {AssemblyName}",
-                    workerType,
-                    assembly.FullName);
-                return (type, Const.DefaultDomainName);
+                    "Cached script assembly {AssemblyName} loaded into domain {DomainName}",
+                    loadedAssembly.FullName,
+                    domainName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error loading cached script assembly into domain {DomainName}",
+                    domainName);
             }
         }
+    }
 
-        foreach (var domain in _domains)
+    private void ProcessAssemblies(List<Assembly> assemblies, string domainName, HashSet<string> processedAssemblies)
+    {
+        var assembliesToProcess = new Queue<Assembly>(assemblies);
+        var gesCom = _serviceProvider.GetService<IHGesCom>();
+
+        while (assembliesToProcess.Count > 0)
         {
-            foreach (var assembly in domain.Value.Assemblies)
+            var assembly = assembliesToProcess.Dequeue();
+
+            if (assembly.FullName == null || processedAssemblies.Contains(assembly.FullName))
+                continue;
+
+            processedAssemblies.Add(assembly.FullName);
+
+            Type[] types;
+            try
             {
-                var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
-                if (type != null && typeof(BackgroundService).IsAssignableFrom(type) && !type.IsAbstract &&
-                    !type.IsInterface)
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray()!;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(
+                    e,
+                    "Error al obtener tipos del ensamblado {AssemblyName} en dominio {DomainName}",
+                    assembly.FullName,
+                    domainName);
+                continue;
+            }
+
+            var modulesTypes = (from type in types
+                where Attribute.IsDefined(type, typeof(HorizonteModule))
+                select type).ToList();
+
+            foreach (var modType in modulesTypes)
+            {
+                try
                 {
-                    _logger.LogInformation(
-                        "Worker type {WorkerType} resolved in domain {DomainName} from assembly {AssemblyName}",
-                        workerType,
-                        domain.Key,
-                        assembly.FullName);
-                    return (type, domain.Key);
+                    if (modType == null) continue;
+
+                    object? modInstance;
+                    try
+                    {
+                        _logger.LogInformation(
+                            ">>>> Loading modules from '{ModuleType}' in domain '{DomainName}'",
+                            modType.FullName,
+                            domainName);
+
+                        modInstance = CreateInstance(modType);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(
+                            e,
+                            "Error al crear instancia: {ModuleType} en dominio {DomainName}",
+                            modType.FullName,
+                            domainName);
+                        continue;
+                    }
+
+                    var methods = modType.GetMethods().Where(t => t.IsDefined(typeof(HorizonteCommand)));
+                    foreach (var method in methods)
+                    {
+                        if (modInstance != null)
+                        {
+                            AddCommandToGesCom(gesCom, method, modInstance, domainName);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error procesando módulo {ModuleType}", modType?.FullName);
                 }
             }
         }
+    }
 
-        var fallbackType = Type.GetType(workerType, throwOnError: false);
-        if (fallbackType != null &&
-            typeof(BackgroundService).IsAssignableFrom(fallbackType) &&
-            !fallbackType.IsAbstract &&
-            !fallbackType.IsInterface)
+    private void AddCommandToGesCom(IHGesCom? gesCom, MethodInfo method, object instance, string domain)
+    {
+        if (gesCom == null) return;
+
+        var hAttrib = method.GetCustomAttribute<HorizonteCommand>();
+        if (hAttrib == null) return;
+
+        var roleAttrib = (method.GetCustomAttributes(typeof(HorizonteRole), false) as HorizonteRole[] ?? [])
+            .ToList()
+            .Select(x => x.Role)
+            .ToList();
+
+        var miCmd = new HCommand
         {
-            var alc = AssemblyLoadContext.GetLoadContext(fallbackType.Assembly) ?? AssemblyLoadContext.Default;
-            var domainName = AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains,alc);
+            CommandKey = hAttrib.Key,
+            Description = hAttrib.Description,
+            CommandAction = method,
+            Instance = instance,
+            InTypes = method.GetParameters().Select(p => p.ParameterType).ToList(),
+            InNames = method.GetParameters()
+                .Where(x => x.Name != null)
+                .Select(parameter => parameter.Name!)
+                .ToList(),
+            OutType = method.ReturnType,
+            Roles = roleAttrib,
+            IsAsync = method.ReturnType == typeof(Task) ||
+                      (method.ReturnType.IsGenericType &&
+                       method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)),
+            Domain = domain
+        };
 
-            _logger.LogInformation(
-                "Worker type {WorkerType} resolved by fallback in domain {DomainName} from assembly {AssemblyName}",
-                workerType,
-                domainName,
-                fallbackType.Assembly.FullName);
-
-            return (fallbackType, domainName);
-        }
-
-        _logger.LogWarning("Worker type {WorkerType} could not be resolved in any domain.", workerType);
-        return null;
+        gesCom.RegisterCommand(miCmd);
     }
 }

@@ -1,4 +1,5 @@
 using System.Reflection.Metadata.Ecma335;
+using Horizonte.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
