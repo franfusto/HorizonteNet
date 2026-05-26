@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.NetworkInformation;
+using Horizonte.Settings;
 using log4net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

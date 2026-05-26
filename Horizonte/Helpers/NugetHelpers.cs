@@ -1,3 +1,4 @@
+using Horizonte.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Helpers;

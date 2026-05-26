@@ -1,0 +1,242 @@
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH6" Text="Mapeo ensamblado → paquete" />
+
+        <RadzenButton Text="Añadir"
+                      Icon="add_circle_outline"
+                      Size="ButtonSize.Small"
+                      Variant="Variant.Outlined"
+                      Disabled="@(_itemToInsert is not null)"
+                      Click="@InsertRow" />
+    </RadzenStack>
+
+    <br />
+
+    <RadzenDataGrid @ref="_grid"
+                    TItem="AssemblyMappingItem"
+                    Data="@_items"
+                    KeyProperty="@nameof(AssemblyMappingItem.Id)"
+                    AllowAlternatingRows="false"
+                    AllowFiltering="false"
+                    AllowPaging="false"
+                    AllowSorting="true"
+                    EditMode="DataGridEditMode.Single"
+                    RowCreate="@OnCreateRow"
+                    RowUpdate="@OnUpdateRow">
+        <Columns>
+            <RadzenDataGridColumn TItem="AssemblyMappingItem"
+                                  Property="@nameof(AssemblyMappingItem.AssemblyName)"
+                                  Title="Ensamblado">
+                <Template Context="item">
+                    @item.AssemblyName
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenTextBox Style="width: 100%"
+                                   @bind-Value="item.AssemblyName"
+                                   Placeholder="Nombre del ensamblado" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AssemblyMappingItem"
+                                  Property="@nameof(AssemblyMappingItem.PackageName)"
+                                  Title="Paquete">
+                <Template Context="item">
+                    @item.PackageName
+                </Template>
+                <EditTemplate Context="item">
+                    <RadzenTextBox Style="width: 100%"
+                                   @bind-Value="item.PackageName"
+                                   Placeholder="Nombre del paquete" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AssemblyMappingItem"
+                                  Context="item"
+                                  Filterable="false"
+                                  Sortable="false"
+                                  TextAlign="TextAlign.Right"
+                                  Width="150px">
+                <Template Context="item">
+                    <RadzenButton Icon="edit"
+                                  Size="ButtonSize.Small"
+                                  Variant="Variant.Outlined"
+                                  Click="@(() => EditRow(item))" />
+
+                    <RadzenButton Icon="delete"
+                                  Size="ButtonSize.Small"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Variant="Variant.Outlined"
+                                  Click="@(() => DeleteRow(item))"
+                                  Style="margin-left: 4px" />
+                </Template>
+
+                <EditTemplate Context="item">
+                    <RadzenButton Icon="check"
+                                  Size="ButtonSize.Small"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Outlined"
+                                  Click="@(() => SaveRow(item))" />
+
+                    <RadzenButton Icon="close"
+                                  Size="ButtonSize.Small"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Outlined"
+                                  Click="@(() => CancelEdit(item))"
+                                  Style="margin-left: 4px" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    [Parameter] public Dictionary<string, string> MappingDict { get; set; } = new();
+
+    private RadzenDataGrid<AssemblyMappingItem>? _grid;
+    private readonly List<AssemblyMappingItem> _items = new();
+    private Dictionary<string, string>? _lastMappingDict;
+    private AssemblyMappingItem? _itemToInsert;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_lastMappingDict, MappingDict))
+        {
+            return;
+        }
+
+        _lastMappingDict = MappingDict;
+        LoadItemsFromDictionary();
+    }
+
+    private void LoadItemsFromDictionary()
+    {
+        _items.Clear();
+
+        foreach (var mapping in MappingDict.OrderBy(x => x.Key))
+        {
+            _items.Add(new AssemblyMappingItem
+            {
+                AssemblyName = mapping.Key,
+                PackageName = mapping.Value
+            });
+        }
+    }
+
+    private async Task InsertRow()
+    {
+        if (_grid is null || _itemToInsert is not null)
+        {
+            return;
+        }
+
+        _itemToInsert = new AssemblyMappingItem();
+
+        await _grid.InsertRow(_itemToInsert);
+    }
+    private async Task EditRow(AssemblyMappingItem item)
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        await _grid.EditRow(item);
+    }
+
+    private async Task SaveRow(AssemblyMappingItem item)
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        await _grid.UpdateRow(item);
+    }
+
+    private async Task CancelEdit(AssemblyMappingItem item)
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        _grid.CancelEditRow(item);
+
+        if (ReferenceEquals(_itemToInsert, item))
+        {
+            _items.Remove(item);
+            _itemToInsert = null;
+            RebuildDictionary();
+            await _grid.Reload();
+        }
+        else
+        {
+            LoadItemsFromDictionary();
+            await _grid.Reload();
+        }
+    }
+
+    private async Task DeleteRow(AssemblyMappingItem item)
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        _items.Remove(item);
+
+        if (ReferenceEquals(_itemToInsert, item))
+        {
+            _itemToInsert = null;
+        }
+
+        RebuildDictionary();
+
+        await _grid.Reload();
+    }
+
+    private void OnCreateRow(AssemblyMappingItem item)
+    {
+        if (!_items.Contains(item))
+        {
+            _items.Insert(0, item);
+        }
+
+        _itemToInsert = null;
+        RebuildDictionary();
+    }
+
+    private void OnUpdateRow(AssemblyMappingItem item)
+    {
+        RebuildDictionary();
+    }
+
+    private void RebuildDictionary()
+    {
+        MappingDict.Clear();
+
+        foreach (var item in _items)
+        {
+            var assemblyName = item.AssemblyName?.Trim();
+            var packageName = item.PackageName?.Trim();
+
+            if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+            {
+                continue;
+            }
+
+            MappingDict[assemblyName] = packageName;
+        }
+    }
+
+    private sealed class AssemblyMappingItem
+    {
+        public string Id { get; } = Guid.NewGuid().ToString("N");
+
+        public string AssemblyName { get; set; } = string.Empty;
+
+        public string PackageName { get; set; } = string.Empty;
+    }
+}

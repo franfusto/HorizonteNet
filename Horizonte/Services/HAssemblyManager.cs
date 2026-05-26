@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Horizonte.Entities;
 using Horizonte.Helpers;
 using Horizonte.Interfaces;
+using Horizonte.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,9 @@ public class HAssemblyManager : IhAssemblyManager
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<string, AssemblyLoadContext> _domains = new(StringComparer.OrdinalIgnoreCase);
     private List<byte[]> _scriptAssemblyCache = new();
+    private Dictionary<string, string> _assemblyToPackageMap = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _assemblyToPackageMapLock = new();
+    private readonly HashSet<string> _processedAssemblyMappingDefinitions = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly Dictionary<string, BackgroundServiceState> _backgroundServices =
         new(StringComparer.OrdinalIgnoreCase);
@@ -94,6 +98,7 @@ public class HAssemblyManager : IhAssemblyManager
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
 
+        MapAssemblyToPackage();
         SetUpAssemblyPaths();
         SetUpDomains();
         LoadModulesFromEnvironment();
@@ -143,6 +148,16 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             var (name, version) = AssemblyHelpers.ParseAssemblyName(args.Name);
+            var packageName = GetPackageName(name);
+
+            if (!string.Equals(name, packageName, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(
+                    "Assembly {AssemblyName} mapped to NuGet package {PackageName}",
+                    name,
+                    packageName);
+            }
+
             string? resAssemblyPath;
 
             Assembly? alreadyLoaded = null;
@@ -168,6 +183,7 @@ public class HAssemblyManager : IhAssemblyManager
                         ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, loadedAlc)
                         : Const.DefaultDomainName);
 
+                MapAssemblyToPackageFromAssembly(alreadyLoaded);
                 return alreadyLoaded;
             }
 
@@ -180,24 +196,25 @@ public class HAssemblyManager : IhAssemblyManager
                 return null;
             }
 
-            resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, true);
+            resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, true);
 
             if (resAssemblyPath == null)
             {
-                resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
+                resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, false);
             }
 
             if (resAssemblyPath == null)
             {
-                DownloadAndExtractPackage(name, version);
-                resAssemblyPath = ResolveNugetFromLocalDirectory(name, version, null, false);
+                DownloadAndExtractPackage(packageName, version);
+                resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, false);
             }
 
             if (resAssemblyPath == null)
             {
                 _logger.LogError(
-                    "Could not resolve assembly: {AssemblyName} requested by domain {DomainName}",
+                    "Could not resolve assembly: {AssemblyName} from NuGet package {PackageName} requested by domain {DomainName}",
                     args.Name,
+                    packageName,
                     requesterDomain);
                 return null;
             }
@@ -239,9 +256,13 @@ public class HAssemblyManager : IhAssemblyManager
             }
 
             var defaultAssembly = Assembly.LoadFrom(resAssemblyPath);
+
+            MapAssemblyToPackageFromAssembly(defaultAssembly);
+
             _logger.LogInformation(
                 "Assembly {AssemblyName} loaded into domain Default",
                 defaultAssembly.FullName);
+
             return defaultAssembly;
         }
         catch (Exception ex)
@@ -259,11 +280,12 @@ public class HAssemblyManager : IhAssemblyManager
     /// <returns>Retorna la ruta absoluta al archivo DLL del paquete si se encuentra; de lo contrario, retorna <c>null</c>.</returns>
     public string? ResolveAssemblyDllPath(string packageName, string version)
     {
-        var path = ResolveNugetFromLocalDirectory(packageName, version, null, true);
+        var resolvedPackageName = GetPackageName(packageName);
+        var path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, true);
 
         if (path == null)
         {
-            path = ResolveNugetFromLocalDirectory(packageName, version, null, false);
+            path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, false);
         }
 
         if (path != null && !Path.IsPathRooted(path))
@@ -454,7 +476,9 @@ public class HAssemblyManager : IhAssemblyManager
             try
             {
                 using var ms = new MemoryStream(asmData);
-                alc.LoadFromStream(ms);
+                var loadedAssembly = alc.LoadFromStream(ms);
+
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
             }
             catch (Exception ex)
             {
@@ -546,7 +570,7 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
     //Manejo de servicios
-    
+
     /// <summary>
     /// Método que carga y gestiona los servicios de fondo para un dominio específico.
     /// </summary>
@@ -589,7 +613,7 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
-    
+
     /// <summary>
     /// Método que se encarga de descargar los servicios asociados a un dominio específico.
     /// </summary>
@@ -648,7 +672,7 @@ public class HAssemblyManager : IhAssemblyManager
             }
         }
     }
-    
+
     /// <summary>
     /// Método que inicia un servicio en segundo plano especificado por su tipo de trabajador.
     /// </summary>
@@ -819,7 +843,7 @@ public class HAssemblyManager : IhAssemblyManager
     }
 
     // auxiliares
-    
+
     private (Type Type, string DomainName)? ResolveBackgroundServiceType(string workerType)
     {
         var typeName = workerType.Split(',')[0].Trim();
@@ -1349,6 +1373,7 @@ public class HAssemblyManager : IhAssemblyManager
                     if (alreadyLoadedInTargetAlc == null)
                     {
                         var loadedAssembly = alc.LoadFromAssemblyPath(dllPath);
+                        MapAssemblyToPackageFromAssembly(loadedAssembly);
                         _logger.LogInformation(
                             "Forced package {PackageId} ({AssemblyName}) loaded into domain {DomainName} from {DllPath}",
                             package.PackageId,
@@ -1358,6 +1383,7 @@ public class HAssemblyManager : IhAssemblyManager
                     }
                     else
                     {
+                        MapAssemblyToPackageFromAssembly(alreadyLoadedInTargetAlc);
                         _logger.LogInformation(
                             "Forced package {PackageId} ({AssemblyName}) ya estaba cargado en dominio {DomainName}",
                             package.PackageId,
@@ -1430,6 +1456,8 @@ public class HAssemblyManager : IhAssemblyManager
                     domainName);
 
                 var loadedAssembly = alc.LoadFromAssemblyPath(fullPath);
+
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
 
                 _logger.LogInformation(
                     "Module assembly {AssemblyName} loaded into domain {DomainName}",
@@ -1504,7 +1532,7 @@ public class HAssemblyManager : IhAssemblyManager
 
                 var fullDllPath = Path.GetFullPath(dllFile);
                 var loadedAssembly = alc.LoadFromAssemblyPath(fullDllPath);
-
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
                 _logger.LogInformation(
                     "Additional dll {AssemblyName} loaded from {FullDllPath} into domain {DomainName}",
                     loadedAssembly.FullName,
@@ -1740,7 +1768,7 @@ public class HAssemblyManager : IhAssemblyManager
             {
                 using var ms = new MemoryStream(asmData);
                 var loadedAssembly = alc.LoadFromStream(ms);
-
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
                 _logger.LogInformation(
                     "Cached script assembly {AssemblyName} loaded into domain {DomainName}",
                     loadedAssembly.FullName,
@@ -1869,4 +1897,188 @@ public class HAssemblyManager : IhAssemblyManager
 
         gesCom.RegisterCommand(miCmd);
     }
+
+    private void MapAssemblyToPackage()
+    {
+        lock (_assemblyToPackageMapLock)
+        {
+            _assemblyToPackageMap = new Dictionary<string, string>(
+                _settings.AssemblyToPackageMap,
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        foreach (var assembly in AssemblyLoadContext.Default.Assemblies.ToArray())
+        {
+            MapAssemblyToPackageFromAssembly(assembly);
+        }
+    }
+
+    private void MapAssemblyToPackageFromAssembly(Assembly assembly)
+    {
+        var assemblyKey = assembly.FullName
+                          ?? assembly.GetName().Name
+                          ?? assembly.Location;
+
+        if (string.IsNullOrWhiteSpace(assemblyKey))
+            return;
+
+        lock (_assemblyToPackageMapLock)
+        {
+            if (!_processedAssemblyMappingDefinitions.Add(assemblyKey))
+                return;
+        }
+
+        IEnumerable<Type> types;
+
+        try
+        {
+            types = assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            types = ex.Types.OfType<Type>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(
+                ex,
+                "No se pudieron inspeccionar los tipos del ensamblado {AssemblyName} para buscar mapeos de paquetes.",
+                assembly.FullName);
+
+            return;
+        }
+
+        foreach (var type in types)
+        {
+            var fields = type.GetFields(
+                BindingFlags.Public |
+                BindingFlags.NonPublic |
+                BindingFlags.Static);
+
+            foreach (var field in fields)
+            {
+                if (!HasAssemblyMappingDefinition(field))
+                    continue;
+
+                object? value;
+
+                try
+                {
+                    value = field.GetValue(null);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "No se pudo leer el campo de mapeo {FieldName} del tipo {TypeName} en el ensamblado {AssemblyName}.",
+                        field.Name,
+                        type.FullName,
+                        assembly.FullName);
+
+                    continue;
+                }
+
+                if (value is not IEnumerable<KeyValuePair<string, string>> mappings)
+                {
+                    _logger.LogWarning(
+                        "El campo {FieldName} del tipo {TypeName} está marcado con {AttributeName}, pero no contiene un diccionario compatible con string/string.",
+                        field.Name,
+                        type.FullName,
+                        nameof(AssemblyMappingDefinition));
+
+                    continue;
+                }
+
+                foreach (var mapping in mappings)
+                {
+                    var assemblyName = mapping.Key;
+                    var packageName = mapping.Value;
+
+                    if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+                    {
+                        _logger.LogWarning(
+                            "Se ha ignorado un mapeo inválido en {TypeName}.{FieldName}: AssemblyName='{AssemblyName}', PackageName='{PackageName}'.",
+                            type.FullName,
+                            field.Name,
+                            assemblyName,
+                            packageName);
+
+                        continue;
+                    }
+
+                    lock (_assemblyToPackageMapLock)
+                    {
+                        if (_assemblyToPackageMap.TryGetValue(assemblyName, out var currentPackageName))
+                        {
+                            _logger.LogInformation(
+                                "El mapeo para el ensamblado {AssemblyName} ya existe como {CurrentPackageName}. Se mantiene el mapeo actual y se ignora {PackageName} definido en {MappingAssemblyName}.",
+                                assemblyName,
+                                currentPackageName,
+                                packageName,
+                                assembly.FullName);
+
+                            continue;
+                        }
+
+                        _assemblyToPackageMap[assemblyName] = packageName;
+
+                        _logger.LogInformation(
+                            "Añadido mapeo de ensamblado {AssemblyName} a paquete {PackageName} desde {MappingAssemblyName}.",
+                            assemblyName,
+                            packageName,
+                            assembly.FullName);
+                    }
+                }
+            }
+        }
+    }
+
+    private bool HasAssemblyMappingDefinition(FieldInfo field)
+    {
+        try
+        {
+            return field
+                .GetCustomAttributes(inherit: false)
+                .Any(attribute => string.Equals(
+                    attribute.GetType().FullName,
+                    typeof(AssemblyMappingDefinition).FullName,
+                    StringComparison.Ordinal));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(
+                ex,
+                "No se pudieron leer los atributos del campo {FieldName}.",
+                field.Name);
+
+            return false;
+        }
+    }
+
+    private string GetPackageName(string assemblyName)
+    {
+        lock (_assemblyToPackageMapLock)
+        {
+            return _assemblyToPackageMap.TryGetValue(assemblyName, out var packageName)
+                ? packageName
+                : assemblyName;
+        }
+    }
+
+
+    private string NormalizePackageNameForStaticAssets(string packageName, string? assemblyName = null)
+    {
+        if (!string.IsNullOrWhiteSpace(assemblyName))
+        {
+            return assemblyName;
+        }
+
+        var mapping = _assemblyToPackageMap.FirstOrDefault(x =>
+            string.Equals(x.Value, packageName, StringComparison.OrdinalIgnoreCase));
+
+        return string.IsNullOrWhiteSpace(mapping.Key)
+            ? packageName
+            : mapping.Key;
+    }
+    
 }

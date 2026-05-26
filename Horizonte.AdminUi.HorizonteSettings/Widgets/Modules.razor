@@ -18,6 +18,7 @@
     <NugetFoldersGrid NugetFolderSettings="_nugetFolders" @ref="_nugetFoldersGrid"/>
     <FrameworkPrioritiesGrid FrameworkPriorities="_frameworkPriorities" @ref="_frameworkPrioritiesGrid"/>
     <ForcedPackagesGrid ForcedPackages="_forcedPackages" Domains="_domains" @ref="_forcedPackagesGrid"/>
+    <AssembliesMapping MappingDict="_mappingdict" @ref="_assembliesMapping"/>
 
 @code {
     
@@ -34,6 +35,8 @@
     private List<string> _frameworkPriorities = new();
     private ForcedPackagesGrid _forcedPackagesGrid = new();
     private List<ForcedPackageItem> _forcedPackages = new();
+    private AssembliesMapping _assembliesMapping = new();
+    private Dictionary<string, string> _mappingdict = new();
     
     protected override void OnInitialized()
     {
@@ -49,6 +52,7 @@
         _modulesSettings.NugetFolders = _nugetFoldersGrid.NugetFolderSettings;
         _modulesSettings.FrameworkPriorities = _frameworkPrioritiesGrid.FrameworkPriorities;
         _modulesSettings.ForcedPackages = _forcedPackagesGrid.ForcedPackages;
+        _modulesSettings.AssemblyToPackageMap = _assembliesMapping.MappingDict;
         Context.Update<ModulesSettings>(_modulesSettings);
     }
 
@@ -61,6 +65,7 @@
         _nugetFolders = _modulesSettings.NugetFolders;
         _frameworkPriorities = _modulesSettings.FrameworkPriorities;
         _forcedPackages = _modulesSettings.ForcedPackages;
+        _mappingdict = _modulesSettings.AssemblyToPackageMap;
     }
 
 
