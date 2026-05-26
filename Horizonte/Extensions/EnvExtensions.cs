@@ -41,7 +41,7 @@ public static class EnvExtensions
     /// Este método realiza las siguientes operaciones:
     /// <list type="number">
     /// <item><description>Establece el directorio de trabajo actual.</description></item>
-    /// <item><description>Crea y registra una instancia de <see cref="IHContext"/>.</description></item>
+    /// <item><description>Crea y registra una instancia de <see cref="IhContext"/>.</description></item>
     /// <item><description>Configura el registro usando Log4Net.</description></item>
     /// <item><description>Registra los servicios principales de Horizonte en el contenedor de dependencias.</description></item>
     /// </list>
@@ -56,7 +56,7 @@ public static class EnvExtensions
         // Cargamos contexto
         if (string.IsNullOrEmpty(contextName)) contextName = ContextNameKey;
         var hContext = new HContext(contextName, rootPath);
-        hostBuilder.Services.AddSingleton<IHContext>(hContext);
+        hostBuilder.Services.AddSingleton<IhContext>(hContext);
 
         // Configuramos logger
         var log4NetSettings = hContext.Get<Log4NetSettings>() ?? new Log4NetSettings();

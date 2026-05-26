@@ -1,5 +1,6 @@
 using Horizonte;
 using Horizonte.Extensions.Interactive;
+using Horizonte.Interfaces;
 using Horizonte.Scripts.Widgets;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ namespace Horizonte.Scripts;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
@@ -17,7 +18,7 @@ public class PanelModulo
     /// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
     /// modular de Horizonte, tales como inicializar servicios y registrar widgets personalizados.
     /// </summary>
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IServiceProvider serviceProvider)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IServiceProvider serviceProvider)
     {
         _logger = logger;
         _context = context;

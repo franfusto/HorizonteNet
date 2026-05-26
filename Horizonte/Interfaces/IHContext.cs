@@ -1,16 +1,10 @@
-namespace Horizonte
+namespace Horizonte.Interfaces
 {
     /// <summary>
-    /// Define un contrato para acceder y modificar datos de contexto tipados.
+    /// Interfaz que define el contexto central de la aplicación en el espacio de nombres Horizonte.
+    /// Proporciona mecanismos para acceder y modificar secciones de datos relacionadas con un contexto específico.
     /// </summary>
-    /// <remarks>
-    /// Las implementaciones de esta interfaz permiten recuperar y actualizar secciones de configuración
-    /// o estado usando el nombre del tipo <typeparamref name="T"/> como identificador de sección.
-    /// También pueden soportar múltiples contextos mediante un nombre opcional y priorizar orígenes
-    /// alternativos, como sobrescrituras locales.
-    /// </remarks>
-
-    public interface IHContext
+    public interface IhContext
     {
 
         /// <summary>

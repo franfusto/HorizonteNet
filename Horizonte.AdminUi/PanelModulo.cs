@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Horizonte;
 using Horizonte.AdminUi.Components;
 using Horizonte.AdminUi.Widgets;
+using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Components;
 
 namespace Horizonte.AdminUi;
@@ -10,10 +11,10 @@ namespace Horizonte.AdminUi;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private HGuiSettings? _settings;
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context)
     {
         _logger = logger;
         _context = context;

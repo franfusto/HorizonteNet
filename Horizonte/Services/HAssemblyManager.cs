@@ -10,6 +10,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Services;
 
+/// <summary>
+/// La clase <c>HAssemblyManager</c> gestiona la carga dinámica de ensamblados y la administración de dominios de aplicación dentro del sistema.
+/// Permite la gestión de ensamblados desde diferentes dominios de aplicación y facilita la manipulación de servicios y módulos asociados.
+/// </summary>
 public class HAssemblyManager : IhAssemblyManager
 {
     // propiedades privadas
@@ -86,7 +90,7 @@ public class HAssemblyManager : IhAssemblyManager
     {
         StaticFileRegistry = new StaticFileRegistry();
         _logger = serviceProvider.GetService<ILogger<HAssemblyManager>>()!;
-        _settings = serviceProvider.GetService<IHContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
+        _settings = serviceProvider.GetService<IhContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
         _linkScafolder = linkScafolder;
         _serviceProvider = serviceProvider;
 
@@ -421,7 +425,7 @@ public class HAssemblyManager : IhAssemblyManager
     /// </summary>
     /// <param name="domainName">El nombre del dominio que se va a cargar.</param>
     /// <param name="assemblies">Una colección de arreglos de bytes que representan los ensamblados que se deben cargar en el dominio especificado.</param>
-    /// <returns>Un objeto <c>Task</c> que representa la operación asincrónica de carga del dominio.</returns
+    /// <returns>Un objeto <c>Task</c> que representa la operación asincrónica de carga del dominio.</returns>
     public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies)
     {
         if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
@@ -557,7 +561,7 @@ public class HAssemblyManager : IhAssemblyManager
         if (!_domains.ContainsKey(domainName))
             return;
 
-        var hContext = _serviceProvider.GetService<IHContext>();
+        var hContext = _serviceProvider.GetService<IhContext>();
         var workerSettings = hContext?.Get<WorkerDef>() ?? new WorkerDef();
 
         foreach (var workerSetting in workerSettings.List.OrderBy(x => x.Order))

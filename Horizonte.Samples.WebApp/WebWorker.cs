@@ -10,7 +10,7 @@ public class WebWorker :BackgroundService
 {
     private readonly ILogger<WebWorker> _log;
     private readonly IHGesCom _gesCom;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private readonly ISymLinkScafolder _linkScafolder;
     private readonly IhAssemblyManager _assemblyManager;
@@ -18,7 +18,7 @@ public class WebWorker :BackgroundService
 
     public WebWorker(ILogger<WebWorker> log, 
         IHGesCom gesCom, 
-        IHContext context, 
+        IhContext context, 
         IHCredManager credManager, 
         ISymLinkScafolder linkScafolder, 
         IhAssemblyManager assemblyManager)

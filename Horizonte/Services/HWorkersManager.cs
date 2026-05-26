@@ -1,4 +1,5 @@
 using Horizonte.Entities;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte;
@@ -7,14 +8,14 @@ namespace Horizonte;
 /// Implementa la gestión de workers de Horizonte a partir de la configuración disponible en el contexto.
 /// </summary>
 /// <remarks>
-/// Esta clase resuelve definiciones de workers mediante <see cref="IHContext"/> y delega en
+/// Esta clase resuelve definiciones de workers mediante <see cref="IhContext"/> y delega en
 /// <see cref="IhAssemblyManager"/> el inicio, detención y consulta del estado de los servicios
 /// en segundo plano. También registra en el sistema de logging los eventos relevantes del ciclo
 /// de vida de cada worker.
 /// </remarks>
 public class HWorkersManager : IhWorkersManager
 {
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly ILogger<HWorkersManager> _logger;
     private readonly IhAssemblyManager _assemblyManager;
     
@@ -35,7 +36,7 @@ public class HWorkersManager : IhWorkersManager
 
     public HWorkersManager(
         IhAssemblyManager assemblyManager,
-        IHContext context,
+        IhContext context,
         ILogger<HWorkersManager> logger)
     {
         _context = context;

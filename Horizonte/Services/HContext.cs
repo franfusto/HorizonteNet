@@ -1,10 +1,12 @@
 using System.Text.Json;
+using Horizonte.Helpers;
+using Horizonte.Interfaces;
 using log4net;
 
 namespace Horizonte.Services;
 
 /// <summary>
-/// Implementación de <see cref="IHContext"/> basada en archivos JSON.
+/// Implementación de <see cref="IhContext"/> basada en archivos JSON.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -30,7 +32,7 @@ namespace Horizonte.Services;
 /// accesos concurrentes al sistema de archivos dentro del proceso.
 /// </para>
 /// </remarks>
-public class HContext : IHContext
+public class HContext : IhContext
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(HContext));
     private JsonSerializerOptions _serializerOptions = new();

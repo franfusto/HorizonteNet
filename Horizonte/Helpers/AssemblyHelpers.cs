@@ -130,6 +130,17 @@ public static class AssemblyHelpers
         return (name, version);
     }
 
+    /// <summary>
+    /// Obtiene el contexto de carga de ensamblados basado en el nombre del dominio especificado.
+    /// Si el nombre del dominio es nulo, vacío o coincide con el nombre del dominio predeterminado,
+    /// devuelve el contexto de carga de ensamblados predeterminado. Si el dominio existe en el
+    /// diccionario, devuelve el contexto de carga asociado; de lo contrario, devuelve el contexto
+    /// de carga de ensamblados predeterminado.
+    /// </summary>
+    /// <param name="domains">Un diccionario que mapea nombres de dominio a sus respectivos contextos de carga de ensamblados.</param>
+    /// <param name="domainName">El nombre del dominio del cual obtener el contexto de carga de ensamblados.</param>
+    /// <returns>Devuelve el contexto de carga de ensamblados asociado con el nombre del dominio especificado,
+    /// o el contexto de carga de ensamblados predeterminado si el nombre del dominio no es válido o no se encuentra.</returns>
     public static AssemblyLoadContext GetAssemblyLoadContextByDomain(
         Dictionary<string, AssemblyLoadContext> domains, string? domainName)
     {

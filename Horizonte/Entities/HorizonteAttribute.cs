@@ -1,8 +1,4 @@
 ﻿
-/// <summary>
-/// Contiene atributos personalizados para definir módulos, opciones de configuración, comandos y roles dentro del marco Horizonte.
-/// </summary>
-
 namespace Horizonte
 {
     /// <summary>

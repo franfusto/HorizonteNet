@@ -1,4 +1,5 @@
 using System.Reflection;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +11,7 @@ public class PorcupineWorker : BackgroundService
 {
 
     private ILogger? _log;
-    private IHContext? _context;
+    private IhContext? _context;
     private PorcupineConfig _config = new();
     private CancellationTokenSource? _cancellationTokenSource;
     private Porcupine _porcupine;
@@ -18,7 +19,7 @@ public class PorcupineWorker : BackgroundService
     private IHCredManager? _credManager;
     
 
-    public PorcupineWorker(ILogger<PorcupineWorker> logger,IHContext context,IHCredManager credManager)
+    public PorcupineWorker(ILogger<PorcupineWorker> logger,IhContext context,IHCredManager credManager)
     {
         _log = logger;
         _context = context;

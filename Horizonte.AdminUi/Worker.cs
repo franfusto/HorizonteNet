@@ -16,7 +16,7 @@ public sealed class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _log;
     private readonly IHGesCom _gesCom;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private readonly ISymLinkScafolder _linkScafolder;
     private readonly IhAssemblyManager _assemblyManager;
@@ -24,7 +24,7 @@ public sealed class Worker : BackgroundService
 
     public Worker(ILogger<Worker> log, 
                   IHGesCom gesCom, 
-                  IHContext context, 
+                  IhContext context, 
                   IHCredManager credManager, 
                   ISymLinkScafolder linkScafolder, 
                   IhAssemblyManager assemblyManager)

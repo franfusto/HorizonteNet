@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -15,7 +16,7 @@ public class HGuiSession
     
     public string SessionId { get;  } = Guid.NewGuid().ToString();
     
-    public HGuiSession(IHGesCom gesCom, IHContext context, ILogger<HGuiSession> logger)
+    public HGuiSession(IHGesCom gesCom, IhContext context, ILogger<HGuiSession> logger)
     {
         _hGuiSettings = context.Get<HGuiSettings>() ?? new HGuiSettings();
         _logger = logger;

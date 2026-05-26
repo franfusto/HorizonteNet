@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using Horizonte.Samples.Aemet.Widgets;
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,7 @@ namespace Horizonte.Samples.Aemet;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private AemetConfig? _config;
     private PrediccionesEspecificasApi? _prediccionesEspecificasApi = new PrediccionesEspecificasApi();
@@ -26,7 +27,7 @@ public class PanelModulo
         _prediccionesNormalizadasTextoApi = new PrediccionesNormalizadasTextoApi();
 
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHCredManager credManager)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IHCredManager credManager)
     {
         _logger = logger;
         _context = context;

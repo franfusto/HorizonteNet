@@ -15,7 +15,7 @@ public class WidgetDef
     /// La propiedad `Type` en la clase `WidgetDef` representa un identificador de tipo CLR (Common Language Runtime) utilizado para definir el tipo del widget correspondiente en las aplicaciones de la plataforma Horizonte.
     /// Esta propiedad permite almacenar y acceder dinámicamente al tipo específico de widget, lo cual es crucial para gestionar la configuración y el comportamiento de los widgets en tiempo de ejecución. Se utiliza en conjunto con otros componentes para personalizar las interacciones y funcionalidades del usuario con el sistema.
     /// /
-    public Type Type { get; set; }
+    public required Type Type { get; set; }
 
     /// <summary>
     /// Propiedad que permite establecer o recuperar un diccionario de parámetros personalizados para el widget.

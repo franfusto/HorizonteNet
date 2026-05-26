@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 
 
@@ -8,12 +9,12 @@ namespace Horizonte.Samples.Gcalendar;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private ServiceCal? _calendarService;
     private GCalConfig _config;
     
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHCredManager credManager)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IHCredManager credManager)
     {
         _logger = logger;
         _context = context;

@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Ai.AgentChat;
@@ -7,9 +8,9 @@ namespace Horizonte.Ai.AgentChat;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context)
     {
         _logger = logger;
         _context = context;

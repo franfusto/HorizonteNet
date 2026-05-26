@@ -6,6 +6,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Services;
 
+/// <summary>
+/// Clase responsable de gestionar el ciclo de vida de una aplicación.
+/// </summary>
+/// <remarks>
+/// La clase AppManager proporciona mecanismos esenciales para controlar el comportamiento de una aplicación,
+/// incluyendo la capacidad de reiniciar y terminar la ejecución de la misma. Además, gestiona servicios en segundo plano
+/// y el andamiaje de enlaces simbólicos necesarios para el funcionamiento de la aplicación.
+/// </remarks>
 public class AppManager : IAppManager
 {
     private readonly IHost _host;

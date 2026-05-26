@@ -5,6 +5,7 @@ using GoogleApi.Entities.Maps.Common;
 using GoogleApi.Entities.Maps.Directions.Request;
 using GoogleApi.Entities.Maps.Directions.Response;
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Samples.Gmaps;
@@ -13,11 +14,11 @@ namespace Horizonte.Samples.Gmaps;
 public class PanelModulo
 {
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private GmapsConfig _config;
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHCredManager credManager)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IHCredManager credManager)
     {
         _logger = logger;
         _context = context;

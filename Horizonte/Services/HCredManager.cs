@@ -161,7 +161,7 @@ public class HCredManager : IHCredManager
         }
         catch (Exception ex)
         {
-            _logger.LogError( "Error al cargar variables de entorno",ex);
+            _logger.LogError( "Error al cargar variables de entorno:" + ex.InnerException);
         }
     }
 

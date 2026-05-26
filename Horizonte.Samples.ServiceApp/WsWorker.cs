@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
@@ -11,7 +12,7 @@ public class WsWorker : BackgroundService
     private WebApplication? _app;
     private ILogger? _log;
     private IHGesCom? _gesCom;
-    private IHContext? _context;
+    private IhContext? _context;
     private ServiceConfig _config = new();
 
 
@@ -19,7 +20,7 @@ public class WsWorker : BackgroundService
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
         _gesCom = serviceProvider?.GetService<IHGesCom>();
-        _context = serviceProvider?.GetService<IHContext>();
+        _context = serviceProvider?.GetService<IhContext>();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)

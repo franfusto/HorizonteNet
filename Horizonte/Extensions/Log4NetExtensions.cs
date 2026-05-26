@@ -10,6 +10,18 @@ using log4net.Repository.Hierarchy;
 
 namespace Horizonte.Extensions;
 
+/// <summary>
+/// Proporciona métodos de extensión para la configuración de Log4Net,
+/// permitiendo establecer opciones de registro personalizadas mediante
+/// la clase de configuración <see cref="Log4NetSettings"/>.
+/// </summary>
+/// <remarks>
+/// Esta clase está diseñada para simplificar el proceso de configuración
+/// del logueo en el sistema, facilitando la integración de múltiples
+/// destinos de registro como GELF, archivos con rotación, consola y memoria.
+/// Es especialmente útil para ajustar el comportamiento de Log4Net sin
+/// necesidad de modificar la configuración general de la aplicación.
+/// </remarks>
 public static class Log4NetExtensions
 {
     /// <summary>

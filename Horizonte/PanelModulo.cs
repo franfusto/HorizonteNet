@@ -180,12 +180,26 @@ public class PanelModulo
     //Workers
 
 
+    /// <summary>
+    /// Obtiene la lista de Workers disponibles en el sistema.
+    /// Este método interactúa con el gestor de Workers para recuperar todos los Workers que están
+    /// actualmente disponibles para su uso.
+    /// </summary>
+    /// <returns>Una lista de objetos de tipo WorkerDefItem, cada uno representando un Worker disponible.</returns>
     [HorizonteCommand("Workers_GetAvailableWorkers", "Obtiene la lista de Workers disponibles")]
     public List<WorkerDefItem> Workers_GetAvailableWorkers()
     {
         return _workersManager.GetAvailableWorkers();
     }
 
+    /// <summary>
+    /// Obtiene los tipos de los BackgroundServices registrados en el sistema, explorando
+    /// todos los ensamblados disponibles y filtrando aquellos que son instancias de
+    /// BackgroundService y no son interfaces o clases abstractas.
+    /// </summary>
+    /// <returns>
+    /// Una lista de nombres completos de los tipos que implementan BackgroundService.
+    /// </returns>
     [HorizonteCommand("Workers_GetAvailablesBackServices", "Obtiene los Tipos de los BackgroundService registrados en el sistema")]
     public List<string> Workers_GetAvailablesServices()
     {
@@ -202,6 +216,11 @@ public class PanelModulo
         return types;
     }
 
+    /// <summary>
+    /// Determina si un servicio específico está actualmente en ejecución dentro del sistema.
+    /// </summary>
+    /// <param name="servicename">El nombre del servicio para el cual se desea verificar el estado de ejecución.</param>
+    /// <returns>Devuelve <c>true</c> si el servicio está en ejecución; de lo contrario, devuelve <c>false</c>.</returns>
     [HorizonteCommand("Workers_IsRunning", "Obtiene el estado de ejecución de un servico")]
     public bool IsRunning(string servicename)
     {
@@ -209,6 +228,12 @@ public class PanelModulo
     }
 
 
+    /// <summary>
+    /// Inicia un servicio especificado utilizando el nombre del servicio.
+    /// Se invoca al administrador de trabajadores para realizar la acción de inicio.
+    /// </summary>
+    /// <param name="servicename">El nombre del servicio que se desea iniciar.</param>
+    /// <returns>Retorna un valor booleano indicando si el servicio se inició correctamente o no.</returns>
     [HorizonteCommand("Workers_StartService", "Inicia un servicio")]
     public bool Workers_StartService(string servicename)
     {
@@ -216,6 +241,11 @@ public class PanelModulo
     }
 
 
+    /// <summary>
+    /// Detiene un servicio en ejecución identificado por su nombre.
+    /// </summary>
+    /// <param name="servicename">Nombre del servicio que se desea detener.</param>
+    /// <return>Devuelve un valor booleano que indica si el servicio fue detenido con éxito.</return>
     [HorizonteCommand("Workers_StopService", "Detiene un servicio")]
     public bool Workers_StopService(string servicename)
     {
@@ -294,43 +324,3 @@ public class PanelModulo
         return result;
     }
 }
-
-/*
-//Módulos
-[HorizonteCommand("Modules_InstallFromFile")]
-public bool Modules_InstallFromFile(string filename)
-{
-   // Thread.Sleep(3000);
-    return false;
-}
-[HorizonteCommand("Modules_InstallFromRepo")]
-public bool Modules_InstallFromRepo(string filename)
-{
-   // Thread.Sleep(3000);
-    return true;
-}
-[HorizonteCommand("Modules_GetRepoFiles")]
-public List<ModulesSettingsItem> Modules_GetRepoFiles()
-{
-    var list = new List<ModulesSettingsItem>();
-    return list;
-}
-[HorizonteCommand("Modulo_NuevoModulo")]
-public byte[] CrearModulo(NewModuleConfig newModuleConfig)
-{
-
-    return Array.Empty<byte>();
-}
-*/
-
-/// <summary>
-/// Representa información sobre un servicio en ejecución en el sistema.
-/// </summary>
-/// <remarks>
-/// Este registro se utiliza para almacenar metadatos sobre un servicio en segundo plano específico, 
-/// incluyendo el nombre de su tipo, el estado de ejecución y el nombre para mostrar.
-/// </remarks>
-/// <param name="Typename">El nombre del tipo del servicio.</param>
-/// <param name="Isrunning">Indica si el servicio se encuentra actualmente en ejecución.</param>
-/// <param name="Name">El nombre para mostrar o identificador del servicio.</param>
-public record RunningServiceInfo(string Typename, bool Isrunning, string Name);

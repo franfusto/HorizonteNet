@@ -2,9 +2,13 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Horizonte;
+namespace Horizonte.Helpers;
 
-  public static class JsonFileHelper
+/// <summary>
+/// JsonFileHelper es una clase estática que proporciona utilidades para manipular archivos JSON.
+/// Facilita la lectura, escritura y actualización de secciones específicas dentro de un archivo JSON.
+/// </summary>
+public static class JsonFileHelper
     {
         /// <summary>
         /// Representa una función delegada que proporciona opciones de serialización predeterminadas para la serialización JSON.

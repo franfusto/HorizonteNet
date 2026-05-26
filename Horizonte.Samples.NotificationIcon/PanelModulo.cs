@@ -1,6 +1,7 @@
 ﻿using Horizonte;
 using Microsoft.Extensions.Logging;
 using Gtk;
+using Horizonte.Interfaces;
 
 namespace Horizonte.Samples.NotificationIcon;
 
@@ -10,11 +11,11 @@ public class PanelModulo
 {
 
     private readonly ILogger<PanelModulo> _logger;
-    private readonly IHContext _context;
+    private readonly IhContext _context;
     private readonly IHGesCom _gescom;
     private IconManager? _iconManager;
 
-    public PanelModulo(ILogger<PanelModulo> logger, IHContext context, IHGesCom gescom)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IHGesCom gescom)
     {
         _logger = logger;
         _context = context;

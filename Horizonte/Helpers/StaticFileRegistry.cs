@@ -45,11 +45,22 @@ public class StaticFileRegistry
     {
     }
 
+    /// <summary>
+    /// Proporciona acceso a un diccionario concurrente que mapea dominios con sus respectivas rutas
+    /// de archivo estático almacenadas. Este diccionario permite una recuperación eficiente de rutas
+    /// de archivos asociados a dominios específicos, facilitando la gestión y localización de archivos
+    /// estáticos dentro de un entorno de aplicación.
+    /// </summary>
     public ConcurrentDictionary<string, string> FilesByDomain
     {
         get => _filesByDomain;
     }
-    
+
+    /// <summary>
+    /// Contiene un diccionario concurrente que mapea las rutas relativas de los archivos en minúsculas
+    /// a sus rutas absolutas correspondientes dentro del registro.
+    /// Sirve como un mecanismo de caché para agilizar la búsqueda de archivos estáticos.
+    /// </summary>
     public ConcurrentDictionary<string, string> Files
     {
         get => _files;
@@ -66,7 +77,7 @@ public class StaticFileRegistry
                 return;
 
             // Subir dos directorios desde el archivo packagepath
-            var currentDirectory = GetParentDirectory(Path.GetDirectoryName(packagepath), 2);
+            var currentDirectory = GetParentDirectory(Path.GetDirectoryName(packagepath) ?? string.Empty, 2);
 
             if (currentDirectory == null) return;
 
@@ -133,24 +144,16 @@ public class StaticFileRegistry
         }
     }
 
-    /// Obtiene un archivo basado en la ruta proporcionada.
-    /// Este método intenta recuperar la información del archivo desde un registro interno
-    /// utilizando la ruta especificada. Si el archivo es encontrado, devuelve un objeto FileInfo
-    /// que contiene los detalles del archivo, de lo contrario retorna null.
-    /// <param name="path">
-    /// Ruta del archivo que se desea obtener. La ruta es comparada de manera insensible a mayúsculas/minúsculas.
-    /// </param>
+    /// <summary>
+    /// Busca y retorna un archivo estático registrado en el sistema, basado en la ruta proporcionada.
+    /// Permite especificar un nombre de dominio para realizar la búsqueda en el contexto de un dominio específico.
+    /// </summary>
+    /// <param name="path">La ruta del archivo a buscar dentro del registro de archivos estáticos.</param>
+    /// <param name="domainName">Opcional. El nombre del dominio en el cual buscar el archivo especificado.</param>
     /// <returns>
-    /// Un objeto FileInfo que representa el archivo solicitado si es encontrado;
-    /// de lo contrario, null.
+    /// Un objeto <c>FileInfo</c> que representa el archivo encontrado,
+    /// o <c>null</c> si no se encuentra un archivo que coincida con la ruta y el dominio especificados.
     /// </returns>
-    public FileInfo? GetFile(string path)
-    {
-        var file = string.Empty;
-        _files.TryGetValue(path.ToLowerInvariant(), out file);
-        if (file != null) return new FileInfo(file);
-        return null;
-    }
     public FileInfo? GetFile(string path, string? domainName)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -174,11 +177,9 @@ public class StaticFileRegistry
 
         return null;
     }
-    /// Obtiene el directorio ascendente de un directorio dado, subiendo un número especificado de niveles.
-    /// <param name="path">Ruta del directorio base desde el cual se buscará el directorio padre.</param>
-    /// <param name="levelsUp">Cantidad de niveles que se subirán en el árbol de directorios desde el directorio base.</param>
-    /// <returns>La ruta del directorio resultante después de subir los niveles especificados, o <c>null</c> si no se puede subir más niveles.</returns>
-    private string? GetParentDirectory(string? path, int levelsUp)
+
+    
+    private string? GetParentDirectory(string path, int levelsUp)
     {
         var currentDirectory = path;
         for (int i = 0; i < levelsUp; i++)
@@ -191,11 +192,7 @@ public class StaticFileRegistry
     }
 
 
-    /// <param name="prefix">
-    /// Prefijo que se añadirá al comienzo de las rutas relativas de los archivos encontrados.
-    /// El valor predeterminado es una cadena vacía.
-    /// </param>
-    /// <param name="domainName">Dominio lógico/ALC asociado a los archivos registrados.</param>
+
     private void RegisterDirectory(string path, string prefix = "", string? domainName = null)
     {
         if (!Directory.Exists(path))

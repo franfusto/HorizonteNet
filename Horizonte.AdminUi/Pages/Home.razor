@@ -1,7 +1,8 @@
 ﻿@page "/"
 @using Horizonte.AdminUi.Components
+@using Horizonte.Interfaces
 @inject HGuiSession GuiSession
-@inject IHContext Context;
+@inject IhContext Context;
 <PageTitle>@_header</PageTitle>
 @if (GuiSession.UserRegistered)
 {
