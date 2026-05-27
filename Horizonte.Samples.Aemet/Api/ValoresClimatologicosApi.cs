@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -46,7 +47,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -59,7 +60,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -72,7 +73,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -84,7 +85,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -98,7 +99,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -111,7 +112,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -123,7 +124,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -134,7 +135,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Características de la estación climatológica pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -146,7 +147,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Características de la estación climatológica pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -157,7 +158,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 InventarioDeEstacionesValoresClimatolgicos(int operationIndex = 0);
@@ -168,7 +169,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> InventarioDeEstacionesValoresClimatolgicosWithHttpInfo(int operationIndex = 0);
@@ -178,7 +179,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -191,7 +192,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -212,7 +213,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -227,7 +228,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -241,7 +242,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -255,7 +256,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -268,7 +269,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -283,7 +284,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -297,7 +298,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -310,7 +311,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -322,7 +323,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Características de la estación climatológica pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -335,7 +336,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Características de la estación climatológica pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -347,7 +348,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -359,7 +360,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -370,7 +371,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -384,7 +385,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -514,7 +515,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -529,7 +530,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -540,19 +541,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -607,7 +608,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -623,7 +624,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos para el rango de fechas y la estación seleccionada. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="idema">Indicativo climatológico de la EMA. Puede introducir varios indicativos separados por comas (,)</param>
@@ -635,19 +636,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasDiarias");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasDiarias");
             }
 
 
@@ -704,7 +705,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -718,7 +719,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -728,13 +729,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -788,7 +789,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -803,7 +804,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías diarias. Valores climatológicos de todas las estaciones para el rango de fechas seleccionado. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -814,13 +815,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling ValoresClimatologicosApi->ClimatologasDiarias1");
             }
 
 
@@ -876,7 +877,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías mensuales anuales. Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -891,7 +892,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías mensuales anuales. Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -902,19 +903,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anioIniStr' is set
             if (anioIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anioIniStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'anioIniStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
             // verify the required parameter 'anioFinStr' is set
             if (anioFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anioFinStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'anioFinStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -969,7 +970,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías mensuales anuales. Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -985,7 +986,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías mensuales anuales. Valores medios mensuales y anuales de los datos climatológicos para la estación y el periodo de años pasados por parámetro. Periodicidad de actualización: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anioIniStr">Año Inicial (AAAA)</param>
         /// <param name="anioFinStr">Año Final (AAAA)</param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
@@ -997,19 +998,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anioIniStr' is set
             if (anioIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anioIniStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'anioIniStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
             // verify the required parameter 'anioFinStr' is set
             if (anioFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anioFinStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'anioFinStr' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasMensualesAnuales");
             }
 
 
@@ -1066,7 +1067,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías normales (1991-2020). Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1079,7 +1080,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías normales (1991-2020). Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1088,7 +1089,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasNormales19912020");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasNormales19912020");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1141,7 +1142,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías normales (1991-2020). Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1155,7 +1156,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Climatologías normales (1991-2020). Valores climatológicos normales (periodo 1991-2020) para la estación pasada por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1165,7 +1166,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasNormales19912020");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ClimatologasNormales19912020");
             }
 
 
@@ -1220,7 +1221,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Estaciones por indicativo. Características de la estación climatológica pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1233,7 +1234,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Estaciones por indicativo. Características de la estación climatológica pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1242,7 +1243,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'estaciones' is set
             if (estaciones == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'estaciones' when calling ValoresClimatologicosApi->EstacionesPorIndicativo");
+                throw new ApiException(400, "Missing required parameter 'estaciones' when calling ValoresClimatologicosApi->EstacionesPorIndicativo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1295,7 +1296,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Estaciones por indicativo. Características de la estación climatológica pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1309,7 +1310,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Estaciones por indicativo. Características de la estación climatológica pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="estaciones">Listado de indicativos climatológicos (id1,id2,id3,...,idn)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1319,7 +1320,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'estaciones' is set
             if (estaciones == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'estaciones' when calling ValoresClimatologicosApi->EstacionesPorIndicativo");
+                throw new ApiException(400, "Missing required parameter 'estaciones' when calling ValoresClimatologicosApi->EstacionesPorIndicativo");
             }
 
 
@@ -1374,7 +1375,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Inventario de estaciones (valores climatológicos). Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 InventarioDeEstacionesValoresClimatolgicos(int operationIndex = 0)
@@ -1386,7 +1387,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Inventario de estaciones (valores climatológicos). Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> InventarioDeEstacionesValoresClimatolgicosWithHttpInfo(int operationIndex = 0)
@@ -1440,7 +1441,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Inventario de estaciones (valores climatológicos). Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -1453,7 +1454,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Inventario de estaciones (valores climatológicos). Inventario con las características de todas las estaciones climatológicas. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -1510,7 +1511,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Valores extremos. Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1524,7 +1525,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Valores extremos. Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1534,13 +1535,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'parametro' is set
             if (parametro == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'parametro' when calling ValoresClimatologicosApi->ValoresExtremos");
+                throw new ApiException(400, "Missing required parameter 'parametro' when calling ValoresClimatologicosApi->ValoresExtremos");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ValoresExtremos");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ValoresExtremos");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1594,7 +1595,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Valores extremos. Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1609,7 +1610,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Valores extremos. Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro. Periodicidad: 1 vez al día.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="parametro"> | Código | Parámetro Meteorológico | |- -- -- -- -- -|- -- -- -- -- -| | P  | Precipitación   | | T  | Temperatura   | | V  | Viento </param>
         /// <param name="idema">Indicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1620,13 +1621,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'parametro' is set
             if (parametro == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'parametro' when calling ValoresClimatologicosApi->ValoresExtremos");
+                throw new ApiException(400, "Missing required parameter 'parametro' when calling ValoresClimatologicosApi->ValoresExtremos");
             }
 
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ValoresExtremos");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ValoresClimatologicosApi->ValoresExtremos");
             }
 
 

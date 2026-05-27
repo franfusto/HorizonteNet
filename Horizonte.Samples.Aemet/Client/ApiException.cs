@@ -8,9 +8,9 @@
  */
 
 
-using System;
+using Org.OpenAPITools.Client;
 
-namespace Org.OpenAPITools.Client
+namespace Horizonte.Samples.Aemet.Client
 {
     /// <summary>
     /// API Exception
@@ -27,13 +27,13 @@ namespace Org.OpenAPITools.Client
         /// Gets or sets the error content (body json object)
         /// </summary>
         /// <value>The error content (Http response body).</value>
-        public object ErrorContent { get; private set; }
+        public object? ErrorContent { get; private set; }
 
         /// <summary>
         /// Gets or sets the HTTP headers
         /// </summary>
         /// <value>HTTP headers</value>
-        public Multimap<string, string> Headers { get; private set; }
+        public Multimap<string, string>? Headers { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiException"/> class.
@@ -57,7 +57,7 @@ namespace Org.OpenAPITools.Client
         /// <param name="message">Error message.</param>
         /// <param name="errorContent">Error content.</param>
         /// <param name="headers">HTTP Headers.</param>
-        public ApiException(int errorCode, string message, object errorContent = null, Multimap<string, string> headers = null) : base(message)
+        public ApiException(int errorCode, string message, object? errorContent = null, Multimap<string, string>? headers = null) : base(message)
         {
             this.ErrorCode = errorCode;
             this.ErrorContent = errorContent;

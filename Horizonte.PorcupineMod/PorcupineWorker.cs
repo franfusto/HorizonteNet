@@ -7,6 +7,7 @@ using Pv;
 
 namespace Horizonte.PorcupineMod;
 
+/// <inheritdoc />
 public class PorcupineWorker : BackgroundService
 {
 
@@ -17,16 +18,20 @@ public class PorcupineWorker : BackgroundService
     private Porcupine _porcupine;
     private PvRecorder _recorder;
     private IHCredManager? _credManager;
-    
 
-    public PorcupineWorker(ILogger<PorcupineWorker> logger,IhContext context,IHCredManager credManager)
+
+    /// <inheritdoc />
+    public PorcupineWorker(ILogger<PorcupineWorker> logger,IhContext context,IHCredManager credManager, Porcupine porcupine, PvRecorder recorder)
     {
         _log = logger;
         _context = context;
         _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
         _credManager = credManager;
-
+        _porcupine = porcupine;
+        _recorder = recorder;
     }
+
+    /// <inheritdoc />
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Task.Run(() =>
@@ -73,6 +78,7 @@ public class PorcupineWorker : BackgroundService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         try
@@ -116,6 +122,7 @@ public class PorcupineWorker : BackgroundService
         return paths;
     }
 
+    /// <inheritdoc />
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Service Porcupine");

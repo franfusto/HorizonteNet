@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Horizonte.Samples.Aemet.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;

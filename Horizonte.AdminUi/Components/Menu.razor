@@ -6,7 +6,7 @@
 
 <RadzenPanelMenu Click="Onlicked" Style="width:300px" Multiple="@false">
     
-    @foreach (var masteritem in _groups)
+    @if(_groups!=null) foreach (var masteritem in _groups)
     {
         if (_hGruiMenu.Items.Where(x => x.ParentId == masteritem.Id).Count() > 0)
         {
@@ -46,7 +46,7 @@
     [Parameter] public EventCallback<MenuItemEventArgs> OnSelected { get; set; }
 
     private HGuiMenu _hGruiMenu = new();
-    private List<HGuiMenuItem> _groups;
+    private List<HGuiMenuItem>? _groups;
     protected override void OnInitialized()
     {
         _hGruiMenu =  HContext.Get<HGuiMenu>() ?? new HGuiMenu();

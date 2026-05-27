@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -45,7 +46,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -57,7 +58,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -69,7 +70,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -80,7 +81,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -93,7 +94,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -114,7 +115,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -128,7 +129,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -141,7 +142,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -154,7 +155,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -166,7 +167,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -180,7 +181,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -310,7 +311,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Balance hídrico nacional (documento). Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -324,7 +325,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Balance hídrico nacional (documento). Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -334,13 +335,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anio' is set
             if (anio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
             }
 
             // verify the required parameter 'decena' is set
             if (decena == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'decena' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'decena' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -394,7 +395,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Balance hídrico nacional (documento). Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -409,7 +410,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Balance hídrico nacional (documento). Se obtiene, para la decema y el año pasados por parámetro, el Boletín Hídrico Nacional que se elabora cada diez días. Se presenta información resumida de forma distribuida para todo el territorio nacional de diferentes variables, en las que se incluye informaciones de la precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="decena">Decena de 01 (primera decena) a 36 (última decena)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -420,13 +421,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anio' is set
             if (anio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
             }
 
             // verify the required parameter 'decena' is set
             if (decena == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'decena' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'decena' when calling ProductosClimatologicosApi->BalanceHdricoNacionalDocumento");
             }
 
 
@@ -482,7 +483,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Capas SHAPE de estaciones climatológicas de AEMET. Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -495,7 +496,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Capas SHAPE de estaciones climatológicas de AEMET. Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -504,7 +505,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'tipoestacion' is set
             if (tipoestacion == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'tipoestacion' when calling ProductosClimatologicosApi->CapasSHAPEDeEstacionesClimatolgicas");
+                throw new ApiException(400, "Missing required parameter 'tipoestacion' when calling ProductosClimatologicosApi->CapasSHAPEDeEstacionesClimatolgicas");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -557,7 +558,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Capas SHAPE de estaciones climatológicas de AEMET. Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -571,7 +572,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Capas SHAPE de estaciones climatológicas de AEMET. Capas SHAPE de las distintas estaciones climatológicas de AEMET: automáticas, completas, pluviométricas y termométricas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipoestacion"> | Código | Tipo de Estación | |- -- -- -- -- -|- -- -- -- -- -| | automaticas  | Estaciones Automáticas   | | completas  | Estaciones Completas   | | pluviometricas  | Estaciones Pluviométricas   | | termometricas  | Estaciones Termométricas   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -581,7 +582,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'tipoestacion' is set
             if (tipoestacion == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'tipoestacion' when calling ProductosClimatologicosApi->CapasSHAPEDeEstacionesClimatolgicas");
+                throw new ApiException(400, "Missing required parameter 'tipoestacion' when calling ProductosClimatologicosApi->CapasSHAPEDeEstacionesClimatolgicas");
             }
 
 
@@ -636,7 +637,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Resumen mensual climatológico nacional (documento). Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -650,7 +651,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Resumen mensual climatológico nacional (documento). Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -660,13 +661,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anio' is set
             if (anio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
             }
 
             // verify the required parameter 'mes' is set
             if (mes == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'mes' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'mes' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -720,7 +721,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Resumen mensual climatológico nacional (documento). Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -735,7 +736,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Resumen mensual climatológico nacional (documento). Resumen climatológico nacional, para el año y mes pasado por parámetro, sobre el estado del clima y la evolución de las principales variables climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="anio">Año (AAAA)</param>
         /// <param name="mes">Mes (mm)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -746,13 +747,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'anio' is set
             if (anio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'anio' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
             }
 
             // verify the required parameter 'mes' is set
             if (mes == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'mes' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
+                throw new ApiException(400, "Missing required parameter 'mes' when calling ProductosClimatologicosApi->ResumenMensualClimatolgicoNacionalDocumento");
             }
 
 

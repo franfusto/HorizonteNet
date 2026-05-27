@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 MapasDeAnlisisLtimaPasada(int operationIndex = 0);
@@ -43,7 +44,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> MapasDeAnlisisLtimaPasadaWithHttpInfo(int operationIndex = 0);
@@ -53,7 +54,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -67,7 +68,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -89,7 +90,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -101,7 +102,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -112,7 +113,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -127,7 +128,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -258,7 +259,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas de análisis. Última pasada. Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 MapasDeAnlisisLtimaPasada(int operationIndex = 0)
@@ -270,7 +271,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas de análisis. Última pasada. Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> MapasDeAnlisisLtimaPasadaWithHttpInfo(int operationIndex = 0)
@@ -324,7 +325,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas de análisis. Última pasada. Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -337,7 +338,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas de análisis. Última pasada. Estos mapas muestran la configuración de la presión en superficie usando isobaras (lineas de igual presión), áreas de alta (A, a) y baja (B, b) presión y los frentes en Europa y el Atlántico Norte.El mapa de análisis presenta el estado de la atmósfera a la hora correspondiente y los fenómenos más relevantes observados en España. Periodicidad de actualización: cada 12 horas (00, 12).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -394,7 +395,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas significativos. Tiempo actual. Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -409,7 +410,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas significativos. Tiempo actual. Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -420,19 +421,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
             // verify the required parameter 'ambito' is set
             if (ambito == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ambito' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ambito' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -487,7 +488,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas significativos. Tiempo actual. Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -503,7 +504,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapas significativos. Tiempo actual. Mapas significativos de ámbito nacional o CCAA, para una fecha dada y ese mismo día (D+0),  al día siguiente (D+1) o a los dos días (D+2), en el periodo horario de (00_12) ó (12-24). Hasta el 22/01/2020.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha de elaboración (AAAA-MM-DD)</param>
         /// <param name="ambito"> | Código | Ámbito | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | a | D+0 (00-12)  | | b  | D+0 (12-24)   | |  c | D+1 (00-12)  | | d  | D+1 (12-24) | | e  | D+2 (00-12) | | f  | D+2 (12-24)</param>
@@ -515,19 +516,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
             // verify the required parameter 'ambito' is set
             if (ambito == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ambito' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ambito' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling MapasYGraficosApi->MapasSignificativosTiempoActual");
             }
 
 

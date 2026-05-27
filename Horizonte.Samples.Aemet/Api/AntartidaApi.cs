@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -46,7 +47,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -68,7 +69,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -83,7 +84,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -214,7 +215,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos Antártida. Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -229,7 +230,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos Antártida. Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -240,19 +241,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling AntartidaApi->DatosAntrtida");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling AntartidaApi->DatosAntrtida");
             }
 
             // verify the required parameter 'identificacion' is set
             if (identificacion == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'identificacion' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'identificacion' when calling AntartidaApi->DatosAntrtida");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -307,7 +308,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos Antártida. Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -323,7 +324,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos Antártida. Datos de observación de las campañas Antárticas en las que participa AEMET. Contiene observaciones diezminutales históricas de las estaciones meteorológicas y radiométricas de las bases de Juan Carlos I y Gabriel de Castilla. Frecuencia de actualización: Anual.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="identificacion"> | Identificacion | Estación | |- -- -- -- -- -|- -- -- -- -- -| | 89064      | Estación Meteorológica Juan Carlos I   | | 89064R      | Estación Radiométrica Juan Carlos I| | 89064RA  | Estación Radiométrica Juan Carlos I (hasta 08/03/2007)) | | 89070  | Estación Meteorológica Gabriel de Castilla   </param>
@@ -335,19 +336,19 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling AntartidaApi->DatosAntrtida");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling AntartidaApi->DatosAntrtida");
             }
 
             // verify the required parameter 'identificacion' is set
             if (identificacion == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'identificacion' when calling AntartidaApi->DatosAntrtida");
+                throw new ApiException(400, "Missing required parameter 'identificacion' when calling AntartidaApi->DatosAntrtida");
             }
 
 

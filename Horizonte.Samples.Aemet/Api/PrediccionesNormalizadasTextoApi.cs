@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -45,7 +46,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -57,7 +58,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -69,7 +70,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -80,7 +81,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -93,7 +94,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -105,7 +106,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -117,7 +118,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -128,7 +129,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -141,7 +142,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -153,7 +154,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -165,7 +166,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -176,7 +177,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -189,7 +190,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -201,7 +202,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -213,7 +214,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -224,7 +225,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -236,7 +237,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -247,7 +248,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 PrediccinNacionalHoyTiempoActual(int operationIndex = 0);
@@ -258,7 +259,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> PrediccinNacionalHoyTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -268,7 +269,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -280,7 +281,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -291,7 +292,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 PrediccinNacionalMaanaTiempoActual(int operationIndex = 0);
@@ -302,7 +303,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> PrediccinNacionalMaanaTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -312,7 +313,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -324,7 +325,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -335,7 +336,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 PrediccinNacionalMedioPlazoTiempoActual(int operationIndex = 0);
@@ -346,7 +347,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> PrediccinNacionalMedioPlazoTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -356,7 +357,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -368,7 +369,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -379,7 +380,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 PrediccinNacionalPasadoMaanaTiempoActual(int operationIndex = 0);
@@ -390,7 +391,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> PrediccinNacionalPasadoMaanaTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -400,7 +401,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -412,7 +413,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -423,7 +424,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 PrediccinNacionalTendenciaTiempoActual(int operationIndex = 0);
@@ -434,7 +435,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> PrediccinNacionalTendenciaTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -444,7 +445,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -457,7 +458,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -469,7 +470,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -481,7 +482,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -492,7 +493,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -504,7 +505,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -515,7 +516,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -528,7 +529,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -549,7 +550,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -563,7 +564,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -576,7 +577,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -589,7 +590,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -601,7 +602,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -615,7 +616,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -628,7 +629,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -641,7 +642,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -653,7 +654,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -667,7 +668,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -680,7 +681,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -693,7 +694,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -705,7 +706,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -719,7 +720,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -732,7 +733,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -745,7 +746,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -757,7 +758,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -770,7 +771,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -782,7 +783,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -794,7 +795,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -805,7 +806,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -818,7 +819,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -830,7 +831,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -842,7 +843,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -853,7 +854,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -866,7 +867,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -878,7 +879,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -890,7 +891,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -901,7 +902,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -914,7 +915,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -926,7 +927,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -938,7 +939,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -949,7 +950,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -962,7 +963,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -974,7 +975,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -986,7 +987,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -997,7 +998,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1011,7 +1012,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1024,7 +1025,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1037,7 +1038,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1049,7 +1050,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1062,7 +1063,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1074,7 +1075,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1088,7 +1089,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1218,7 +1219,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1232,7 +1233,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1242,13 +1243,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1302,7 +1303,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1317,7 +1318,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día de fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1328,13 +1329,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyArchivo");
             }
 
 
@@ -1390,7 +1391,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Tiempo actual. Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1403,7 +1404,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Tiempo actual. Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1412,7 +1413,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1465,7 +1466,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Tiempo actual. Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1479,7 +1480,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA hoy. Tiempo actual. Predicción para la CCAA que se pasa como parámetro con validez para mismo día que la fecha de petición. En el caso de que en la fecha de petición este producto todavía no se hubiera elaborado, se retornará el último elaborado. Actualización continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Asturias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1489,7 +1490,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAHoyTiempoActual");
             }
 
 
@@ -1544,7 +1545,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1558,7 +1559,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1568,13 +1569,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1628,7 +1629,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1643,7 +1644,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) con validez para el día siguiente a la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización. continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1654,13 +1655,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaArchivo");
             }
 
 
@@ -1716,7 +1717,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1729,7 +1730,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1738,7 +1739,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1791,7 +1792,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1805,7 +1806,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro para el día siguiente a la fecha de la petición. En el caso de el producto no se hubiera elaborado todavía en la fecha de petición se retornará el último producto elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1815,7 +1816,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMaanaTiempoActual");
             }
 
 
@@ -1870,7 +1871,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Archivo. Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1884,7 +1885,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Archivo. Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1894,13 +1895,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1954,7 +1955,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Archivo. Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1969,7 +1970,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Archivo. Predicción de mediio plazo para la comunidad autónoma que se pasa como parámetro (ccaa) a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -1980,13 +1981,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoArchivo");
             }
 
 
@@ -2042,7 +2043,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -2055,7 +2056,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -2064,7 +2065,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -2117,7 +2118,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2131,7 +2132,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA medio plazo. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y con validez para el medio plazo a partir de la fecha de petición. En el caso de que en el fecha de la petición no se hubiera generado aún el producto, se retornará el última elaborado. Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2141,7 +2142,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAMedioPlazoTiempoActual");
             }
 
 
@@ -2196,7 +2197,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -2210,7 +2211,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -2220,13 +2221,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -2280,7 +2281,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -2295,7 +2296,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Archivo. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para pasado mañana a partir de la fecha de elaboración que se pasa como parámetro (fecha). Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -2306,13 +2307,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaArchivo");
             }
 
 
@@ -2368,7 +2369,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -2381,7 +2382,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -2390,7 +2391,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -2443,7 +2444,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2457,7 +2458,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción CCAA pasado mañana. Tiempo actual. Predicción para la comunidad autónoma que se pasa como parámetro (ccaa) y validez para el medio plazo a partir de la fecha de la petición. En el caso de que en la fecha de la petición dicho producto aún no se hubiera generado retornará el último de este tipo que se hubiera generado.  Periodicidad de actualización: continuamente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="ccaa"> | Código de CCAA | CCAA | |- -- -- -- -- -|- -- -- -- -- -| | and  | Andalucía   | | arn  | Aragón   | | ast  | Astrrias  | | bal  | Ballears, Illes   | | coo  | Canarias   | | can  | Cantabria   | | cle  | Castilla y León   | | clm  | Castilla - La Mancha   | | cat  | Cataluña   | | val  | Comunitat Valenciana   | | ext  | Extremadura   | | gal  | Galicia   | | mad  | Madrid, Comunidad de    | | mur  | Murcia, Región de   | | nav  | Navarra, Comunidad Foral de   | | pva  | País Vasco | | rio  | Rioja, La   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2467,7 +2468,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'ccaa' is set
             if (ccaa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'ccaa' when calling PrediccionesNormalizadasTextoApi->PrediccinCCAAPasadoMaanaTiempoActual");
             }
 
 
@@ -2522,7 +2523,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Archivo. Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -2535,7 +2536,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Archivo. Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -2544,7 +2545,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalHoyArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -2597,7 +2598,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Archivo. Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2611,7 +2612,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Archivo. Predicción nacional para el día correspondiente a la fecha que se pasa como parámetro en en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve un 404 producto no existente.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Fecha en formato (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2621,7 +2622,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalHoyArchivo");
             }
 
 
@@ -2676,7 +2677,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Última elaborada. Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 PrediccinNacionalHoyTiempoActual(int operationIndex = 0)
@@ -2688,7 +2689,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Última elaborada. Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> PrediccinNacionalHoyTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -2742,7 +2743,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Última elaborada. Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -2755,7 +2756,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional hoy. Última elaborada. Predicción nacional para el día actual a la fecha de elaboración en formato texto. Actualización diaria. Hay días en los que este producto no se realiza. En ese caso se devuelve la predicción nacional última que se elaboró.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -2812,7 +2813,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Archivo. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -2825,7 +2826,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Archivo. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -2834,7 +2835,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMaanaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -2887,7 +2888,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Archivo. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2901,7 +2902,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Archivo. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -2911,7 +2912,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMaanaArchivo");
             }
 
 
@@ -2966,7 +2967,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Tiempo actual. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 PrediccinNacionalMaanaTiempoActual(int operationIndex = 0)
@@ -2978,7 +2979,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Tiempo actual. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> PrediccinNacionalMaanaTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -3032,7 +3033,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Tiempo actual. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -3045,7 +3046,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional mañana. Tiempo actual. Predicción nacional para el día siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -3102,7 +3103,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Archivo. Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -3115,7 +3116,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Archivo. Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -3124,7 +3125,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMedioPlazoArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -3177,7 +3178,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Archivo. Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3191,7 +3192,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Archivo. Predicción nacional para el medio plazo siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3201,7 +3202,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMedioPlazoArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalMedioPlazoArchivo");
             }
 
 
@@ -3256,7 +3257,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Tiempo actual. Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 PrediccinNacionalMedioPlazoTiempoActual(int operationIndex = 0)
@@ -3268,7 +3269,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Tiempo actual. Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> PrediccinNacionalMedioPlazoTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -3322,7 +3323,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Tiempo actual. Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -3335,7 +3336,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional medio plazo. Tiempo actual. Predicción nacional para medio plazo siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para medio plazo elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -3392,7 +3393,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Archivo. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -3405,7 +3406,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Archivo. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -3414,7 +3415,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalPasadoMaanaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -3467,7 +3468,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Archivo. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3481,7 +3482,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Archivo. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3491,7 +3492,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalPasadoMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalPasadoMaanaArchivo");
             }
 
 
@@ -3546,7 +3547,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Tiempo actual. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 PrediccinNacionalPasadoMaanaTiempoActual(int operationIndex = 0)
@@ -3558,7 +3559,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Tiempo actual. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> PrediccinNacionalPasadoMaanaTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -3612,7 +3613,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Tiempo actual. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -3625,7 +3626,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional pasado mañana. Tiempo actual. Predicción nacional para pasado mañana siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para pasado mañana elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -3682,7 +3683,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Archivo. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -3695,7 +3696,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Archivo. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -3704,7 +3705,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalTendenciaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalTendenciaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -3757,7 +3758,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Archivo. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3771,7 +3772,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Archivo. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso, la fecha de elaboración es la fecha que se pasa como parámetro. Actualización diaria.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fecha">Día (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -3781,7 +3782,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalTendenciaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinNacionalTendenciaArchivo");
             }
 
 
@@ -3836,7 +3837,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Tiempo actual. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 PrediccinNacionalTendenciaTiempoActual(int operationIndex = 0)
@@ -3848,7 +3849,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Tiempo actual. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> PrediccinNacionalTendenciaTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -3902,7 +3903,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Tiempo actual. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -3915,7 +3916,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción nacional tendencia. Tiempo actual. Predicción nacional para tendencia siguiente a la fecha de elaboración. En este caso la fecha de elaboración es el día actual. Actualización diaria. En el caso de que en el día actual  todavía no se haya elaborado se devolverá el último producto de predicción nacional para tendencia elaborado.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -3972,7 +3973,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -3986,7 +3987,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -3996,13 +3997,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -4056,7 +4057,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4071,7 +4072,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4082,13 +4083,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyArchivo");
             }
 
 
@@ -4144,7 +4145,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Tiempo actual. Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -4157,7 +4158,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Tiempo actual. Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -4166,7 +4167,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -4219,7 +4220,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Tiempo actual. Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -4233,7 +4234,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular hoy. Tiempo actual. Predicción del día actual para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -4243,7 +4244,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularHoyTiempoActual");
             }
 
 
@@ -4298,7 +4299,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Tiempo actual. Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -4311,7 +4312,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Tiempo actual. Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -4320,7 +4321,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularMaanaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -4373,7 +4374,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Tiempo actual. Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -4387,7 +4388,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Tiempo actual. Predicción del día siguiente para la provincia o isla que se pasa como parámetro. En el caso de que este producto no se haya elaborado todavía en el día actual, se retorna el último elaborado. Actualización continua y fija a las 14:00 Hora Oficial Peninsular.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -4397,7 +4398,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularMaanaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialEInsularMaanaTiempoActual");
             }
 
 
@@ -4452,7 +4453,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4466,7 +4467,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4476,13 +4477,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -4536,7 +4537,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4551,7 +4552,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción provincial e insular mañana. Archivo. Predicción del día siguiente a la fecha que se pasa como parámetro para la provincia o isla que se pasa como parámetro. Actualización continua y fija a las 14:00 Hora Oficial Peninsular del día que se pasa como parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="provincia"> | Código  | Provincia / Isla | |- -- -- -- -- -|- -- -- -- -- -| | 01  | Araba/Álaba   | | 01  | Araba/Álava   | | 02  | Albacete   | | 03  | Alacant/Alicante  | | 04  | Almería   | | 33  | Asturias   | | 05  | Ávila   | | 06  | Badajoz   | |  08  | Barcelona   | | 48  | Bizkaia   | | 09  | Burgos   | | 10  | Cáceres   | | 11  | Cádiz   | | 39  | Cantabria   | | 12  | Castelló/Castellón   | | 51  | Ceuta   | | 13  | Ciudad Real   | | 14  | Córdoba   | | 15  | A Coruña   | | 16  | Cuenca   | | 17  | Girona   | | 18  | Granada   | | 19  | Guadalajara   | | 20  | Gipuzkoa   | | 21  | Huelva   | | 22  | Huesca   | | 071  | Isla de Menorca   | | 072  | Isla de Mallorca   | | 073  | Islas de Ibiza y Formentera   | |  351  | Isla de Lanzarote  | | 352  | Isla de Fuerteventura  | | 353  | Isla de Gran Canaria   |  | 381  | Isla de Tenerife   | | 382  | Isla de La Gomera   | | 383  | Isla de La Palma   | | 384  | Isla de El Hierro   | | 23  | Jaén   | | 24  | León   | | 25  | Lleida   | | 27  | Lugo   | | 28  | Madrid   | | 29  | Málaga   | | 52  | Melilla   | | 30  | Murcia   | | 31  | Navarra   | | 32  | Ourense   | | 34  | Palencia   | |  36  | Pontevedra   | | 26  | La Rioja   | | 37  | Salamanca   | |  40  | Segovia   | | 41  | Sevilla   | | 42  | Soria   | | 43  | Tarragona   | | 44  | Teruel   | | 45  | Toledo   | | 46  | València/Valencia   | | 47  | Valladolid   | | 49  | Zamora   | | 50  | Zaragoza   | | </param>
         /// <param name="fecha">Día de elaboración (AAAA-MM-DD)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -4562,13 +4563,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'provincia' is set
             if (provincia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'provincia' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
             }
 
             // verify the required parameter 'fecha' is set
             if (fecha == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
+                throw new ApiException(400, "Missing required parameter 'fecha' when calling PrediccionesNormalizadasTextoApi->PrediccinProvincialOInsularMaanaArchivo");
             }
 
 

@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 ImagenComposicinNacionalRadaresTiempoActualEstndar(int operationIndex = 0);
@@ -43,7 +44,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> ImagenComposicinNacionalRadaresTiempoActualEstndarWithHttpInfo(int operationIndex = 0);
@@ -53,7 +54,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -65,7 +66,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -85,7 +86,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -97,7 +98,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -108,7 +109,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -121,7 +122,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -250,7 +251,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen composición nacional radares. Tiempo actual estándar. Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 ImagenComposicinNacionalRadaresTiempoActualEstndar(int operationIndex = 0)
@@ -262,7 +263,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen composición nacional radares. Tiempo actual estándar. Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> ImagenComposicinNacionalRadaresTiempoActualEstndarWithHttpInfo(int operationIndex = 0)
@@ -316,7 +317,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen composición nacional radares. Tiempo actual estándar. Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -329,7 +330,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen composición nacional radares. Tiempo actual estándar. Imagen composición nacional radares. Tiempo actual estándar. Periodicidad: 30 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -386,7 +387,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen gráfica radar regional. Tiempo actual estándar. Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -399,7 +400,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen gráfica radar regional. Tiempo actual estándar. Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -408,7 +409,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'radar' is set
             if (radar == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'radar' when calling RedRadaresApi->RadarRegional");
+                throw new ApiException(400, "Missing required parameter 'radar' when calling RedRadaresApi->RadarRegional");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -461,7 +462,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen gráfica radar regional. Tiempo actual estándar. Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -475,7 +476,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Imagen gráfica radar regional. Tiempo actual estándar. Imagen del radar regional de la región pasada por parámetro. Tiempo actual estándar. Periodicidad: 10 minutos.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="radar"> | Código | Radar | |- -- -- -- -- -|- -- -- -- -- -| | am  | Almería   | | sa  | Asturias   | | pm  | Illes Balears   | | ba  | Barcelona  | | cc  | Cáceres   | | co  | A Coruña   | | ma  | Madrid   | | ml  | Málaga   | | mu  | Murcia   | | vd  | Palencia   | | ca  | Las Palmas   | | se  | Sevilla   | | va  | Valencia   | | ss  | Vizcaya   | | za  | Zaragoza   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -485,7 +486,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'radar' is set
             if (radar == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'radar' when calling RedRadaresApi->RadarRegional");
+                throw new ApiException(400, "Missing required parameter 'radar' when calling RedRadaresApi->RadarRegional");
             }
 
 

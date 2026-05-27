@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -44,7 +45,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -55,7 +56,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -68,7 +69,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -89,7 +90,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -102,7 +103,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -114,7 +115,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -128,7 +129,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -258,7 +259,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo estimado meteorológico de incendios forestales. Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -271,7 +272,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo estimado meteorológico de incendios forestales. Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -280,7 +281,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoEstimadoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoEstimadoMeteorolgicoDeIncendiosForestales");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -333,7 +334,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo estimado meteorológico de incendios forestales. Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -347,7 +348,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo estimado meteorológico de incendios forestales. Último mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el área pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -357,7 +358,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoEstimadoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoEstimadoMeteorolgicoDeIncendiosForestales");
             }
 
 
@@ -412,7 +413,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo previsto meteorológico de incendios forestales. Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -426,7 +427,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo previsto meteorológico de incendios forestales. Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -436,13 +437,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
             }
 
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -496,7 +497,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo previsto meteorológico de incendios forestales. Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -511,7 +512,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa de niveles de riesgo previsto meteorológico de incendios forestales. Mapa elaborado de niveles de riesgo estimado meteorológico de incendios forestales para el día y el área pasados por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código | Día | |- -- -- -- -- -|- -- -- -- -- -| | 1  | Mañana   | | 2  | Pasado Mañana   | | 3  | Dentro de 3 días   | | 4  | Dentro de 4 días   | | 5  | Dentro de 5 días   | | 6  | Dentro de 6 días   | | 7  | Dentro de 7 días   </param>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | p  | Península y Baleares  | | c  | Canarias   </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -522,13 +523,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
             }
 
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
+                throw new ApiException(400, "Missing required parameter 'area' when calling IndicesIncendiosApi->MapaDeNivelesDeRiesgoPrevistoMeteorolgicoDeIncendiosForestales");
             }
 
 

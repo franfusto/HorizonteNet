@@ -2,7 +2,7 @@
 @inject DialogService DialogService
 @inject IHGesCom HGesCom
 
-@foreach (HGesCom.RoleListItem item in _list)
+@if(_list!=null) foreach (HGesCom.RoleListItem item in _list)
 {
     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
         <RadzenButton Click="@(()=>Add(item))" Text="@item.CommandName" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Success" Icon="add"/>

@@ -35,7 +35,7 @@
     private void Get()
     {
         _config = Context.Get<NotebookConfig>() ?? new NotebookConfig();
-        foreach (var source in _config.Sources.Where(s => s.Type == NotebookSourceType.localDirectory))
+        foreach (var source in _config.Sources.Where(s => s.Type == NotebookSourceType.LocalDirectory))
         {
             if (string.IsNullOrEmpty(source.SourcePath)) continue;
 
@@ -125,11 +125,11 @@
     {
         try
         {
+            if (notebookItem.ItemPath == null) return null;
             string content;
-            if (notebookItem.ItemPath.StartsWith("http"))
+            if ( notebookItem.ItemPath.StartsWith("http"))
             {
                 using HttpClient Http = new HttpClient();
-                // Usar una URL raw de GitHub para que sea descargable
                 var url = notebookItem.ItemPath;
                 var response = await Http.GetAsync(url);
                 response.EnsureSuccessStatusCode();

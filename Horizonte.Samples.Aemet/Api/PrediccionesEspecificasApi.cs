@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -44,7 +45,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -55,7 +56,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -68,7 +69,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -80,7 +81,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -92,7 +93,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -103,7 +104,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -115,7 +116,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -126,7 +127,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -138,7 +139,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -149,7 +150,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -161,7 +162,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -172,7 +173,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -184,7 +185,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -204,7 +205,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -217,7 +218,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -229,7 +230,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -243,7 +244,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -256,7 +257,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -269,7 +270,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -281,7 +282,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -294,7 +295,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -306,7 +307,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -319,7 +320,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -331,7 +332,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -344,7 +345,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -356,7 +357,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -369,7 +370,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -498,7 +499,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Información nivológica. Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -511,7 +512,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Información nivológica. Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -520,7 +521,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->InformacionNivologica");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->InformacionNivologica");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -573,7 +574,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Información nivológica. Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -587,7 +588,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Información nivológica. Información nivológica para la zona montañosa que se pasa como parámetro (area).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de  Área Montañosa |  Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Pirineo Catalán  | | 1  | Pirineo Navarro y Aragonés</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -597,7 +598,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->InformacionNivologica");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->InformacionNivologica");
             }
 
 
@@ -652,7 +653,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo actual. Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -666,7 +667,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo actual. Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -676,13 +677,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
             }
 
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -736,7 +737,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo actual. Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -751,7 +752,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo actual. Predicción meteorológica para la zona montañosa que se pasa como parámetro (area) con validez para el día (día).  Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña actual&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (siguente a pasado mañana)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -762,13 +763,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
             }
 
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoActual");
             }
 
 
@@ -824,7 +825,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo pasado. Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -837,7 +838,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo pasado. Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -846,7 +847,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoPasado");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoPasado");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -899,7 +900,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo pasado. Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -913,7 +914,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de montaña. Tiempo pasado. Breve resumen con lo más significativo de las condiciones meteorológicas registradas en la zona de montaña que se pasa como parámetro (area) en las últimas 24-36 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción montaña todos&lt;/li&gt;         &lt;li&gt;Predicción montaña pasado&lt;/li&gt;         &lt;li&gt;Predicción montaña área&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código de Área Montañosa | Área Montañosa | |- -- -- -- -- -|- -- -- -- -- -| | peu1 | Picos de Europa   | | nav1  | Pirineo Navarro   | | arn1  | Pirineo Aragonés  | | cat1  | Pirineo Catalán   | | rio1  | Ibérica Riojana   | | arn2  | Ibérica Aragonesa   | | mad2  | Sierras de Guadarrama y Somosierra  | | gre1  | Sierra de Gredos   | | nev1  | Sierra Nevada</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -923,7 +924,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoPasado");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionesEspecificasApi->PrediccinDeMontaaTiempoPasado");
             }
 
 
@@ -978,7 +979,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de radiación ultravioleta (UVI). Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -991,7 +992,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de radiación ultravioleta (UVI). Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1000,7 +1001,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeRadiacinUltravioletaUVI");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeRadiacinUltravioletaUVI");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1053,7 +1054,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de radiación ultravioleta (UVI). Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1067,7 +1068,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción de radiación ultravioleta (UVI). Predicción de Índice de radiación UV máximo en condiciones de cielo despejado para el día seleccionado.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción de radiación ultravioleta (UVI)&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="dia"> | Código de día | Día | |- -- -- -- -- -|- -- -- -- -- -| | 0 | día actual  | | 1  | d+1 (mañana)   | | 2  | d+2 (pasado mañana)  | | 3  | d+3 (dentro de 3 días) | | 4  | d+4 (dentro de 4 días)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1077,7 +1078,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'dia' is set
             if (dia == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeRadiacinUltravioletaUVI");
+                throw new ApiException(400, "Missing required parameter 'dia' when calling PrediccionesEspecificasApi->PrediccinDeRadiacinUltravioletaUVI");
             }
 
 
@@ -1132,7 +1133,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción para las playas. Tiempo actual. La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1145,7 +1146,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción para las playas. Tiempo actual. La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1154,7 +1155,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'playa' is set
             if (playa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'playa' when calling PrediccionesEspecificasApi->PrediccinParaLasPlayasTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'playa' when calling PrediccionesEspecificasApi->PrediccinParaLasPlayasTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1207,7 +1208,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción para las playas. Tiempo actual. La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1221,7 +1222,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción para las playas. Tiempo actual. La predicción diaria de la playa que se pasa como parámetro. Establece el estado de nubosidad para unas horas determinadas, las 11 y las 17 hora oficial. Se analiza también si se espera precipitación en el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción playa&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="playa">&lt;a href&#x3D;&#39;https://www.aemet.es/documentos/es/eltiempo/prediccion/playas/Playas_codigos.csv&#39; target&#x3D;&#39;_blank&#39;&gt;Código de playa&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1231,7 +1232,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'playa' is set
             if (playa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'playa' when calling PrediccionesEspecificasApi->PrediccinParaLasPlayasTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'playa' when calling PrediccionesEspecificasApi->PrediccinParaLasPlayasTiempoActual");
             }
 
 
@@ -1286,7 +1287,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios diaria. Tiempo actual. Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1299,7 +1300,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios diaria. Tiempo actual. Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1308,7 +1309,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'municipio' is set
             if (municipio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosDiariaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosDiariaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1361,7 +1362,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios diaria. Tiempo actual. Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1375,7 +1376,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios diaria. Tiempo actual. Predicción diaria para el municipio que se pasa como parámetro (municipio). Periodicidad de actualización: continuamente.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1385,7 +1386,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'municipio' is set
             if (municipio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosDiariaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosDiariaTiempoActual");
             }
 
 
@@ -1440,7 +1441,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios horaria. Tiempo actual. Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -1453,7 +1454,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios horaria. Tiempo actual. Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -1462,7 +1463,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'municipio' is set
             if (municipio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosHorariaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosHorariaTiempoActual");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -1515,7 +1516,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios horaria. Tiempo actual. Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1529,7 +1530,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción por municipios horaria. Tiempo actual. Predicción horaria para el municipio que se pasa como parámetro (municipio). Presenta la información de hora en hora hasta 48 horas.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Predicción municipio&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="municipio">&lt;a href&#x3D;&#39;https://www.ine.es/daco/daco42/codmun/diccionario24.xlsx&#39; target&#x3D;&#39;_blank&#39;&gt;Código de municipio&lt;/a&gt;</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -1539,7 +1540,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'municipio' is set
             if (municipio == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosHorariaTiempoActual");
+                throw new ApiException(400, "Missing required parameter 'municipio' when calling PrediccionesEspecificasApi->PrediccinPorMunicipiosHorariaTiempoActual");
             }
 
 

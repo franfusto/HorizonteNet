@@ -23,7 +23,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
     <!-- Mantenemos funciones experimentales -->
-    <NoWarn>$(NoWarn);HORZEXP001</NoWarn>
+    <NoWarn>HORZEXP001</NoWarn>
   </PropertyGroup>
 
 

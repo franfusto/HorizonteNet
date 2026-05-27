@@ -211,8 +211,9 @@ else
     // kernel
     
 
-    private async Task LoadKernel(KernelItem kernelItem)
+    private async Task LoadKernel(KernelItem? kernelItem)
     {
+        if(kernelItem==null) return;
         _isolated = kernelItem.Name!="Default";
         _isKernelLoaded = false;
         if(_kernel!=null)

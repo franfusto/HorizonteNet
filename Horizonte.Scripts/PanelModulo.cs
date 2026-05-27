@@ -6,6 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Scripts;
 
+/// <summary>
+/// Clase que representa un módulo denominado "PanelModulo" dentro de la aplicación Horizonte.
+/// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
+/// modular de Horizonte, tales como inicializar servicios y registrar widgets personalizados.
+/// </summary>
 [HorizonteModule("Horizonte.Scripts")]
 public class PanelModulo
 {
@@ -73,7 +78,7 @@ public class PanelModulo
     private void LoadScriptModules(ScriptsConfig config)
     {
         var scripts = config.Scripts;
-        scripts.LoadScriptModules(_serviceProvider);
+        _ = scripts.LoadScriptModules(_serviceProvider);
 
     }
 }

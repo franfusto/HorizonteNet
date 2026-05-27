@@ -1,5 +1,6 @@
 using Blazor.Diagrams;
 using Blazor.Diagrams.Core.Models;
+using Horizonte.AdminUi.HorizonteSettings.Entidades;
 using Microsoft.Msagl.Core.Geometry.Curves;
 using Microsoft.Msagl.Core.Layout;
 using Microsoft.Msagl.Layout.Incremental;
@@ -12,13 +13,44 @@ using DiagramAnchor = Blazor.Diagrams.Core.Anchors.Anchor;
 
 namespace Horizonte.AdminUi.HorizonteSettings
 {
+    /// <summary>
+    /// La clase <c>DiagramExtensions</c> proporciona métodos de extensión para el manejo
+    /// y disposición de diagramas dentro de la interfaz Blazor.Diagrams.
+    /// Permite aplicar diferentes configuraciones de disposición a diagramas.
+    /// </summary>
     public static class DiagramExtensions
     {
+        /// <summary>
+        /// Establece el diseño de un diagrama utilizando el tipo de disposición especificado.
+        /// Este método es un alias que utiliza por defecto el diseño en capas.
+        /// </summary>
+        /// <param name="diagram">
+        /// El diagrama de Blazor.Diagrams al que se aplicará el nuevo diseño.
+        /// </param>
+        /// <param name="layout">
+        /// El tipo de disposición a aplicar al diagrama. Se utiliza la enumeración <c>DiagramLayout</c>
+        /// para especificar este valor, que puede ser <c>Layered</c>, <c>Mds</c>, o <c>Incremental</c>.
+        /// </param>
         public static void SetLayOut(this BlazorDiagram diagram,  DiagramLayout layout)
         {
             diagram.SetLayout(DiagramLayout.Layered);
         }
 
+        /// <summary>
+        /// Establece el diseño de un diagrama según el tipo de disposición especificado,
+        /// aplicando opciones adicionales si se proveen.
+        /// </summary>
+        /// <param name="diagram">
+        /// El diagrama de Blazor.Diagrams al que se aplicará el diseño.
+        /// </param>
+        /// <param name="layout">
+        /// El tipo de disposición a aplicar, representado por la enumeración <c>DiagramLayout</c>.
+        /// Puede ser <c>Layered</c>, <c>Mds</c>, o <c>Incremental</c>.
+        /// </param>
+        /// <param name="options">
+        /// Opciones adicionales de configuración para el diseño del diagrama.
+        /// Si no se especifica, se utilizan las opciones predeterminadas.
+        /// </param>
         public static void SetLayout(
             this BlazorDiagram diagram,
             DiagramLayout layout,
@@ -132,22 +164,7 @@ namespace Horizonte.AdminUi.HorizonteSettings
         }
     }
 
-    public enum DiagramLayout
-    {
-        Layered,
-        Mds,
-        Incremental
-    }
 
-    public sealed class DiagramLayoutOptions
-    {
-        public double NodeWidth { get; init; } = 180;
-        public double NodeHeight { get; init; } = 60;
-        public double NodeSeparation { get; init; } = 50;
-        public double LayerSeparation { get; init; } = 80;
-        public double IdealEdgeLength { get; init; } = 120;
-        public double OffsetX { get; init; } = 50;
-        public double OffsetY { get; init; } = 50;
-        public bool IncludeSelfLinks { get; init; }
-    }
+
+
 }

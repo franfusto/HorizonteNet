@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -45,7 +46,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -57,7 +58,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -69,7 +70,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -89,7 +90,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -103,7 +104,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -116,7 +117,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -129,7 +130,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         ///  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -258,7 +259,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Archivo.  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -272,7 +273,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Archivo.  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -282,13 +283,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -342,7 +343,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Archivo.  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -357,7 +358,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Archivo.  Avisos de Fenómenos Meteorológicos adversos para el rango de fechas seleccionado (datos desde 18/06/2018).
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="fechaIniStr">Fecha Inicial (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="fechaFinStr">Fecha Final (AAAA-MM-DDTHH:MM:SSUTC)</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
@@ -368,13 +369,13 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'fechaIniStr' is set
             if (fechaIniStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaIniStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
+                throw new ApiException(400, "Missing required parameter 'fechaIniStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
             }
 
             // verify the required parameter 'fechaFinStr' is set
             if (fechaFinStr == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'fechaFinStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
+                throw new ApiException(400, "Missing required parameter 'fechaFinStr' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosArchivo");
             }
 
 
@@ -430,7 +431,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Último.  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -443,7 +444,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Último.  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -452,7 +453,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosLtimo");
+                throw new ApiException(400, "Missing required parameter 'area' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosLtimo");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -505,7 +506,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Último.  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -519,7 +520,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Avisos de Fenómenos Meteorológicos Adversos. Último.  Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área | |- -- -- -- -- -|- -- -- -- -- -| | esp  | España| | 61  | Andalucía   | | 62  | Aragón   | | 63  | Asturias, Principado de  | | 64  | Ballears, Illes   | | 78  | Ceuta   | | 65  | Canarias   | | 66  | Cantabria   | | 67  | Castilla y León   | | 68  | Castilla - La Mancha   | | 69  | Cataluña   | | 77  | Comunitat Valenciana   | | 70  | Extremadura   | | 71  | Galicia   | | 72  | Madrid, Comunidad de    | | 79  | Melilla   | | 73  | Murcia, Región de   | | 74  | Navarra, Comunidad Foral de   | | 75  | País Vasco | | 76  | Rioja, La</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -529,7 +530,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosLtimo");
+                throw new ApiException(400, "Missing required parameter 'area' when calling AvisosCapApi->AvisosDeFenmenosMeteorolgicosAdversosLtimo");
             }
 
 

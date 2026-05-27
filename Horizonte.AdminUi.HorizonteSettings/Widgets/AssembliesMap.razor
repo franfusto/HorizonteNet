@@ -189,8 +189,8 @@
             if (Diagram.Nodes.Any(n => n.Title == nodeTitle)) continue;
 
             // Lógica de filtrado
-            bool matchesFilter = !filters.Any() || filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
-            bool matchesHide = hideFilters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+            bool matchesFilter = !filters.Any() || filters.Any(f => name != null && name.Contains(f, StringComparison.OrdinalIgnoreCase));
+            bool matchesHide = hideFilters.Any(f => name != null && name.Contains(f, StringComparison.OrdinalIgnoreCase));
             
             // FilterText tiene preferencia: si coincide con FilterText, se muestra siempre.
             // Si FilterText está vacío, se muestra si no coincide con HideText.
@@ -223,20 +223,20 @@
             ? Array.Empty<string>()
             : HideText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        bool matchesFilter = !filters.Any() || filters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
-        bool matchesHide = hideFilters.Any(f => name.Contains(f, StringComparison.OrdinalIgnoreCase));
+        bool matchesFilter = !filters.Any() || filters.Any(f => name != null && name.Contains(f, StringComparison.OrdinalIgnoreCase));
+        bool matchesHide = hideFilters.Any(f => name != null && name.Contains(f, StringComparison.OrdinalIgnoreCase));
 
         // FilterText tiene preferencia: si coincide con FilterText, se muestra siempre.
         // Si FilterText está vacío, se muestra si no coincide con HideText.
         bool shouldShow = filters.Any() ? matchesFilter : !matchesHide;
         
-        bool isStartAssembly = name.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
+        bool isStartAssembly = name != null && name.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
 
         if (!shouldShow && !isStartAssembly)
             return;
 
         NodeModel sourceNode;
-        if (Diagram.Nodes.FirstOrDefault(n => n.Title == nodeTitle) is NodeModel existingNode)
+        if (Diagram.Nodes.FirstOrDefault(n => n.Title == nodeTitle) is { } existingNode)
         {
             sourceNode = existingNode;
         }
@@ -265,17 +265,17 @@
                     var targetName = targetAssembly.GetName().Name ?? targetAssembly.FullName;
                     var targetNodeTitle = $"{targetName}.dll";
 
-                    bool targetMatchesFilter = !filters.Any() || filters.Any(f => targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
-                    bool targetMatchesHide = hideFilters.Any(f => targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
+                    bool targetMatchesFilter = !filters.Any() || filters.Any(f => targetName != null && targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
+                    bool targetMatchesHide = hideFilters.Any(f => targetName != null && targetName.Contains(f, StringComparison.OrdinalIgnoreCase));
                     
                     bool targetShouldShow = filters.Any() ? targetMatchesFilter : !targetMatchesHide;
                     
-                    bool targetIsStartAssembly = targetName.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
+                    bool targetIsStartAssembly = targetName != null && targetName.Contains(effectiveStartName, StringComparison.OrdinalIgnoreCase);
 
                     if (!targetShouldShow && !targetIsStartAssembly)
                         continue;
 
-                    NodeModel targetNode = Diagram.Nodes.FirstOrDefault(n => n.Title == targetNodeTitle) as NodeModel;
+                    NodeModel? targetNode = Diagram.Nodes.FirstOrDefault(n => n.Title == targetNodeTitle) as NodeModel;
                     if (targetNode == null)
                     {
                         targetNode = Diagram.Nodes.Add(new NodeModel(position: new Point(x + 300, y))

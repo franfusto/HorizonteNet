@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 MapaConLosRayosRegistradosEnPeriodoStandardLtimoElaborado(int operationIndex = 0);
@@ -43,7 +44,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> MapaConLosRayosRegistradosEnPeriodoStandardLtimoElaboradoWithHttpInfo(int operationIndex = 0);
@@ -62,7 +63,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -74,7 +75,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -202,7 +203,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa con los rayos registrados en periodo standard. Último elaborado. Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 MapaConLosRayosRegistradosEnPeriodoStandardLtimoElaborado(int operationIndex = 0)
@@ -214,7 +215,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa con los rayos registrados en periodo standard. Último elaborado. Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> MapaConLosRayosRegistradosEnPeriodoStandardLtimoElaboradoWithHttpInfo(int operationIndex = 0)
@@ -268,7 +269,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa con los rayos registrados en periodo standard. Último elaborado. Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -281,7 +282,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mapa con los rayos registrados en periodo standard. Último elaborado. Imagen de las descargas caídas en el territorio nacional durante un período de 12 horas.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>

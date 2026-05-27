@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         Model200 DatosDeObservacinTiempoActual(int operationIndex = 0);
@@ -43,7 +44,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         ApiResponse<Model200> DatosDeObservacinTiempoActualWithHttpInfo(int operationIndex = 0);
@@ -53,7 +54,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -65,7 +66,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -76,7 +77,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -88,7 +89,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -108,7 +109,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -120,7 +121,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -131,7 +132,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -144,7 +145,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -156,7 +157,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -169,7 +170,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -298,7 +299,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
         public Model200 DatosDeObservacinTiempoActual(int operationIndex = 0)
@@ -310,7 +311,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
         public Org.OpenAPITools.Client.ApiResponse<Model200> DatosDeObservacinTiempoActualWithHttpInfo(int operationIndex = 0)
@@ -364,7 +365,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of Model200</returns>
@@ -377,7 +378,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas todas las estaciones meteorológicas de las que se han recibido datos en ese período. Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (Model200)</returns>
@@ -434,7 +435,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -447,7 +448,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -456,7 +457,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ObservacionConvencionalApi->DatosDeObservacinTiempoActual1");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ObservacionConvencionalApi->DatosDeObservacinTiempoActual1");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -509,7 +510,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -523,7 +524,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Datos de observación. Tiempo actual. Datos de observación horarios de las últimas 12 horas de la estación meterológica que se pasa como parámetro (idema). Frecuencia de actualización: continuamente. &lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional horaria&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="idema">Índicativo climatológico de la EMA</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -533,7 +534,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'idema' is set
             if (idema == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'idema' when calling ObservacionConvencionalApi->DatosDeObservacinTiempoActual1");
+                throw new ApiException(400, "Missing required parameter 'idema' when calling ObservacionConvencionalApi->DatosDeObservacinTiempoActual1");
             }
 
 
@@ -588,7 +589,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mensajes de observación. Último elaborado. Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -601,7 +602,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mensajes de observación. Último elaborado. Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -610,7 +611,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'tipomensaje' is set
             if (tipomensaje == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'tipomensaje' when calling ObservacionConvencionalApi->MensajesDeObservacinLtimoElaborado");
+                throw new ApiException(400, "Missing required parameter 'tipomensaje' when calling ObservacionConvencionalApi->MensajesDeObservacinLtimoElaborado");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -663,7 +664,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mensajes de observación. Último elaborado. Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -677,7 +678,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Mensajes de observación. Último elaborado. Últimos mensajes de observación. Para los SYNOP y TEMP devuelve los mensajes de las últimas 24 horas y para los CLIMAT de los 40 últimos dias. Se pasa como parámetro el tipo de mensaje que se desea (tipomensaje). El resultado de la petición es un fichero en formato tar.gz, que contiene los boletines en formato json y bufr.&lt;br&gt;&lt;br&gt; &lt;a href&#x3D;&#39;https://opendata.aemet.es/centrodedescargas/rssatom&#39;     target&#x3D;&#39;_blank&#39;&gt;Canales RSS&lt;/a&gt; disponibles:         &lt;ul&gt;         &lt;li&gt;Observación convencional mensajes: climat&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: synop&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: temp&lt;/li&gt;         &lt;li&gt;Observación convencional mensajes: todos&lt;/li&gt;         &lt;/ul&gt;
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="tipomensaje"> | Código | Tipo de Mensaje | |- -- -- -- -- -|- -- -- -- -- -| | climat  | climat   | | synop  | synop   | | temp  | temp  </param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -687,7 +688,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'tipomensaje' is set
             if (tipomensaje == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'tipomensaje' when calling ObservacionConvencionalApi->MensajesDeObservacinLtimoElaborado");
+                throw new ApiException(400, "Missing required parameter 'tipomensaje' when calling ObservacionConvencionalApi->MensajesDeObservacinLtimoElaborado");
             }
 
 

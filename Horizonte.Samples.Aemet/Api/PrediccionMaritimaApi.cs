@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using Horizonte.Samples.Aemet.Client;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -32,7 +33,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -44,7 +45,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -55,7 +56,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -67,7 +68,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -87,7 +88,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -100,7 +101,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -112,7 +113,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -125,7 +126,7 @@ namespace Org.OpenAPITools.Api
         /// <remarks>
         /// Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </remarks>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -254,7 +255,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima costera. Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -267,7 +268,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima costera. Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -276,7 +277,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'costa' is set
             if (costa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'costa' when calling PrediccionMaritimaApi->PrediccinMartimaCostera");
+                throw new ApiException(400, "Missing required parameter 'costa' when calling PrediccionMaritimaApi->PrediccinMartimaCostera");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -329,7 +330,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima costera. Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -343,7 +344,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima costera. Predicción para un periodo de 24 horas de las condiciones meteorológicas para la zona costera pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="costa"> | Código | Área Costera | |- -- -- -- -- -|- -- -- -- -- -| | 42 | Costa de Andalucía Occidental y Ceuta   | | 47  | Costa de Andalucía Oriental y Melilla   | | 41  | Costa de Asturias, Cantabria y País Vasco  | | 45  | Costa de Cataluña   | | 40  | Costa de Galicia   | | 44  | Costa de Illes Balears   | | 43  | Costa de las Islas Canarias  | | 46  | Costa de Valencia y Murcia</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -353,7 +354,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'costa' is set
             if (costa == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'costa' when calling PrediccionMaritimaApi->PrediccinMartimaCostera");
+                throw new ApiException(400, "Missing required parameter 'costa' when calling PrediccionMaritimaApi->PrediccinMartimaCostera");
             }
 
 
@@ -408,7 +409,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima de alta mar. Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>Model200</returns>
@@ -421,7 +422,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima de alta mar. Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <returns>ApiResponse of Model200</returns>
@@ -430,7 +431,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionMaritimaApi->PrediccinMartimaDeAltaMar");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionMaritimaApi->PrediccinMartimaDeAltaMar");
             }
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
@@ -483,7 +484,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima de alta mar. Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -497,7 +498,7 @@ namespace Org.OpenAPITools.Api
         /// <summary>
         /// Predicción marítima de alta mar. Predicción para un periodo de 24 horas de las condiciones meteorológicas para el área marítima pasada por parámetro.
         /// </summary>
-        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <exception cref="ApiException">Thrown when fails to make API call</exception>
         /// <param name="area"> | Código | Área de Alta Mar | |- -- -- -- -- -|- -- -- -- -- -| | 0 | Océano Atlántico al sur de 35º N   | | 1  | Océano Atlántico al norte de 30º N   | | 2  | Mar Mediterráneo</param>
         /// <param name="operationIndex">Index associated with the operation.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
@@ -507,7 +508,7 @@ namespace Org.OpenAPITools.Api
             // verify the required parameter 'area' is set
             if (area == null)
             {
-                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'area' when calling PrediccionMaritimaApi->PrediccinMartimaDeAltaMar");
+                throw new ApiException(400, "Missing required parameter 'area' when calling PrediccionMaritimaApi->PrediccinMartimaDeAltaMar");
             }
 
 

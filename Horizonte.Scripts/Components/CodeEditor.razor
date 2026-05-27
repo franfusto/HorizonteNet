@@ -14,13 +14,6 @@
     </RadzenStack>
 
     <MonacoEditor @bind-Value="@Cell.Contents" Language="csharp" />
-@***
-<RadzenTextArea @bind-Value="Cell.Contents" Style="width: 100%; font-family: monospace;" Rows="5" />
-    <MonacoEditor 
-        Language="Language.CSharp"
-        ScriptContent="@Cell.Contents"/>
-
-***@
 
 </RadzenStack>
 
@@ -33,11 +26,5 @@
 
     [Parameter]
     public EventCallback OnRun { get; set; }
-    private string Codigo = @"public class Test
-{
-    public void Run()
-    {
-        Console.WriteLine(""Hola"");
-    }
-}";
+
 }
