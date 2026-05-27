@@ -19,8 +19,11 @@
             <_Parameter1>HORZEXP001</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
-    
-    <ItemGroup>
-        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
+
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
     </ItemGroup>
 </Project>

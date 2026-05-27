@@ -6,9 +6,13 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)" />
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="PvRecorder" Version="1.2.13" />

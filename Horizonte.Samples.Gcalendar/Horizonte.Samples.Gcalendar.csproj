@@ -5,20 +5,21 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
-        
     </PropertyGroup>
 
 
-
-  
-    <ItemGroup>
-      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
-      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-    </ItemGroup>  
-    <ItemGroup>
-        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.73.0.3993" />
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
     </ItemGroup>
-
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.73.0.3993"/>
+    </ItemGroup>
 
 
 </Project>

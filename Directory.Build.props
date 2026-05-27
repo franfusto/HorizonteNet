@@ -2,13 +2,17 @@
   <PropertyGroup>
     <!-- Metadatos comunes para todos los paquetes NuGet -->
     <Authors>franfusto</Authors>
-    <Company></Company>
+    <Company>HorizonteNet</Company>
     <Product>HorizonteNet</Product>
     <RepositoryUrl>https://github.com/franfusto/HorizonteNet</RepositoryUrl>
     <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>10.0.0-beta</Version>
+
+    <!-- Referencias a proyectos o a versión -->
+    <InternalPackageVersion Condition="'$(InternalPackageVersion)' == ''">$(Version)</InternalPackageVersion>
+    <UseProjectReferences Condition="'$(UseProjectReferences)' == ''">true</UseProjectReferences>
     
     <!-- Configuración de compilación común -->
     <TargetFramework>net10.0</TargetFramework>

@@ -8,19 +8,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Radzen.Blazor" Version="8.4.2" />
-      <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
+        <PackageReference Include="Radzen.Blazor" Version="8.4.2"/>
     </ItemGroup>
-
+    
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
+        <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="Horizonte.Extension.AspNetCore" Version="$(InternalPackageVersion)"/>
+    </ItemGroup>
+    
     <ItemGroup>
-      <Content Update="wwwroot\app.css">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Update="wwwroot\blazor.web.js">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+        <Content Update="wwwroot\app.css">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\blazor.web.js">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
-
 
 
 </Project>

@@ -6,20 +6,19 @@
     </PropertyGroup>
 
 
-   
-    <ItemGroup>
-      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)" />
     </ItemGroup>
 
-
-   
     <ItemGroup>
-      <PackageReference Include="Microsoft.Msagl" Version="1.1.6" />
-      <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.4" />
+        <PackageReference Include="Microsoft.Msagl" Version="1.1.6"/>
+        <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.4"/>
     </ItemGroup>
-
-
 
 
 </Project>

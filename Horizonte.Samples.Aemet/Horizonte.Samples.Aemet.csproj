@@ -8,11 +8,14 @@
     </PropertyGroup>
 
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
         <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
-
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)" />
+    </ItemGroup>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <PackageReference Include="Polly" Version="8.6.5" />

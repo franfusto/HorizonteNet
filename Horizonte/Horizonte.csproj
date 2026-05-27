@@ -1,20 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <ServerGarbageCollection>true</ServerGarbageCollection>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <DoNotCopyLocalIfInGac>true</DoNotCopyLocalIfInGac>
         <Description>Entorno modular para .NET 8 basado en Blazor y Radzen. Núcleo reutilizable para apps y servicios.</Description>
         <PackageTags>horizonte;blazor;radzen;modular;net8;framework</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DebugType>embedded</DebugType>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DebugSymbols>true</DebugSymbols>
-      <DebugType>embedded</DebugType>
-    </PropertyGroup>
+
     <ItemGroup>
         <None Remove="logconfig.xml"/>
         <None Remove="defaults.json"/>

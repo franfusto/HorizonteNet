@@ -3,32 +3,28 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <PublishAot>false</PublishAot>
-        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+        
         <InvariantGlobalization>true</InvariantGlobalization>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
 
     <ItemGroup>
-      <Content Remove="horizonte.default.json" />
-      <Content Include="bin\Debug\net10.0\cache_commands.csv" />
-      <Content Include="bin\Debug\net10.0\horizonte.json" />
-      <Content Include="bin\Debug\net10.0\horizonte_backup.json" />
-      <EmbeddedResource Include="horizonte.default.json">
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      </EmbeddedResource>
+        <Content Include="bin\Debug\net10.0\cache_commands.csv"/>
+        <Content Include="bin\Debug\net10.0\horizonte.json"/>
+        <Content Include="bin\Debug\net10.0\horizonte_backup.json"/>
     </ItemGroup>
+    
     <ItemGroup>
-      <ProjectReference Include="..\..\Horizonte\Horizonte.csproj" />
+        <Content Remove="horizonte.default.json"/>
+        <EmbeddedResource Include="horizonte.default.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\Horizonte\Horizonte.csproj"/>
     </ItemGroup>
 
 
-   
 </Project>

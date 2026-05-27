@@ -8,10 +8,13 @@
         <RootNamespace>Modulo2</RootNamespace>
 
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
     </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+    </ItemGroup>
+
     <ItemGroup>
         <None Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>

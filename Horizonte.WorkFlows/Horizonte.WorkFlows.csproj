@@ -6,10 +6,17 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
-        <ProjectReference Include="..\Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj" />
         <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+        <ProjectReference Include="..\Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="Horizonte.Extension.AiWorkFlows" Version="$(InternalPackageVersion)"/>
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.4" />
     </ItemGroup>
 

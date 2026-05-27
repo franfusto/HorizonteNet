@@ -10,9 +10,13 @@
       <PackageReference Include="GtkSharp" Version="3.24.24.95" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>
+        <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)"/>
     </ItemGroup>
 
     <ItemGroup>

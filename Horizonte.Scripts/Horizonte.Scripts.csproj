@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
 
@@ -14,13 +15,16 @@
     </ItemGroup>
 
 
-    <ItemGroup>
-      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-        
+      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
     </ItemGroup>
-
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte.Extensions.Interactive" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)"/>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="BlazorMonaco" Version="3.4.0" />
