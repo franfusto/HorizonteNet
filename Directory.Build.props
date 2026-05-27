@@ -21,6 +21,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Mantenemos funciones experimentales -->
+    <NoWarn>$(NoWarn);HORZEXP001</NoWarn>
   </PropertyGroup>
 
 

@@ -1,53 +1,56 @@
 using System.Reflection;
 using System.Reflection.Metadata;
-using System.Text;
 using System.Text.RegularExpressions;
-using Horizonte;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.DotNet.Interactive;
-using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
 using Microsoft.Extensions.Logging;
-using Microsoft.DotNet.Interactive.Events;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 namespace Horizonte.Extensions.Interactive;
 
+/// <summary>
+/// La clase estática <c>Extensions</c> proporciona métodos de extensión para facilitar la interacción con componentes de núcleo y scripts en el contexto de uso de .NET Interactive.
+/// </summary>
+/// <remarks>
+/// Esta clase incluye métodos para construir un objeto de tipo <c>CompositeKernel</c>, compilar definiciones de script y cargar módulos de script de manera asincrónica.
+/// Facilita la integración y personalización de funciones nucleares y de scripts dentro de entornos proporcionados.
+/// </remarks>
 public static class Extensions
 {
     /// <summary>
-    /// Construye un objeto de tipo <c>CompositeKernel</c> de manera asincrónica, utilizando las opciones del núcleo y el entorno proporcionados.
+    /// Construye un <see cref="CompositeKernel"/> de forma asincrónica utilizando las opciones de kernel especificadas y un proveedor de servicios.
     /// </summary>
     /// <param name="kernelOptions">
-    /// Objeto de configuración que contiene opciones específicas para la construcción del núcleo.
+    /// Configuraciones y opciones que se utilizarán para construir el kernel compuesto.
     /// </param>
-    /// <param name="env">
-    /// Instancia que implementa la interfaz <c>IHorizonteEnv</c>, utilizada para definir información o funcionalidades del entorno necesarias para la construcción del núcleo.
+    /// <param name="serviceProvider">
+    /// Proveedor de servicios que proporciona las dependencias necesarias al construir el kernel.
     /// </param>
     /// <returns>
-    /// Una tarea asincrónica que, al completarse, devuelve una instancia de <c>CompositeKernel</c>.
+    /// Una tarea que representa la operación asincrónica. La tarea contiene el <see cref="CompositeKernel"/> construido.
     /// </returns>
-    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions,IServiceProvider serviceProvider)
+    /// <exception cref="Exception">
+    /// Se produce si ocurre un error durante la construcción del kernel compuesto.
+    /// </exception>
+    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions,IServiceProvider serviceProvider,bool aislado = false)
     {
         try
         {
             var csharpKernel = new Microsoft.DotNet.Interactive.CSharp.CSharpKernel();
 
-            // Interceptar #r "nuget:..." y otros comandos específicos de Horizonte
-            csharpKernel.AddHorizonteMiddleware(serviceProvider);
+            if (!aislado)
+            {
+                // Inyectar el proveedor de servicios
+                csharpKernel.AddHorizonteMiddleware(serviceProvider);
+                await csharpKernel.SetValueAsync("ServiceProvider", serviceProvider, typeof(IServiceProvider));
 
-            // Obtener la versión del ensamblado Horizonte actualmente cargado
-            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; ///// revisar*********************************************************
-            var horizonteVersion = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
-            AssemblyNameInfo currenthorzonte = new AssemblyNameInfo("Horizonte", new Version(horizonteVersion));
-            await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:{currenthorzonte.Name},{currenthorzonte.Version}\""));
-            
-            // Inyectar el entorno modular
-            await csharpKernel.SetValueAsync("ServiceProvider", serviceProvider, typeof(IServiceProvider));
-
+                // Incluimos soporte mínimo a referencias de ensamblados
+                await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:Horizonte,10.0.0\""));
+                await csharpKernel.SendAsync(new SubmitCode("#r \"nuget: Microsoft.Extensions.DependencyInjection.Abstractions, 10.0.1\""));
+            }
             //aqui hay que implementar la función display para integrarla con el Widget...
             //await csharpKernel.SendAsync(new SubmitCode("static void display(object x) => Microsoft.DotNet.Interactive.KernelInvocationContext.Current?.Display(x, \"text/plain\");"));
             await csharpKernel.SendAsync(new SubmitCode("static void display(object x) =>Console.WriteLine(x.ToString());"));

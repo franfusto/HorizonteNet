@@ -106,7 +106,7 @@
         <RadzenStack Gap="1rem">
             @foreach (var element in Notebook.Elements)
             {
-                <div class="cell-container rz-border-radius rz-border-primary-lighter rz-background-color-base rz-shadow-1">
+                <div class="cell-container rz-border-radius rz-border-primary-lighter">
                         @if (element is InteractiveDocumentElement cellElement)
                         {
                             <div class="cell-handle rz-border-color-lighter-bottom">
@@ -183,6 +183,7 @@ else
     private InteractiveDocumentElement? _currentCell;
     private CompositeKernel? _kernel;
     private bool _isKernelLoaded;
+    private bool _isolated = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -210,16 +211,17 @@ else
     // kernel
     
 
-    private async Task LoadKernel(KernelItem? kernelItem)
+    private async Task LoadKernel(KernelItem kernelItem)
     {
-        if (kernelItem == null) return;
+        _isolated = kernelItem.Name!="Default";
         _isKernelLoaded = false;
         if(_kernel!=null)
         {
             _kernel.Dispose();
+            _kernel = null;
         }
-        var options = new KernelOptions(); // sacar de configuración
-        _kernel = await options.BuildKernelAsync(ServiceProvider);
+        var options = new KernelOptions(); 
+        _kernel = await options.BuildKernelAsync(ServiceProvider,_isolated);
 
         _kernel.KernelEvents.Subscribe(OnKernelEvent);
         _isKernelLoaded = true;

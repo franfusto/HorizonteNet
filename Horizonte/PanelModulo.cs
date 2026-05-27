@@ -65,7 +65,7 @@ public class PanelModulo
     }
 
 
-
+/*
     [HorizonteCommand("Horizonte_AssetsMap")]
     public List<string> AssetsMap()
     {
@@ -75,7 +75,7 @@ public class PanelModulo
             .ToList();
         return list;
     }
-    
+    */
     
     //App
 

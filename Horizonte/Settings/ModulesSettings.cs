@@ -62,7 +62,14 @@ public class ModulesSettings
     public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
 
 
+    /// <summary>
+    /// Propiedad que representa un diccionario para mapear nombres de ensamblados a sus paquetes correspondientes.
+    /// Este diccionario se utiliza para asociar ensamblados con los paquetes NuGet que los proveen, facilitando la gestión
+    /// de dependencias dentro de la aplicación. Las claves del diccionario son los nombres de los ensamblados y los valores
+    /// son los identificadores de los paquetes. La comparación de cadenas para las claves se realiza sin distinguir entre mayúsculas y minúsculas.
+    /// </summary>
     public Dictionary<string, string> AssemblyToPackageMap { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    
     /// <summary>
     /// Representa una lista de dominios asociados a la configuración de módulos dentro de la aplicación.
     /// </summary>
