@@ -14,6 +14,18 @@ namespace Horizonte.AdminUi.HorizonteSettings;
 [HorizonteModule("Horizonte.AdminUi.HorizonteSettings")]
 public class PanelModulo
 {
+    /// `AssemblyToPackageMap` es un diccionario estático de solo lectura que se utiliza para mapear nombres de ensamblados a nombres de paquetes.
+    /// Este mapeo ayuda a identificar qué paquete corresponde a cada ensamblado dentro de la configuración de la aplicación.
+    /// El diccionario utiliza `StringComparer.OrdinalIgnoreCase` para permitir coincidencias de claves sin diferenciar entre mayúsculas y minúsculas.
+    /// Cada entrada en el diccionario tiene como clave el nombre del ensamblado y como valor el nombre del paquete correspondiente.
+    /// /
+    [AssemblyMappingDefinition]
+    public static readonly Dictionary<string, string> AssemblyToPackageMap =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Blazor.Diagrams"] = "Z.Blazor.Diagrams",
+            ["Blazor.Diagrams.Core"] = "Z.Blazor.Diagrams.Core"
+        };
     private readonly ILogger<PanelModulo> _logger;
 
     /// <summary>

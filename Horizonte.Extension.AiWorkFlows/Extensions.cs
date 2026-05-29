@@ -1,7 +1,6 @@
 using Horizonte;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 namespace Horizonte.Extension.AiWorkFlows;
 
 public static class Extensions

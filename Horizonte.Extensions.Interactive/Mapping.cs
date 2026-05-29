@@ -1,4 +1,4 @@
-namespace Horizonte.AdminUi.HorizonteSettings;
+namespace Horizonte.Extensions.Interactive;
 
 /// <summary>
 /// Clase estática que proporciona un mapeo entre nombres de ensamblado y nombres de paquete NuGet.
@@ -20,7 +20,9 @@ public static class Mapping
     public static readonly Dictionary<string, string> AssemblyToPackageMap =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            ["Blazor.Diagrams"] = "Z.Blazor.Diagrams",
-            ["Blazor.Diagrams.Core"] = "Z.Blazor.Diagrams.Core"
+            ["Microsoft.CodeAnalysis"] = "Microsoft.CodeAnalysis.Common",
+            ["Microsoft.CodeAnalysis.Scripting"] = "Microsoft.CodeAnalysis.Scripting.Common",
+            ["Microsoft.CodeAnalysis.Workspaces"] = "ZMicrosoft.CodeAnalysis.Workspaces.Common"
         };
+
 }

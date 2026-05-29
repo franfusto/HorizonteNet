@@ -2,10 +2,15 @@ using System.Reflection;
 using Horizonte.Extension.AspNetCore;
 using Horizonte.Interfaces;
 using Horizonte.Samples.WebApp.Components;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Radzen;
 
 namespace Horizonte.Samples.WebApp;
 
+/// <inheritdoc />
 public class WebWorker :BackgroundService
 {
     private readonly ILogger<WebWorker> _log;
@@ -16,6 +21,7 @@ public class WebWorker :BackgroundService
     private readonly IhAssemblyManager _assemblyManager;
     private WebApplication? _app;
 
+    /// <inheritdoc />
     public WebWorker(ILogger<WebWorker> log, 
         IHGesCom gesCom, 
         IhContext context, 
@@ -31,6 +37,7 @@ public class WebWorker :BackgroundService
         _assemblyManager = assemblyManager;
     }
 
+    /// <inheritdoc />
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log.LogInformation("Starting Horizonte.Samples.WebApp.WebWorker");
@@ -64,12 +71,15 @@ public class WebWorker :BackgroundService
         return _app.RunAsync(url);
 
     }
+
+    /// <inheritdoc />
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Starting Horizonte.Samples.WebApp.WebWorker");
         return base.StartAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Ending Horizonte.Samples.WebApp.WebWorker");

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Horizonte.Samples.ServiceApp;
 
+/// <inheritdoc />
 public class WsWorker : BackgroundService
 {
     private WebApplication? _app;
@@ -16,6 +17,7 @@ public class WsWorker : BackgroundService
     private ServiceConfig _config = new();
 
 
+    /// <inheritdoc />
     public WsWorker(IServiceProvider serviceProvider)
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
@@ -23,6 +25,7 @@ public class WsWorker : BackgroundService
         _context = serviceProvider?.GetService<IhContext>();
     }
 
+    /// <inheritdoc />
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var builder = WebApplication.CreateBuilder();
@@ -69,6 +72,7 @@ public class WsWorker : BackgroundService
         ;
     }
 
+    /// <inheritdoc />
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _config = _context?.Get<ServiceConfig>() ?? new ServiceConfig();
@@ -77,6 +81,7 @@ public class WsWorker : BackgroundService
         return base.StartAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Web Service Worker");

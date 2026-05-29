@@ -1,5 +1,6 @@
 @implements IDisposable
 
+@using Microsoft.Agents.AI.Workflows
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 @inject ILogger<HGesCom> Logger
 @inject IServiceProvider ServiceProvider
@@ -338,7 +339,10 @@
             switch (nodeDef.Type)
             {
                 case WorkFlowNodeTypes.In:
-                    nodeModel = new NodeInModel(nodeDef);
+                    nodeModel = new NodeInModel(nodeDef)
+                    {
+                        RunMessage = string.Empty
+                    };
                     break;
                 case WorkFlowNodeTypes.Out:
                     nodeModel = new NodeOutModel(nodeDef);
@@ -387,7 +391,10 @@
 
                     if (DesignerMode == DesignerMode.Design)
                     {
-                        var control = new LinkSettingsControl(linkDef);
+                        var control = new LinkSettingsControl(linkDef)
+                        {
+                            OnConditionChanged = null!
+                        };
                         control.OnConditionChanged += HandleConditionChanged;
                         _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(control);
                     }
@@ -620,7 +627,10 @@
         switch (type)
         {
             case WorkFlowNodeTypes.In:
-                nodeModel = new NodeInModel(nodeDef);
+                nodeModel = new NodeInModel(nodeDef)
+                {
+                    RunMessage = null!
+                };
                 nodeModel.AddPort(PortAlignment.Right);
                 break;
             case WorkFlowNodeTypes.Out:

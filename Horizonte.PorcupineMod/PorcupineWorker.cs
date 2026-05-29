@@ -15,20 +15,19 @@ public class PorcupineWorker : BackgroundService
     private IhContext? _context;
     private PorcupineConfig _config = new();
     private CancellationTokenSource? _cancellationTokenSource;
-    private Porcupine _porcupine;
-    private PvRecorder _recorder;
+    private Porcupine? _porcupine;
+    private PvRecorder? _recorder;
     private IHCredManager? _credManager;
 
 
     /// <inheritdoc />
-    public PorcupineWorker(ILogger<PorcupineWorker> logger,IhContext context,IHCredManager credManager, Porcupine porcupine, PvRecorder recorder)
+    public PorcupineWorker(ILogger<PorcupineWorker> logger,IhContext context,IHCredManager credManager )
     {
         _log = logger;
         _context = context;
         _config = _context?.Get<PorcupineConfig>() ?? new PorcupineConfig();
         _credManager = credManager;
-        _porcupine = porcupine;
-        _recorder = recorder;
+
     }
 
     /// <inheritdoc />
@@ -36,6 +35,8 @@ public class PorcupineWorker : BackgroundService
     {
         Task.Run(() =>
         {
+            ArgumentNullException.ThrowIfNull(_porcupine);
+            ArgumentNullException.ThrowIfNull(_recorder);
             _log?.LogInformation($"Using device: {_recorder.SelectedDevice}");
             Console.WriteLine("Listening...");
             while (!stoppingToken.IsCancellationRequested)
@@ -129,8 +130,8 @@ public class PorcupineWorker : BackgroundService
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         Thread.Sleep(500); // esperar recorder
-        _porcupine.Dispose();
-        _recorder.Dispose();
+        if (_porcupine != null) _porcupine.Dispose();
+        if (_recorder != null) _recorder.Dispose();
         return Task.CompletedTask;
     }
 }

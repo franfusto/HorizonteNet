@@ -96,13 +96,6 @@ public class HorizonteStaticFileMiddelware
         _logger = logger;
         _fileProvider = _options.FileProvider ?? ResolveFileProvider(hostingEnv);
 
-        // See HostingEnvironmentExtensions.Initialize
-        if (_fileProvider is NullFileProvider && _fileProvider == hostingEnv.WebRootFileProvider)
-        {
-            _logger.LogWarning(
-                "The web root file provider is not available, falling back to the content root file provider.");
-        }
-
         _logger.LogInformation(
             "Horizonte static file middleware registered for domain {DomainName}",
             _domainName ?? Const.DefaultDomainName);

@@ -221,8 +221,9 @@ else
             _kernel.Dispose();
             _kernel = null;
         }
-        var options = new KernelOptions(); 
-        _kernel = await options.BuildKernelAsync(ServiceProvider,_isolated);
+        var options = new KernelOptions();
+        options.Isolated = _isolated; // refactorizar, se ha añadido isolateda a las opciones del kernel
+        _kernel = await options.BuildKernelAsync(ServiceProvider);
 
         _kernel.KernelEvents.Subscribe(OnKernelEvent);
         _isKernelLoaded = true;

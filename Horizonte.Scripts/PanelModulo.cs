@@ -1,6 +1,7 @@
 using Horizonte;
 using Horizonte.Extensions.Interactive;
 using Horizonte.Interfaces;
+using Horizonte.Scripts.Config;
 using Horizonte.Scripts.Widgets;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,8 @@ namespace Horizonte.Scripts;
 [HorizonteModule("Horizonte.Scripts")]
 public class PanelModulo
 {
+    
+
     private readonly ILogger<PanelModulo> _logger;
     private readonly IhContext _context;
     private readonly IServiceProvider _serviceProvider;

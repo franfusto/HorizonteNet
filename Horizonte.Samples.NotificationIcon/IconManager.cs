@@ -4,14 +4,40 @@ using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Samples.NotificationIcon;
 
+/// <summary>
+/// La clase IconManager es responsable de manejar la visualización y ocultación del icono de notificación en el sistema operativo.
+/// Utiliza <c>NotiIconSettings</c> para la configuración del icono y del menú asociado, y puede utilizar un <c>ILogger</c> para registrar eventos y errores.
+/// </summary>
+/// <remarks>
+/// Esta clase inicia y gestiona un ícono de notificación en el sistema operativo al ejecutar una aplicación interna mediante tareas asincrónicas.
+/// </remarks>
+/// <param name="notiIconSettings">
+/// Configuración del icono de notificación, incluyendo el título, recursos y elementos del menú.
+/// </param>
+/// <param name="logger">
+/// (Opcional) Instancia de <c>ILogger</c> para registrar eventos tales como errores o acciones importantes.
+/// </param>
+/// <param name="gesCom">
+/// (Opcional) Interfaz que proporciona funcionalidades para ejecutar y administrar comandos en base a roles.
+/// </param>
+/// <example>
+/// La clase se utiliza típicamente en combinación con otras clases de inicialización de módulos para configurar y mostrar iconos de notificación.
+/// </example>
 public class IconManager(NotiIconSettings notiIconSettings, ILogger? logger, IHGesCom? gesCom)
 {
-#pragma warning disable CS0612 // Type or member is obsolete
     private bool _running;
     private StatusIcon? _icon;
     private Menu? _icoMenu;
 
 
+    /// <summary>
+    /// Muestra el icono de notificación en el sistema operativo.
+    /// Este método prepara y ejecuta el entorno necesario para la presentación del icono.
+    /// Si ya se está ejecutando, no realiza ninguna acción.
+    /// Inicia el sistema de aplicaciones, configura el menú relacionado y el icono,
+    /// y luego ejecuta la aplicación para que el icono permanezca visible hasta que se decida ocultar.
+    /// Cualquier error durante este proceso se registra utilizando el logger disponible.
+    /// </summary>
     public void ShowIcon()
     {
         if (_running) return;
@@ -32,6 +58,13 @@ public class IconManager(NotiIconSettings notiIconSettings, ILogger? logger, IHG
         }
     }
 
+    /// <summary>
+    /// Oculta el icono de notificación que actualmente se muestra en el sistema operativo.
+    /// Si el icono no está en ejecución o si no ha sido inicializado, el método no realiza ninguna acción.
+    /// Una vez que el icono es oculto, también se libera de la memoria mediante el método Dispose()
+    /// y la aplicación se cierra llamando a Application.Quit().
+    /// Cualquier error que ocurra durante este proceso se registra utilizando el logger disponible.
+    /// </summary>
     public void HideIcon()
     {
         if (!_running) return;
@@ -82,5 +115,4 @@ public class IconManager(NotiIconSettings notiIconSettings, ILogger? logger, IHG
         if (!string.IsNullOrEmpty(notiIconSettings.OnActivatedCommand))
             gesCom?.RunCommand(notiIconSettings.OnActivatedCommand);
     }
-#pragma warning restore CS0612 // Type or member is obsolete
 }

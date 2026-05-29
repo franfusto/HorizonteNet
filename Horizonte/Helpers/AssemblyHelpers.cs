@@ -226,5 +226,44 @@ public static class AssemblyHelpers
             .Select(a => a.GetType(type.FullName ?? string.Empty, throwOnError: false, ignoreCase: false))
             .FirstOrDefault(t => t != null);
     }
+
+    /// <summary>
+    /// Intenta crear un objeto <see cref="AssemblyName"/> para la resolución en tiempo de ejecución de un ensamblado a partir de su nombre completo.
+    /// </summary>
+    /// <param name="assemblyFullName">El nombre completo del ensamblado que se va a resolver.</param>
+    /// <param name="assemblyName">Cuando este método regresa, contiene un objeto <see cref="AssemblyName"/> que representa el ensamblado, si la creación fue exitosa; de lo contrario, es <c>null</c>.</param>
+    /// <returns>Devuelve <c>true</c> si se pudo crear el objeto <see cref="AssemblyName"/> correctamente; de lo contrario, devuelve <c>false</c>.</returns>
+    public static bool TryCreateAssemblyNameForRuntimeResolution(
+        string? assemblyFullName,
+        out AssemblyName assemblyName)
+    {
+        assemblyName = null!;
+
+        if (string.IsNullOrWhiteSpace(assemblyFullName))
+            return false;
+
+        var versionPart = assemblyFullName
+            .Split(',', StringSplitOptions.TrimEntries)
+            .FirstOrDefault(part => part.StartsWith("Version=", StringComparison.OrdinalIgnoreCase));
+
+        if (versionPart != null)
+        {
+            var version = versionPart["Version=".Length..];
+
+            if (version.Contains('-', StringComparison.Ordinal))
+                return false;
+        }
+
+        try
+        {
+            assemblyName = new AssemblyName(assemblyFullName);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
 }
  

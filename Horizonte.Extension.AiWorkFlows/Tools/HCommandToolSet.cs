@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Horizonte.Ai.Agent;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
@@ -13,10 +12,10 @@ public class HCommandToolSet
     private ILogger _logger;
     public HCommandToolSet(IServiceProvider serviceProvider, OpenAIClient embedderCliente, string emmbedderModel)
     {
-        _gesCom = serviceProvider.GetService<IHGesCom>();
-        _logger = serviceProvider.GetService<ILogger<HCommandToolSet>>();
+        _gesCom = serviceProvider.GetService<IHGesCom>()!;
+        _logger = serviceProvider.GetService<ILogger<HCommandToolSet>>()!;
         _commandVectorManager = new CommandVectorManager(serviceProvider, embedderCliente, emmbedderModel);
-        _commandVectorManager.InitializeManagerAsync();
+        _ = _commandVectorManager.InitializeManagerAsync();
         
     }
 

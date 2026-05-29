@@ -35,13 +35,16 @@ public static class Extensions
     /// <exception cref="Exception">
     /// Se produce si ocurre un error durante la construcción del kernel compuesto.
     /// </exception>
-    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions,IServiceProvider serviceProvider,bool aislado = false)
+    public static async Task<CompositeKernel> BuildKernelAsync(this KernelOptions kernelOptions,IServiceProvider serviceProvider)
     {
+        var logger = serviceProvider.GetRequiredService<ILogger>();
+        logger.LogInformation($"Building kernel...{kernelOptions.Name}");
         try
         {
+            
             var csharpKernel = new Microsoft.DotNet.Interactive.CSharp.CSharpKernel();
 
-            if (!aislado)
+            if (!kernelOptions.Isolated)
             {
                 // Inyectar el proveedor de servicios
                 csharpKernel.AddHorizonteMiddleware(serviceProvider);
@@ -67,7 +70,7 @@ public static class Extensions
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Error while building kernel");
             throw;
         }
         
@@ -174,6 +177,21 @@ public static class Extensions
     }
 
 
+    /// <summary>
+    /// Compila un <see cref="ScriptDef"/> de forma asincrónica utilizando un administrador de ensamblados proporcionado.
+    /// </summary>
+    /// <param name="scriptDef">
+    /// Definición del script que se va a compilar.
+    /// </param>
+    /// <param name="assemblyManager">
+    /// Administrador de ensamblados que gestiona las referencias y dependencias durante la compilación.
+    /// </param>
+    /// <returns>
+    /// Una tarea que representa la operación asincrónica. La tarea contiene un <see cref="ScriptDefCompileResponse"/> con los resultados de la compilación.
+    /// </returns>
+    /// <exception cref="Exception">
+    /// Se produce si ocurre un error durante el proceso de compilación.
+    /// </exception>
     public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef,IhAssemblyManager assemblyManager)
     {
         var response = new ScriptDefCompileResponse();
@@ -292,9 +310,10 @@ public static class Extensions
             }
 
             // Añadir Horizonte
-            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; //revisar***********************************
+            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; 
             var horizonteLoc = horizonteAssembly.Location;
             
+            //si la compilación es singlefile, horizonte esta embedido, descargamos el nuget
             if (string.IsNullOrEmpty(horizonteLoc) && assemblyManager != null)
             {
                 var version = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
@@ -326,9 +345,9 @@ public static class Extensions
                 options: new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
                     scriptClassName: "Script",
-                    //scriptClassName: scriptDef.Name + "Class",
                     metadataReferenceResolver: ScriptMetadataResolver.Default,
-                    usings: new[] { "System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks" }));
+                   usings: ["System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks"
+                    ]));
 
             using var ms = new MemoryStream();
             var result = compilation.Emit(ms);
@@ -363,7 +382,25 @@ public static class Extensions
         return response;
     }
 
- public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IServiceProvider serviceProvider)
+    /// <summary>
+    /// Carga módulos de script de manera asincrónica utilizando una colección de definiciones de script y un proveedor de servicios.
+    /// </summary>
+    /// <param name="scriptDefs">
+    /// Colección de definiciones de scripts que se desean cargar. Solo se cargarán aquellos scripts que estén marcados como activos.
+    /// </param>
+    /// <param name="serviceProvider">
+    /// Proveedor de servicios utilizado para obtener instancias necesarias como <see cref="ILogger"/> e <see cref="IhAssemblyManager"/>.
+    /// </param>
+    /// <returns>
+    /// Una tarea que representa la operación asincrónica de carga de módulos de script.
+    /// </returns>
+    /// <remarks>
+    /// Los scripts se cargan en un dominio de aplicación llamado "Script". Si el gestor de ensamblados o el gestor de comandos no pueden ser obtenidos a través del proveedor de servicios, la función emitirá advertencias a través del logger.
+    /// </remarks>
+    /// <exception cref="Exception">
+    /// Se genera una excepción si ocurre un error durante la carga de los módulos de script.
+    /// </exception>
+    public static async Task LoadScriptModules(this IEnumerable<ScriptDef> scriptDefs, IServiceProvider serviceProvider)
         {
             var  logger = serviceProvider.GetService<ILogger<PanelModulo>>();
             try
@@ -399,8 +436,8 @@ public static class Extensions
                     }
                 }
 
-                await asmmanager.UnloadDomain("Script");
-                await asmmanager.LoadDomain("Script", scriptasmlist);
+                await asmmanager.UnloadDomain(Const.ScriptDomainName);
+                await asmmanager.LoadDomain(Const.ScriptDomainName, scriptasmlist);
                 
                 // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
                 var gesCom = serviceProvider.GetService<IHGesCom>();
