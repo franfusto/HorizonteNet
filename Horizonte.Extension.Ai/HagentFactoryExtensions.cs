@@ -5,8 +5,8 @@ namespace Horizonte.Extension.Ai;
 
 public static class HagentFactoryExtensions
 {
-    public static Hagent GetHagent(this AgentDef agentDef, Configuration configuration)
+    public static Hagent GetHagent(this AgentDef agentDef, ConfigSet configSet)
     {
-        return HagentFactory.Create(agentDef, configuration);
+        return HagentFactory.Create(agentDef, configSet);
     }
 }

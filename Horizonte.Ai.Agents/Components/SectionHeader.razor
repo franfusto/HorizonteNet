@@ -1,0 +1,22 @@
+<RadzenStack Orientation="Orientation.Horizontal"
+             AlignItems="AlignItems.Center"
+             JustifyContent="JustifyContent.SpaceBetween">
+    <RadzenText TextStyle="TextStyle.H5" Text="@Title" />
+
+    <RadzenButton Text="@AddText"
+                  Icon="add"
+                  Size="ButtonSize.Small"
+                  Variant="Variant.Outlined"
+                  Click="Add" />
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AddText { get; set; } = "Nuevo";
+
+    [Parameter]
+    public EventCallback Add { get; set; }
+}

@@ -1,0 +1,10 @@
+<RadzenAlert Severity="AlertSeverity.Info"
+             Variant="Variant.Outlined"
+             Style="margin-top: 0.5rem;">
+    @Text
+</RadzenAlert>
+
+@code {
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+}

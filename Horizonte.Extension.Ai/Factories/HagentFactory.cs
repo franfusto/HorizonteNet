@@ -7,7 +7,7 @@ namespace Horizonte.Extension.Ai.Factories;
 
 public static class HagentFactory
 {
-    public static Hagent Create(AgentDef? agentDef, Configuration? configuration)
+    public static Hagent Create(AgentDef? agentDef, ConfigSet? configuration)
     {
         if (agentDef is null)
         {
@@ -54,7 +54,7 @@ public static class HagentFactory
 
     private static ClientDef ResolveRequiredChatClient(
         AgentDef agentDef,
-        Configuration configuration)
+        ConfigSet configSet)
     {
         if (string.IsNullOrWhiteSpace(agentDef.ChatClientId))
         {
@@ -62,7 +62,7 @@ public static class HagentFactory
                 $"El agente '{agentDef.Id}' no define '{nameof(agentDef.ChatClientId)}'.");
         }
 
-        var clientDef = configuration.ClientDefs
+        var clientDef = configSet.ClientDefs
             .FirstOrDefault(client => client.Id == agentDef.ChatClientId);
 
         if (clientDef is null)
@@ -82,7 +82,7 @@ public static class HagentFactory
 
     private static ServerDef ResolveRequiredServer(
         ClientDef clientDef,
-        Configuration configuration)
+        ConfigSet configSet)
     {
         if (string.IsNullOrWhiteSpace(clientDef.Server))
         {
@@ -90,7 +90,7 @@ public static class HagentFactory
                 $"El cliente '{clientDef.Id}' no define servidor.");
         }
 
-        var serverDef = configuration.ServerDefs
+        var serverDef = configSet.ServerDefs
             .FirstOrDefault(server => server.Id == clientDef.Server);
 
         if (serverDef is null)
@@ -208,16 +208,13 @@ public static class HagentFactory
                || serverDef.Provider.Equals("OpenAI-Compatible", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void ResolveTools(HagentFactoryContext context)
+private static void ResolveTools(HagentFactoryContext context)
     {
-        if (context.AgentDef.Tools is null)
-        {
-            return;
-        }
+        var toolDefs = ResolveAgentToolDefs(context);
 
-        foreach (var toolDef in context.AgentDef.Tools.Where(tool => tool.Enabled))
+        foreach (var toolDef in toolDefs.Where(tool => tool.Enabled))
         {
-            ValidateTool(toolDef, context.Configuration);
+            ValidateTool(toolDef, context.ConfigSet);
 
             var tool = CreateTool(toolDef, context);
 
@@ -228,27 +225,93 @@ public static class HagentFactory
         }
     }
 
+    private static AgentToolDef[] ResolveAgentToolDefs(HagentFactoryContext context)
+    {
+        if (context.AgentDef.Tools is null || context.AgentDef.Tools.Length == 0)
+        {
+            return [];
+        }
+
+        ValidateAgentToolReferences(context);
+
+        return context.AgentDef.Tools
+            .Select(toolId =>
+                context.ConfigSet.AgentToolDefs.First(toolDef =>
+                    string.Equals(
+                        toolDef.Id,
+                        toolId,
+                        StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+    }
+
+    private static void ValidateAgentToolReferences(HagentFactoryContext context)
+    {
+        if (context.ConfigSet.AgentToolDefs is null)
+        {
+            throw new HagentFactoryException(
+                $"{nameof(context.ConfigSet.AgentToolDefs)} no puede ser null.");
+        }
+
+        var duplicatedToolDefinitions = context.ConfigSet.AgentToolDefs
+            .Where(tool => !string.IsNullOrWhiteSpace(tool.Id))
+            .GroupBy(tool => tool.Id, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToArray();
+
+        if (duplicatedToolDefinitions.Length > 0)
+        {
+            throw new HagentFactoryException(
+                $"Existen definiciones de tools duplicadas en ConfigSet.AgentToolDefs: {string.Join(", ", duplicatedToolDefinitions)}.");
+        }
+
+        var emptyReferences = context.AgentDef.Tools
+            .Where(string.IsNullOrWhiteSpace)
+            .ToArray();
+
+        if (emptyReferences.Length > 0)
+        {
+            throw new HagentFactoryException(
+                $"El agente '{context.AgentDef.Id}' contiene referencias a tools vacías.");
+        }
+
+        var missingToolIds = context.AgentDef.Tools
+            .Where(toolId => !context.ConfigSet.AgentToolDefs.Any(toolDef =>
+                string.Equals(
+                    toolDef.Id,
+                    toolId,
+                    StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (missingToolIds.Length > 0)
+        {
+            throw new HagentFactoryException(
+                $"El agente '{context.AgentDef.Id}' referencia tools que no existen en ConfigSet.AgentToolDefs: {string.Join(", ", missingToolIds)}.");
+        }
+    }
+
     private static void ValidateTool(
         AgentToolDef toolDef,
-        Configuration configuration)
+        ConfigSet configSet)
     {
         switch (toolDef.ToolType)
         {
             case AgentToolType.RagSearch:
-                ValidateRagSearchTool(toolDef, configuration);
+                ValidateRagSearchTool(toolDef, configSet);
                 break;
 
             case AgentToolType.ImageToText:
                 ValidateClientTool(
                     toolDef,
-                    configuration,
+                    configSet,
                     ClientType.ImageToText);
                 break;
 
             case AgentToolType.TextToImage:
                 ValidateClientTool(
                     toolDef,
-                    configuration,
+                    configSet,
                     ClientType.TextToImage);
                 break;
 
@@ -265,7 +328,7 @@ public static class HagentFactory
 
     private static void ValidateRagSearchTool(
         AgentToolDef toolDef,
-        Configuration configuration)
+        ConfigSet configSet)
     {
         if (string.IsNullOrWhiteSpace(toolDef.RagId))
         {
@@ -273,7 +336,7 @@ public static class HagentFactory
                 $"La tool RAG '{toolDef.Id}' requiere '{nameof(toolDef.RagId)}'.");
         }
 
-        var ragDef = configuration.RaGdefs
+        var ragDef = configSet.RaGdefs
             .FirstOrDefault(rag => rag.Id == toolDef.RagId);
 
         if (ragDef is null)
@@ -288,7 +351,7 @@ public static class HagentFactory
                 $"El RAG '{ragDef.Id}' no define '{nameof(ragDef.EmbedderClient)}'.");
         }
 
-        var embedderClient = configuration.ClientDefs
+        var embedderClient = configSet.ClientDefs
             .FirstOrDefault(client => client.Id == ragDef.EmbedderClient);
 
         if (embedderClient is null)
@@ -303,12 +366,12 @@ public static class HagentFactory
                 $"El cliente '{embedderClient.Id}' usado por el RAG '{ragDef.Id}' debe ser '{ClientType.Embedder}', pero es '{embedderClient.ClientType}'.");
         }
 
-        _ = ResolveRequiredServer(embedderClient, configuration);
+        _ = ResolveRequiredServer(embedderClient, configSet);
     }
 
     private static void ValidateClientTool(
         AgentToolDef toolDef,
-        Configuration configuration,
+        ConfigSet configSet,
         ClientType expectedClientType)
     {
         if (string.IsNullOrWhiteSpace(toolDef.ClientId))
@@ -317,7 +380,7 @@ public static class HagentFactory
                 $"La tool '{toolDef.Id}' de tipo '{toolDef.ToolType}' requiere '{nameof(toolDef.ClientId)}'.");
         }
 
-        var clientDef = configuration.ClientDefs
+        var clientDef = configSet.ClientDefs
             .FirstOrDefault(client => client.Id == toolDef.ClientId);
 
         if (clientDef is null)
@@ -332,7 +395,7 @@ public static class HagentFactory
                 $"La tool '{toolDef.Id}' requiere un cliente de tipo '{expectedClientType}', pero '{clientDef.Id}' es '{clientDef.ClientType}'.");
         }
 
-        _ = ResolveRequiredServer(clientDef, configuration);
+        _ = ResolveRequiredServer(clientDef, configSet);
     }
 
     private static IHagentTool? CreateTool(
@@ -355,7 +418,7 @@ public static class HagentFactory
         AgentToolDef toolDef,
         HagentFactoryContext context)
     {
-        var clientDef = context.Configuration.ClientDefs
+        var clientDef = context.ConfigSet.ClientDefs
             .FirstOrDefault(client => client.Id == toolDef.ClientId);
 
         if (clientDef is null)
@@ -370,7 +433,7 @@ public static class HagentFactory
                 $"La tool TextToImage '{toolDef.Id}' requiere un cliente '{ClientType.TextToImage}', pero '{clientDef.Id}' es '{clientDef.ClientType}'.");
         }
 
-        var serverDef = ResolveRequiredServer(clientDef, context.Configuration);
+        var serverDef = ResolveRequiredServer(clientDef, context.ConfigSet);
 
         var textToImageClient = CreateTextToImageClient(
             clientDef,
@@ -394,7 +457,7 @@ public static class HagentFactory
         AgentToolDef toolDef,
         HagentFactoryContext context)
     {
-        var clientDef = context.Configuration.ClientDefs
+        var clientDef = context.ConfigSet.ClientDefs
             .FirstOrDefault(client => client.Id == toolDef.ClientId);
 
         if (clientDef is null)
@@ -409,7 +472,7 @@ public static class HagentFactory
                 $"La tool ImageToText '{toolDef.Id}' requiere un cliente '{ClientType.ImageToText}', pero '{clientDef.Id}' es '{clientDef.ClientType}'.");
         }
 
-        var serverDef = ResolveRequiredServer(clientDef, context.Configuration);
+        var serverDef = ResolveRequiredServer(clientDef, context.ConfigSet);
 
         var imageClient = CreateImageToTextClient(
             clientDef,
@@ -432,7 +495,7 @@ public static class HagentFactory
         AgentToolDef toolDef,
         HagentFactoryContext context)
     {
-        var ragDef = context.Configuration.RaGdefs
+        var ragDef = context.ConfigSet.RaGdefs
             .FirstOrDefault(rag => rag.Id == toolDef.RagId);
 
         if (ragDef is null)
@@ -520,13 +583,13 @@ private static void ValidateFileOptionsStrict(AgentFileOptions fileOptions)
 
     private static void ValidateFileOptionsFunctional(HagentFactoryContext context)
     {
-        var agentDef = context.AgentDef;
         var fileOptions = context.FileOptions;
+        var toolDefs = ResolveAgentToolDefs(context);
 
         if (fileOptions.AutoProcessImages)
         {
-            var hasImageTool = agentDef.Tools?
-                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.ImageToText) == true;
+            var hasImageTool = toolDefs
+                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.ImageToText);
 
             if (!hasImageTool)
             {
@@ -537,8 +600,8 @@ private static void ValidateFileOptionsStrict(AgentFileOptions fileOptions)
 
         if (fileOptions.AutoProcessDocuments)
         {
-            var hasFileReader = agentDef.Tools?
-                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.FileReader) == true;
+            var hasFileReader = toolDefs
+                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.FileReader);
 
             if (!hasFileReader)
             {
@@ -549,8 +612,8 @@ private static void ValidateFileOptionsStrict(AgentFileOptions fileOptions)
 
         if (fileOptions.AllowOutputFiles)
         {
-            var hasFileWriter = agentDef.Tools?
-                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.FileWriter) == true;
+            var hasFileWriter = toolDefs
+                .Any(tool => tool.Enabled && tool.ToolType == AgentToolType.FileWriter);
 
             if (!hasFileWriter)
             {
@@ -559,6 +622,8 @@ private static void ValidateFileOptionsStrict(AgentFileOptions fileOptions)
             }
         }
     }
+
+    
     private static void ValidateExecutionOptions(HagentFactoryContext context)
     {
         var executionOptions = context.ExecutionOptions;

@@ -7,14 +7,14 @@ internal sealed class HagentFactoryContext
 {
     public HagentFactoryContext(
         AgentDef agentDef,
-        Configuration configuration,
+        ConfigSet configSet,
         ClientDef chatClientDef,
         ServerDef chatServerDef,
         AgentFileOptions fileOptions,
         AgentExecutionOptions executionOptions)
     {
         AgentDef = agentDef;
-        Configuration = configuration;
+        ConfigSet = configSet;
         ChatClientDef = chatClientDef;
         ChatServerDef = chatServerDef;
         FileOptions = fileOptions;
@@ -23,7 +23,7 @@ internal sealed class HagentFactoryContext
 
     public AgentDef AgentDef { get; }
 
-    public Configuration Configuration { get; }
+    public ConfigSet ConfigSet { get; }
 
     public ClientDef ChatClientDef { get; }
 

@@ -1,0 +1,435 @@
+@using Horizonte.Ai.Agents.Components
+@inject IhContext Context
+
+<RadzenCard Style="width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0;">
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Agents Config" />
+
+        <div>
+            <RadzenButton Variant="Variant.Outlined"
+                          Icon="sync"
+                          Size="ButtonSize.Small"
+                          Click="Get" />
+
+            <RadzenButton Text="Grabar"
+                          Variant="Variant.Outlined"
+                          Icon="save"
+                          Size="ButtonSize.Small"
+                          Click="Update" />
+        </div>
+    </RadzenStack>
+
+    <RadzenSplitter Style="flex: 1 1 auto; height: 100%; min-height: 0; margin-top: 1rem;">
+        <RadzenSplitterPane Size="280px" Min="220px">
+            <RadzenTree Change="OnTreeChange" Style="width: 100%">
+                <RadzenTreeItem Text="Chat"
+                                Icon="chat"
+                                Value=@("chat") />
+
+                <RadzenTreeItem Text="Agentes"
+                                Icon="groups"
+                                Value=@("agents")
+                                Expanded="@(_section == ConfigSection.Agents)">
+                    @foreach (var item in _configset.AgentDefs.Select((value, index) => new { value, index }))
+                    {
+                        <RadzenTreeItem Text="@GetDisplayName(item.value, "Agente", item.index)"
+                                        Icon="person"
+                                        Value="@($"agents:{item.index}")" />
+                    }
+                </RadzenTreeItem>
+
+                <RadzenTreeItem Text="Rag"
+                                Icon="manage_search"
+                                Value=@("rag")
+                                Expanded="@(_section == ConfigSection.Rag)">
+                    @foreach (var item in _configset.RaGdefs.Select((value, index) => new { value, index }))
+                    {
+                        <RadzenTreeItem Text="@GetDisplayName(item.value, "Rag", item.index)"
+                                        Icon="description"
+                                        Value="@($"rag:{item.index}")" />
+                    }
+                </RadzenTreeItem>
+
+                <RadzenTreeItem Text="Clientes"
+                                Icon="hub"
+                                Value=@("clients")
+                                Expanded="@(_section == ConfigSection.Clients)">
+                    @foreach (var item in _configset.ClientDefs.Select((value, index) => new { value, index }))
+                    {
+                        <RadzenTreeItem Text="@GetDisplayName(item.value, "Cliente", item.index)"
+                                        Icon="settings_input_component"
+                                        Value="@($"clients:{item.index}")" />
+                    }
+                </RadzenTreeItem>
+
+                <RadzenTreeItem Text="Servidores"
+                                Icon="dns"
+                                Value=@("servers")
+                                Expanded="@(_section == ConfigSection.Servers)">
+                    @foreach (var item in _configset.ServerDefs.Select((value, index) => new { value, index }))
+                    {
+                        <RadzenTreeItem Text="@GetDisplayName(item.value, "Servidor", item.index)"
+                                        Icon="storage"
+                                        Value="@($"servers:{item.index}")" />
+                    }
+                </RadzenTreeItem>
+
+                <RadzenTreeItem Text="Tools"
+                                Icon="build"
+                                Value=@("tools")
+                                Expanded="@(_section == ConfigSection.Tools)">
+                    @foreach (var item in _configset.AgentToolDefs.Select((value, index) => new { value, index }))
+                    {
+                        <RadzenTreeItem Text="@GetDisplayName(item.value, "Tool", item.index)"
+                                        Icon="construction"
+                                        Value="@($"tools:{item.index}")" />
+                    }
+                </RadzenTreeItem>
+            </RadzenTree>
+        </RadzenSplitterPane>
+
+        <RadzenSplitterPane Style="overflow-y: auto; min-height: 0;">
+            <div style="padding: 1rem; box-sizing: border-box;">
+                @switch (_section)
+                {
+                    case ConfigSection.Chat:
+                        <RadzenFieldset Text="Chat">
+                            <RadzenStack Gap="1rem">
+                                <RadzenFormField Text="Nombre" Style="width: 100%">
+                                    <RadzenTextBox @bind-Value="_chatconfig.Name"
+                                                   Style="width: 100%" />
+                                </RadzenFormField>
+
+                                <RadzenFormField Text="SelectedId" Style="width: 100%">
+                                    <RadzenTextBox @bind-Value="_chatconfig.SelectedId"
+                                                   Style="width: 100%" />
+                                </RadzenFormField>
+                            </RadzenStack>
+                        </RadzenFieldset>
+                        break;
+
+                    case ConfigSection.Agents:
+                        <RadzenStack Gap="1rem">
+                            <SectionHeader Title="Agentes" AddText="Nuevo agente" Add="AddAgent" />
+
+                            @if (SelectedAgent is null)
+                            {
+                                <EmptySelectionText Text="Selecciona un agente del árbol o crea uno nuevo." />
+                            }
+                            else
+                            {
+                                <AgentDefConfig Model="SelectedAgent"
+                                                ClientDefs="_configset.ClientDefs"
+                                                ToolDefs="_configset.AgentToolDefs" />
+                            }
+                        </RadzenStack>
+                        break;
+
+                    case ConfigSection.Rag:
+                        <RadzenStack Gap="1rem">
+                            <SectionHeader Title="Rag" AddText="Nuevo Rag" Add="AddRag" />
+
+                            @if (SelectedRag is null)
+                            {
+                                <EmptySelectionText Text="Selecciona una configuración Rag del árbol o crea una nueva." />
+                            }
+                            else
+                            {
+                                <RagDefConfig Model="SelectedRag" ClientDefs="_configset.ClientDefs" />
+                            }
+                        </RadzenStack>
+                        break;
+
+                    case ConfigSection.Clients:
+                        <RadzenStack Gap="1rem">
+                            <SectionHeader Title="Clientes" AddText="Nuevo cliente" Add="AddClient" />
+
+                            @if (SelectedClient is null)
+                            {
+                                <EmptySelectionText Text="Selecciona un cliente del árbol o crea uno nuevo." />
+                            }
+                            else
+                            {
+                                <ClientDefWidget Model="SelectedClient" ServerDefs="_configset.ServerDefs" />
+                            }
+                        </RadzenStack>
+                        break;
+
+                    case ConfigSection.Servers:
+                        <RadzenStack Gap="1rem">
+                            <SectionHeader Title="Servidores" AddText="Nuevo servidor" Add="AddServer" />
+
+                            @if (SelectedServer is null)
+                            {
+                                <EmptySelectionText Text="Selecciona un servidor del árbol o crea uno nuevo." />
+                            }
+                            else
+                            {
+                                <ServerDefWidget Model="SelectedServer" />
+                            }
+                        </RadzenStack>
+                        break;
+
+                    case ConfigSection.Tools:
+                        <RadzenStack Gap="1rem">
+                            <SectionHeader Title="Tools" AddText="Nueva tool" Add="AddTool" />
+
+                            @if (SelectedTool is null)
+                            {
+                                <EmptySelectionText Text="Selecciona una tool del árbol o crea una nueva." />
+                            }
+                            else
+                            {
+                                <AgentTollDefWidget Model="SelectedTool"
+                                                    ClientDefs="_configset.ClientDefs"
+                                                    RagDefs="_configset.RaGdefs" />
+                            }
+                        </RadzenStack>
+                        break;
+                }
+            </div>
+        </RadzenSplitterPane>
+    </RadzenSplitter>
+</RadzenCard>
+
+@code {
+    private ConfigSet _configset = new();
+    private ChatConfig _chatconfig = new();
+    private AgentsConfig _agentsconfig = new();
+
+    private ConfigSection _section = ConfigSection.Chat;
+
+    private int _selectedAgentIndex = -1;
+    private int _selectedRagIndex = -1;
+    private int _selectedClientIndex = -1;
+    private int _selectedServerIndex = -1;
+    private int _selectedToolIndex = -1;
+
+    private AgentDef? SelectedAgent =>
+        GetSelectedItem(_configset.AgentDefs, _selectedAgentIndex);
+
+    private RaGdef? SelectedRag =>
+        GetSelectedItem(_configset.RaGdefs, _selectedRagIndex);
+
+    private ClientDef? SelectedClient =>
+        GetSelectedItem(_configset.ClientDefs, _selectedClientIndex);
+
+    private ServerDef? SelectedServer =>
+        GetSelectedItem(_configset.ServerDefs, _selectedServerIndex);
+
+    private AgentToolDef? SelectedTool =>
+        GetSelectedItem(_configset.AgentToolDefs, _selectedToolIndex);
+
+    protected override void OnInitialized()
+    {
+        Get();
+
+        base.OnInitialized();
+    }
+
+    private void Get()
+    {
+        _agentsconfig = Context.Get<AgentsConfig>() ?? new AgentsConfig();
+
+        _configset = _agentsconfig.ConfigSet ?? new ConfigSet();
+        _chatconfig = _agentsconfig.ChatConfig ?? new ChatConfig();
+
+        SelectSection(ConfigSection.Chat);
+    }
+
+    private void Update()
+    {
+        _agentsconfig.ConfigSet = _configset;
+        _agentsconfig.ChatConfig = _chatconfig;
+
+        Context.Update(_agentsconfig);
+    }
+
+    private void OnTreeChange(TreeEventArgs args)
+    {
+        var value = args.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        var parts = value.Split(':', 2);
+        var index = parts.Length == 2 && int.TryParse(parts[1], out var parsedIndex)
+            ? parsedIndex
+            : -1;
+
+        switch (parts[0])
+        {
+            case "chat":
+                SelectSection(ConfigSection.Chat);
+                break;
+
+            case "agents":
+                SelectSection(ConfigSection.Agents, index);
+                break;
+
+            case "rag":
+                SelectSection(ConfigSection.Rag, index);
+                break;
+
+            case "clients":
+                SelectSection(ConfigSection.Clients, index);
+                break;
+
+            case "servers":
+                SelectSection(ConfigSection.Servers, index);
+                break;
+
+            case "tools":
+                SelectSection(ConfigSection.Tools, index);
+                break;
+        }
+    }
+
+    private void SelectSection(ConfigSection section, int selectedIndex = -1)
+    {
+        _section = section;
+
+        _selectedAgentIndex = -1;
+        _selectedRagIndex = -1;
+        _selectedClientIndex = -1;
+        _selectedServerIndex = -1;
+        _selectedToolIndex = -1;
+
+        switch (section)
+        {
+            case ConfigSection.Agents:
+                _selectedAgentIndex = selectedIndex;
+                break;
+
+            case ConfigSection.Rag:
+                _selectedRagIndex = selectedIndex;
+                break;
+
+            case ConfigSection.Clients:
+                _selectedClientIndex = selectedIndex;
+                break;
+
+            case ConfigSection.Servers:
+                _selectedServerIndex = selectedIndex;
+                break;
+
+            case ConfigSection.Tools:
+                _selectedToolIndex = selectedIndex;
+                break;
+        }
+    }
+
+    private void AddAgent()
+    {
+        var item = CreateDefault<AgentDef>("Agente");
+
+        _configset.AgentDefs = [.. _configset.AgentDefs, item];
+
+        SelectSection(ConfigSection.Agents, _configset.AgentDefs.Length - 1);
+    }
+
+    private void AddRag()
+    {
+        var item = CreateDefault<RaGdef>("Rag");
+
+        _configset.RaGdefs = [.. _configset.RaGdefs, item];
+
+        SelectSection(ConfigSection.Rag, _configset.RaGdefs.Length - 1);
+    }
+
+    private void AddClient()
+    {
+        var item = CreateDefault<ClientDef>("Cliente");
+
+        _configset.ClientDefs = [.. _configset.ClientDefs, item];
+
+        SelectSection(ConfigSection.Clients, _configset.ClientDefs.Length - 1);
+    }
+
+    private void AddServer()
+    {
+        var item = CreateDefault<ServerDef>("Servidor");
+
+        _configset.ServerDefs = [.. _configset.ServerDefs, item];
+
+        SelectSection(ConfigSection.Servers, _configset.ServerDefs.Length - 1);
+    }
+
+    private void AddTool()
+    {
+        var item = CreateDefault<AgentToolDef>("Tool");
+
+        _configset.AgentToolDefs = [.. _configset.AgentToolDefs, item];
+
+        SelectSection(ConfigSection.Tools, _configset.AgentToolDefs.Length - 1);
+    }
+
+    private static T? GetSelectedItem<T>(T[] items, int index)
+    {
+        return index >= 0 && index < items.Length
+            ? items[index]
+            : default;
+    }
+
+    private static T CreateDefault<T>(string displayName)
+        where T : new()
+    {
+        var item = new T();
+        var id = $"{typeof(T).Name}-{Guid.NewGuid():N}";
+
+        SetStringProperty(item, "Id", id);
+        SetStringProperty(item, "Name", $"{displayName} {DateTime.Now:HHmmss}");
+
+        return item;
+    }
+
+    private static void SetStringProperty<T>(T item, string propertyName, string value)
+    {
+        var property = typeof(T).GetProperty(propertyName);
+
+        if (property is { CanWrite: true } && property.PropertyType == typeof(string))
+        {
+            property.SetValue(item, value);
+        }
+    }
+
+    private static string GetDisplayName<T>(T item, string fallback, int index)
+    {
+        if (item is null)
+        {
+            return $"{fallback} {index + 1}";
+        }
+
+        var type = item.GetType();
+
+        var name = type.GetProperty("Name")?.GetValue(item)?.ToString();
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        var id = type.GetProperty("Id")?.GetValue(item)?.ToString();
+
+        if (!string.IsNullOrWhiteSpace(id))
+        {
+            return id;
+        }
+
+        return $"{fallback} {index + 1}";
+    }
+
+    private enum ConfigSection
+    {
+        Chat,
+        Agents,
+        Rag,
+        Clients,
+        Servers,
+        Tools
+    }
+}

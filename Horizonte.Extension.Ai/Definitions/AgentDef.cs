@@ -7,7 +7,7 @@ public class AgentDef
     public string Description { get; set; } = string.Empty;
     public string SystemPrompt { get; set; } = string.Empty;
     public string ChatClientId { get; set; } = string.Empty;
-    public AgentToolDef[] Tools { get; set; } = [];
+    public string[] Tools { get; set; } = [];
     public AgentFileOptions FileOptions { get; set; } = new();
     public AgentExecutionOptions ExecutionOptions { get; set; } = new();
     public Dictionary<string, string> Settings { get; set; } = new();

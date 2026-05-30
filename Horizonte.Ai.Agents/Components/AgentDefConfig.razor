@@ -1,0 +1,544 @@
+@using Horizonte.Extension.Ai.Definitions
+
+@if (Model is null)
+{
+    <RadzenAlert Severity="AlertSeverity.Warning" Variant="Variant.Outlined">
+        No hay ningún agente seleccionado.
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Gap="1rem">
+        <RadzenFieldset Text="Agente">
+            <RadzenStack Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Id" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.Id"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Nombre" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.Name"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <RadzenFormField Text="Descripción" Style="width: 100%">
+                            <RadzenTextArea @bind-Value="Model.Description"
+                                            Rows="3"
+                                            Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <RadzenFormField Text="System prompt" Style="width: 100%">
+                            <RadzenTextArea @bind-Value="Model.SystemPrompt"
+                                            Rows="8"
+                                            Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Cliente de chat" Style="width: 100%">
+                            @if (ClientOptions.Count == 0)
+                            {
+                                <RadzenTextBox @bind-Value="Model.ChatClientId"
+                                               Placeholder="Id del cliente"
+                                               Style="width: 100%" />
+                            }
+                            else
+                            {
+                                <RadzenDropDown TValue="string"
+                                                Data="@ClientOptions"
+                                                TextProperty="Name"
+                                                ValueProperty="Id"
+                                                @bind-Value="Model.ChatClientId"
+                                                AllowClear="true"
+                                                AllowFiltering="true"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Placeholder="Selecciona un cliente"
+                                                Style="width: 100%" />
+                            }
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Tools">
+            <RadzenStack Gap="0.75rem">
+                @if (ToolOptions.Count == 0)
+                {
+                    <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                        No hay tools configuradas. Puedes añadirlas desde la sección Tools.
+                    </RadzenAlert>
+                }
+                else
+                {
+                    @foreach (var tool in ToolOptions)
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal"
+                                     AlignItems="AlignItems.Center"
+                                     Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            Value="@IsToolSelected(tool.Id)"
+                                            Change="@((bool selected) => ToggleTool(tool.Id, selected))"
+                                            Name="@($"tool_{tool.Id}")" />
+
+                            <RadzenLabel Text="@tool.Name"
+                                         Component="@($"tool_{tool.Id}")" />
+                        </RadzenStack>
+                    }
+                }
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Opciones de ejecución">
+            <RadzenStack Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Máx. turnos" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.ExecutionOptions.MaxTurns"
+                                           Min="1"
+                                           Max="1000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Máx. llamadas a tools" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.ExecutionOptions.MaxToolCalls"
+                                           Min="0"
+                                           Max="1000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Timeout segundos" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.ExecutionOptions.TimeoutSeconds"
+                                           Min="1"
+                                           Max="3600"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.ExecutionOptions.AutoInvokeTools"
+                                            Name="autoInvokeTools" />
+                            <RadzenLabel Text="Auto invocar tools" Component="autoInvokeTools" />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.ExecutionOptions.ReturnToolMessages"
+                                            Name="returnToolMessages" />
+                            <RadzenLabel Text="Devolver mensajes de tools" Component="returnToolMessages" />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.ExecutionOptions.ReturnIntermediateSteps"
+                                            Name="returnIntermediateSteps" />
+                            <RadzenLabel Text="Devolver pasos intermedios" Component="returnIntermediateSteps" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Opciones de archivos">
+            <RadzenStack Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.FileOptions.AllowInputFiles"
+                                            Name="allowInputFiles" />
+                            <RadzenLabel Text="Permitir archivos de entrada" Component="allowInputFiles" />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.FileOptions.AllowOutputFiles"
+                                            Name="allowOutputFiles" />
+                            <RadzenLabel Text="Permitir archivos de salida" Component="allowOutputFiles" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Encoding transporte" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.FileOptions.TransportEncoding"
+                                           Placeholder="base64"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Máx. entrada bytes" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.FileOptions.MaxInputFileSizeBytes"
+                                           Min="0"
+                                           Max="2147483647"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Máx. salida bytes" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.FileOptions.MaxOutputFileSizeBytes"
+                                           Min="0"
+                                           Max="2147483647"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.FileOptions.AutoProcessImages"
+                                            Name="autoProcessImages" />
+                            <RadzenLabel Text="Procesar imágenes automáticamente" Component="autoProcessImages" />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.FileOptions.AutoProcessDocuments"
+                                            Name="autoProcessDocuments" />
+                            <RadzenLabel Text="Procesar documentos automáticamente" Component="autoProcessDocuments" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="MIME types entrada" Style="width: 100%">
+                            <RadzenTextArea @bind-Value="_allowedInputMimeTypesText"
+                                            Change="@(_ => SyncAllowedInputMimeTypes())"
+                                            Rows="3"
+                                            Placeholder="image/png, image/jpeg, application/pdf"
+                                            Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="MIME types salida" Style="width: 100%">
+                            <RadzenTextArea @bind-Value="_allowedOutputMimeTypesText"
+                                            Change="@(_ => SyncAllowedOutputMimeTypes())"
+                                            Rows="3"
+                                            Placeholder="image/png, text/plain"
+                                            Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <DictionaryEditor Title="Settings del agente"
+                          Rows="_settingRows"
+                          Add="AddSetting"
+                          Remove="RemoveSetting"
+                          Sync="SyncSettings" />
+
+        <DictionaryEditor Title="Settings de archivos"
+                          Rows="_fileSettingRows"
+                          Add="AddFileSetting"
+                          Remove="RemoveFileSetting"
+                          Sync="SyncFileSettings" />
+
+        <DictionaryEditor Title="Settings de ejecución"
+                          Rows="_executionSettingRows"
+                          Add="AddExecutionSetting"
+                          Remove="RemoveExecutionSetting"
+                          Sync="SyncExecutionSettings" />
+    </RadzenStack>
+}
+
+@code {
+    [Parameter]
+    public AgentDef? Model { get; set; }
+
+    [Parameter]
+    public ClientDef[] ClientDefs { get; set; } = [];
+
+    [Parameter]
+    public AgentToolDef[] ToolDefs { get; set; } = [];
+
+    private AgentDef? _loadedModel;
+
+    private string _allowedInputMimeTypesText = string.Empty;
+    private string _allowedOutputMimeTypesText = string.Empty;
+
+    private readonly List<DictionaryRow> _settingRows = [];
+    private readonly List<DictionaryRow> _fileSettingRows = [];
+    private readonly List<DictionaryRow> _executionSettingRows = [];
+
+    private List<SelectOption> ClientOptions =>
+        ClientDefs
+            .Select(client => new SelectOption
+            {
+                Id = client.Id,
+                Name = string.IsNullOrWhiteSpace(client.Name)
+                    ? client.Id
+                    : $"{client.Name} ({client.Id})"
+            })
+            .Where(client => !string.IsNullOrWhiteSpace(client.Id))
+            .ToList();
+
+    private List<SelectOption> ToolOptions =>
+        ToolDefs
+            .Select(tool => new SelectOption
+            {
+                Id = tool.Id,
+                Name = string.IsNullOrWhiteSpace(tool.Name)
+                    ? tool.Id
+                    : $"{tool.Name} ({tool.Id})"
+            })
+            .Where(tool => !string.IsNullOrWhiteSpace(tool.Id))
+            .ToList();
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_loadedModel, Model))
+        {
+            LoadModel();
+            _loadedModel = Model;
+        }
+    }
+
+    private void LoadModel()
+    {
+        _settingRows.Clear();
+        _fileSettingRows.Clear();
+        _executionSettingRows.Clear();
+
+        _allowedInputMimeTypesText = string.Empty;
+        _allowedOutputMimeTypesText = string.Empty;
+
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Tools ??= [];
+        Model.FileOptions ??= new AgentFileOptions();
+        Model.ExecutionOptions ??= new AgentExecutionOptions();
+        Model.Settings ??= [];
+        Model.FileOptions.Settings ??= [];
+        Model.ExecutionOptions.Settings ??= [];
+
+        _allowedInputMimeTypesText = ToMultilineText(Model.FileOptions.AllowedInputMimeTypes);
+        _allowedOutputMimeTypesText = ToMultilineText(Model.FileOptions.AllowedOutputMimeTypes);
+
+        _settingRows.AddRange(ToRows(Model.Settings));
+        _fileSettingRows.AddRange(ToRows(Model.FileOptions.Settings));
+        _executionSettingRows.AddRange(ToRows(Model.ExecutionOptions.Settings));
+    }
+
+    private bool IsToolSelected(string toolId)
+    {
+        return Model?.Tools.Any(tool =>
+            string.Equals(tool, toolId, StringComparison.OrdinalIgnoreCase)) == true;
+    }
+
+    private void ToggleTool(string toolId, bool selected)
+    {
+        if (Model is null || string.IsNullOrWhiteSpace(toolId))
+        {
+            return;
+        }
+
+        var tools = Model.Tools
+            .Where(tool => !string.IsNullOrWhiteSpace(tool))
+            .ToList();
+
+        if (selected)
+        {
+            if (!tools.Any(tool => string.Equals(tool, toolId, StringComparison.OrdinalIgnoreCase)))
+            {
+                tools.Add(toolId);
+            }
+        }
+        else
+        {
+            tools.RemoveAll(tool => string.Equals(tool, toolId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        Model.Tools = tools.ToArray();
+    }
+
+    private void SyncAllowedInputMimeTypes()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.FileOptions.AllowedInputMimeTypes = ParseTextArray(_allowedInputMimeTypesText);
+    }
+
+    private void SyncAllowedOutputMimeTypes()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.FileOptions.AllowedOutputMimeTypes = ParseTextArray(_allowedOutputMimeTypesText);
+    }
+
+    private void AddSetting()
+    {
+        AddRow(_settingRows);
+        SyncSettings();
+    }
+
+    private void RemoveSetting(DictionaryRow row)
+    {
+        _settingRows.Remove(row);
+        SyncSettings();
+    }
+
+    private void SyncSettings()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Settings = ToDictionary(_settingRows);
+    }
+
+    private void AddFileSetting()
+    {
+        AddRow(_fileSettingRows);
+        SyncFileSettings();
+    }
+
+    private void RemoveFileSetting(DictionaryRow row)
+    {
+        _fileSettingRows.Remove(row);
+        SyncFileSettings();
+    }
+
+    private void SyncFileSettings()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.FileOptions.Settings = ToDictionary(_fileSettingRows);
+    }
+
+    private void AddExecutionSetting()
+    {
+        AddRow(_executionSettingRows);
+        SyncExecutionSettings();
+    }
+
+    private void RemoveExecutionSetting(DictionaryRow row)
+    {
+        _executionSettingRows.Remove(row);
+        SyncExecutionSettings();
+    }
+
+    private void SyncExecutionSettings()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.ExecutionOptions.Settings = ToDictionary(_executionSettingRows);
+    }
+
+    private static void AddRow(List<DictionaryRow> rows)
+    {
+        rows.Add(new DictionaryRow
+        {
+            Key = string.Empty,
+            Value = string.Empty
+        });
+    }
+
+    private static IEnumerable<DictionaryRow> ToRows(Dictionary<string, string> source)
+    {
+        return source.Select(item => new DictionaryRow
+        {
+            Key = item.Key,
+            Value = item.Value
+        });
+    }
+
+    private static Dictionary<string, string> ToDictionary(IEnumerable<DictionaryRow> rows)
+    {
+        return rows
+            .Where(row => !string.IsNullOrWhiteSpace(row.Key))
+            .GroupBy(row => row.Key.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Last().Value ?? string.Empty,
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string ToMultilineText(IEnumerable<string> values)
+    {
+        return string.Join(
+            Environment.NewLine,
+            values.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
+
+    private static string[] ParseTextArray(string value)
+    {
+        return value
+            .Split([',', '\n', '\r', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    public sealed class DictionaryRow
+    {
+        public string Key { get; set; } = string.Empty;
+
+        public string Value { get; set; } = string.Empty;
+    }
+
+    private sealed class SelectOption
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+    }
+}

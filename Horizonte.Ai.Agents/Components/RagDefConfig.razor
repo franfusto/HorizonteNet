@@ -1,0 +1,309 @@
+@using Horizonte.Extension.Ai.Definitions
+
+@if (Model is null)
+{
+    <RadzenAlert Severity="AlertSeverity.Warning" Variant="Variant.Outlined">
+        No hay ninguna configuración RAG seleccionada.
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Gap="1rem">
+        <RadzenFieldset Text="RAG">
+            <RadzenStack Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Id" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.Id"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Nombre" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.Name"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Tipo RAG" Style="width: 100%">
+                            <RadzenDropDown TValue="RagType"
+                                            Data="@RagTypes"
+                                            @bind-Value="Model.RagType"
+                                            Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Cliente embedder" Style="width: 100%">
+                            @if (ClientOptions.Count == 0)
+                            {
+                                <RadzenTextBox @bind-Value="Model.EmbedderClient"
+                                               Placeholder="Id del cliente embedder"
+                                               Style="width: 100%" />
+                            }
+                            else
+                            {
+                                <RadzenDropDown TValue="string"
+                                                Data="@ClientOptions"
+                                                TextProperty="Name"
+                                                ValueProperty="Id"
+                                                @bind-Value="Model.EmbedderClient"
+                                                AllowClear="true"
+                                                AllowFiltering="true"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Placeholder="Selecciona un cliente"
+                                                Style="width: 100%" />
+                            }
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="8">
+                        <RadzenFormField Text="Colección" Style="width: 100%">
+                            <RadzenTextBox @bind-Value="Model.CollectionName"
+                                           Placeholder="Nombre de la colección/vector store"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Dimensión / Size" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.Size"
+                                           Min="0"
+                                           Max="1000000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Top K" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.TopK"
+                                           Min="1"
+                                           Max="1000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Score mínimo" Style="width: 100%">
+                            <RadzenNumeric TValue="float"
+                                           @bind-Value="Model.MinScore"
+                                           Min="0"
+                                           Max="1"
+                                           Step="0.01"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenStack Orientation="Orientation.Horizontal"
+                                     AlignItems="AlignItems.Center"
+                                     Gap="0.5rem"
+                                     Style="height: 100%; padding-top: 1.75rem;">
+                            <RadzenCheckBox TValue="bool"
+                                            @bind-Value="Model.EnabledAsTool"
+                                            Name="enabledAsTool" />
+                            <RadzenLabel Text="Disponible como tool"
+                                         Component="enabledAsTool" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Chunk size" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.ChunkSize"
+                                           Min="1"
+                                           Max="1000000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Chunk overlap" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.ChunkOverlap"
+                                           Min="0"
+                                           Max="1000000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenFormField Text="Máx. items contexto" Style="width: 100%">
+                            <RadzenNumeric TValue="int"
+                                           @bind-Value="Model.MaxContextItems"
+                                           Min="1"
+                                           Max="1000"
+                                           Style="width: 100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Settings">
+            <RadzenStack Gap="0.75rem">
+                <RadzenButton Text="Añadir setting"
+                              Icon="add"
+                              Size="ButtonSize.Small"
+                              Variant="Variant.Outlined"
+                              Click="AddSetting" />
+
+                @if (_settingRows.Count == 0)
+                {
+                    <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                        No hay settings configurados.
+                    </RadzenAlert>
+                }
+                else
+                {
+                    @foreach (var row in _settingRows)
+                    {
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <RadzenColumn Size="12" SizeMD="5">
+                                <RadzenTextBox @bind-Value="row.Key"
+                                               Change="@(_ => SyncSettings())"
+                                               Placeholder="Clave"
+                                               Style="width: 100%" />
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenTextBox @bind-Value="row.Value"
+                                               Change="@(_ => SyncSettings())"
+                                               Placeholder="Valor"
+                                               Style="width: 100%" />
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="12" SizeMD="1">
+                                <RadzenButton Icon="delete"
+                                              ButtonStyle="ButtonStyle.Danger"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.Small"
+                                              Click="@(() => RemoveSetting(row))" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                    }
+                }
+            </RadzenStack>
+        </RadzenFieldset>
+    </RadzenStack>
+}
+
+@code {
+    [Parameter]
+    public RaGdef? Model { get; set; }
+
+    [Parameter]
+    public ClientDef[] ClientDefs { get; set; } = [];
+
+    private RaGdef? _loadedModel;
+
+    private readonly List<DictionaryRow> _settingRows = [];
+
+    private static RagType[] RagTypes =>
+        Enum.GetValues<RagType>();
+
+    private List<ClientOption> ClientOptions =>
+        ClientDefs
+            .Select(client => new ClientOption
+            {
+                Id = client.Id,
+                Name = string.IsNullOrWhiteSpace(client.Name)
+                    ? client.Id
+                    : $"{client.Name} ({client.Id})"
+            })
+            .Where(client => !string.IsNullOrWhiteSpace(client.Id))
+            .ToList();
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_loadedModel, Model))
+        {
+            LoadRows();
+            _loadedModel = Model;
+        }
+    }
+
+    private void LoadRows()
+    {
+        _settingRows.Clear();
+
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Settings ??= [];
+
+        _settingRows.AddRange(
+            Model.Settings.Select(item => new DictionaryRow
+            {
+                Key = item.Key,
+                Value = item.Value
+            }));
+    }
+
+    private void AddSetting()
+    {
+        _settingRows.Add(new DictionaryRow
+        {
+            Key = string.Empty,
+            Value = string.Empty
+        });
+
+        SyncSettings();
+    }
+
+    private void RemoveSetting(DictionaryRow row)
+    {
+        _settingRows.Remove(row);
+
+        SyncSettings();
+    }
+
+    private void SyncSettings()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Settings = ToDictionary(_settingRows);
+    }
+
+    private static Dictionary<string, string> ToDictionary(IEnumerable<DictionaryRow> rows)
+    {
+        return rows
+            .Where(row => !string.IsNullOrWhiteSpace(row.Key))
+            .GroupBy(row => row.Key.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Last().Value ?? string.Empty,
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    private sealed class DictionaryRow
+    {
+        public string Key { get; set; } = string.Empty;
+
+        public string Value { get; set; } = string.Empty;
+    }
+
+    private sealed class ClientOption
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+    }
+}

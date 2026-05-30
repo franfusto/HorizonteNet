@@ -1,4 +1,5 @@
-﻿using System.ClientModel;
+﻿/*
+using System.ClientModel;
 using Horizonte.Extension.Ai;
 using Horizonte.Extension.Ai.Contracts;
 using Horizonte.Extension.Ai.Definitions;
@@ -13,10 +14,11 @@ class Program
 {
    static async Task Main(string[] args)
 {
-    var configuration = GetConfigurationLmStudio();
+    //var configuration = GetConfigurationLmStudio();
+    var configuration = GetConfigurationSample1();
 
-    var agentDef = configuration.AgentDefs
-        .First(agent => agent.Id == "lmstudio-agent");
+    //var agentDef = configuration.AgentDefs.First(agent => agent.Id == "lmstudio-agent");
+    var agentDef = configuration.AgentDefs.First(agent => agent.Id == "default");
 
     var hagent = agentDef.GetHagent(configuration);
 
@@ -93,9 +95,9 @@ class Program
     Console.WriteLine("Chat finalizado.");
 }
 
-private static Configuration GetConfigurationLmStudio()
+private static ConfigSet GetConfigurationLmStudio()
 {
-    return new Configuration
+    return new ConfigSet
     {
         ServerDefs =
         [
@@ -167,7 +169,7 @@ private static Configuration GetConfigurationLmStudio()
 
                 ExecutionOptions = new AgentExecutionOptions
                 {
-                    MaxTurns = 1,
+                    MaxTurns = 5,
                     MaxToolCalls = 0,
                     TimeoutSeconds = 120,
                     AutoInvokeTools = true,
@@ -183,9 +185,9 @@ private static Configuration GetConfigurationLmStudio()
         ]
     };
 }
-    private static Configuration GetConfigurationSample1()
+    private static ConfigSet GetConfigurationSample1()
     {
-        return new Configuration
+        return new ConfigSet
         {
             ServerDefs =
             [
@@ -478,7 +480,7 @@ private static Configuration GetConfigurationLmStudio()
         };
     }
 
-    private static Configuration GetConfigurationSample2()
+    private static ConfigSet GetConfigurationSample2()
     {
         var newAgentDef = new AgentDef
         {
@@ -512,7 +514,7 @@ private static Configuration GetConfigurationLmStudio()
         return cfg;
     }
 
-    private static Configuration GetConfigurationSample3()
+    private static ConfigSet GetConfigurationSample3()
     {
         var agentdef = new AgentDef
         {
@@ -579,7 +581,7 @@ private static Configuration GetConfigurationLmStudio()
     }
 
 
-    private static Configuration GetConfigurationSample4()
+    private static ConfigSet GetConfigurationSample4()
     {
         var agentdef = new AgentDef
         {
@@ -676,3 +678,4 @@ private static Configuration GetConfigurationLmStudio()
     }
 }
 
+*/

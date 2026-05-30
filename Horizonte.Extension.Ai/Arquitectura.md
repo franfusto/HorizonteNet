@@ -1,3 +1,8 @@
+*cambios por incluir:
+hemos añadidido en ConfigSet las definiciones de las toos y en AgentDef hemos cambiado Tools por string[],
+ahora aqui se guarda la lista de AgentToolDef.Id
+
+
 # Arquitectura de Hagent
 
 Hagent es un runtime declarativo para crear agentes configurables, ejecutar consultas, procesar archivos, invocar herramientas y delegar la generación conversacional en clientes de IA intercambiables.
