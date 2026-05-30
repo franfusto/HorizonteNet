@@ -1,6 +1,6 @@
 namespace ConsoleApp1.Runtime.Files;
 
-internal sealed class HagentFile
+public sealed class HagentFile
 {
     public string FileName { get; init; } = string.Empty;
     public string MimeType { get; init; } = "application/octet-stream";

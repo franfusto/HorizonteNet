@@ -3,7 +3,7 @@ using ConsoleApp1.Runtime.Files;
 
 namespace ConsoleApp1.Runtime.Tools;
 
-internal sealed class HagentToolResult
+public sealed class HagentToolResult
 {
     public bool Success { get; init; } = true;
     public string? Text { get; init; }

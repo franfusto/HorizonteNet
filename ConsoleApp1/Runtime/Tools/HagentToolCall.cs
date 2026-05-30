@@ -2,7 +2,7 @@ using ConsoleApp1.Definitions;
 
 namespace ConsoleApp1.Runtime.Tools;
 
-internal sealed class HagentToolCall
+public sealed class HagentToolCall
 {
     public string ToolId { get; init; } = string.Empty;
     public AgentToolType ToolType { get; init; }

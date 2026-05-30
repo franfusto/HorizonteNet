@@ -269,6 +269,7 @@ class Program
                         AllowedInputMimeTypes =
                         [
                             "text/plain",
+                            "text/markdown",
                             "application/json",
                             "application/pdf",
                             "image/png",
@@ -396,6 +397,7 @@ class Program
                 AllowedInputMimeTypes =
                 [
                     "text/plain",
+                    "text/markdown",
                     "application/pdf",
                     "application/json"
                 ],
@@ -484,6 +486,7 @@ class Program
                 MaxOutputFileSizeBytes = 15 * 1024 * 1024,
                 AllowedInputMimeTypes =
                 [
+                    "text/markdown",
                     "image/png",
                     "image/jpeg",
                     "image/webp"

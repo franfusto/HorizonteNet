@@ -3,7 +3,7 @@ using ConsoleApp1.Runtime.Files;
 
 namespace ConsoleApp1.Runtime;
 
-internal sealed class HagentToolContext
+public sealed class HagentToolContext
 {
     public required string AgentId { get; init; }
     public required string UserQuery { get; init; }

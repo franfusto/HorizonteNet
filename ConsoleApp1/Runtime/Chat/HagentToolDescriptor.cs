@@ -2,7 +2,7 @@ using ConsoleApp1.Definitions;
 
 namespace ConsoleApp1.Runtime.Chat;
 
-internal sealed class HagentToolDescriptor
+public sealed class HagentToolDescriptor
 {
     public string Id { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;

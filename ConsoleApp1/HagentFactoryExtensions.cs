@@ -1,12 +1,12 @@
 using ConsoleApp1.Definitions;
+using ConsoleApp1.Factories;
 
 namespace ConsoleApp1;
 
-public static class Extension
+public static class HagentFactoryExtensions
 {
-    public static Hagent GetHagent(this AgentDef agentdef, Configuration cfg)
+    public static Hagent GetHagent(this AgentDef agentDef, Configuration configuration)
     {
-        //return new Hagent();
-        return null!;
+        return HagentFactory.Create(agentDef, configuration);
     }
 }
