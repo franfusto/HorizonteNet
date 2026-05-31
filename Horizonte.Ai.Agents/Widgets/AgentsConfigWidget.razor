@@ -112,7 +112,7 @@
 
                     case ConfigSection.Agents:
                         <RadzenStack Gap="1rem">
-                            <SectionHeader Title="Agentes" AddText="Nuevo agente" Add="AddAgent" />
+                            <SectionHeader Title="Agentes" AddText="Nuevo agente" Add="AddAgent"  Delete="DeleteAgent"/>
 
                             @if (SelectedAgent is null)
                             {
@@ -129,7 +129,7 @@
 
                     case ConfigSection.Rag:
                         <RadzenStack Gap="1rem">
-                            <SectionHeader Title="Rag" AddText="Nuevo Rag" Add="AddRag" />
+                            <SectionHeader Title="Rag" AddText="Nuevo Rag" Add="AddRag"  Delete="DeleteRag" />
 
                             @if (SelectedRag is null)
                             {
@@ -144,7 +144,7 @@
 
                     case ConfigSection.Clients:
                         <RadzenStack Gap="1rem">
-                            <SectionHeader Title="Clientes" AddText="Nuevo cliente" Add="AddClient" />
+                            <SectionHeader Title="Clientes" AddText="Nuevo cliente" Add="AddClient"  Delete="DeleteClient" />
 
                             @if (SelectedClient is null)
                             {
@@ -159,7 +159,7 @@
 
                     case ConfigSection.Servers:
                         <RadzenStack Gap="1rem">
-                            <SectionHeader Title="Servidores" AddText="Nuevo servidor" Add="AddServer" />
+                            <SectionHeader Title="Servidores" AddText="Nuevo servidor" Add="AddServer"  Delete="DeleteServer" />
 
                             @if (SelectedServer is null)
                             {
@@ -174,7 +174,7 @@
 
                     case ConfigSection.Tools:
                         <RadzenStack Gap="1rem">
-                            <SectionHeader Title="Tools" AddText="Nueva tool" Add="AddTool" />
+                            <SectionHeader Title="Tools" AddText="Nueva tool" Add="AddTool" Delete="DeleteTool" />
 
                             @if (SelectedTool is null)
                             {
@@ -368,6 +368,74 @@
         SelectSection(ConfigSection.Tools, _configset.AgentToolDefs.Length - 1);
     }
 
+    //----
+    private void DeleteAgent()
+    {
+        var nextIndex = GetNextSelectedIndexAfterDelete(_configset.AgentDefs, _selectedAgentIndex);
+
+        _configset.AgentDefs = RemoveAt(_configset.AgentDefs, _selectedAgentIndex);
+
+        SelectSection(ConfigSection.Agents, nextIndex);
+    }
+
+    private void DeleteRag()
+    {
+        var nextIndex = GetNextSelectedIndexAfterDelete(_configset.RaGdefs, _selectedRagIndex);
+
+        _configset.RaGdefs = RemoveAt(_configset.RaGdefs, _selectedRagIndex);
+
+        SelectSection(ConfigSection.Rag, nextIndex);
+    }
+
+    private void DeleteClient()
+    {
+        var nextIndex = GetNextSelectedIndexAfterDelete(_configset.ClientDefs, _selectedClientIndex);
+
+        _configset.ClientDefs = RemoveAt(_configset.ClientDefs, _selectedClientIndex);
+
+        SelectSection(ConfigSection.Clients, nextIndex);
+    }
+
+    private void DeleteServer()
+    {
+        var nextIndex = GetNextSelectedIndexAfterDelete(_configset.ServerDefs, _selectedServerIndex);
+
+        _configset.ServerDefs = RemoveAt(_configset.ServerDefs, _selectedServerIndex);
+
+        SelectSection(ConfigSection.Servers, nextIndex);
+    }
+
+    private void DeleteTool()
+    {
+        var nextIndex = GetNextSelectedIndexAfterDelete(_configset.AgentToolDefs, _selectedToolIndex);
+
+        _configset.AgentToolDefs = RemoveAt(_configset.AgentToolDefs, _selectedToolIndex);
+
+        SelectSection(ConfigSection.Tools, nextIndex);
+    }
+    private static T[] RemoveAt<T>(T[] items, int index)
+    {
+        if (index < 0 || index >= items.Length)
+        {
+            return items;
+        }
+
+        return [.. items[..index], .. items[(index + 1)..]];
+    }
+
+    private static int GetNextSelectedIndexAfterDelete<T>(T[] items, int index)
+    {
+        if (index < 0 || index >= items.Length || items.Length <= 1)
+        {
+            return -1;
+        }
+
+        return Math.Min(index, items.Length - 2);
+    }
+    //----
+    
+    
+    
     private static T? GetSelectedItem<T>(T[] items, int index)
     {
         return index >= 0 && index < items.Length

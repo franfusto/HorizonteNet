@@ -1,5 +1,321 @@
-<h3>ChatWidget</h3>
+@using Horizonte.Ai.Agents.Components
+@using Horizonte.Extension.Ai
+@using Horizonte.Extension.Ai.Contracts
+@using Horizonte.Extension.Ai.Definitions
+@using Microsoft.JSInterop
+@inject DialogService DialogService
+@inject IhContext Context
+<RadzenCard Style=" width: 100%; height: calc(100dvh - 150px); display: flex; flex-direction: column; gap: 1rem; min-height: 0; overflow: hidden;">
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween"
+                 Style="flex: 0 0 auto;">
+        <RadzenIcon Icon="forum"
+                    Style="font-size: 1.75rem;" />
+
+        <RadzenButton Icon="delete"
+                      Variant="Variant.Outlined"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Size="ButtonSize.Small"
+                      Click="ClearChat"
+                      Disabled="@(_turns.Count == 0)" />
+    </RadzenStack>
+
+    <div @ref="_responsesContainer" style="flex: 1 1 auto; min-height: 0; overflow-y: auto; border: 1px solid ;; padding: 1rem;">
+        @if (_turns.Count == 0)
+        {
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         AlignItems="AlignItems.Center"
+                         JustifyContent="JustifyContent.Center"
+                         Gap="0.5rem"
+                         Style="height: 100%;">
+                <RadzenIcon Icon="chat" Style="font-size: 2rem; " />
+            </RadzenStack>
+        }
+        else
+        {
+            <RadzenStack Gap="1rem">
+                @foreach (var turn in _turns)
+                {
+                        <RadzenStack Gap="0.75rem">
+                            <RadzenStack Orientation="Orientation.Horizontal"
+                                         AlignItems="AlignItems.Start"
+                                         Gap="0.75rem">
+                                <RadzenIcon Icon="account_circle"
+                                            Style="font-size: 1.75rem; color: var(--rz-series-1);"
+                                            title="Usuario" />
+
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="white-space: pre-wrap;">@turn.Query</div>
+
+                                    @if (turn.InputFiles.Count > 0)
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal"
+                                                     Gap="0.5rem"
+                                                     Style="margin-top: 0.5rem; flex-wrap: wrap;">
+                                            @foreach (var file in turn.InputFiles)
+                                            {
+                                                <RadzenButton Text="@file"
+                                                              Icon="attach_file"
+                                                              ButtonStyle="ButtonStyle.Primary"
+                                                              Variant="Variant.Outlined"
+                                                              Size="ButtonSize.Small"
+                                                              Disabled="true" />
+                                            }
+                                        </RadzenStack>
+                                    }
+                                </div>
+                            </RadzenStack>
+
+                            <RadzenStack Orientation="Orientation.Horizontal"
+                                         AlignItems="AlignItems.Start"
+                                         Gap="0.75rem">
+                                <RadzenIcon Icon="smart_toy"
+                                            Style="font-size: 1.75rem; color: var(--rz-series-2);"
+                                            title="Agente" />
+
+                                <div style="flex: 1; min-width: 0;">
+                                    <RadzenStack Gap="0.5rem">
+                                        @foreach (var item in turn.ResponseItems)
+                                        {
+                                            <div style="@GetResponseItemStyle(item.Type)">
+                                                <RadzenStack Orientation="Orientation.Horizontal"
+                                                             AlignItems="AlignItems.Start"
+                                                             Gap="0.5rem">
+                                                    <RadzenIcon Icon="@GetResponseItemIcon(item.Type)"
+                                                                Style="@GetResponseItemIconStyle(item.Type)"
+                                                                title="@GetResponseItemTitle(item.Type)" />
+
+                                                    <div style="white-space: pre-wrap;">@item.Content</div>
+                                                </RadzenStack>
+                                            </div>
+                                        }
+                                    </RadzenStack>
+
+                                    @if (turn.ResponseFiles.Count > 0)
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal"
+                                                     Gap="0.5rem"
+                                                     Style="margin-top: 0.75rem; flex-wrap: wrap;">
+                                            @foreach (var file in turn.ResponseFiles)
+                                            {
+                                                <RadzenButton Text="@file"
+                                                              Icon="download"
+                                                              Variant="Variant.Outlined"
+                                                              ButtonStyle="ButtonStyle.Primary"
+                                                              Size="ButtonSize.Small"
+                                                              Click="@(() => DownloadResponseFile(file))" />
+                                            }
+                                        </RadzenStack>
+                                    }
+                                </div>
+                            </RadzenStack>
+                        </RadzenStack>
+                }
+            </RadzenStack>
+        }
+    </div>
+
+    <div style="flex: 0 0 auto;">
+        @if (_pendingFiles.Count > 0)
+        {
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         Gap="0.5rem"
+                         Style="flex-wrap: wrap; margin-bottom: 0.5rem;">
+                @foreach (var file in _pendingFiles)
+                {
+                    <RadzenButton Text="@file"
+                                  Icon="attach_file"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Variant="Variant.Outlined"
+                                  Size="ButtonSize.Small"
+                                  Click="@(() => RemovePendingFile(file))" />
+                }
+            </RadzenStack>
+        }
+
+        <RadzenCard Style="@PrimaryBorderCardStyle">
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         AlignItems="AlignItems.Stretch"
+                         Gap="0.75rem">
+                <RadzenFormField Text="Prompt" Style="flex: 1; min-width: 0;">
+                    <RadzenTextArea @bind-Value="_query"
+                                    Rows="4"
+                                    Style="width: 100%; height: 100%; resize: none;"
+                                    Placeholder="Escribe tu consulta para el agente..." />
+                </RadzenFormField>
+
+                <RadzenStack Gap="0.5rem"
+                             Style="width: 130px;">
+                    <RadzenButton Text="Adjuntar"
+                                  Icon="attach_file"
+                                  Variant="Variant.Outlined"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Style="width: 100%; flex: 1;"
+                                  Click="AttachStubInputFile" />
+
+                    <RadzenButton Text="Enviar"
+                                  Icon="send"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Style="width: 100%; flex: 1;"
+                                  Click="Send"
+                                  Disabled="@string.IsNullOrWhiteSpace(_query)" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+    </div>
+</RadzenCard>
 
 @code {
-    
+    private const string PrimaryBorderCardStyle =
+        "border: 1px solid var(--rz-primary); box-shadow: none; background: transparent;";
+    private ElementReference _responsesContainer;
+    private bool _scrollToBottomPending;
+    private string _query = string.Empty;
+
+    private readonly List<string> _pendingFiles = [];
+    private readonly List<ChatTurnViewModel> _turns = [];
+
+    private Hagent _agent ;
+    protected override void OnInitialized()
+    {
+        var cfg = Context.Get<AgentsConfig>();
+        var agentcfg = cfg.ConfigSet.AgentDefs[0];
+        _agent = agentcfg.GetHagent(cfg.ConfigSet);
+        base.OnInitialized();
+    }
+
+    private async Task<ChatResponse> StubQuery(ChatQuery query)
+    {
+        var ret = await _agent.QueryAsync(query);
+        return ret;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scrollToBottomPending)
+        {
+            return;
+        }
+
+        _scrollToBottomPending = false;
+
+
+    }
+    private async Task AttachStubInputFile()
+    {
+        var file = await DialogService.OpenAsync<StubInputFileDialog>(
+            "Adjuntar archivo stub",
+            options: new DialogOptions
+            {
+                Width = "520px",
+                Resizable = true,
+                Draggable = true
+            });
+
+        if (file is string value && !string.IsNullOrWhiteSpace(value))
+        {
+            _pendingFiles.Add(value.Trim());
+        }
+    }
+
+    private void RemovePendingFile(string file)
+    {
+        _pendingFiles.Remove(file);
+    }
+
+    private async Task Send()
+    {
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            return;
+        }
+
+       
+        var query = new ChatQuery
+        {
+            Query = _query.Trim(),
+        };
+
+        var response =await StubQuery(query);
+
+        _turns.Add(new ChatTurnViewModel
+        {
+            Query = query.Query,
+            ResponseItems = response.ResponseItems ?? [],
+            ResponseFiles = response.ResponseFiles ?? []
+        });
+        _scrollToBottomPending = true;
+        _query = string.Empty;
+        _pendingFiles.Clear();
+    }
+
+    private void ClearChat()
+    {
+        _turns.Clear();
+        _query = string.Empty;
+        _pendingFiles.Clear();
+    }
+
+    private void DownloadResponseFile(string file)
+    {
+        // TODO: implementar descarga real del archivo devuelto.
+    }
+
+
+
+    private static string GetResponseItemIcon(ChatResponseItemType type)
+    {
+        return type switch
+        {
+            ChatResponseItemType.Think => "psychology",
+            ChatResponseItemType.Tool => "construction",
+            ChatResponseItemType.Response => "forum",
+            _ => "notes"
+        };
+    }
+
+    private static string GetResponseItemTitle(ChatResponseItemType type)
+    {
+        return type switch
+        {
+            ChatResponseItemType.Think => "Pensamiento",
+            ChatResponseItemType.Tool => "Herramienta",
+            ChatResponseItemType.Response => "Respuesta",
+            _ => type.ToString()
+        };
+    }
+
+    private static string GetResponseItemStyle(ChatResponseItemType type)
+    {
+        var color = GetResponseItemColor(type);
+
+        return $"padding: 0.75rem; border: 1px solid {color}; border-left: 0.35rem solid {color}; border-radius: var(--rz-border-radius); background: transparent;";
+    }
+
+    private static string GetResponseItemIconStyle(ChatResponseItemType type)
+    {
+        return $"font-size: 1.25rem; color: {GetResponseItemColor(type)};";
+    }
+
+    private static string GetResponseItemColor(ChatResponseItemType type)
+    {
+        return type switch
+        {
+            ChatResponseItemType.Think => "var(--rz-series-1)",
+            ChatResponseItemType.Tool => "var(--rz-series-2)",
+            ChatResponseItemType.Response => "var(--rz-series-3)",
+            _ => "var(--rz-series-4)"
+        };
+    }
+
+    private sealed class ChatTurnViewModel
+    {
+        public string Query { get; init; } = string.Empty;
+
+        public IReadOnlyList<string> InputFiles { get; init; } = [];
+
+        public IReadOnlyList<ChatResponseItem> ResponseItems { get; init; } = [];
+
+        public IReadOnlyList<string> ResponseFiles { get; init; } = [];
+    }
 }

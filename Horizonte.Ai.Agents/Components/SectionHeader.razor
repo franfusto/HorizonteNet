@@ -1,22 +1,29 @@
 <RadzenStack Orientation="Orientation.Horizontal"
              AlignItems="AlignItems.Center"
              JustifyContent="JustifyContent.SpaceBetween">
-    <RadzenText TextStyle="TextStyle.H5" Text="@Title" />
+    <RadzenText TextStyle="TextStyle.H5" Text="@Title"/>
 
-    <RadzenButton Text="@AddText"
-                  Icon="add"
-                  Size="ButtonSize.Small"
-                  Variant="Variant.Outlined"
-                  Click="Add" />
-</RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.End">
+
+        <RadzenButton Text="@AddText"
+                      Icon="add"
+                      Size="ButtonSize.Small"
+                      Variant="Variant.Outlined"
+                      Click="Add"/>
+        <RadzenButton Text=""
+                      Icon="delete"
+                      Size="ButtonSize.Small"
+                      Variant="Variant.Outlined"
+                      Click="Delete"/>
+        </RadzenStack>
+    </RadzenStack>
 
 @code {
-    [Parameter]
-    public string Title { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
 
-    [Parameter]
-    public string AddText { get; set; } = "Nuevo";
+    [Parameter] public string AddText { get; set; } = "Nuevo";
 
-    [Parameter]
-    public EventCallback Add { get; set; }
+    [Parameter] public EventCallback Add { get; set; }
+    [Parameter] public EventCallback Delete { get; set; }
 }

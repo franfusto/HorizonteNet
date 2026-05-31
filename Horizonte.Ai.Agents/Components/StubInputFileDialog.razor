@@ -1,0 +1,40 @@
+@inject DialogService DialogService
+
+<RadzenStack Gap="1rem">
+    <RadzenFormField Text="Stub string file" Style="width: 100%;">
+        <RadzenTextArea @bind-Value="_value"
+                        Rows="5"
+                        Style="width: 100%;"
+                        Placeholder="Introduce el contenido simulado del archivo..." />
+    </RadzenFormField>
+
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 JustifyContent="JustifyContent.End"
+                 Gap="0.5rem">
+        <RadzenButton Text="Cancelar"
+                      Icon="close"
+                      ButtonStyle="ButtonStyle.Light"
+                      Variant="Variant.Outlined"
+                      Click="Cancel" />
+
+        <RadzenButton Text="Adjuntar"
+                      Icon="attach_file"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Click="Attach"
+                      Disabled="@string.IsNullOrWhiteSpace(_value)" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    private string _value = string.Empty;
+
+    private void Attach()
+    {
+        DialogService.Close(_value.Trim());
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(null);
+    }
+}
