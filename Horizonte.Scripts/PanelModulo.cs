@@ -48,6 +48,9 @@ public class PanelModulo
         var config = _context.Get<ScriptsConfig>() ?? new ScriptsConfig();
         LoadScriptModules(config);
         _logger.LogInformation("Módulo Scripts Iniciado");
+        
+        //referenciamos BlazorMonaco para cargar nuget con assets necesarios para la web.
+        _ = new BlazorMonaco.MarkdownString();
         return true;
     }
 

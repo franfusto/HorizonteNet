@@ -180,7 +180,7 @@
     protected override void OnInitialized()
     {
         var cfg = Context.Get<AgentsConfig>();
-        var agentcfg = cfg.ConfigSet.AgentDefs[0];
+        var agentcfg = cfg.ConfigSet.AgentDefs[1];
         _agent = agentcfg.GetHagent(cfg.ConfigSet);
         base.OnInitialized();
     }
@@ -267,7 +267,7 @@
     {
         return type switch
         {
-            ChatResponseItemType.Think => "psychology",
+            ChatResponseItemType.Trace => "psychology",
             ChatResponseItemType.Tool => "construction",
             ChatResponseItemType.Response => "forum",
             _ => "notes"
@@ -278,7 +278,7 @@
     {
         return type switch
         {
-            ChatResponseItemType.Think => "Pensamiento",
+            ChatResponseItemType.Trace => "Pensamiento",
             ChatResponseItemType.Tool => "Herramienta",
             ChatResponseItemType.Response => "Respuesta",
             _ => type.ToString()
@@ -301,7 +301,7 @@
     {
         return type switch
         {
-            ChatResponseItemType.Think => "var(--rz-series-1)",
+            ChatResponseItemType.Trace => "var(--rz-series-1)",
             ChatResponseItemType.Tool => "var(--rz-series-2)",
             ChatResponseItemType.Response => "var(--rz-series-3)",
             _ => "var(--rz-series-4)"

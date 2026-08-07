@@ -7,6 +7,6 @@ public class AgentExecutionOptions
     public int TimeoutSeconds { get; set; } = 120;
     public bool AutoInvokeTools { get; set; } = true;
     public bool ReturnToolMessages { get; set; } = true;
-    public bool ReturnIntermediateSteps { get; set; } = false;
+    public bool ReturnTraceSteps { get; set; } = false;
     public Dictionary<string, string> Settings { get; set; } = new();
 }

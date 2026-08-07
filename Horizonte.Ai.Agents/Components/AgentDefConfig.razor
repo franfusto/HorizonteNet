@@ -159,9 +159,9 @@ else
                     <RadzenColumn Size="12" SizeMD="4">
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
                             <RadzenCheckBox TValue="bool"
-                                            @bind-Value="Model.ExecutionOptions.ReturnIntermediateSteps"
+                                            @bind-Value="Model.ExecutionOptions.ReturnTraceSteps"
                                             Name="returnIntermediateSteps" />
-                            <RadzenLabel Text="Devolver pasos intermedios" Component="returnIntermediateSteps" />
+                            <RadzenLabel Text="Devolver trazas" Component="returnIntermediateSteps" />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>

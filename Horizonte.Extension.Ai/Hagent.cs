@@ -66,9 +66,11 @@ public class Hagent
             CancellationToken = timeoutCts.Token
         };
 
+        AddTraceStep(context, "Consulta iniciada.");
         await ProcessInputFilesAsync(context, timeoutCts.Token);
         await ExecuteAutoToolsAsync(context, timeoutCts.Token);
         await ExecuteToolLoopAsync(context, timeoutCts.Token);
+        AddTraceStep(context, "Construyendo respuesta final.");
 
         return BuildResponse(context);
     }
@@ -109,6 +111,8 @@ public class Hagent
         if (!context.ExecutionOptions.AutoInvokeTools)
         {
             context.Items["autoTools.skipped"] = true;
+            context.Items["autoTools.skipReason"] = "AutoInvokeTools está desactivado.";
+            AddTraceStep(context, "Ejecución automática de tools omitida: AutoInvokeTools está desactivado.");
             return;
         }
 
@@ -116,6 +120,7 @@ public class Hagent
         {
             context.Items["autoTools.skipped"] = true;
             context.Items["autoTools.skipReason"] = "MaxToolCalls es 0.";
+            AddTraceStep(context, "Ejecución automática de tools omitida: MaxToolCalls es 0.");
             return;
         }
 
@@ -128,6 +133,7 @@ public class Hagent
             if (context.ToolCallCount >= context.ExecutionOptions.MaxToolCalls)
             {
                 context.Items["autoTools.limitReached"] = true;
+                AddTraceStep(context, "Límite de llamadas a tools alcanzado.");
                 break;
             }
 
@@ -137,6 +143,7 @@ public class Hagent
 
             if (!shouldAutoInvoke)
             {
+                AddTraceStep(context, $"Tool automática '{tool.Name}' no requerida.");
                 continue;
             }
 
@@ -164,7 +171,7 @@ public class Hagent
                 ["mode"] = "auto"
             }
         };
-
+        AddTraceStep(context, $"Ejecutando tool automática '{tool.Name}'.");
         if (context.ExecutionOptions.ReturnToolMessages)
         {
             context.ResponseItems.Add(new ChatResponseItem
@@ -185,6 +192,12 @@ public class Hagent
             tool,
             result,
             context);
+
+        AddTraceStep(
+            context,
+            result.Success
+                ? $"Tool automática '{tool.Name}' finalizada correctamente."
+                : $"Tool automática '{tool.Name}' finalizada con error.");
     }
 
     private async Task ExecuteToolLoopAsync(
@@ -197,17 +210,22 @@ public class Hagent
         {
             context.Items["chat.skipped"] = true;
             context.Items["chat.skipReason"] = "MaxTurns alcanzado antes de llamar al chat.";
+            AddTraceStep(context, "Chat omitido: MaxTurns alcanzado antes de llamar al cliente.");
             return;
         }
 
+        AddTraceStep(context, "Construyendo petición para el cliente de chat.");
         var request = BuildChatRequest(context);
 
+        AddTraceStep(context, "Enviando petición al cliente de chat.");
         var result = await _chatClient.CompleteAsync(
             request,
             cancellationToken);
 
         context.TurnCount++;
         context.Items["chat.lastResult"] = result;
+
+        AddTraceStep(context, $"Respuesta de chat recibida. Turno actual: {context.TurnCount}.");
 
         if (!string.IsNullOrWhiteSpace(result.Text))
         {
@@ -221,6 +239,8 @@ public class Hagent
         if (result.ToolCalls.Count > 0)
         {
             context.Items["chat.toolCalls"] = result.ToolCalls;
+            AddTraceStep(context, $"El modelo solicitó {result.ToolCalls.Count} llamada(s) a tool.");
+
             await HandleModelToolCallsAsync(
                 result.ToolCalls,
                 context,
@@ -238,6 +258,10 @@ public class Hagent
         context.Items["chat.toolCalls.ignoreReason"] =
             "Tool-calling iterativo todavía no está implementado. Fase 8 Nivel 2 queda preparado para una fase posterior.";
 
+        AddTraceStep(
+            context,
+            "Las llamadas a tools solicitadas por el modelo se registraron, pero no se ejecutaron porque el tool-calling iterativo aún no está habilitado.");
+
         if (context.ExecutionOptions.ReturnToolMessages)
         {
             foreach (var toolCall in toolCalls)
@@ -251,6 +275,21 @@ public class Hagent
         }
 
         return Task.CompletedTask;
+    }
+    private static void AddTraceStep(
+        HagentExecutionContext context,
+        string content)
+    {
+        if (!context.ExecutionOptions.ReturnTraceSteps)
+        {
+            return;
+        }
+
+        context.ResponseItems.Add(new ChatResponseItem
+        {
+            Type = ChatResponseItemType.Trace,
+            Content = content
+        });
     }
     private HagentToolContext BuildToolContext(HagentExecutionContext context)
     {
