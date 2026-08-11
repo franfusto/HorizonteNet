@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Horizonte;
 using System.Threading;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Horizonte.Ai.MCPServer;
@@ -11,26 +12,27 @@ public class MCPWorker : BackgroundService
 {
     public bool IsRunning { get; set; } = false;
 
-
-    private ILogger? _log;
-    private IHost _app;
+    private readonly ILogger<MCPWorker> _log;
+    private WebApplication? _app;
 
     public MCPWorker(ILogger<MCPWorker> logger)
     {
         _log = logger;
     }
 
-
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _log?.LogInformation("Iniciando MCPWorker");
-        _log.LogInformation("Starting Horizonte.Samples.WebApp.WebWorker");
-        var builder = Host.CreateApplicationBuilder();
+        _log.LogInformation("Iniciando MCPWorker");
+        var builder = WebApplication.CreateBuilder();
 
-        builder.Services.AddMcpServer();
-
+        builder.Services
+            .AddMcpServer()
+            .WithHttpTransport()
+            .WithTools<MCPTools>();
         _app = builder.Build();
-        return _app.RunAsync();
+        _app.MapMcp("/mcp");
+
+        await _app.RunAsync("http://localhost:5005");
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
@@ -39,12 +41,13 @@ public class MCPWorker : BackgroundService
         return base.StartAsync(cancellationToken);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _log?.LogInformation("Finalizando MCPWorker");
-        _app?.StopAsync();
-        return base.StopAsync(cancellationToken);
+        _log.LogInformation("Finalizando MCPWorker");
+        if (_app != null)
+        {
+            await _app.StopAsync(cancellationToken);
+        }
+        await base.StopAsync(cancellationToken);
     }
 }
-
-//////

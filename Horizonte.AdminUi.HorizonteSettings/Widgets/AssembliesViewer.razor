@@ -169,7 +169,7 @@
                                 .FirstOrDefault(m => m.Attribute("name")?.Value == memberName)
                                 ?.Element("summary")?.Value?.Trim();
 
-                            sb.AppendLine($"### {selectedItem.Type.Name}");
+                            sb.AppendLine($"'{selectedItem.Type.Name}'");
                             if (!string.IsNullOrEmpty(typeSummary))
                             {
                                 sb.AppendLine(typeSummary);
@@ -180,7 +180,7 @@
                             var methods = selectedItem.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
                             if (methods.Any())
                             {
-                                sb.AppendLine("#### Métodos");
+                                sb.AppendLine("# Métodos");
                                 foreach (var method in methods.OrderBy(m => m.Name))
                                 {
                                     var methodParams = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
