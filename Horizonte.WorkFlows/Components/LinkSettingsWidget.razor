@@ -44,8 +44,9 @@
             updlink.Condition = new LinkCondition();
         }
         
-        string name = updlink.Condition.ConditionName;
+        string name = updlink.Condition.ConditionName ;
         string command = updlink.Condition.ConditionCommand;
+        bool expectedValue = updlink.Condition.ExpectedValue;
 
         var result = await DialogService.OpenAsync("Editar condición", ds =>
             @<RadzenStack Orientation="Orientation.Vertical" Gap="1.5rem">
@@ -53,6 +54,8 @@
                 <RadzenTextBox @bind-Value="name"/>
                 <RadzenText Text="Comando acción"/>
                 <RadzenTextBox @bind-Value="command"/>
+                <RadzenText Text="Valor esperado"/>
+                <RadzenCheckBox @bind-Value="expectedValue"/>
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;"/>
                     <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
@@ -63,6 +66,7 @@
         {
             updlink.Condition.ConditionName = name;
             updlink.Condition.ConditionCommand = command;
+            updlink.Condition.ExpectedValue = expectedValue;
             Control.EditCondition(updlink);
         }
     }

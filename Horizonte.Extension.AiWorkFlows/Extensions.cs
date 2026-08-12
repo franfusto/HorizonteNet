@@ -69,7 +69,9 @@ public static class Extensions
             return null;
         }
 
-        return (message) => { return gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]); };
+        return (message) => { return 
+            (gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]) == link.Condition.ExpectedValue); 
+        };
     }
 
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message,

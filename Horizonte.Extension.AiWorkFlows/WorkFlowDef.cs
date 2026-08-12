@@ -4,6 +4,7 @@ public class WorkFlowDef
 {
     public string Id { get; set; } = Guid.Empty.ToString();
     public string Name { get; set; }= string.Empty;
+    public string MessageType { get; set; } = "System.String";
     public List<WorkFlowNode> Nodes { get; set; } = new List<WorkFlowNode>();
     public List<WorkFlowLink> Links { get; set; } = new List<WorkFlowLink>();
     
@@ -36,6 +37,8 @@ public class LinkCondition
 {
     public string ConditionName { get; set; }= string.Empty;
     public string ConditionCommand { get; set; }= string.Empty;
+    
+    public bool ExpectedValue { get; set; } = false;
 }
 
 public class NodePort

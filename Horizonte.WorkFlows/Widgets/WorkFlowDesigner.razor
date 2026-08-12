@@ -1,5 +1,7 @@
 @implements IDisposable
 
+@using System.Text.Json
+@using Google.Protobuf.Reflection
 @using Microsoft.Agents.AI.Workflows
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 @inject ILogger<HGesCom> Logger
@@ -200,8 +202,14 @@
             }
         </RadzenStack>
 
-
-        <div class="diagram-container" style="position: relative;">
+    @if (DesignerMode == DesignerMode.Design)
+    {
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start">
+            <RadzenText Text="Tipo del mensaje"/>
+            <RadzenTextBox @bind-Value="_messageType"/>
+        </RadzenStack>
+    }
+    <div class="diagram-container" style="position: relative;">
             <div class="diagram-toolbox">
                 @if (DesignerMode == DesignerMode.Design)
                 {
@@ -244,7 +252,6 @@
                                 <RadzenTextArea @bind-Value="_outmessage"/>
                             </RadzenStack>
                         </RadzenCard>
-                        <RadzenTextArea @bind-Value="_logmessage"/>
 
                     </RadzenStack>
                 }
@@ -280,7 +287,8 @@
     private WorkFlowDef? _currentWorkFlowNode;
     private string _inmessage = string.Empty;
     private string? _outmessage = string.Empty;
-    private string _logmessage = string.Empty;
+    //private string _logmessage = string.Empty;
+    private string _messageType = string.Empty;
     private CancellationTokenSource? _cts;
 
     private void HandleConditionChanged()
@@ -331,6 +339,7 @@
         _diagram.Links.Clear();
         CleanLastRun();
 
+        _messageType = workflow.MessageType;
 
         // Cargar Nodos
         foreach (var nodeDef in workflow.Nodes)
@@ -435,6 +444,19 @@
         }
     }
 
+    private object? GetInObject(string intype, string inmessage)
+    {
+        if (string.IsNullOrEmpty(intype) || string.IsNullOrEmpty(inmessage))
+            return null;
+        // 1. Obtener el objeto Type desde el string
+        Type targetType = Type.GetType(intype);
+        if (targetType == null)
+            throw new ArgumentException($"El tipo '{intype}' no pudo ser encontrado.");
+
+        // 2. Usar JsonSerializer.Deserialize indicando el tipo en tiempo de ejecución
+        return JsonSerializer.Deserialize(inmessage, targetType);
+    }
+    
     private async Task RunWorkflow()
     {
         try
@@ -443,13 +465,34 @@
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             CleanLastRun(false);
-            // todo: serializar deserealizar set default to json
-            _logmessage = string.Empty;
-            var workflow = WorkFlowDef?.Build<string>(ServiceProvider, _cts.Token);
+
+            // 1. Obtener el objeto deserializado
+            var inobject = GetInObject(_messageType, _inmessage);
+            if (inobject == null) throw new Exception("No se pudo deserializar el mensaje de entrada");
+
+            // 2. Obtener el Type real a partir del string
+            Type targetType = Type.GetType(_messageType);
+            if (targetType == null) throw new Exception($"Tipo no encontrado: {_messageType}");
+
+
+            // 3. Obtener el workflow (aquí también aplicamos la genericidad dinámica si Build la requiere)
+            // Usamos Reflection para invocar Build<T> y Run<T>
+            var extensionsType = typeof(Horizonte.Extension.AiWorkFlows.Extensions);
+
+            // Invocación dinámica de Build<T>
+            var buildMethod = extensionsType.GetMethod("Build")?.MakeGenericMethod(targetType);
+            var workflow = buildMethod?.Invoke(null, new object[] { WorkFlowDef!, ServiceProvider, _cts.Token }) as Workflow;
+
             if (workflow != null)
             {
-                var result = await workflow.Run<string>(_inmessage, ProcLogMessge, _cts.Token);
-                _outmessage = result?.Data?.ToString();
+                // 4. Invocación dinámica de Run<T>
+                var runMethod = extensionsType.GetMethod("Run")?.MakeGenericMethod(targetType);
+
+                // Task<WorkflowEvent?> es el tipo de retorno, debemos esperar el resultado del Invoke
+                var task = (Task<WorkflowEvent?>)runMethod!.Invoke(null, new object[] { workflow, inobject, (Action<WorkflowEvent>)ProcLogMessge, _cts.Token })!;
+                var result = await task;
+
+                _outmessage = SerializeOutput(result?.Data);
             }
 
             Logger.LogInformation(_outmessage);
@@ -466,46 +509,59 @@
     }
 
     private void ProcLogMessge(WorkflowEvent workflowEvent)
+        {
+            try
+            {
+                string log = string.Empty;
+                switch (workflowEvent)
+                {
+                    case ExecutorInvokedEvent invoke:
+                        UpdRunUi(invoke.ExecutorId, "invoke");
+                        log = $"Starting {invoke.ExecutorId}" + Environment.NewLine;
+                        break;
+
+                    case ExecutorCompletedEvent complete:
+                        UpdRunUi(complete.ExecutorId, "complete");
+                        log = $"Completed {complete.ExecutorId}: {complete.Data}" + Environment.NewLine;
+                        break;
+
+                    case WorkflowOutputEvent output:
+                        UpdRunUi(output.ExecutorId, "output");
+                        log = $"Workflow output: {output.Data}" + Environment.NewLine;
+                        _outmessage = SerializeOutput(output.Data);
+                        break;
+
+                    case WorkflowErrorEvent error:
+                        log = $"Workflow error: {error.Exception}" + Environment.NewLine;
+                        return;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e.ToString());
+            }
+        }
+
+    private string SerializeOutput(object? obj)
     {
         try
         {
-            string log = string.Empty;
-            switch (workflowEvent)
-            {
-                case ExecutorInvokedEvent invoke:
-                    UpdRunUi(invoke.ExecutorId, "invoke");
-                    log = $"Starting {invoke.ExecutorId}" + Environment.NewLine;
-                    break;
-
-                case ExecutorCompletedEvent complete:
-                    UpdRunUi(complete.ExecutorId, "complete");
-                    log = $"Completed {complete.ExecutorId}: {complete.Data}" + Environment.NewLine;
-                    break;
-
-                case WorkflowOutputEvent output:
-                    UpdRunUi(output.ExecutorId, "output");
-                    log = $"Workflow output: {output.Data}" + Environment.NewLine;
-                    _outmessage = output.Data?.ToString();
-                    break;
-
-                case WorkflowErrorEvent error:
-                    log = $"Workflow error: {error.Exception}" + Environment.NewLine;
-                    return;
-            }
-
-            _logmessage += log;
+            if (obj == null) return string.Empty;
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
         }
         catch (Exception e)
         {
             Logger.LogError(e.ToString());
         }
+        return string.Empty;
     }
-
+    
     private void UpdRunUi(string executorid, string eventtype)
     {
         var curnode = _diagram.Nodes.FirstOrDefault(x => x.Id == executorid);
         if (curnode == null) return;
-        ((IRunnableNode)curnode)?.RunMessage += eventtype;
+        ((IRunnableNode)curnode)?.RunMessage += eventtype+",";
         var x = ((IRunnableNode)curnode).RunMessage;
         curnode.Refresh();
         InvokeAsync(StateHasChanged);
@@ -515,7 +571,6 @@
     {
         if (clenainmessage) _inmessage = string.Empty;
         _outmessage = string.Empty;
-        _logmessage = string.Empty;
 
         foreach (var node in _diagram.Nodes)
         {
@@ -544,6 +599,7 @@
     {
         if (WorkFlowDef == null) return null;
 
+        WorkFlowDef.MessageType = _messageType;
         WorkFlowDef.Nodes.Clear();
         foreach (var node in _diagram.Nodes)
         {
