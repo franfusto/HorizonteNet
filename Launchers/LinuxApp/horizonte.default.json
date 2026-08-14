@@ -2,74 +2,132 @@
   "ModulesSettings": {
     "List": [
       {
+        "Active": false,
+        "ModuleName": "Horizonte.Extension.AiWorkFlows",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+      {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.PorcupineMod",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default2"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.Aemet",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default2"
       },
       {
         "Active": false,
         "ModuleName": "Horizonte.Samples.Gcalendar",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.Gmaps",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
-      },
-      {
-        "Active": false,
-        "ModuleName": "NotificationIcon",
-        "ModuleVersion": "10.0.0-beta",
-        "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
       },
       {
         "Active": true,
-        "ModuleName": "Horizonte.Samples.RazorApp",
+        "ModuleName": "Horizonte.Samples.NotificationIcon",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Samples.WebApp",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default2"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.ServiceApp",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": true,
+        "Domain": "Default2"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.Scripts",
         "ModuleVersion": "10.0.0-beta",
         "Path": "",
-        "LoadAdditionalDlls": false
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.WorkFlows",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Ai.AgentChat",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default3"
+      },
+      {
+        "Active": false,
+        "ModuleName": "Horizonte.Extension.Ai",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Ai.Agents",
+        "ModuleVersion": "1.0.0",
+        "Path": "",
+        "LoadAdditionalDlls": true,
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "ModuleName": "Horizonte.Ai.MCPServer",
+        "ModuleVersion": "10.0.0-beta",
+        "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
       }
     ],
     "NugetServers": [
@@ -108,30 +166,50 @@
     ],
     "ForcedPackages": [
       {
+        "Active": true,
         "PackageId": "Porcupine",
         "Version": "4.0.1",
-        "Framework": "net6.0"
+        "Framework": "net6.0",
+        "Domain": "Default2"
       },
       {
+        "Active": true,
         "PackageId": "pvrecorder",
         "Version": "1.2.13.0",
-        "Framework": "net8.0"
+        "Framework": "net8.0",
+        "Domain": "Default2"
       },
       {
+        "Active": false,
         "PackageId": "Z.Blazor.Diagrams.Core",
         "Version": "3.0.4",
-        "Framework": "net6.0"
+        "Framework": "net6.0",
+        "Domain": "Default"
       },
       {
+        "Active": false,
         "PackageId": "Z.Blazor.Diagrams",
         "Version": "3.0.4",
-        "Framework": "net6.0"
+        "Framework": "net6.0",
+        "Domain": "Default"
       },
       {
+        "Active": false,
         "PackageId": "BlazorMonaco",
         "Version": "3.4.0",
-        "Framework": "net10.0"
+        "Framework": "net10.0",
+        "Domain": "Default"
       }
+    ],
+    "AssemblyToPackageMap": {
+      "Microsoft.CodeAnalysis.Workspaces": "Microsoft.CodeAnalysis.Workspaces.Common",
+      "Microsoft.CodeAnalysis": "Microsoft.CodeAnalysis.Common",
+      "Microsoft.CodeAnalysis.Scripting": "Microsoft.CodeAnalysis.Scripting.Common"
+    },
+    "Domains": [
+      "Default",
+      "Default2",
+      "Default3"
     ]
   },
   "Log4NetSettings": {
@@ -145,7 +223,7 @@
     "FileAppenderRollingMode": 1,
     "FileAppenderStaticLogFileName": true
   },
-  "WorkerSettings": {
+  "WorkerDef": {
     "List": [
       {
         "WorkerType": "Horizonte.AdminUi.Worker,Horizonte.AdminUi",
@@ -166,22 +244,34 @@
         "Order": 3
       },
       {
-        "WorkerType": "Horizonte.PorcupineMod.Worker, Horizonte.PorcupineMod, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "WorkerType": "Horizonte.PorcupineMod.PorcupineWorker, Horizonte.PorcupineMod, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
         "RunOnStart": false,
         "ServiceName": "PorcupineMod",
-        "Order": 0
+        "Order": 4
       },
       {
-        "WorkerType": "Horizonte.Samples.RazorApp.BlazorWorker, Horizonte.Samples.RazorApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-        "RunOnStart": false,
-        "ServiceName": "BlazorWorker",
-        "Order": 0
+        "WorkerType": "Horizonte.Samples.WebApp.WebWorker, Horizonte.Samples.WebApp",
+        "RunOnStart": true,
+        "ServiceName": "WebWorker",
+        "Order": 5
       },
       {
         "WorkerType": "Horizonte.Samples.ServiceApp.WsWorker, Horizonte.Samples.ServiceApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
         "RunOnStart": false,
         "ServiceName": "WsWorker",
-        "Order": 0
+        "Order": 6
+      },
+      {
+        "WorkerType": "Script+FakeWorker",
+        "RunOnStart": false,
+        "ServiceName": "SampleScriptWorker",
+        "Order": 7
+      },
+      {
+        "WorkerType": "Horizonte.Ai.MCPServer.MCPWorker",
+        "RunOnStart": false,
+        "ServiceName": "MCP Server",
+        "Order": 8
       }
     ]
   },
@@ -300,6 +390,34 @@
         "Icon": "script",
         "Caption": "Scripts",
         "Component": "Scripts_ScriptsViewerWidget"
+      },
+      {
+        "Id": 17,
+        "ParentId": 0,
+        "Icon": "automation",
+        "Caption": "WorkFlows",
+        "Component": "WorkFlows_Dashboard"
+      },
+      {
+        "Id": 18,
+        "ParentId": 0,
+        "Icon": "home",
+        "Caption": "chatbot",
+        "Component": "Horizonte.Ai.AgentChat_ChatWidget"
+      },
+      {
+        "Id": 19,
+        "ParentId": 0,
+        "Icon": "smart_toy",
+        "Caption": "Agent",
+        "Component": "Horizonte.Ai.Agents_ChatWidget"
+      },
+      {
+        "Id": 20,
+        "ParentId": 0,
+        "Icon": "settings",
+        "Caption": "Agent Config",
+        "Component": "Horizonte.Ai.Agents_ConfigPage"
       }
     ]
   },
@@ -315,7 +433,6 @@
   "GmapsConfig": {
     "ApiKey": "gmaps.apikey"
   },
-
   "NotebookConfig": {
     "Sources": [
       {
@@ -326,18 +443,6 @@
           {
             "ItemId": "SampleNotebook01",
             "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/01-What%20are%20Notebooks.ipynb"
-          },
-          {
-            "ItemId": "SampleNotebook02",
-            "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/02-Code%20Cells.ipynb"
-          },
-          {
-            "ItemId": "SampleNotebook03",
-            "ItemPath": "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/03-Markdown%20Cells.ipynb"
-          },
-          {
-            "ItemId": "SampleNotebook04",
-            "ItemPath": null
           }
         ]
       },
@@ -363,11 +468,345 @@
     "Scripts": [
       {
         "Id": "4b7ab579-9766-4359-9398-357cb7a47248",
-        "Name": "NuevoScript",
+        "Name": "NuevoScript3",
         "Description": "",
-        "Code": "I3IgIm51Z2V0Okhvcml6b250ZSwxMC4wLjAtYmV0YSIKI3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKCnVzaW5nIFN5c3RlbTsKdXNpbmcgSG9yaXpvbnRlOwp1c2luZyBNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nOwoKCltIb3Jpem9udGVNb2R1bGUoIlNhbXBsZSIpXQpwdWJsaWMgY2xhc3MgU2FtcGxlCnsKICAgIHByaXZhdGUgSUxvZ2dlcjxQYW5lbE1vZHVsbz4/IF9sb2dnZXI7CiAgICBwcml2YXRlIExhenk8SUhvcml6b250ZUVudj4gX2VudjsKCiAgICBwdWJsaWMgU2FtcGxlKElIb3Jpem9udGVFbnYgZW52KQogICAgewogICAgICAgIF9lbnYgPSBuZXcgTGF6eTxJSG9yaXpvbnRlRW52PigoKSA9PiBlbnYpOwogICAgfQogICAgCiAgICBbSG9yaXpvbnRlUm9sZSgiaW5pdCIpXQogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9Jbml0IildCiAgICBwdWJsaWMgYm9vbCBJbml0KCkKICAgIHsKICAgICAgICBfbG9nZ2VyID0gX2Vudi5WYWx1ZS5HZXRTZXJ2aWNlPElMb2dnZXI8UGFuZWxNb2R1bG8+PigpOwogICAgICAgIHZhciBjb250ZXh0ID0gX2Vudi5WYWx1ZS5HZXRTZXJ2aWNlPElIQ29udGV4dD4oKTsKICAgICAgICBfbG9nZ2VyPy5Mb2dJbmZvcm1hdGlvbigiTcOzZHVsbyBTY3JpcHRzIEluY2ljaWFkbyIpOwogICAgICAgIHJldHVybiB0cnVlOwogICAgfQoKICAgIFtIb3Jpem9udGVDb21tYW5kKCJTYW1wbGVfSGF6QWxnbyIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28oc3RyaW5nIGFyZ3MpCiAgICB7CiAgICAgICAgQ29uc29sZS5Xcml0ZUxpbmUoYXJncyk7CiAgICAgICAgcmV0dXJuIGFyZ3M7CiAgICB9Cn0K",
+        "Code": "I3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKCnVzaW5nIFN5c3RlbTsKdXNpbmcgSG9yaXpvbnRlOwp1c2luZyBNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nOwoKCltIb3Jpem9udGVNb2R1bGUoIlNhbXBsZSIpXQpwdWJsaWMgY2xhc3MgU2FtcGxlCnsKICAgIHByaXZhdGUgSUxvZ2dlcjxQYW5lbE1vZHVsbz4/IF9sb2dnZXI7CgogICAgcHVibGljIFNhbXBsZShJTG9nZ2VyPFBhbmVsTW9kdWxvPiBsb2dnZXIpCiAgICB7CiAgICAgICAgX2xvZ2dlciA9IGxvZ2dlcjsKICAgIH0KICAgIAogICAgW0hvcml6b250ZVJvbGUoImluaXQiKV0KICAgIFtIb3Jpem9udGVDb21tYW5kKCJTYW1wbGVfSW5pdCIpXQogICAgcHVibGljIGJvb2wgSW5pdCgpCiAgICB7CiAgICAgICAgCiAgICAgICAgX2xvZ2dlcj8uTG9nSW5mb3JtYXRpb24oIk3Ds2R1bG8gU2NyaXB0cyBJbmNpY2lhZG8iKTsKICAgICAgICByZXR1cm4gdHJ1ZTsKICAgIH0KCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiU2FtcGxlX0hhekFsZ28iLCJwcnVlYmFzIGluaWNpYWxlcyIpXQogICAgcHVibGljIHN0cmluZyBIYXpBbGdvKHN0cmluZyBhcmdzKQogICAgewogICAgICAgICBDb25zb2xlLldyaXRlTGluZSgiaG9sYSBtdW5kbyIpOwogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKGFyZ3MrIi0tLS0tIik7CiAgICAgICAgcmV0dXJuIGFyZ3M7CiAgICB9CgogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9IYXpBbGdvMiIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28yKHN0cmluZyBhcmdzKQogICAgewogICAgICAgIHZhciByZXMgPSJob2xhIG11bmRvKioqKioqKioqKioqKioqKjIiOwogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKHJlcyk7CiAgICAgICAgcmV0dXJuIHJlczsKICAgIH0KCgogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9IYXpBbGdvMyIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28zKHN0cmluZyBhcmdzKQogICAgewogICAgICAgIHZhciByZXMgPSJob2xhIG11bmRvIDMzMyAqKioqKioqKioqKioqKioqMiI7CiAgICAgICAgQ29uc29sZS5Xcml0ZUxpbmUocmVzKTsKICAgICAgICByZXR1cm4gcmVzOwogICAgfQoKfQo=",
         "Active": true
+      },
+      {
+        "Id": "177e376b-0dda-47cf-a77e-2e52daebcfed",
+        "Name": "NuevoScript2",
+        "Description": "",
+        "Code": "I3IgIm51Z2V0OlN5c3RlbS5SdW50aW1lLDEwLjAuMCIKI3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkhvc3RpbmcsMTAuMC4xIgojciAibnVnZXQ6TWljcm9zb2Z0LkV4dGVuc2lvbnMuSG9zdGluZy5BYnN0cmFjdGlvbnMsMTAuMC4xIgojciAibnVnZXQ6TWljcm9zb2Z0LkV4dGVuc2lvbnMuTG9nZ2luZy5BYnN0cmFjdGlvbnMsMTAuMC4xIgoKCnVzaW5nIE1pY3Jvc29mdC5FeHRlbnNpb25zLkhvc3Rpbmc7CnVzaW5nIE1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmc7CnVzaW5nIEhvcml6b250ZTsKdXNpbmcgU3lzdGVtLlRocmVhZGluZzsKCgpwdWJsaWMgY2xhc3MgRmFrZVdvcmtlciA6IEJhY2tncm91bmRTZXJ2aWNlCnsKICAgIHB1YmxpYyBib29sIElzUnVubmluZyB7IGdldDsgc2V0OyB9ID0gZmFsc2U7CiAgICBwdWJsaWMgYm9vbCBSdW5PblN0YXJ0IHsgZ2V0OyBzZXQ7IH0KICAgIHB1YmxpYyBzdHJpbmcgU2VydmljZU5hbWUgeyBnZXQ7IHNldDsgfQogICAgCiAgICBwcml2YXRlIElMb2dnZXI/IF9sb2c7CgogICAgcHVibGljIEZha2VXb3JrZXIoSUxvZ2dlcjxGYWtlV29ya2VyPiBsb2dnZXIpCiAgICB7CiAgICAgICAgX2xvZyA9IGxvZ2dlcjsKICAKICAgIH0KCiAgICBwcml2YXRlIHZvaWQgRG9Xb3JrKENhbmNlbGxhdGlvblRva2VuIHN0b3BwaW5nVG9rZW4pCiAgICB7CiAgICAgICAgdmFyIGkgPSAwOwogICAgICAgIHdoaWxlICghc3RvcHBpbmdUb2tlbi5Jc0NhbmNlbGxhdGlvblJlcXVlc3RlZCkKICAgICAgICB7CiAgICAgICAgICAgIF9sb2c/LkxvZ0luZm9ybWF0aW9uKCJGYWtlV29ya2VyIGNvbnRhZG9yLS0tLS0tOiAiICsgaS5Ub1N0cmluZygpKTsKICAgICAgICAgICAgVGhyZWFkLlNsZWVwKDUwMDApOwogICAgICAgICAgICBpKys7CiAgICAgICAgfQogICAgfQoKICAgIHByb3RlY3RlZCBvdmVycmlkZSBUYXNrIEV4ZWN1dGVBc3luYyhDYW5jZWxsYXRpb25Ub2tlbiBzdG9wcGluZ1Rva2VuKQogICAgewogICAgICAgIF9sb2c/LkxvZ0luZm9ybWF0aW9uKCJFamVjdXRhbmRvIEZha2VXb3JrZXIiKTsKICAgICAgICBJc1J1bm5pbmcgPSB0cnVlOwogICAgICAgIHJldHVybiBUYXNrLlJ1bigoKSA9PiBEb1dvcmsoc3RvcHBpbmdUb2tlbiksIHN0b3BwaW5nVG9rZW4pOwogICAgfQoKICAgIHB1YmxpYyBvdmVycmlkZSBUYXNrIFN0YXJ0QXN5bmMoQ2FuY2VsbGF0aW9uVG9rZW4gY2FuY2VsbGF0aW9uVG9rZW4pCiAgICB7CiAgICAgICAKICAgICAgICBfbG9nPy5Mb2dJbmZvcm1hdGlvbigiSW5pY2lhbmRvIEZha2VXb3JrZXIiKTsKICAgICAgICByZXR1cm4gYmFzZS5TdGFydEFzeW5jKGNhbmNlbGxhdGlvblRva2VuKTsKICAgIH0KCiAgICBwdWJsaWMgb3ZlcnJpZGUgVGFzayBTdG9wQXN5bmMoQ2FuY2VsbGF0aW9uVG9rZW4gY2FuY2VsbGF0aW9uVG9rZW4pCiAgICB7CiAgICAgICAgX2xvZz8uTG9nSW5mb3JtYXRpb24oIkZpbmFsaXphbmRvIEZha2VXb3JrZXIiKTsKICAgICAgICBJc1J1bm5pbmcgPSBmYWxzZTsKICAgICAgICByZXR1cm4gYmFzZS5TdG9wQXN5bmMoY2FuY2VsbGF0aW9uVG9rZW4pOwogICAgfQoKCn0=",
+        "Active": true
+      },
+      {
+        "Id": "7e334776-9ebd-4367-8942-8de6736c7614",
+        "Name": "WorkFlowScript",
+        "Description": "Funciones par el WorkFlow de ejemplo",
+        "Code": "I3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKI3IgIm51Z2V0Ok1pY3Jvc29mdC5BZ2VudHMuQUkuV29ya2Zsb3dzLDEuOC4wIgoKdXNpbmcgU3lzdGVtOwp1c2luZyBIb3Jpem9udGU7CnVzaW5nIE1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmc7CnVzaW5nIE1pY3Jvc29mdC5BZ2VudHMuQUkuV29ya2Zsb3dzOwp1c2luZyBTeXN0ZW0uVGhyZWFkaW5nOwoKW0hvcml6b250ZU1vZHVsZSgiV29ya0Zsb3dTY3JpcHQiKV0KcHVibGljIGNsYXNzIFNhbXBsZQp7CiAgICBwcml2YXRlIElMb2dnZXI8UGFuZWxNb2R1bG8+PyBfbG9nZ2VyOwoKICAgIHB1YmxpYyBTYW1wbGUoSUxvZ2dlcjxQYW5lbE1vZHVsbz4gbG9nZ2VyKQogICAgewogICAgICAgIF9sb2dnZXIgPSBsb2dnZXI7CiAgICB9CiAgICAKICAgIFtIb3Jpem9udGVSb2xlKCJpbml0IildCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiV29ya0Zsb3dTY3JpcHRfSW5pdCIpXQogICAgcHVibGljIGJvb2wgSW5pdCgpCiAgICB7CiAgICAgICAgCiAgICAgICAgX2xvZ2dlcj8uTG9nSW5mb3JtYXRpb24oIk3Ds2R1bG8gV29ya0Zsb3dTY3JpcHQgSW5jaWNpYWRvIik7CiAgICAgICAgcmV0dXJuIHRydWU7CiAgICB9CgogICAgW0hvcml6b250ZUNvbW1hbmQoIldvcmtGbG93U2NyaXB0X05vZGVJblNhbXBsZSIpXQogICAgcHVibGljIGFzeW5jIFRhc2s8RGljdGlvbmFyeTxzdHJpbmcsc3RyaW5nPj4gTm9kZUluU2FtcGxlKERpY3Rpb25hcnk8c3RyaW5nLHN0cmluZz4gbWVzc2FnZSwgSVdvcmtmbG93Q29udGV4dCBjb250ZXh0LCBDYW5jZWxsYXRpb25Ub2tlbiBjYW5jZWxsYXRpb25Ub2tlbikKICAgIHsKICAgICAgICBDb25zb2xlLldyaXRlTGluZSgiVGVzdF8xOiAiKyBtZXNzYWdlKTsKICAgICAgICByZXR1cm4gbWVzc2FnZTsKICAgIH0KICAgIFtIb3Jpem9udGVDb21tYW5kKCJXb3JrRmxvd1NjcmlwdF9Ob2RlT3V0U2FtcGxlIildCiAgICBwdWJsaWMgYXN5bmMgVGFzazxEaWN0aW9uYXJ5PHN0cmluZyxzdHJpbmc+PiBOb2RlT3V0U2FtcGxlKERpY3Rpb25hcnk8c3RyaW5nLHN0cmluZz4gbWVzc2FnZSwgSVdvcmtmbG93Q29udGV4dCBjb250ZXh0LCBDYW5jZWxsYXRpb25Ub2tlbiBjYW5jZWxsYXRpb25Ub2tlbikKICAgIHsKICAgICAgICBDb25zb2xlLldyaXRlTGluZSgiVGVzdF8yOiAiKyBtZXNzYWdlKTsKICAgICAgICByZXR1cm4gbWVzc2FnZTsKICAgIH0KCiAgIFtIb3Jpem9udGVDb21tYW5kKCJXb3JrRmxvd1NjcmlwdF9Ob2RlMSIpXQogICAgcHVibGljIGFzeW5jIFRhc2s8RGljdGlvbmFyeTxzdHJpbmcsc3RyaW5nPj4gTm9kZTEoRGljdGlvbmFyeTxzdHJpbmcsc3RyaW5nPiBtZXNzYWdlLCBJV29ya2Zsb3dDb250ZXh0IGNvbnRleHQsIENhbmNlbGxhdGlvblRva2VuIGNhbmNlbGxhdGlvblRva2VuKQogICAgewogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKCJOb2RlMTogIisgbWVzc2FnZSk7CiAgICAgICAgcmV0dXJuIG1lc3NhZ2U7CiAgICB9CiAgICAKICAgIFtIb3Jpem9udGVDb21tYW5kKCJXb3JrRmxvd1NjcmlwdF9Ob2RlMiIpXQogICAgcHVibGljIGFzeW5jIFRhc2s8RGljdGlvbmFyeTxzdHJpbmcsc3RyaW5nPj4gTm9kZTIoRGljdGlvbmFyeTxzdHJpbmcsc3RyaW5nPiBtZXNzYWdlLCBJV29ya2Zsb3dDb250ZXh0IGNvbnRleHQsIENhbmNlbGxhdGlvblRva2VuIGNhbmNlbGxhdGlvblRva2VuKQogICAgewogICAgICAgIHdoaWxlICh0cnVlKQogICAgICAgIHsKICAgICAgICAgICAgaWYgKGNhbmNlbGxhdGlvblRva2VuLklzQ2FuY2VsbGF0aW9uUmVxdWVzdGVkKSBicmVhazsKICAgICAgICAgICAgVGhyZWFkLlNsZWVwKDEwMDApOwogICAgICAgICAgICBDb25zb2xlLldyaXRlTGluZSgidGljay4uLi4uIik7CiAgICAgICAgfQogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKCJOb2RlMjogIisgbWVzc2FnZSk7CiAgICAgICAgcmV0dXJuIG1lc3NhZ2U7CiAgICB9CiAgICAKCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiV29ya0Zsb3dTY3JpcHRfQ29uZGl0aW9uMSIpXQogICAgcHVibGljIGFzeW5jIFRhc2s8Ym9vbD4gQ29uZGl0aW9uMShEaWN0aW9uYXJ5PHN0cmluZyxzdHJpbmc+IG1lc3NhZ2UpCiAgICB7CiAgICAgICAgcmV0dXJuIG1lc3NhZ2UuQ291bnQgPT0gMDsKICAgIH0KCn0KICAgIAoK",
+        "Active": false
       }
     ]
+  },
+  "WorkFlowConfig": {
+    "WorkFlows": [
+      {
+        "Id": "da6d814a-e67f-4d9d-8443-d97983c27688",
+        "Name": "SampleWorkFlow",
+        "MessageType": "System.Collections.Generic.Dictionary`2[[System.String],[System.String]]",
+        "FlowErrorProcessor": "WorkFlowScript_ErrorProcessor",
+        "FlowCancelProcessor": "WorkFlowScript_CancelProcessor",
+        "Nodes": [
+          {
+            "Id": "a148337f-e3fb-4f81-87ae-e54e8a5a8796",
+            "Name": "Nuevo In",
+            "Type": 0,
+            "PosX": -125,
+            "PosY": 304,
+            "InPorts": [],
+            "OutPorts": [
+              {
+                "Id": "14416b18-80cc-432d-b428-6af45c77cb08",
+                "Name": "Out_0",
+                "Alignment": "Right"
+              }
+            ],
+            "CommandAction": "WorkFlowScript_NodeInSample"
+          },
+          {
+            "Id": "1d38ffa1-873b-4743-b269-d2cad8ccfee4",
+            "Name": "Nuevo Out",
+            "Type": 2,
+            "PosX": 920,
+            "PosY": 332,
+            "InPorts": [
+              {
+                "Id": "04fb0555-e494-4a9e-9bc8-9c3a75186a54",
+                "Name": "In_0",
+                "Alignment": "Left"
+              }
+            ],
+            "OutPorts": [],
+            "CommandAction": "WorkFlowScript_NodeOutSample"
+          },
+          {
+            "Id": "6d06b60d-d326-4c7f-a20c-fe79c66e68d6",
+            "Name": "Nuevo Node",
+            "Type": 1,
+            "PosX": 403,
+            "PosY": 176,
+            "InPorts": [
+              {
+                "Id": "c7a38930-b8be-442c-b49a-6c2946b0a78a",
+                "Name": "In_0",
+                "Alignment": "Left"
+              }
+            ],
+            "OutPorts": [
+              {
+                "Id": "4beaf0aa-140f-4581-8630-d101a9ba5a8c",
+                "Name": "Out_0",
+                "Alignment": "Right"
+              },
+              {
+                "Id": "9afb8fea-f7fa-4da5-8844-c4cd2ecf61fc",
+                "Name": "Out_1",
+                "Alignment": "Right"
+              }
+            ],
+            "CommandAction": "WorkFlowScript_Node1"
+          },
+          {
+            "Id": "104c6172-3507-4d6c-907c-3074e71a49a5",
+            "Name": "Nuevo Node",
+            "Type": 1,
+            "PosX": 889,
+            "PosY": -119,
+            "InPorts": [
+              {
+                "Id": "463fc544-284f-41ac-b79b-7ef07bcbe117",
+                "Name": "In_0",
+                "Alignment": "Left"
+              }
+            ],
+            "OutPorts": [
+              {
+                "Id": "01d80d6f-4f1e-4403-8fe4-4536125a9e0d",
+                "Name": "Out_0",
+                "Alignment": "Right"
+              }
+            ],
+            "CommandAction": "WorkFlowScript_Node2"
+          },
+          {
+            "Id": "18c3faa9-4ee3-4ed9-acd5-f16baec34b4b",
+            "Name": "Nuevo Out",
+            "Type": 2,
+            "PosX": 1382,
+            "PosY": -136,
+            "InPorts": [
+              {
+                "Id": "ed0d5f1c-0f7b-497b-bbce-e0025ecdbd94",
+                "Name": "In_0",
+                "Alignment": "Left"
+              }
+            ],
+            "OutPorts": [],
+            "CommandAction": "WorkFlowScript_NodeOutSample"
+          }
+        ],
+        "Links": [
+          {
+            "Id": "b82994aa-7c99-4549-afe2-4a6b0d985109",
+            "SourceNodeId": "a148337f-e3fb-4f81-87ae-e54e8a5a8796",
+            "SourcePortId": "14416b18-80cc-432d-b428-6af45c77cb08",
+            "TargetNodeId": "6d06b60d-d326-4c7f-a20c-fe79c66e68d6",
+            "TargetPortId": "c7a38930-b8be-442c-b49a-6c2946b0a78a",
+            "Condition": null
+          },
+          {
+            "Id": "d7ee2d1f-ae0c-4b98-81ed-9ea5b7142b90",
+            "SourceNodeId": "6d06b60d-d326-4c7f-a20c-fe79c66e68d6",
+            "SourcePortId": "9afb8fea-f7fa-4da5-8844-c4cd2ecf61fc",
+            "TargetNodeId": "1d38ffa1-873b-4743-b269-d2cad8ccfee4",
+            "TargetPortId": "04fb0555-e494-4a9e-9bc8-9c3a75186a54",
+            "Condition": {
+              "ConditionName": "Condition 1 True",
+              "ConditionCommand": "WorkFlowScript_Condition1",
+              "ExpectedValue": true
+            }
+          },
+          {
+            "Id": "41da8440-b9dd-43ce-a316-26d26998898b",
+            "SourceNodeId": "6d06b60d-d326-4c7f-a20c-fe79c66e68d6",
+            "SourcePortId": "4beaf0aa-140f-4581-8630-d101a9ba5a8c",
+            "TargetNodeId": "104c6172-3507-4d6c-907c-3074e71a49a5",
+            "TargetPortId": "463fc544-284f-41ac-b79b-7ef07bcbe117",
+            "Condition": {
+              "ConditionName": "Condition1 False",
+              "ConditionCommand": "WorkFlowScript_Condition1",
+              "ExpectedValue": false
+            }
+          },
+          {
+            "Id": "034a3edb-3325-44ad-b5e9-c1f3a2189bd9",
+            "SourceNodeId": "104c6172-3507-4d6c-907c-3074e71a49a5",
+            "SourcePortId": "01d80d6f-4f1e-4403-8fe4-4536125a9e0d",
+            "TargetNodeId": "18c3faa9-4ee3-4ed9-acd5-f16baec34b4b",
+            "TargetPortId": "ed0d5f1c-0f7b-497b-bbce-e0025ecdbd94",
+            "Condition": null
+          }
+        ]
+      }
+    ]
+  },
+  "AgentConfig": {
+    "AgentName": "Horizonte",
+    "Url": "https://api.openai.com/v1",
+    "ApiKey": "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",
+    "ModelId": "o4-mini-2025-04-16",
+    "EmbeddingModelId": "text-embedding-3-small",
+    "EnableChatHistory": true,
+    "OutputType": "Horizonte.Ai.Agent.Output, Horizonte.Ai.Agent",
+    "UserAgentApplicationId": null,
+    "OrganizationId": null,
+    "ProjectId": null,
+    "MaxTokens": null,
+    "Temperature": null,
+    "TopP": null,
+    "LogLevel": 0,
+    "SystemPrompt": "\\nEres una aplicación informática modular llamada **Horizonte**, diseñada para interactuar con usuarios mediante módulos independientes llamados *Comandos* (o *Hcommands*). También puedes mostrar elementos gráficos interactivos denominados **Widgets** y procesar información para brindar respuestas adaptadas al usuario. \\n\\n### Funcionalidades de Horizonte:\\n1. **Comandos**: Realizan acciones específicas o recuperan información.\\n2. **Widgets**: Proveen interfaces gráficas para que el usuario pueda interactuar con la aplicación.\\n3. **Procesamiento de información**: Analizas datos y devuelves respuestas interactivas y adaptadas al usuario.\\n\\nPosees herramientas que te permiten crear, ejecutar comandos o generar widgets según las necesidades del usuario. Asegúrate de seguir estas instrucciones de manera clara y precisa.\\n\\n---\\n\\n## Instrucciones\\n\\n### 1. Identificación de intención del usuario\\nDetermina cuál es la solicitud del usuario:\\n- **Ejecutar un comando**: Si el usuario desea realizar una acción específica o recuperar información.\\n- **Mostrar un widget**: Si el usuario solicita interactuar con un elemento gráfico.\\n- **Procesar información**: Si el usuario necesita explorar o recibir respuestas basadas en datos procesados.\\n\\n### 2. Uso de la lista de comandos\\nPara seleccionar el comando correcto:\\n- Extrae la operación a realizar según la solicitud (en español) y utilízala para  consultar la base de datos vectorial 'commands' para obtener una lista de comandos e identifica el comando y el widget adecuados según la solicitud.\\n- Cuando los parámetros de entrada sean tipos complejos usa el comando 'AgentH_GetEntityDefinition' para obtener la representación del tipo con los valores predeterminados.\\n  - Al comando 'AgentH_GetEntityDefinition'  debes proporcionar el nombre completo del tipo, incluyendo el nombre del ensamblado, con el formato: 'escpacionombre.clase, ensamblado'\\n   -El comando 'AgentH_GetEntityDefinition' contiene descripciones con //\\n   -Debes eliminar las descripciones de los campos que devuelve la función 'AgentH_GetEntityDefinition'  \\n- Los comandos asociados a widgets tienen los siguientes roles especiales:\\n  - **widget**: Interacciones generales.\\n  - **configpage**: Gestión de configuraciones.\\n\\n\\n---\\n\\n## Ejecución de tareas\\n\\n### 3. Manejo de interacciones\\nSi el usuario solicita información o procesar datos interactivos:\\n1. Identifica el comando más adecuado según la *lista de comandos*.\\n2. Usa la herramienta `RunCommand` para ejecutar el comando:\\n   - Si el comando requiere parámetros, proporciónalos como un arreglo JSON.\\n   - Si no requiere parámetros, usa `null`.\\n3. Si el comando devuelve resultados, procesa los datos necesarios antes de responder.\\n4. Devuelve la respuesta adaptada al usuario en el campo **Response** y deja en blanco el camo **Widget**.\\n\\n### 4. Manejo de widgets\\nSi el usuario solicita interactuar con un widget:\\n1. Selecciona el comando que genera el widget adecuado desde la *lista de comandos*.\\n2. No ejecutes el comando con `RunCommand`.\\n3. Devuelve el nombre del comando en el campo **Widget**. Este campo es exclusivo para comandos que producen widgets que la interfaz gráfica ilustrará.\\n\\n### 5. Prevención de confirmaciones\\nNo pidas confirmación al usuario antes de ejecutar comandos o mostrar widgets. Las acciones deben cumplirse cuando sean solicitadas por el usuario.\\n\\n---\\n\\n## Detalles adicionales sobre la ejecución\\n- Todos los comandos retornan resultados en formato JSON.\\n- Asegúrate de que el campo **Widget** quede vacío cuando no se usa para un widget.\\n- Usa las herramientas de forma directa y transparente al usuario.\\n\\n---\\n\\n### Resumen de roles:\\n1. **Response**: Campo utilizado para respuestas procesadas al usuario.\\n2. **Widget**: Exclusivo para enviar widgets interactivos. Deja vacío si no es requerido.\\n3. **Execución de comandos**: Usa `RunCommand` únicamente para comandos, nunca para widgets.\\n"
+  },
+  "AgentChatConfig": {
+    "ClientDef": {
+      "Endpoint": "openai.baseurl",
+      "ApiKey": "openai.key"
+    },
+    "AgentDef": {
+      "Name": "Horizonte",
+      "Model": "o4-mini-2025-04-16",
+      "EmbedderModel": "text-embedding-3-small",
+      "Instructions": "\\nEres una aplicación informática modular llamada **Horizonte**, diseñada para interactuar con usuarios mediante módulos independientes llamados *Comandos* (o *Hcommands*). También puedes mostrar elementos gráficos interactivos denominados **Widgets** y procesar información para brindar respuestas adaptadas al usuario. \\n\\n### Funcionalidades de Horizonte:\\n1. **Comandos**: Realizan acciones específicas o recuperan información.\\n2. **Widgets**: Proveen interfaces gráficas para que el usuario pueda interactuar con la aplicación.\\n3. **Procesamiento de información**: Analizas datos y devuelves respuestas interactivas y adaptadas al usuario.\\n\\nPosees herramientas que te permiten crear, ejecutar comandos o generar widgets según las necesidades del usuario. Asegúrate de seguir estas instrucciones de manera clara y precisa.\\n\\n---\\n\\n## Instrucciones\\n\\n### 1. Identificación de intención del usuario\\nDetermina cuál es la solicitud del usuario:\\n- **Ejecutar un comando**: Si el usuario desea realizar una acción específica o recuperar información.\\n- **Mostrar un widget**: Si el usuario solicita interactuar con un elemento gráfico.\\n- **Procesar información**: Si el usuario necesita explorar o recibir respuestas basadas en datos procesados.\\n\\n### 2. Uso de la lista de comandos\\nPara seleccionar el comando correcto:\\n- Extrae la operación a realizar según la solicitud (en español) y utilízala para  consultar la base de datos vectorial 'commands' para obtener una lista de comandos e identifica el comando y el widget adecuados según la solicitud.\\n- Cuando los parámetros de entrada sean tipos complejos usa el comando 'AgentH_GetEntityDefinition' para obtener la representación del tipo con los valores predeterminados.\\n  - Al comando 'AgentH_GetEntityDefinition'  debes proporcionar el nombre completo del tipo, incluyendo el nombre del ensamblado, con el formato: 'escpacionombre.clase, ensamblado'\\n   -El comando 'AgentH_GetEntityDefinition' contiene descripciones con //\\n   -Debes eliminar las descripciones de los campos que devuelve la función 'AgentH_GetEntityDefinition'  \\n- Los comandos asociados a widgets tienen los siguientes roles especiales:\\n  - **widget**: Interacciones generales.\\n  - **configpage**: Gestión de configuraciones.\\n\\n\\n---\\n\\n## Ejecución de tareas\\n\\n### 3. Manejo de interacciones\\nSi el usuario solicita información o procesar datos interactivos:\\n1. Identifica el comando más adecuado según la *lista de comandos*.\\n2. Usa la herramienta `RunCommand` para ejecutar el comando:\\n   - Si el comando requiere parámetros, proporciónalos como un arreglo JSON.\\n   - Si no requiere parámetros, usa `null`.\\n3. Si el comando devuelve resultados, procesa los datos necesarios antes de responder.\\n4. Devuelve la respuesta adaptada al usuario en el campo **Response** y deja en blanco el camo **Widget**.\\n\\n### 4. Manejo de widgets\\nSi el usuario solicita interactuar con un widget:\\n1. Selecciona el comando que genera el widget adecuado desde la *lista de comandos*.\\n2. No ejecutes el comando con `RunCommand`.\\n3. Devuelve el nombre del comando en el campo **Widget**. Este campo es exclusivo para comandos que producen widgets que la interfaz gráfica ilustrará.\\n\\n### 5. Prevención de confirmaciones\\nNo pidas confirmación al usuario antes de ejecutar comandos o mostrar widgets. Las acciones deben cumplirse cuando sean solicitadas por el usuario.\\n\\n---\\n\\n## Detalles adicionales sobre la ejecución\\n- Todos los comandos retornan resultados en formato JSON.\\n- Asegúrate de que el campo **Widget** quede vacío cuando no se usa para un widget.\\n- Usa las herramientas de forma directa y transparente al usuario.\\n\\n---\\n\\n### Resumen de roles:\\n1. **Response**: Campo utilizado para respuestas procesadas al usuario.\\n2. **Widget**: Exclusivo para enviar widgets interactivos. Deja vacío si no es requerido.\\n3. **Execución de comandos**: Usa `RunCommand` únicamente para comandos, nunca para widgets.\\n"
+    }
+  },
+  "AgentsConfig": {
+    "ConfigSet": {
+      "AgentDefs": [
+        {
+          "Id": "AgenteLocal",
+          "Name": "AgenteLocal",
+          "Description": "Agente local usando LM Studio vía API compatible con OpenAI.",
+          "SystemPrompt": "Eres un asistente local ejecutándose mediante LM Studio.\n Responde en español, de forma clara y útil.",
+          "ChatClientId": "LmStudioChatClient",
+          "Tools": [],
+          "FileOptions": {
+            "AllowInputFiles": false,
+            "AllowOutputFiles": false,
+            "TransportEncoding": "base64",
+            "MaxInputFileSizeBytes": 10485760,
+            "MaxOutputFileSizeBytes": 10485760,
+            "AllowedInputMimeTypes": [],
+            "AllowedOutputMimeTypes": [],
+            "AutoProcessImages": false,
+            "AutoProcessDocuments": false,
+            "Settings": {}
+          },
+          "ExecutionOptions": {
+            "MaxTurns": 8,
+            "MaxToolCalls": 5,
+            "TimeoutSeconds": 120,
+            "AutoInvokeTools": true,
+            "ReturnToolMessages": true,
+            "ReturnTraceSteps": true,
+            "Settings": {}
+          },
+          "Settings": {}
+        },
+        {
+          "Id": "AgentOpenAi",
+          "Name": "Agente con OpenAi",
+          "Description": "Agente con OpenAi",
+          "SystemPrompt": " Responde en español, de forma clara y útil.",
+          "ChatClientId": "OpenAiChatClient",
+          "Tools": [],
+          "FileOptions": {
+            "AllowInputFiles": false,
+            "AllowOutputFiles": false,
+            "TransportEncoding": "base64",
+            "MaxInputFileSizeBytes": 10485760,
+            "MaxOutputFileSizeBytes": 10485760,
+            "AllowedInputMimeTypes": [],
+            "AllowedOutputMimeTypes": [],
+            "AutoProcessImages": false,
+            "AutoProcessDocuments": false,
+            "Settings": {}
+          },
+          "ExecutionOptions": {
+            "MaxTurns": 1,
+            "MaxToolCalls": 5,
+            "TimeoutSeconds": 120,
+            "AutoInvokeTools": false,
+            "ReturnToolMessages": false,
+            "ReturnTraceSteps": true,
+            "Settings": {}
+          },
+          "Settings": {}
+        }
+      ],
+      "RaGdefs": [],
+      "ClientDefs": [
+        {
+          "Id": "OpenAiChatClient",
+          "Name": "Cliente Chat Open Ai",
+          "ClientType": 0,
+          "Server": "OpenAi",
+          "Model": "gpt-4.1",
+          "Temperature": 0.2,
+          "MaxOutputTokens": null,
+          "EnableStreaming": true,
+          "EnableTools": true,
+          "Settings": {
+            "implementation": "openai"
+          }
+        },
+        {
+          "Id": "LmStudioChatClient",
+          "Name": "Cliente Chat LmStudio Local",
+          "ClientType": 0,
+          "Server": "LmStudio",
+          "Model": "google/gemma-4-e2b",
+          "Temperature": 0.2,
+          "MaxOutputTokens": null,
+          "EnableStreaming": true,
+          "EnableTools": false,
+          "Settings": {}
+        }
+      ],
+      "ServerDefs": [
+        {
+          "Id": "OpenAi",
+          "Name": "Open Ai",
+          "Url": "https://api.openai.com/v1",
+          "ApiKey": "env:OPENAI_API_KEY",
+          "Provider": "OpenAI",
+          "ApiVersion": "",
+          "TimeoutSeconds": 60,
+          "Headers": {},
+          "Settings": {}
+        },
+        {
+          "Id": "LmStudio",
+          "Name": "LmStudio Local",
+          "Url": "http://localhost:1234/v1",
+          "ApiKey": "1234",
+          "Provider": "LM Studio",
+          "ApiVersion": "",
+          "TimeoutSeconds": 60,
+          "Headers": {},
+          "Settings": {}
+        }
+      ],
+      "AgentToolDefs": [
+        {
+          "Id": "AgentToolDef-6c1738c21dba4053b55a1e1e12e0579e",
+          "Name": "Tool 184748",
+          "ToolType": 5,
+          "Enabled": true,
+          "TimeoutSeconds": 60,
+          "ClientId": "LmStudioChatClient",
+          "RagId": null,
+          "Settings": {
+            "action": "echo",
+            "autoUse": "true",
+            "template": "{{query}}"
+          }
+        }
+      ]
+    },
+    "ChatConfig": {
+      "Name": "Hache",
+      "SelectedId": "AgentOpenAi"
+    }
   }
 }
