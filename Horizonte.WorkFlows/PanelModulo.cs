@@ -1,5 +1,8 @@
 using System.Text;
+using Gelf4Net;
 using Horizonte;
+using Horizonte.Extension.AiWorkFlows;
+using Horizonte.Interfaces;
 using Horizonte.WorkFlows.Widgets;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
@@ -28,15 +31,18 @@ public class PanelModulo
         };
 
     private readonly ILogger<PanelModulo> _logger;
-
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IhContext _context;
     /// <summary>
     /// La clase PanelModulo pertenece al módulo Horizonte.WorkFlows y es responsable de manejar
     /// la integración y funcionalidad del componente principal en la plataforma de workflows.
     /// Esta clase incluye métodos para la inicialización del módulo y la gestión de widgets de visualización en el dashboard.
     /// </summary>
-    public PanelModulo(ILogger<PanelModulo> logger)
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context,IServiceProvider serviceProvider)
     {
         _logger = logger;
+        _context = context;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -67,4 +73,41 @@ public class PanelModulo
     [HorizonteRole("widget")]
     [HorizonteCommand("WorkFlows_Dashboard", "")]
     public WidgetDef ScriptsViewerWidget() => new WidgetDef() { Type = typeof(Dashboard), Parameters = null };
+
+
+
+    [HorizonteCommand("WorkFlows_ExecuteWorkFlow", "")]
+    public async Task<object?> ExecuteWorkFlow(string workflowName, object message, CancellationToken ctoken, Action<WorkflowEvent>? callback)
+    {
+        var workflow =   _context.Get<WorkFlowConfig>().WorkFlows.FirstOrDefault(w => w.Name == workflowName);
+        if(workflow == null) throw new Exception("Workflow not found");
+        var result =await workflow.RunWorkFlow(_serviceProvider, message, ctoken, callback);
+        return result;
+    }
+
+    
+    [HorizonteCommand("WorkFlows_TestWorkFlow", "")]
+    public async Task<string> TestWorkFlow()
+    {
+        try
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            string workflowName="SampleWorkFlow";
+            var message = new Dictionary<string, string>();
+            message.Add("entrada", "Hola Mundo");
+            
+            var res = await ExecuteWorkFlow(workflowName, message, cts.Token, null!);
+            
+            //var workflow =   _context.Get<WorkFlowConfig>().WorkFlows.FirstOrDefault(w => w.Name == workflowName);
+            //if(workflow == null) throw new Exception("Workflow not found");
+            //var result = await workflow.RunWorkFlow(_serviceProvider, message, cts.Token, null!);
+            
+            return  Newtonsoft.Json.JsonConvert.SerializeObject(res);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error al ejecutar el workflow");
+        }
+        return string.Empty;
+    }
 }

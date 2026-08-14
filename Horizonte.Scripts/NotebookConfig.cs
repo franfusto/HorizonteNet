@@ -37,31 +37,7 @@ public class NotebookConfig
             ItemId = "SampleNotebook01",
             ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/01-What%20are%20Notebooks.ipynb"
         });
-        Sources[0].Items.Add(new NotebookItem()
-        {
-            Document = null,
-            ItemId = "SampleNotebook02",
-            ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/02-Code%20Cells.ipynb"
-        });
-        Sources[0].Items.Add(new NotebookItem()
-        {
-            Document = null,
-            ItemId = "SampleNotebook03",
-            ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/03-Markdown%20Cells.ipynb"
-        });
-        Sources[0].Items.Add(new NotebookItem()
-        {
-            Document = null,
-            ItemId = "SampleNotebook04",
-        });
-        
-        Sources.Add(new NotebookSource()
-        {
-            Type = NotebookSourceType.LocalDirectory,
-            Name =  "Local Notebooks",
-            Items = new List<NotebookItem>(),
-            SourcePath = "~/.horizonte/notebooks"
-        });
+       
     }
 }
 

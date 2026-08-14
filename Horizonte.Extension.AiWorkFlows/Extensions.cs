@@ -1,11 +1,21 @@
 using Horizonte;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.DependencyInjection;
+
 namespace Horizonte.Extension.AiWorkFlows;
 
 public static class Extensions
 {
-    public static Workflow Build<T>(this WorkFlowDef def, IServiceProvider serviceProvider, CancellationToken token = default)
+    public static async Task<T> RunWorkFlow<T>(this WorkFlowDef def, IServiceProvider serviceProvider, T message,
+        CancellationToken token = default, Action<WorkflowEvent>? procMessage = null) where T : class
+    {
+        var workflow = def.Build<T>(serviceProvider, token);
+        var result = await workflow.Run(message, procMessage, token);
+        return result?.Data as T ?? null!;
+    }
+
+    public static Workflow Build<T>(this WorkFlowDef def, IServiceProvider serviceProvider,
+        CancellationToken token = default)
     {
         var gesCom = serviceProvider.GetService<IHGesCom>();
         if (gesCom == null)
@@ -23,7 +33,7 @@ public static class Extensions
         // 2. Create executors for each node
         var executors = def.Nodes.ToDictionary(
             node => node.Id,
-            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom, token)
+            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom, token, def.FlowErrorProcessor, def.FlowCancelProcessor)
         );
 
         // 3. Initialize WorkflowBuilder with the starting executor
@@ -69,14 +79,17 @@ public static class Extensions
             return null;
         }
 
-        return (message) => { return 
-            (gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]) == link.Condition.ExpectedValue); 
+        return (message) =>
+        {
+            return
+                (gesCom.RunCommand<bool>(link.Condition.ConditionCommand, [message!]) == link.Condition.ExpectedValue);
         };
     }
 
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message,
-        Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : notnull
+        Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : class
     {
+        Console.WriteLine("******** Token Run: " + token.WaitHandle.Handle.ToString());
         var result = default(WorkflowEvent);
         await using var run =
             await InProcessExecution.RunStreamingAsync(workflow, input: message, cancellationToken: token);
@@ -91,12 +104,12 @@ public static class Extensions
             }
         }
 
-
         return result;
     }
 }
 
-internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom, CancellationToken sharedToken)
+internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom, CancellationToken sharedToken,
+    string? flowErrorProcessor = null, string? flowCancelProcessor = null)
     : Executor<T, T>(id)
 {
     public override async ValueTask<T> HandleAsync(
@@ -113,11 +126,32 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
             ct.ThrowIfCancellationRequested();
             return await gesCom.RunCommandAsync<T>(command, [message!, context, ct]);
         }
-        catch (OperationCanceledException)
+        //aqui definimos la lógica que queremos para manejar errores y cancelaciones
+        catch (OperationCanceledException excancel)
         {
+            if(string.IsNullOrEmpty(flowCancelProcessor)) throw;
+            message = await HandleCancelAsync(message);
+            await context.YieldOutputAsync(message!, ct);
+            await context.RequestHaltAsync();
+            return message;
+        }
+        catch (Exception ex)
+        {
+            if(string.IsNullOrEmpty(flowErrorProcessor)) throw;
+            message = await HandleErrorAsync(message, ex);
             await context.YieldOutputAsync(message!, ct);
             await context.RequestHaltAsync();
             return message;
         }
     }
+    
+    private async Task<T> HandleErrorAsync(T message, Exception ex)
+    {
+        return await gesCom.RunCommandAsync<T>(flowErrorProcessor, [message!, ex]);
+    }    
+    private async Task<T> HandleCancelAsync(T message)
+    {
+        return await gesCom.RunCommandAsync<T>(flowCancelProcessor, [message!]);
+    }
+    
 }

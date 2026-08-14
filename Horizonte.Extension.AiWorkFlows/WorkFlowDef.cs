@@ -5,6 +5,11 @@ public class WorkFlowDef
     public string Id { get; set; } = Guid.Empty.ToString();
     public string Name { get; set; }= string.Empty;
     public string MessageType { get; set; } = "System.String";
+    
+    public string? FlowErrorProcessor { get; set; }
+    
+    public string? FlowCancelProcessor { get; set; }
+    
     public List<WorkFlowNode> Nodes { get; set; } = new List<WorkFlowNode>();
     public List<WorkFlowLink> Links { get; set; } = new List<WorkFlowLink>();
     

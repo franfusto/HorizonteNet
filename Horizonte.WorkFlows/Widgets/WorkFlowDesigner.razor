@@ -207,6 +207,10 @@
         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start">
             <RadzenText Text="Tipo del mensaje"/>
             <RadzenTextBox @bind-Value="_messageType"/>
+            <RadzenText Text="Procesador de errores"/>
+            <RadzenTextBox @bind-Value="_flowErrorProcessor"/>
+            <RadzenText Text="Procesador de cancelación"/>
+            <RadzenTextBox @bind-Value="_flowCancelProcessor"/>
         </RadzenStack>
     }
     <div class="diagram-container" style="position: relative;">
@@ -289,6 +293,8 @@
     private string? _outmessage = string.Empty;
     //private string _logmessage = string.Empty;
     private string _messageType = string.Empty;
+    private string? _flowErrorProcessor ;
+    private string? _flowCancelProcessor ;
     private CancellationTokenSource? _cts;
 
     private void HandleConditionChanged()
@@ -340,6 +346,8 @@
         CleanLastRun();
 
         _messageType = workflow.MessageType;
+        _flowErrorProcessor = workflow.FlowErrorProcessor;
+        _flowCancelProcessor = workflow.FlowCancelProcessor;
 
         // Cargar Nodos
         foreach (var nodeDef in workflow.Nodes)
@@ -444,7 +452,7 @@
         }
     }
 
-    private object? GetInObject(string intype, string inmessage)
+    private object? DeserializeInput(string intype, string inmessage)
     {
         if (string.IsNullOrEmpty(intype) || string.IsNullOrEmpty(inmessage))
             return null;
@@ -454,7 +462,7 @@
             throw new ArgumentException($"El tipo '{intype}' no pudo ser encontrado.");
 
         // 2. Usar JsonSerializer.Deserialize indicando el tipo en tiempo de ejecución
-        return JsonSerializer.Deserialize(inmessage, targetType);
+        return JsonSerializer.Deserialize(inmessage, targetType) ;
     }
     
     private async Task RunWorkflow()
@@ -465,36 +473,15 @@
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             CleanLastRun(false);
-
-            // 1. Obtener el objeto deserializado
-            var inobject = GetInObject(_messageType, _inmessage);
+            //deserializamos el texto de entrada
+            var inobject = DeserializeInput(_messageType, _inmessage);
             if (inobject == null) throw new Exception("No se pudo deserializar el mensaje de entrada");
-
-            // 2. Obtener el Type real a partir del string
-            Type targetType = Type.GetType(_messageType);
-            if (targetType == null) throw new Exception($"Tipo no encontrado: {_messageType}");
-
-
-            // 3. Obtener el workflow (aquí también aplicamos la genericidad dinámica si Build la requiere)
-            // Usamos Reflection para invocar Build<T> y Run<T>
-            var extensionsType = typeof(Horizonte.Extension.AiWorkFlows.Extensions);
-
-            // Invocación dinámica de Build<T>
-            var buildMethod = extensionsType.GetMethod("Build")?.MakeGenericMethod(targetType);
-            var workflow = buildMethod?.Invoke(null, new object[] { WorkFlowDef!, ServiceProvider, _cts.Token }) as Workflow;
-
-            if (workflow != null)
-            {
-                // 4. Invocación dinámica de Run<T>
-                var runMethod = extensionsType.GetMethod("Run")?.MakeGenericMethod(targetType);
-
-                // Task<WorkflowEvent?> es el tipo de retorno, debemos esperar el resultado del Invoke
-                var task = (Task<WorkflowEvent?>)runMethod!.Invoke(null, new object[] { workflow, inobject, (Action<WorkflowEvent>)ProcLogMessge, _cts.Token })!;
-                var result = await task;
-
-                _outmessage = SerializeOutput(result?.Data);
-            }
-
+            
+            Console.WriteLine("******** Token RunWorkflow.razor: " + _cts.Token.WaitHandle.Handle.ToString());
+            //ejecutamos    
+            var res = await _currentWorkFlowNode.RunWorkFlow(ServiceProvider, inobject, _cts.Token, ProcLogMessge);
+            //procesa respuesta
+            _outmessage = SerializeOutput(res);
             Logger.LogInformation(_outmessage);
         }
         catch (Exception e)
@@ -600,6 +587,8 @@
         if (WorkFlowDef == null) return null;
 
         WorkFlowDef.MessageType = _messageType;
+        WorkFlowDef.FlowErrorProcessor = _flowErrorProcessor;
+        WorkFlowDef.FlowCancelProcessor = _flowCancelProcessor;
         WorkFlowDef.Nodes.Clear();
         foreach (var node in _diagram.Nodes)
         {
