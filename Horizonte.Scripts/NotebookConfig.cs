@@ -35,7 +35,7 @@ public class NotebookConfig
         {
             Document = null,
             ItemId = "SampleNotebook01",
-            ItemPath = "https://raw.githubusercontent.com/dotnet/csharp-notebooks/refs/heads/main/notebook-getting-started/01-What%20are%20Notebooks.ipynb"
+            ItemPath = "https://raw.githubusercontent.com/franfusto/HorizonteNet/refs/heads/master/githubfiles/HorizonteNet.ipynb"
         });
        
     }
