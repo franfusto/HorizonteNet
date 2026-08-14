@@ -86,7 +86,7 @@
 
     private async Task OnSaveRequest(InteractiveDocument notebook)
     {
-        var fileName = await JSRuntime.InvokeAsync<string>("prompt", "Nombre del archivo", "nuevo_notebook.ipynb");
+        var fileName = await JSRuntime.InvokeAsync<string>("prompt", "Nombre del archivo", "");
 
         if (string.IsNullOrEmpty(fileName)) return;
 

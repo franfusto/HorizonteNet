@@ -57,8 +57,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.AiWorkF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Samples.WebApp", "Horizonte.Samples.WebApp\Horizonte.Samples.WebApp.csproj", "{2A3A7BCE-69CC-4764-8B97-BC916458B973}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PlayGround", "PlayGround", "{8A93A6E4-66E0-419A-BAB1-F301FD3545C0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Extension.Ai", "Horizonte.Extension.Ai\Horizonte.Extension.Ai.csproj", "{F3E01DBF-4C56-4F47-950B-23C7FAA0786B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Ai.Agents", "Horizonte.Ai.Agents\Horizonte.Ai.Agents.csproj", "{9359A47B-CB1C-4B99-8A62-87969DE029A9}"
