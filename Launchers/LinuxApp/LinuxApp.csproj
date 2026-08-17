@@ -12,6 +12,7 @@
     <ItemGroup>
         <Content Include="bin\Debug\net10.0\cache_commands.csv"/>
         <Content Include="bin\Debug\net10.0\horizonte.json"/>
+        <Content Include="bin\Debug\net10.0\horizonte_back.json" />
         <Content Include="bin\Debug\net10.0\horizonte_backup.json"/>
     </ItemGroup>
     

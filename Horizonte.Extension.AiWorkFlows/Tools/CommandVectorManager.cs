@@ -182,12 +182,34 @@ public class CommandVectorManager
         return Task.CompletedTask;
     }
 
+    private bool AreJsonEqual(string? json1, string? json2)
+    {
+        if (json1 == json2)
+            return true;
+
+        if (string.IsNullOrWhiteSpace(json1) || string.IsNullOrWhiteSpace(json2))
+            return false;
+
+        try
+        {
+            using var doc1 = JsonDocument.Parse(json1);
+            using var doc2 = JsonDocument.Parse(json2);
+
+            return JsonElement.DeepEquals(doc1.RootElement, doc2.RootElement);
+        }
+        catch (JsonException)
+        {
+            // Si alguno no es JSON válido, puedes decidir cómo tratarlo
+            return string.Equals(json1, json2, StringComparison.Ordinal);
+        }
+    }
     private async Task UpdateOrAddCommandDefinition(ActiveCommandDefinition command)
     {
         try
         {
             var existingCommand = _commandDefinitions.FirstOrDefault(def => def.Name == command.Name);
-            if (existingCommand != null || command.Definition != existingCommand!.Definition)
+            if (existingCommand != null &&
+                !AreJsonEqual(command.Definition, existingCommand.Definition))
             {
                 _commandDefinitions.Remove(existingCommand);
                 _commandDefinitions.Add(new CommandVectorRecord
