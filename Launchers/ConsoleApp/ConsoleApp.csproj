@@ -2,10 +2,10 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <PublishAot>false</PublishAot>
-        
         <InvariantGlobalization>true</InvariantGlobalization>
         <IsPackable>false</IsPackable>
+        <PublishSingleFile>true</PublishSingleFile>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
 
 

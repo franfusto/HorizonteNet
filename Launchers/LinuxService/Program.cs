@@ -1,9 +1,9 @@
-﻿namespace WinApp;
+﻿namespace LinuxService;
 
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+       
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Horizonte.Extensions;
 
-namespace LinuxApp;
+namespace ConsoleApp;
 
 using System.IO.Compression;
 using System.Reflection;
@@ -20,7 +20,7 @@ class Program
 
         if (!File.Exists(contextname + ".json"))
         {
-            var textStreamReader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("LinuxApp.horizonte.default.json")!);
+            var textStreamReader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("ConsoleApp.horizonte.default.json")!);
             var text = textStreamReader.ReadToEnd();
             File.WriteAllText(contextname + ".json", text);
         }
