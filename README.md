@@ -54,8 +54,11 @@ HorizonteNet se basa en una arquitectura de micro-servicios y módulos altamente
 
 Estamos en fase **Beta**. HorizonteNet está en desarrollo activo y agradecemos cualquier feedback, reporte de errores o propuestas de mejora.
 
+Contacta a través de  [GitHub Issues](https://github.com/franfusto/HorizonteNet/issues) o [Discord](https://discord.com/channels/1538980325953249290/1538980326527995960).
+
 - **Repositorio:** [https://github.com/franfusto/HorizonteNet](https://github.com/franfusto/HorizonteNet)
 - **Autor:** franfusto
+- **Licencia:** [MIT](LICENSE)
 
 ---
 

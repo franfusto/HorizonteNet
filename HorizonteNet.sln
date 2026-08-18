@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 		Directory.Build.props = Directory.Build.props
 		cake.cs = cake.cs
+		NuGet.Config = NuGet.Config
+		LICENSE = LICENSE
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.PorcupineMod", "Horizonte.PorcupineMod\Horizonte.PorcupineMod.csproj", "{D683355F-9AC3-4816-8B08-B15CDDA611A7}"
