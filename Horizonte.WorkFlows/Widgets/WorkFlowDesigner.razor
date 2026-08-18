@@ -304,21 +304,13 @@
         StateHasChanged();
     }
 
-    private void HandlePortsChangedDelegate(PortAlignment alignment, int count)
-    {
-        // Esta implementación necesita saber qué nodo disparó el evento.
-        // Debido a que el evento OnPortsChanged actual no pasa el remitente,
-        // tendríamos que modificar NodeOperationModel para que sea más robusto.
-        // Por ahora, lo mantenemos como una referencia para permitir la desuscripción.
-    }
-
     private void CleanEventHandlers()
     {
         foreach (var node in _diagram.Nodes)
         {
             if (node is NodeOperationModel opModel)
             {
-                opModel.OnPortsChanged -= HandlePortsChangedDelegate;
+                opModel.OnPortsChanged -= HandlePortsChanged;
             }
         }
 
@@ -366,7 +358,7 @@
                     break;
                 default:
                     var opModel = new NodeOperationModel(nodeDef);
-                    opModel.OnPortsChanged += HandlePortsChangedDelegate;
+                    opModel.OnPortsChanged += HandlePortsChanged;
                     nodeModel = opModel;
                     break;
             }
@@ -684,7 +676,7 @@
                 break;
             default:
                 var opModel = new NodeOperationModel(nodeDef);
-                opModel.OnPortsChanged += (alignment, count) => HandlePortsChanged(opModel, alignment, count);
+                opModel.OnPortsChanged += HandlePortsChanged;
                 nodeModel = opModel;
                 nodeModel.AddPort(PortAlignment.Left);
                 nodeModel.AddPort(PortAlignment.Right);
@@ -694,7 +686,7 @@
         _diagram.Nodes.Add(nodeModel);
     }
 
-    private async void HandlePortsChanged(NodeModel node, PortAlignment alignment, int count)
+    private async void HandlePortsChanged(NodeOperationModel node, PortAlignment alignment, int count)
     {
         var currentPorts = node.Ports.Where(p => p.Alignment == alignment).ToList();
         var currentCount = currentPorts.Count;

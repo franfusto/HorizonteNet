@@ -27,9 +27,9 @@ public class NodeOperationModel : NodeModel,IRunnableNode
 
     /// <summary>
     /// Evento disparado cuando ocurre un cambio en los puertos.
-    /// Se proporcionan el alineamiento del puerto y el número total de puertos como parámetros.
+    /// Se proporcionan el modelo del nodo, el alineamiento del puerto y el número total de puertos como parámetros.
     /// </summary>
-    public event Action<PortAlignment, int>? OnPortsChanged;
+    public event Action<NodeOperationModel, PortAlignment, int>? OnPortsChanged;
 
     /// <summary>
     /// Notifica el cambio en los puertos del nodo, activando el evento asociado a dicho cambio.
@@ -38,7 +38,7 @@ public class NodeOperationModel : NodeModel,IRunnableNode
     /// <param name="count">Especifica la cantidad de puertos implicados en el cambio.</param>
     public void NotifyPortsChanged(PortAlignment alignment, int count)
     {
-        OnPortsChanged?.Invoke(alignment, count);
+        OnPortsChanged?.Invoke(this, alignment, count);
     }
 
     /// <summary>
