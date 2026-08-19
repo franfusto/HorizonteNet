@@ -3,7 +3,6 @@
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <Description>Entorno modular para .NET 8 basado en Blazor y Radzen. Núcleo reutilizable para apps y servicios.</Description>
         <PackageTags>horizonte;blazor;radzen;modular;net8;framework</PackageTags>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
 
