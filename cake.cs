@@ -6,7 +6,8 @@ var version = Argument("packageVersion", "10.0.0-beta");
 var promptPackageVersion = Argument("promptPackageVersion", true);
 var useProjectReferences = Argument("useProjectReferences", false);
 var promptUseProjectReferences = Argument("promptUseProjectReferences", true);
-var nugetApiKey = Argument("nugetApiKey", "");
+var nugetApiKey = Argument("nugetApiKey", EnvironmentVariable("NUGET_API_KEY") ?? "");
+var promptNugetApiKey = Argument("promptNugetApiKey", true);
 var nugetSource = Argument("nugetSource", "local"); // "local" o "nuget.org"
 var promptNugetSource = Argument("promptNugetSource", true);
 
@@ -24,6 +25,11 @@ if (promptNugetSource && !HasArgument("nugetSource") && ShouldPromptForNugetSour
     nugetSource = PromptForNugetSource(nugetSource);
 }
 
+if (promptNugetApiKey && !HasArgument("nugetApiKey") && ShouldPromptForNugetApiKey(target, nugetSource))
+{
+    nugetApiKey = PromptForNugetApiKey(nugetApiKey);
+}
+
 var solution = "./HorizonteNet.sln";
 var artifactsDir = Directory("./artifacts");
 
@@ -38,6 +44,11 @@ bool ShouldPromptForPackageVersion(string targetName)
 bool ShouldPromptForNugetSource(string targetName)
 {
     return targetName.Equals("Push", StringComparison.OrdinalIgnoreCase);
+}
+bool ShouldPromptForNugetApiKey(string targetName, string currentNugetSource)
+{
+    return targetName.Equals("Push", StringComparison.OrdinalIgnoreCase)
+           && currentNugetSource.Equals("nuget.org", StringComparison.OrdinalIgnoreCase);
 }
 bool ShouldPromptForUseProjectReferences(string targetName)
 {
@@ -152,6 +163,29 @@ string PromptForNugetSource(string currentSource)
     }
 }
 
+string PromptForNugetApiKey(string currentApiKey)
+{
+    Console.WriteLine();
+    if (!string.IsNullOrWhiteSpace(currentApiKey))
+    {
+        Console.WriteLine("NuGet API Key actual: [configurada]");
+        Console.Write("Nueva NuGet API Key, Enter para mantener la actual: ");
+    }
+    else
+    {
+        Console.Write("Introduce la NuGet API Key: ");
+    }
+
+    var input = Console.ReadLine()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(input))
+    {
+        return currentApiKey;
+    }
+
+    return input;
+}
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
@@ -228,7 +262,7 @@ Task("Push")
             var settings = new DotNetNuGetPushSettings
             {
                 Source = url,
-                ApiKey = nugetApiKey,
+                ApiKey = string.IsNullOrWhiteSpace(nugetApiKey) ? null : nugetApiKey,
                 SkipDuplicate = true
             };
 

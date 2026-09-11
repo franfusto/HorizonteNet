@@ -129,6 +129,8 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
+            if(args.Name.StartsWith("ℛ*")) return null; // ignoramos ensamblados internos
+            
             var requesterDomain = sender is AssemblyLoadContext senderAlc
                 ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, senderAlc)
                 : Const.DefaultDomainName;
