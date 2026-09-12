@@ -12,7 +12,7 @@
         <Folder Include="wwwroot\"/>
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
         <ProjectReference Include="..\Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj"/>
         <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>

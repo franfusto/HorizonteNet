@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/franfusto/HorizonteNet</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>10.0.0-beta</Version>
+    <Version>10.0.1-beta</Version>
 
     <!-- Referencias a proyectos o a versión -->
     <InternalPackageVersion Condition="'$(InternalPackageVersion)' == ''">$(Version)</InternalPackageVersion>

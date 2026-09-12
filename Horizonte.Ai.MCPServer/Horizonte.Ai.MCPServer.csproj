@@ -15,9 +15,13 @@
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+      <PackageReference Include="Horizonte.Extension.AspNetCore" Version="$(InternalPackageVersion)" />
+      <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
     </ItemGroup>
 
 </Project>

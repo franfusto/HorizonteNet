@@ -6,9 +6,14 @@
         <Nullable>enable</Nullable>
         <PackageTags>experimental;preview</PackageTags>
     </PropertyGroup>
-    <ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\Horizonte.Extension.Ai\Horizonte.Extension.Ai.csproj" />
         <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
         <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
+        <PackageReference Include="Horizonte.Extension.Ai" Version="$(InternalPackageVersion)" />
+        <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)"/>
     </ItemGroup>
 </Project>
