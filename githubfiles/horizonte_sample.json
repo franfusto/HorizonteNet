@@ -4,7 +4,7 @@
       {
         "Active": false,
         "ModuleName": "Horizonte.Extension.AiWorkFlows",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -12,7 +12,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -20,7 +20,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -28,7 +28,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.PorcupineMod",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default2"
@@ -36,7 +36,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.Aemet",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default2"
@@ -44,7 +44,7 @@
       {
         "Active": false,
         "ModuleName": "Horizonte.Samples.Gcalendar",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -52,7 +52,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.Gmaps",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -60,7 +60,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.NotificationIcon",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -68,7 +68,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.WebApp",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default2"
@@ -76,7 +76,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.ServiceApp",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": true,
         "Domain": "Default2"
@@ -84,7 +84,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Scripts",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -92,7 +92,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.WorkFlows",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -100,7 +100,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Ai.AgentChat",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default3"
@@ -108,7 +108,7 @@
       {
         "Active": false,
         "ModuleName": "Horizonte.Extension.Ai",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -124,7 +124,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Ai.MCPServer",
-        "ModuleVersion": "10.0.0-beta",
+        "ModuleVersion": "10.0.1-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
