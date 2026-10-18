@@ -7,15 +7,16 @@ namespace Horizonte.Extension.AiWorkFlows;
 public static class Extensions
 {
     public static async Task<T> RunWorkFlow<T>(this WorkFlowDef def, IServiceProvider serviceProvider, T message,
-        CancellationToken token = default, Action<WorkflowEvent>? procMessage = null) where T : class
+        CancellationToken token = default, Action<WorkflowEvent>? procMessage = null,
+        WorkFlowRunManager? manager = null) where T : class
     {
-        var workflow = def.Build<T>(serviceProvider, token);
-        var result = await workflow.Run(message, procMessage, token);
+        var workflow = def.Build<T>(serviceProvider, token, manager);
+        var result = await workflow.Run(message, procMessage, token, manager, def.Id);
         return result?.Data as T ?? null!;
     }
 
     public static Workflow Build<T>(this WorkFlowDef def, IServiceProvider serviceProvider,
-        CancellationToken token = default)
+        CancellationToken token = default, WorkFlowRunManager? manager = null)
     {
         var gesCom = serviceProvider.GetService<IHGesCom>();
         if (gesCom == null)
@@ -33,7 +34,7 @@ public static class Extensions
         // 2. Create executors for each node
         var executors = def.Nodes.ToDictionary(
             node => node.Id,
-            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom, token, def.FlowErrorProcessor, def.FlowCancelProcessor)
+            node => new HGesComExecutor<T>(node.Id, node.CommandAction, gesCom, token, def.FlowErrorProcessor, def.FlowCancelProcessor, manager)
         );
 
         // 3. Initialize WorkflowBuilder with the starting executor
@@ -87,21 +88,120 @@ public static class Extensions
     }
 
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message,
-        Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default) where T : class
+        Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default,
+        WorkFlowRunManager? manager = null, string workflowId = "") where T : class
     {
-        Console.WriteLine("******** Token Run: " + token.WaitHandle.Handle.ToString());
+        using var linkedCts = manager != null ? manager.CreateLinkedCts(token) : null;
+        var effectiveToken = linkedCts?.Token ?? token;
+
+        manager?.SetStatus(WorkFlowStatus.Running);
+
         var result = default(WorkflowEvent);
-        await using var run =
-            await InProcessExecution.RunStreamingAsync(workflow, input: message, cancellationToken: token);
-        await foreach (var evt in run.WatchStreamAsync())
+        try
         {
-            Console.WriteLine(evt);
-            result = evt;
-            eventhandler?.Invoke(evt);
-            if (evt is WorkflowOutputEvent)
+            var checkpointManager = manager?.CheckpointManager ?? CheckpointManager.Default;
+            await using var run =
+                await InProcessExecution.RunStreamingAsync(workflow, input: message, checkpointManager: checkpointManager, cancellationToken: effectiveToken);
+
+            if (manager != null)
             {
-                return evt;
+                manager.AttachRun(run, workflowId);
             }
+
+            await foreach (var evt in run.WatchStreamAsync(effectiveToken))
+            {
+                Console.WriteLine(evt);
+                result = evt;
+                manager?.NotifyEvent(evt);
+                eventhandler?.Invoke(evt);
+                if (evt is WorkflowOutputEvent)
+                {
+                    manager?.SetStatus(WorkFlowStatus.Completed);
+                    manager?.CleanupCheckpoint();
+                    return evt;
+                }
+            }
+
+            if (manager != null && manager.IsPauseRequested && run.LastCheckpoint != null)
+            {
+                await manager.SaveCheckpointAsync(run.LastCheckpoint);
+                manager.SetStatus(WorkFlowStatus.Paused);
+            }
+            else if (manager != null && manager.Status != WorkFlowStatus.Paused && manager.Status != WorkFlowStatus.Cancelled)
+            {
+                manager.SetStatus(WorkFlowStatus.Completed);
+                manager.CleanupCheckpoint();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            manager?.SetStatus(WorkFlowStatus.Cancelled);
+            throw;
+        }
+        catch (Exception)
+        {
+            manager?.SetStatus(WorkFlowStatus.Faulted);
+            throw;
+        }
+
+        return result;
+    }
+
+    public static async Task<WorkflowEvent?> Resume(this Workflow workflow, CheckpointInfo checkpoint,
+        WorkFlowRunManager? manager = null, Action<WorkflowEvent>? eventhandler = null,
+        CancellationToken token = default)
+    {
+        using var linkedCts = manager != null ? manager.CreateLinkedCts(token) : null;
+        var effectiveToken = linkedCts?.Token ?? token;
+
+        manager?.SetStatus(WorkFlowStatus.Running);
+
+        var result = default(WorkflowEvent);
+        try
+        {
+            var checkpointManager = manager?.CheckpointManager ?? CheckpointManager.Default;
+            await using var run =
+                await InProcessExecution.ResumeStreamingAsync(workflow, fromCheckpoint: checkpoint, checkpointManager: checkpointManager, cancellationToken: effectiveToken);
+
+            if (manager != null)
+            {
+                manager.AttachRun(run, "");
+            }
+
+            await foreach (var evt in run.WatchStreamAsync(effectiveToken))
+            {
+                Console.WriteLine(evt);
+                result = evt;
+                manager?.NotifyEvent(evt);
+                eventhandler?.Invoke(evt);
+                if (evt is WorkflowOutputEvent)
+                {
+                    manager?.SetStatus(WorkFlowStatus.Completed);
+                    manager?.CleanupCheckpoint();
+                    return evt;
+                }
+            }
+
+            if (manager != null && manager.IsPauseRequested && run.LastCheckpoint != null)
+            {
+                await manager.SaveCheckpointAsync(run.LastCheckpoint);
+                manager.SetStatus(WorkFlowStatus.Paused);
+            }
+            else if (manager != null && manager.Status != WorkFlowStatus.Paused && manager.Status != WorkFlowStatus.Cancelled)
+            {
+                manager.SetStatus(WorkFlowStatus.Completed);
+                manager.CleanupCheckpoint();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            manager?.SetStatus(WorkFlowStatus.Cancelled);
+            throw;
+        }
+        catch (Exception)
+        {
+            manager?.SetStatus(WorkFlowStatus.Faulted);
+            throw;
         }
 
         return result;
@@ -109,7 +209,7 @@ public static class Extensions
 }
 
 internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom gesCom, CancellationToken sharedToken,
-    string? flowErrorProcessor = null, string? flowCancelProcessor = null)
+    string? flowErrorProcessor = null, string? flowCancelProcessor = null, WorkFlowRunManager? manager = null)
     : Executor<T, T>(id)
 {
     public override async ValueTask<T> HandleAsync(
@@ -120,16 +220,32 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
         // Combinar señales (motor + compartida) 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(sharedToken, cancellationToken);
         var ct = linkedCts.Token;
+
+        // Comprobación de pausa antes de ejecutar la acción
+        if (manager != null && manager.IsPauseRequested)
+        {
+            await context.RequestHaltAsync();
+            return message;
+        }
+
         try
         {
             // Comprobación temprana
             ct.ThrowIfCancellationRequested();
-            return await gesCom.RunCommandAsync<T>(command, [message!, context, ct]);
+            var result = await gesCom.RunCommandAsync<T>(command, [message!, context, ct]);
+
+            // Comprobación de pausa tras ejecutar la acción
+            if (manager != null && manager.IsPauseRequested)
+            {
+                await context.RequestHaltAsync();
+            }
+
+            return result;
         }
         //aqui definimos la lógica que queremos para manejar errores y cancelaciones
-        catch (OperationCanceledException excancel)
+        catch (OperationCanceledException)
         {
-            if(string.IsNullOrEmpty(flowCancelProcessor)) throw;
+            if (string.IsNullOrEmpty(flowCancelProcessor)) throw;
             message = await HandleCancelAsync(message);
             await context.YieldOutputAsync(message!, ct);
             await context.RequestHaltAsync();
@@ -137,7 +253,7 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
         }
         catch (Exception ex)
         {
-            if(string.IsNullOrEmpty(flowErrorProcessor)) throw;
+            if (string.IsNullOrEmpty(flowErrorProcessor)) throw;
             message = await HandleErrorAsync(message, ex);
             await context.YieldOutputAsync(message!, ct);
             await context.RequestHaltAsync();
