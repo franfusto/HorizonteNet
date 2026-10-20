@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using Google.Protobuf.Reflection
 @using Microsoft.Agents.AI.Workflows
+@using Horizonte.Extension.AiWorkFlows
 @using Point = Blazor.Diagrams.Core.Geometry.Point
 @inject ILogger<HGesCom> Logger
 @inject IServiceProvider ServiceProvider
@@ -176,28 +177,29 @@
             <RadzenFormField Text="Nombre" Style="flex-grow: 1;">
                 <RadzenTextBox @bind-Value="@WorkFlowDef.Name" Style="width: 100%;"/>
             </RadzenFormField>
+            <RadzenBadge BadgeStyle="@GetStatusBadgeStyle()" Text="@GetStatusBadgeText()" Variant="Variant.Outlined" />
             @if (DesignerMode == DesignerMode.Design)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
 
                     <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@SetModeShow"/>
+                                  Size="ButtonSize.Medium" Click="@SetModeShow" Tooltip="Modo Vista"/>
                 </RadzenStack>
             }
             @if (DesignerMode == DesignerMode.Show)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
                     <RadzenButton Icon="motion_play" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@SetModeRun"/>
+                                  Size="ButtonSize.Medium" Click="@SetModeRun" Tooltip="Modo Ejecución"/>
                     <RadzenButton Icon="draw" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@SetModeDesign"/>
+                                  Size="ButtonSize.Medium" Click="@SetModeDesign" Tooltip="Modo Diseño"/>
                 </RadzenStack>
             }
             @if (DesignerMode == DesignerMode.Run)
             {
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
                     <RadzenButton Icon="exit_to_app" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@SetModeShow"/>
+                                  Size="ButtonSize.Medium" Click="@SetModeShow" Tooltip="Modo Vista"/>
                 </RadzenStack>
             }
         </RadzenStack>
@@ -218,7 +220,8 @@
                 @if (DesignerMode == DesignerMode.Design)
                 {
                     <RadzenButton Icon="manufacturing" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined"
-                                  Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build"/>
+                                  Size="ButtonSize.Medium" Click="@BuildWorkflow" Tooltip="Build (Construir)"
+                                  Disabled="@(_runManager.Status == WorkFlowStatus.Running || _runManager.Status == WorkFlowStatus.Pausing || _runManager.Status == WorkFlowStatus.Resuming)" />
                     <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
                                   Size="ButtonSize.Medium" Click="@Save" Tooltip="Guardar cambios"/>
                     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
@@ -238,15 +241,31 @@
                 @if (DesignerMode == DesignerMode.Run)
                 {
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
-                                 JustifyContent="JustifyContent.Center">
+                                 JustifyContent="JustifyContent.Center" Gap="0.5rem">
 
-                        <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenBadge BadgeStyle="@GetStatusBadgeStyle()" Text="@GetStatusBadgeText()" Variant="Variant.Filled" />
 
-                            <RadzenButton Icon="settings_timelapse" ButtonStyle="ButtonStyle.Primary"
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.25rem">
+                            <RadzenButton Icon="play_arrow" ButtonStyle="ButtonStyle.Primary"
                                           Variant="Variant.Outlined"
-                                          Size="ButtonSize.Medium" Click="@RunWorkflow"/>
-                            <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
-                                          Size="ButtonSize.Medium" Click="@CancelWorkflow"/>
+                                          Size="ButtonSize.Medium" Click="@RunWorkflow"
+                                          Disabled="@(_runManager.Status == WorkFlowStatus.Running || _runManager.Status == WorkFlowStatus.Pausing || _runManager.Status == WorkFlowStatus.Resuming)"
+                                          Tooltip="Ejecutar" />
+                            <RadzenButton Icon="pause" ButtonStyle="ButtonStyle.Warning"
+                                          Variant="Variant.Outlined"
+                                          Size="ButtonSize.Medium" Click="@PauseWorkflow"
+                                          Disabled="@(_runManager.Status != WorkFlowStatus.Running && _runManager.Status != WorkFlowStatus.Resuming)"
+                                          Tooltip="Pausar" />
+                            <RadzenButton Icon="play_circle" ButtonStyle="ButtonStyle.Info"
+                                          Variant="Variant.Outlined"
+                                          Size="ButtonSize.Medium" Click="@ResumeWorkflow"
+                                          Disabled="@(_runManager.Status != WorkFlowStatus.Paused)"
+                                          Tooltip="Reanudar" />
+                            <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Danger"
+                                          Variant="Variant.Outlined"
+                                          Size="ButtonSize.Medium" Click="@CancelWorkflow"
+                                          Disabled="@(_runManager.Status == WorkFlowStatus.Idle || _runManager.Status == WorkFlowStatus.Completed || _runManager.Status == WorkFlowStatus.Cancelled || _runManager.Status == WorkFlowStatus.Faulted)"
+                                          Tooltip="Cancelar" />
                         </RadzenStack>
                         <RadzenCard>
                             <RadzenStack Orientation="Orientation.Vertical">
@@ -289,6 +308,7 @@
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private WorkFlowDef? _currentWorkFlowNode;
+    private WorkFlowRunManager _runManager = new();
     private string _inmessage = string.Empty;
     private string? _outmessage = string.Empty;
     //private string _logmessage = string.Empty;
@@ -296,6 +316,30 @@
     private string? _flowErrorProcessor ;
     private string? _flowCancelProcessor ;
     private CancellationTokenSource? _cts;
+
+    private BadgeStyle GetStatusBadgeStyle() => _runManager.Status switch
+    {
+        WorkFlowStatus.Running => BadgeStyle.Primary,
+        WorkFlowStatus.Pausing => BadgeStyle.Warning,
+        WorkFlowStatus.Paused => BadgeStyle.Warning,
+        WorkFlowStatus.Resuming => BadgeStyle.Info,
+        WorkFlowStatus.Completed => BadgeStyle.Success,
+        WorkFlowStatus.Cancelled => BadgeStyle.Danger,
+        WorkFlowStatus.Faulted => BadgeStyle.Danger,
+        _ => BadgeStyle.Light
+    };
+
+    private string GetStatusBadgeText() => _runManager.Status switch
+    {
+        WorkFlowStatus.Running => "Ejecutando",
+        WorkFlowStatus.Pausing => "Pausando",
+        WorkFlowStatus.Paused => "Pausado",
+        WorkFlowStatus.Resuming => "Reanudando",
+        WorkFlowStatus.Completed => "Completado",
+        WorkFlowStatus.Cancelled => "Cancelado",
+        WorkFlowStatus.Faulted => "Error",
+        _ => "Inactivo"
+    };
 
     private void HandleConditionChanged()
     {
@@ -436,10 +480,11 @@
     {
         try
         {
-            _ = WorkFlowDef?.Build<string>(ServiceProvider);
+            _ = WorkFlowDef?.Build<string>(ServiceProvider, manager: _runManager);
         }
         catch (Exception e)
         {
+            
             Logger.LogError(e.ToString());
         }
     }
@@ -471,10 +516,49 @@
             
             Console.WriteLine("******** Token RunWorkflow.razor: " + _cts.Token.WaitHandle.Handle.ToString());
             //ejecutamos    
-            var res = await _currentWorkFlowNode.RunWorkFlow(ServiceProvider, inobject, _cts.Token, ProcLogMessge);
+            var res = await _currentWorkFlowNode.RunWorkFlow(ServiceProvider, inobject, _cts.Token, ProcLogMessge, _runManager);
             //procesa respuesta
             _outmessage = SerializeOutput(res);
             Logger.LogInformation(_outmessage);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e.ToString());
+        }
+        finally
+        {
+            _cts = null;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task PauseWorkflow()
+    {
+        try
+        {
+            Logger.LogInformation("PauseWorkflow()=>");
+            await _runManager.PauseAsync();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e.ToString());
+        }
+    }
+
+    private async Task ResumeWorkflow()
+    {
+        try
+        {
+            Logger.LogInformation("ResumeWorkflow()=>");
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            if (_currentWorkFlowNode == null) return;
+            await _runManager.ResumeAsync(ServiceProvider, _currentWorkFlowNode, ProcLogMessge, _cts.Token);
+            var snapshot = _runManager.GetSnapshot();
+            if (snapshot.LastPayload != null)
+            {
+                _outmessage = SerializeOutput(snapshot.LastPayload);
+            }
         }
         catch (Exception e)
         {
@@ -561,10 +645,19 @@
 
     private async Task CancelWorkflow()
     {
-        if (_cts != null)
+        try
         {
-            Logger.LogInformation("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);
-            await _cts.CancelAsync();
+            Logger.LogInformation("CancelWorkflow()=>");
+            await _runManager.CancelAsync();
+            if (_cts != null)
+            {
+                Logger.LogInformation("CancelWorkflow()=> after _cts.CancelAsync() " + _cts.IsCancellationRequested);
+                await _cts.CancelAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e.ToString());
         }
     }
 
@@ -639,12 +732,18 @@
     }
 
 
+    private void HandleStatusChanged(WorkFlowStatus status)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     protected override void OnInitialized()
     {
         _diagram.RegisterComponent<NodeInModel, NodeIn>();
         _diagram.RegisterComponent<NodeOperationModel, NodeOperation>();
         _diagram.RegisterComponent<NodeOutModel, NodeOut>();
         _diagram.RegisterComponent<LinkSettingsControl, LinkSettingsWidget>();
+        _runManager.StatusChanged += HandleStatusChanged;
         base.OnInitialized();
     }
 
@@ -739,8 +838,10 @@
 
     public void Dispose()
     {
-        _cts?.Cancel();
-        _cts?.Dispose();
+        _runManager.StatusChanged -= HandleStatusChanged;
+        //_ = _runManager.CancelAsync();
+        //_cts?.Cancel();
+        //_cts?.Dispose();
         CleanEventHandlers();
     }
 

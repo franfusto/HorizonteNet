@@ -31,7 +31,7 @@
         "Name": "Local BaGet",
         "Order": 1,
         "Version": 3,
-        "Active": true
+        "Active": false
       }
     ],
     "NugetFolders": [

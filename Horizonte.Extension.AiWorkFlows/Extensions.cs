@@ -239,7 +239,10 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
             {
                 await context.RequestHaltAsync();
             }
-
+            if (manager != null && manager.Status == WorkFlowStatus.Cancelled)
+            {
+                throw new OperationCanceledException();
+            }
             return result;
         }
         //aqui definimos la lógica que queremos para manejar errores y cancelaciones
