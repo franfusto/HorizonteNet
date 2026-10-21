@@ -85,6 +85,7 @@ public class WorkFlowRunManager
             if (evt is ExecutorInvokedEvent invokedEvt)
             {
                 _currentNodeId = invokedEvt.ExecutorId;
+                _lastPayload = invokedEvt.Data;
             }
             else if (evt is WorkflowOutputEvent outputEvt)
             {
