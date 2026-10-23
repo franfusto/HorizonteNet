@@ -1,7 +1,14 @@
 @implements IAsyncDisposable
 @using BlazorMonaco.Editor
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
+@using Horizonte
+@using Horizonte.Scripts.Services
 @inject IJSRuntime JSRuntime
+@inject IServiceProvider ServiceProvider
+@inject IhAssemblyManager? AssemblyManager
+@inject IScriptCompletionService? InjectedCompletionService
 
 <StandaloneCodeEditor
     Id="@_id"
@@ -20,10 +27,14 @@
     private const int MinHeight = 100;
     private string monacoTheme ="vs";
     private const int LineHeight = 19; // Default Monaco line height
+    private IScriptCompletionService? _activeCompletionService;
+    private bool _ownsCompletionService;
 
     [Parameter] public string Language { get; set; } = "csharp";
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public bool EnableCompletion { get; set; } = true;
+    [Parameter] public IScriptCompletionService? CompletionService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,8 +91,39 @@
         {
             _rendered = true;
             await UpdateEditorHeight();
+            if (EnableCompletion && string.Equals(Language, "csharp", StringComparison.OrdinalIgnoreCase))
+            {
+                await InitializeCompletionAsync();
+            }
         }
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task InitializeCompletionAsync()
+    {
+        try
+        {
+            var service = CompletionService 
+                ?? InjectedCompletionService 
+                ?? ServiceProvider.GetService<IScriptCompletionService>();
+
+            if (service == null && AssemblyManager != null)
+            {
+                var logger = ServiceProvider.GetService<ILogger<ScriptCompletionService>>();
+                _activeCompletionService = new ScriptCompletionService(AssemblyManager, logger);
+                _ownsCompletionService = true;
+                service = _activeCompletionService;
+            }
+
+            if (service != null)
+            {
+                await service.RegisterProviderAsync(JSRuntime, Language);
+            }
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            // Ignore JS interop errors during disconnection/disposal
+        }
     }
 
     private async Task OnEditorInit()
@@ -164,6 +206,11 @@
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        if (_ownsCompletionService && _activeCompletionService != null)
+        {
+            _activeCompletionService.Dispose();
+            _activeCompletionService = null;
+        }
         // The StandaloneCodeEditor itself might need disposal if it holds resources, 
         // but usually, BlazorMonaco handles its own lifecycle.
         // We set _disposed to prevent further JS calls from our side.

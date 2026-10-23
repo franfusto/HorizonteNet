@@ -51,6 +51,7 @@ public class PanelModulo
         
         //referenciamos BlazorMonaco para cargar nuget con assets necesarios para la web.
         _ = new BlazorMonaco.MarkdownString();
+        
         return true;
     }
 

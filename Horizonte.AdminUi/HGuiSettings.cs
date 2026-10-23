@@ -57,6 +57,18 @@ public class HGuiSettings
     /// diferentes estilos visuales según las necesidades del usuario.
     /// </remarks>
     public string DefaultTheme { get; set; } = "material-dark";
+
+    /// CustomServices es una propiedad que define una configuración personalizada de servicios
+    /// utilizada en la aplicación Horizonte AdminUI. La configuración está representada por la
+    /// clase CustomServiceConfig, que permite especificar detalles como el tipo de servicio,
+    /// el tipo de implementación y el tiempo de vida asociado al servicio (Singleton, Scoped o Transient).
+    /// 
+    /// Esta propiedad proporciona flexibilidad y personalización para registrar y gestionar servicios
+    /// específicos requeridos por la aplicación, lo que permite adaptarse a diversas arquitecturas
+    /// o requisitos de implementación. CustomServices resulta clave para configurar servicios
+    /// adicionales que no están definidos en la configuración predeterminada, facilitando así
+    /// una estructura modular y escalable dentro del entorno de la aplicación.
+    public CustomServiceConfig CustomServices { get; set; } = new CustomServiceConfig();
 }
 
 

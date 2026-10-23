@@ -2,6 +2,7 @@ using System.Collections;
 using System.Reflection;
 using Horizonte;
 using Horizonte.AdminUi.Components;
+using Horizonte.AdminUi.Extensions;
 using Horizonte.Extension.AspNetCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -90,7 +91,8 @@ public sealed class Worker : BackgroundService
         builder.Services.AddSingleton(_linkScafolder);
         builder.Services.AddSingleton(_assemblyManager);
         builder.Services.AddScoped<HGuiSession>();
-        
+        //añadimos servicios de los módulos desde la configuración
+        builder.Services.ConfigureCustomService(new CustomServicesConfig(), _log);
         builder.Logging.ClearProviders();
         builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
         builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
