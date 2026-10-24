@@ -659,7 +659,7 @@
   "AgentConfig": {
     "AgentName": "Horizonte",
     "Url": "https://api.openai.com/v1",
-    "ApiKey": "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",
+    "ApiKey": "",
     "ModelId": "o4-mini-2025-04-16",
     "EmbeddingModelId": "text-embedding-3-small",
     "EnableChatHistory": true,

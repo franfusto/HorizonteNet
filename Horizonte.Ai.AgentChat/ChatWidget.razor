@@ -109,20 +109,28 @@ Serializa la respuesta en Output usando el siguiente formato para la salida estr
 
     private async Task SetUpAgent()
     {
-        OpenAIClient client = _chatconfig.ClientDef.GetClient(CredManager);
-
-        _chatconfig.AgentDef.Instructions += AGENT_OUTPUT_FORMAT;
-
-        HCommandToolSet toolSet = new(serviceprovider, client, _chatconfig.AgentDef.EmbedderModel);
-        IList<AITool> tools = new[]
+        try
         {
-            toolSet.GetSystemTime(),
-            toolSet.RunCommand(),
-            toolSet.QueryVectorStore()
-        };
+            OpenAIClient client = _chatconfig.ClientDef.GetClient(CredManager);
 
-        _agent = _chatconfig.AgentDef.WhithTools(tools).Build(client);
-        _session = await _agent.CreateSessionAsync();
+            _chatconfig.AgentDef.Instructions += AGENT_OUTPUT_FORMAT;
+
+            HCommandToolSet toolSet = new(serviceprovider, client, _chatconfig.AgentDef.EmbedderModel);
+            IList<AITool> tools = new[]
+            {
+                toolSet.GetSystemTime(),
+                toolSet.RunCommand(),
+                toolSet.QueryVectorStore()
+            };
+
+            _agent = _chatconfig.AgentDef.WhithTools(tools).Build(client);
+            _session = await _agent.CreateSessionAsync();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error setting up agent");
+        }
+       
     }
 
     private async Task HandleKeyUp(KeyboardEventArgs e)
