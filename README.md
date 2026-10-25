@@ -1,57 +1,61 @@
-# HorizonteNet 
+# HorizonteNet
 
-**HorizonteNet** es un entorno modular avanzado desarrollado sobre **.NET 10**, diseñado para facilitar la creación de aplicaciones extensibles y distribuidas mediante paquetes NuGet.
+[Español](README_es.md) | [English](README.md)
 
 ---
 
-## Arquitectura modular
+**HorizonteNet** is an advanced modular environment built on **.NET 10**, designed to simplify the creation of extensible and distributed applications through NuGet packages.
 
-HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplados:
+---
+
+## Modular architecture
+
+HorizonteNet is based on a microservices and decoupled modules architecture:
 
 - **Core (`Horizonte`)**  
-  Núcleo del sistema encargado de gestionar el contexto (`IhContext`) y el ciclo de vida de los trabajadores (`HWorkersManager`).
+  The system core responsible for managing the context (`IhContext`) and the lifecycle of workers (`HWorkersManager`).
 
 - **Admin UI (`Horizonte.AdminUi`)**  
-  Interfaz de administración moderna y reactiva construida con **Blazor**.
+  A modern and reactive administration interface built with **Blazor**.
 
-- **Extensiones del Core (`Horizonte.Extension`)**  
-  Ecosistema de extensiones para trabajar con scripts en C#, notebooks, flujos de trabajo y agentes de IA.
+- **Core Extensions (`Horizonte.Extension`)**  
+  An extension ecosystem for working with C# scripts, notebooks, workflows, and AI agents.
 
-- **Módulos (`Horizonte.Modules`)**  
-  Conjunto de módulos que amplían la funcionalidad de HorizonteNet con capacidades predefinidas y personalizables:
+- **Modules (`Horizonte.Modules`)**  
+  A set of modules that extend HorizonteNet functionality with predefined and customizable capabilities:
 
-  - **Admin UI:** panel de administración para gestionar extensiones y módulos.
-  - **Scripts:** ejecución y gestión de scripts en C# y Jupyter Notebooks.
-  - **Workflows:** orquestación de flujos de trabajo personalizables.
-  - **Agents:** definición y ejecución de agentes autónomos.
-  - **MCP Server:** servicio basado en Model Context Protocol que integra las funcionalidades de los módulos.
-
----
-
-## Características principales
-
-- **Gestión flexible de la arquitectura modular:** sistema de configuración basado en JSON, con soporte para sobrescrituras locales y de usuario.
-- **Carga de módulos en ALC:** Aislamiento de módulos en diferentes dominios de aplicación (AppDomains).
-- **Hot Reload** soportado para cambios en los servicios, módulos y scripts.
-- **Servicios en segundo plano:** orquestación simplificada de servicios, trabajadores y tareas programadas.
-- **Administración de ensamblados:** gestión de paquetes NuGet, código no administrado y contenidos web asociados.
-- **Extensibilidad:** diseñado para ampliarse mediante nuevas extensiones, módulos y workflows.
-- **Multiplataforma:** compatible con Linux, Windows y macOS.
+  - **Admin UI:** administration panel for managing extensions and modules.
+  - **Scripts:** execution and management of C# scripts and Jupyter Notebooks.
+  - **Workflows:** orchestration of customizable workflows.
+  - **Agents:** definition and execution of autonomous agents.
+  - **MCP Server:** service based on the Model Context Protocol that integrates module functionality.
 
 ---
 
-## Vista previa 10.0.1-beta
+## Main features
 
-Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
+- **Flexible modular architecture management:** JSON-based configuration system with support for local and user overrides.
+- **Module loading in ALC:** module isolation in different application domains.
+- **Hot Reload** support for changes in services, modules, and scripts.
+- **Background services:** simplified orchestration of services, workers, and scheduled tasks.
+- **Assembly management:** management of NuGet packages, unmanaged code, and associated web content.
+- **Extensibility:** designed to be extended through new extensions, modules, and workflows.
+- **Cross-platform:** compatible with Linux, Windows, and macOS.
 
-- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp.exe)
-- [Ejecutable para Linux]([http://](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp))
+---
 
-### Ejecución desde binarios
+## Preview 10.0.1-beta
 
-1. Descarga el ejecutable correspondiente a tu sistema operativo.
-2. Ejecuta el archivo descargado.
-3. Abre la aplicación en el navegador:
+HorizonteNet can be run directly from the compiled binaries available in the project release:
+
+- [Windows executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp.exe)
+- [Linux executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp)
+
+### Running from binaries
+
+1. Download the executable corresponding to your operating system.
+2. Run the downloaded file.
+3. Open the application in your browser:
 
    ```text
    http://localhost:5000
@@ -59,49 +63,49 @@ Es posible ejecutar HorizonteNet directamente desde los binarios compilados disp
 
 ---
 
-## Empezando
+## Getting started
 
-### Requisitos previos
+### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) o superior.
-- Un entorno de desarrollo compatible:
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) or later.
+- A compatible development environment:
   - JetBrains Rider
   - Visual Studio
   - Visual Studio Code
 
-### Instalación desde el código fuente
+### Installation from source code
 
-1. Clona el repositorio:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/franfusto/HorizonteNet.git
    ```
 
-2. Accede al directorio del proyecto:
+2. Go to the project directory:
 
    ```bash
    cd HorizonteNet
    ```
 
-3. Restaura las dependencias:
+3. Restore dependencies:
 
    ```bash
    dotnet restore
    ```
 
-4. Compila el proyecto:
+4. Build the project:
 
    ```bash
    dotnet build
    ```
 
-5. Ejecuta el proyecto `ConsoleApp`:
+5. Run the `ConsoleApp` project:
 
    ```bash
    dotnet run --project Launchers/ConsoleApp
    ```
 
-6. Abre la aplicación en el navegador:
+6. Open the application in your browser:
 
    ```text
    http://localhost:5000
@@ -109,59 +113,58 @@ Es posible ejecutar HorizonteNet directamente desde los binarios compilados disp
 
 ---
 
-## Explora
+## Explore
 
-Puedes descargar un archivo de contexto de ejemplo para explorar la configuración y estructura inicial de HorizonteNet:
+You can download a sample context file to explore the initial configuration and structure of HorizonteNet:
 
-- [Descargar contexto de ejemplo](githubfiles/horizonte_sample.json)
+- [Download sample context](githubfiles/horizonte_sample.json)
 
-Este archivo puede utilizarse como punto de partida para revisar cómo se define un contexto, cómo se organizan los módulos y cómo se configuran las extensiones dentro del entorno.
+This file can be used as a starting point to review how a context is defined, how modules are organized, and how extensions are configured within the environment.
 
 <table>
   <tr>
     <td align="center">
-      <strong>Integración con Jupyter Notebooks</strong><br>
-      <img src="githubfiles/img/readme1.png" alt="Vista previa de HorizonteNet 1" width="300">
+      <strong>Jupyter Notebooks integration</strong><br>
+      <img src="githubfiles/img/readme1.png" alt="HorizonteNet preview 1" width="300">
     </td>
     <td align="center">
-      <strong>Sistema scripting embedido</strong><br>
-      <img src="githubfiles/img/readme2.png" alt="Vista previa de HorizonteNet 2" width="300">
+      <strong>Embedded scripting system</strong><br>
+      <img src="githubfiles/img/readme2.png" alt="HorizonteNet preview 2" width="300">
     </td>
   </tr>
   <tr>
     <td align="center">
-      <strong>Orquestación de servicios</strong><br>
-      <img src="githubfiles/img/readme3.png" alt="Vista previa de HorizonteNet 3" width="300">
+      <strong>Service orchestration</strong><br>
+      <img src="githubfiles/img/readme3.png" alt="HorizonteNet preview 3" width="300">
     </td>
     <td align="center">
-      <strong>WorkFlows con Microsoft.Agents.AI.Workflows</strong><br>
-      <img src="githubfiles/img/readme4.png" alt="Vista previa de HorizonteNet 4" width="300">
+      <strong>Workflows with Microsoft.Agents.AI.Workflows</strong><br>
+      <img src="githubfiles/img/readme4.png" alt="HorizonteNet preview 4" width="300">
     </td>
   </tr>
 </table>
 
-
 ---
 
-## Estado del proyecto
+## Project status
 
-HorizonteNet se encuentra actualmente en fase **Beta**.
+HorizonteNet is currently in **Beta**.
 
-El proyecto está en desarrollo activo, por lo que cualquier feedback, reporte de errores o propuesta de mejora es bienvenido.
+The project is under active development, so any feedback, bug reports, or improvement proposals are welcome.
 
-Puedes participar a través de:
+You can participate through:
 
 - [GitHub Issues](https://github.com/franfusto/HorizonteNet/issues)
 - [Discord](https://discord.com/channels/1538980325953249290/1538980326527995960)
 
 ---
 
-## Información del proyecto
+## Project information
 
-- **Repositorio:** [github.com/franfusto/HorizonteNet](https://github.com/franfusto/HorizonteNet)
-- **Autor:** franfusto
-- **Licencia:** [MIT](LICENSE)
+- **Repository:** [github.com/franfusto/HorizonteNet](https://github.com/franfusto/HorizonteNet)
+- **Author:** franfusto
+- **License:** [MIT](LICENSE)
 
 ---
 
-*HorizonteNet — elevando el desarrollo modular en .NET.*
+*HorizonteNet — elevating modular development in .NET.*
