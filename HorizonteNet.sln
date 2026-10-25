@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Samples.SampleCom
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{7D38025E-F8F9-4394-922C-9637E3240E38}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
+		README_es.md = README_es.md
 		Directory.Build.props = Directory.Build.props
 		cake.cs = cake.cs
 		NuGet.Config = NuGet.Config
