@@ -30,7 +30,9 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 ## Características principales
 
-- **Gestión flexible del contexto:** sistema de configuración basado en JSON, con soporte para sobrescrituras locales y de usuario.
+- **Gestión flexible de la arquitectura modular:** sistema de configuración basado en JSON, con soporte para sobrescrituras locales y de usuario.
+- **Carga de módulos en ALC:** Aislamiento de módulos en diferentes dominios de aplicación (AppDomains).
+- **Hot Reload** soportado para cambios en los servicios, módulos y scripts.
 - **Servicios en segundo plano:** orquestación simplificada de servicios, trabajadores y tareas programadas.
 - **Administración de ensamblados:** gestión de paquetes NuGet, código no administrado y contenidos web asociados.
 - **Extensibilidad:** diseñado para ampliarse mediante nuevas extensiones, módulos y workflows.
@@ -42,8 +44,8 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
 
-- [Ejecutable para Windows](http://)
-- [Ejecutable para Linux](http://)
+- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp.exe)
+- [Ejecutable para Linux]([http://](https://github.com/franfusto/HorizonteNet/releases/download/10.0.1-beta/ConsoleApp))
 
 ### Ejecución desde binarios
 
@@ -115,18 +117,28 @@ Puedes descargar un archivo de contexto de ejemplo para explorar la configuraci�
 
 Este archivo puede utilizarse como punto de partida para revisar cómo se define un contexto, cómo se organizan los módulos y cómo se configuran las extensiones dentro del entorno.
 
-Integración con Jupyter Notebooks
-![Vista previa de HorizonteNet 1](githubfiles/img/readme1.png)
-
-Sistema scripting embedido
-![Vista previa de HorizonteNet 2](githubfiles/img/readme2.png)
-
-Orqestación de servicios
-![Vista previa de HorizonteNet 3](githubfiles/img/readme3.png)
-
-WorkFlows con Microsoft.Agents.AI.Workflows
-![Vista previa de HorizonteNet 4](githubfiles/img/readme4.png)
-
+<table>
+  <tr>
+    <td align="center">
+      <strong>Integración con Jupyter Notebooks</strong><br>
+      <img src="githubfiles/img/readme1.png" alt="Vista previa de HorizonteNet 1" width="300">
+    </td>
+    <td align="center">
+      <strong>Sistema scripting embedido</strong><br>
+      <img src="githubfiles/img/readme2.png" alt="Vista previa de HorizonteNet 2" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Orquestación de servicios</strong><br>
+      <img src="githubfiles/img/readme3.png" alt="Vista previa de HorizonteNet 3" width="300">
+    </td>
+    <td align="center">
+      <strong>WorkFlows con Microsoft.Agents.AI.Workflows</strong><br>
+      <img src="githubfiles/img/readme4.png" alt="Vista previa de HorizonteNet 4" width="300">
+    </td>
+  </tr>
+</table>
 
 
 ---
