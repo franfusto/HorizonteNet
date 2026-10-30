@@ -18,7 +18,7 @@
     <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
-      <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
+      <ProjectReference Include="..\Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj" />
     </ItemGroup>
     <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
         <PackageReference Include="Horizonte.Extensions.Interactive" Version="$(InternalPackageVersion)"/>

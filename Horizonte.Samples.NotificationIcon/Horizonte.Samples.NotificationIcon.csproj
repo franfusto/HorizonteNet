@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
-        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj"/>
+        <ProjectReference Include="..\Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj" />
         <ProjectReference Include="..\Horizonte\Horizonte.csproj"/>
     </ItemGroup>
     <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">

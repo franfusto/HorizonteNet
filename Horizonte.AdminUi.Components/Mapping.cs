@@ -1,6 +1,6 @@
 using Horizonte;
 
-namespace AdminUi.Components;
+namespace Horizonte.AdminUi.Components;
 
 /// <summary>
 /// Clase estática que proporciona un mapeo entre nombres de ensamblado y nombres de paquete NuGet.

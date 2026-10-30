@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
-        <ProjectReference Include="..\AdminUi.Components\AdminUi.Components.csproj" />
+        <ProjectReference Include="..\Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj" />
         <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
         <ProjectReference Include="..\Horizonte.Extension.AiWorkFlows\Horizonte.Extension.AiWorkFlows.csproj" />
     </ItemGroup>

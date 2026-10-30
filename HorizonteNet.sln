@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.PorcupineMod", "H
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{04D49CEB-28E5-458B-89F6-C981E32E2F46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminUi.Components", "AdminUi.Components\AdminUi.Components.csproj", "{312D1952-0054-4F03-9EE2-C054F9513F6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.AdminUi.Components", "Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj", "{312D1952-0054-4F03-9EE2-C054F9513F6C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horizonte.Ai.AgentChat", "Horizonte.Ai.AgentChat\Horizonte.Ai.AgentChat.csproj", "{76CE05C4-95EF-47B3-9D2F-2E1E1138CCD4}"
 EndProject
