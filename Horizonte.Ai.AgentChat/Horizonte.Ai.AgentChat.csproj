@@ -20,7 +20,7 @@
     <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
         <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
         <PackageReference Include="Horizonte.Extension.AiWorkFlows" Version="$(InternalPackageVersion)" />
-        <PackageReference Include="AdminUi.Components" Version="$(InternalPackageVersion)" />
+        <PackageReference Include="Horizonte.AdminUi.Components" Version="$(InternalPackageVersion)" />
     </ItemGroup>
 
 
