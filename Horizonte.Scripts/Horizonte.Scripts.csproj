@@ -19,15 +19,18 @@
       <ProjectReference Include="..\Horizonte.Extensions.Interactive\Horizonte.Extensions.Interactive.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
       <ProjectReference Include="..\Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj" />
+        <ProjectReference Include="..\Horizonte.AdminUi\Horizonte.AdminUi.csproj" />
     </ItemGroup>
     <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
         <PackageReference Include="Horizonte.Extensions.Interactive" Version="$(InternalPackageVersion)"/>
         <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)"/>
         <PackageReference Include="Horizonte.AdminUi.Components" Version="$(InternalPackageVersion)"/>
+        <PackageReference Include="Horizonte.AdminUi" Version="$(InternalPackageVersion)"/>
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="BlazorMonaco" Version="3.4.0" />
     </ItemGroup>
+
 
 </Project>

@@ -20,7 +20,10 @@ public static class CustomServicesExtensions
 
     public static void ConfigureCustomService(this IServiceCollection services, CustomServicesConfig? config, ILogger? logger = null)
     {
-        if (config?.Services == null || config.Services.Count == 0)
+        if(config == null) config = new CustomServicesConfig();
+        
+        Helpers.SetUpHarcodedServices(config);
+        if (config.Services.Count == 0)
         {
             return;
         }
@@ -74,14 +77,15 @@ public static class CustomServicesExtensions
                 logger?.LogInformation("Servicio '{ServiceType}' cargado correctamente con implementación '{ImplementationType}' ({Lifetime}).",
                     serviceConfig.ServiceType, serviceConfig.ImplementationType, lifetime);
             }
-            catch (Exception ex) when (ex is not InvalidOperationException)
+            catch (Exception ex) //when (ex is not InvalidOperationException)
             {
                 logger?.LogError(ex, "Error al cargar servicio '{ServiceType}' desde configuración.", serviceConfig.ServiceType);
-                throw;
             }
         }
     }
 
+    
+    
     private static Type? ResolveType(string typeName)
     {
         var type = Type.GetType(typeName, throwOnError: false, ignoreCase: false);

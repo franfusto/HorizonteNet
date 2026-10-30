@@ -1,4 +1,7 @@
 using Horizonte;
+using Horizonte.AdminUi;
+using Horizonte.AdminUi.Attributtes;
+using Horizonte.AdminUi.Extensions;
 using Horizonte.Extensions.Interactive;
 using Horizonte.Interfaces;
 using Horizonte.Scripts.Config;
@@ -21,6 +24,17 @@ public class PanelModulo
     private readonly IhContext _context;
     private readonly IServiceProvider _serviceProvider;
 
+    /// <summary>
+    /// Definicioón de un servicio personalizado en la interfaz de usuario de administración.
+    /// </summary>
+    [AdminUiCustomServiceDefinition]
+    public static CustomServiceConfig ccc = new ()
+    {
+        ServiceType = "Horizonte.Scripts.Services.IScriptCompletionService, Horizonte.Scripts",
+        ImplementationType = "Horizonte.Scripts.Services.ScriptCompletionService, Horizonte.Scripts",
+        Lifetime = CustomServiceLifetime.Scoped
+    };
+    
     /// <summary>
     /// Clase que representa un módulo denominado "PanelModulo" dentro de la aplicación Horizonte.
     /// Este módulo está diseñado para gestionar y configurar funcionalidades específicas dentro del entorno
