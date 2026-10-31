@@ -1,4 +1,4 @@
-namespace Horizonte.AdminUi.Attributtes;
+namespace Horizonte.AdminUi.Attributes;
 
 
 /// <summary>

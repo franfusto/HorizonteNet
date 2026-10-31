@@ -1,7 +1,6 @@
 using Horizonte;
 using Horizonte.AdminUi;
-using Horizonte.AdminUi.Attributtes;
-using Horizonte.AdminUi.Extensions;
+using Horizonte.AdminUi.Attributes;
 using Horizonte.Extensions.Interactive;
 using Horizonte.Interfaces;
 using Horizonte.Scripts.Config;
@@ -28,7 +27,7 @@ public class PanelModulo
     /// Definicioón de un servicio personalizado en la interfaz de usuario de administración.
     /// </summary>
     [AdminUiCustomServiceDefinition]
-    public static CustomServiceConfig ccc = new ()
+    public static Horizonte.AdminUi.CustomServiceConfig ccc = new ()
     {
         ServiceType = "Horizonte.Scripts.Services.IScriptCompletionService, Horizonte.Scripts",
         ImplementationType = "Horizonte.Scripts.Services.ScriptCompletionService, Horizonte.Scripts",

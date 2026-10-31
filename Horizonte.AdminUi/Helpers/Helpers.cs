@@ -1,5 +1,5 @@
 using System.Reflection;
-using Horizonte.AdminUi.Attributtes;
+using Horizonte.AdminUi.Attributes;
 using Horizonte.AdminUi.Extensions;
 
 namespace Horizonte.AdminUi;
