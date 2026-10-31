@@ -4,7 +4,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -12,7 +12,7 @@
       {
         "Active": false,
         "ModuleName": "Horizonte.Extension.AiWorkFlows",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -20,7 +20,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -28,7 +28,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -36,7 +36,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.PorcupineMod",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default2"
@@ -45,7 +45,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.NotificationIcon",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -53,7 +53,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.WebApp",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default2"
@@ -61,7 +61,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.ServiceApp",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": true,
         "Domain": "Default2"
@@ -69,7 +69,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Scripts",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -77,7 +77,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.WorkFlows",
-        "ModuleVersion": "10.0.3-beta",
+        "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -156,7 +156,7 @@
       {
         "Active": true,
         "PackageId": "Horizonte",
-        "Version": "10.0.3-beta",
+        "Version": "10.0.4-beta",
         "Framework": "net10.0",
         "Domain": "Default"
       }

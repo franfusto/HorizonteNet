@@ -44,12 +44,12 @@ HorizonteNet is based on a microservices and decoupled modules architecture:
 
 ---
 
-## Preview 10.0.3-beta
+## Preview 10.0.4-beta
 
 HorizonteNet can be run directly from the compiled binaries available in the project release:
 
-- [Windows executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.3-beta/ConsoleApp.exe)
-- [Linux executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.3-beta/ConsoleApp)
+- [Windows executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp.exe)
+- [Linux executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp)
 
 ### Running from binaries
 

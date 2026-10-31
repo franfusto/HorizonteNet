@@ -43,12 +43,12 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 ---
 
-## Vista previa 10.0.3-beta
+## Vista previa 10.0.4-beta
 
 Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
 
-- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.3-beta/ConsoleApp.exe)
-- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.3-beta/ConsoleApp)
+- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp.exe)
+- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp)
 
 ### Ejecución desde binarios
 
