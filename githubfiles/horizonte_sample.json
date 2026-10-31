@@ -10,8 +10,8 @@
         "Domain": "Default"
       },
       {
-        "Active": false,
-        "ModuleName": "Horizonte.Extension.AiWorkFlows",
+        "Active": true,
+        "ModuleName": "Horizonte.Extensions.Interactive",
         "ModuleVersion": "10.0.4-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
