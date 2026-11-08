@@ -13,11 +13,13 @@ public class MCPWorker : BackgroundService
     public bool IsRunning { get; set; } = false;
 
     private readonly ILogger<MCPWorker> _log;
+    private readonly IHGesCom _gesCom;
     private WebApplication? _app;
 
-    public MCPWorker(ILogger<MCPWorker> logger)
+    public MCPWorker(ILogger<MCPWorker> logger, IHGesCom gesCom)
     {
         _log = logger;
+        _gesCom = gesCom;   
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,7 +30,7 @@ public class MCPWorker : BackgroundService
         builder.Services
             .AddMcpServer()
             .WithHttpTransport()
-            .WithTools<MCPTools>();
+            .WithCommands(new MCPServerConfig(),_gesCom);
         _app = builder.Build();
         _app.MapMcp("/mcp");
 
