@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
 namespace Horizonte.Ai.MCPServer;
@@ -12,6 +13,7 @@ public static class Extensions
         this IMcpServerBuilder builder,
         MCPServerConfig config,
         IHGesCom gesCom,
+        ILogger log,
         JsonSerializerOptions? serializerOptions = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -25,13 +27,13 @@ public static class Extensions
             var hCommand = gesCom.GetHCommand(command.Command);
             if (hCommand is null)
             {
-                Console.WriteLine($"Command {command.Command} not found");
+                log?.LogWarning($"Command {command.Command} not found");
                 continue;
             }
 
             if (hCommand.CommandAction is null)
             {
-                Console.WriteLine($"Command {command.Command} has no associated CommandAction");
+                log?.LogWarning($"Command {command.Command} has no associated CommandAction");
                 continue;
             }
 

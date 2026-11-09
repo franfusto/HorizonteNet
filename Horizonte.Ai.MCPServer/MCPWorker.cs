@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Horizonte;
 using System.Threading;
+using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public class MCPWorker : BackgroundService
 
     private readonly ILogger<MCPWorker> _log;
     private readonly IHGesCom _gesCom;
+    private readonly IhContext _context;
     private WebApplication? _app;
 
     public MCPWorker(ILogger<MCPWorker> logger, IHGesCom gesCom)
@@ -25,12 +27,15 @@ public class MCPWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log.LogInformation("Iniciando MCPWorker");
+        
+        var cfg = _context.Get<MCPServerConfig>() ?? new();
+        
         var builder = WebApplication.CreateBuilder();
 
         builder.Services
             .AddMcpServer()
             .WithHttpTransport()
-            .WithCommands(new MCPServerConfig(),_gesCom);
+            .WithCommands(cfg,_gesCom,_log);
         _app = builder.Build();
         _app.MapMcp("/mcp");
 

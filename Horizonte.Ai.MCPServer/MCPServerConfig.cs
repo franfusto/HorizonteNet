@@ -2,6 +2,9 @@ namespace Horizonte.Ai.MCPServer;
 
 public class MCPServerConfig
 {
+    public string Path { get; set; } = "mcp";
+    public string Url { get; set; } = "http://localhost:5005";
+    
     public List<MCPCommandDef> Commands { get; set; } = new();    
     
     public MCPServerConfig()
