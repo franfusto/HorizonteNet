@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Horizonte.Ai.MCPServer;
 
 public class MCPServerConfig
@@ -6,13 +8,15 @@ public class MCPServerConfig
     
     public string Url { get; set; } = "http://localhost:5005";
     
-    public string? ValidatorMiddlewareType { get; set; } = "Horizonte.Ai.MCPServer.Middleware.ValidatorMiddleware";
+    public string? ValidatorMiddlewareType { get; set; } = "Horizonte.Ai.MCPServer.Middleware.ValidatorMiddleware, Horizonte.Ai.MCPServer ";
     
     public List<string> ResourcesTypes { get; set; } = new();
     
     public List<string> PromptsTypes { get; set; } = new();
     
     public List<MCPCommandDef> Commands { get; set; } = new();    
+    
+    public List<MCPServiceDef> Services { get; set; } = new();
     
     public MCPServerConfig()
     {
@@ -43,4 +47,11 @@ public class MCPCommandDef
 {
     public string Command { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+}
+
+public class MCPServiceDef
+{
+    public ServiceLifetime Scope { get; set; } = ServiceLifetime.Singleton;
+    public string InterfaceType { get; set; } = string.Empty;
+    public string ImplementationType { get; set; } = string.Empty;
 }

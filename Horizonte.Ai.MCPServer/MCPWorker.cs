@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Horizonte;
 using System.Threading;
+using Horizonte.Ai.MCPServer.McpResources;
 using Horizonte.Ai.MCPServer.Middleware;
 using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -32,13 +33,18 @@ public class MCPWorker : BackgroundService
         
         var cfg = _context.Get<MCPServerConfig>() ?? new();
         
+        
+        
         var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddSingleton<IApiKeyValidator, ApiKeyValidator>();
         builder.Services
             .AddMcpServer()
             .WithHttpTransport()
-            .WithCommands(cfg,_gesCom,_log);
+            .WithCommands(cfg,_gesCom,_log)
+            .WithResources<AppStateResource>()
+            .WithPrompts<PromptsResource>();
+        
         _app = builder.Build();
         
         _app.UseMiddleware<ValidatorMiddleware>();

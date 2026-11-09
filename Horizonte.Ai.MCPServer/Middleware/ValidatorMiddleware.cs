@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Horizonte.Ai.MCPServer.Middleware;
 using Microsoft.Extensions.Primitives;
@@ -15,8 +16,11 @@ public sealed class ValidatorMiddleware
 
     public async Task InvokeAsync(
         HttpContext context,
-        IApiKeyValidator validator)
+        IApiKeyValidator validator, ILogger<ValidatorMiddleware> loger)
     {
+        loger.LogInformation("Validando API key");
+        loger.LogInformation(typeof(IApiKeyValidator).AssemblyQualifiedName);
+        loger.LogInformation(typeof(ApiKeyValidator).AssemblyQualifiedName);
         if (!context.Request.Headers.TryGetValue(
                 "X-API-Key", out StringValues values))
         {

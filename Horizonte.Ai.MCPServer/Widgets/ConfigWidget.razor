@@ -238,6 +238,85 @@
                     }
                 </RadzenStack>
             </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Servicios">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenCard Variant="Variant.Filled" Class="rz-p-3">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Text="Añadir servicio de inyección de dependencias" Class="rz-mb-2" />
+                        <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenColumn Size="12" SizeMD="2">
+                                <RadzenDropDown TValue="ServiceLifetime"
+                                                Data="@_availableLifetimes"
+                                                @bind-Value="@_newServiceScope"
+                                                Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenTextBox @bind-Value="@_newServiceInterfaceType"
+                                               Placeholder="Tipo de interfaz (opcional)..."
+                                               Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenTextBox @bind-Value="@_newServiceImplementationType"
+                                               Placeholder="Tipo de implementación (requerido)..."
+                                               Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2">
+                                <RadzenButton Text="Añadir"
+                                              Icon="add"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Click="AddService"
+                                              Style="width: 100%;" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        @if (!string.IsNullOrEmpty(_servicesErrorMessage))
+                        {
+                            <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Class="rz-mt-2" AllowClose="true" Close="@(() => _servicesErrorMessage = null)">
+                                @_servicesErrorMessage
+                            </RadzenAlert>
+                        }
+                    </RadzenCard>
+
+                    @if (_config.Services.Count == 0)
+                    {
+                        <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                            No hay servicios adicionales configurados.
+                        </RadzenAlert>
+                    }
+                    else
+                    {
+                        <RadzenDataGrid @ref="_servicesGrid" Data="@_config.Services" TItem="MCPServiceDef" AllowPaging="false" AllowSorting="true" Density="Density.Compact">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="MCPServiceDef" Property="Scope" Title="Ciclo de Vida" Width="18%">
+                                    <Template Context="svc">
+                                        <RadzenBadge BadgeStyle="@(svc.Scope == ServiceLifetime.Singleton ? BadgeStyle.Info : svc.Scope == ServiceLifetime.Scoped ? BadgeStyle.Success : BadgeStyle.Secondary)"
+                                                     Text="@svc.Scope.ToString()"
+                                                     IsPill="true" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="MCPServiceDef" Property="InterfaceType" Title="Tipo de Interfaz" Width="36%">
+                                    <Template Context="svc">
+                                        <RadzenText TextStyle="TextStyle.Body2" Text="@(string.IsNullOrWhiteSpace(svc.InterfaceType) ? "-" : svc.InterfaceType)" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="MCPServiceDef" Property="ImplementationType" Title="Tipo de Implementación" Width="36%">
+                                    <Template Context="svc">
+                                        <RadzenText TextStyle="TextStyle.Body2" Text="@svc.ImplementationType" Class="rz-font-weight-bold" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="MCPServiceDef" Title="Acciones" TextAlign="TextAlign.Center" Width="10%">
+                                    <Template Context="svc">
+                                        <RadzenButton Icon="delete"
+                                                      ButtonStyle="ButtonStyle.Danger"
+                                                      Variant="Variant.Outlined"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => RemoveService(svc))" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
         </Tabs>
     </RadzenTabs>
 </RadzenCard>
@@ -246,6 +325,7 @@
     private RadzenDataGrid<MCPCommandDef>? _grid;
     private RadzenDataGrid<string>? _resourcesGrid;
     private RadzenDataGrid<string>? _promptsGrid;
+    private RadzenDataGrid<MCPServiceDef>? _servicesGrid;
     private MCPServerConfig _config = new();
     private List<string> _availableCommandKeys = [];
     private Dictionary<string, string> _commandDescriptions = new(StringComparer.OrdinalIgnoreCase);
@@ -259,6 +339,12 @@
 
     private string? _newPromptType;
     private string? _promptsErrorMessage;
+
+    private ServiceLifetime _newServiceScope = ServiceLifetime.Singleton;
+    private string? _newServiceInterfaceType;
+    private string? _newServiceImplementationType;
+    private string? _servicesErrorMessage;
+    private readonly IEnumerable<ServiceLifetime> _availableLifetimes = Enum.GetValues<ServiceLifetime>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,6 +387,7 @@
         _config.Commands ??= [];
         _config.ResourcesTypes ??= [];
         _config.PromptsTypes ??= [];
+        _config.Services ??= [];
         if (_grid != null)
         {
             await _grid.Reload();
@@ -313,6 +400,10 @@
         {
             await _promptsGrid.Reload();
         }
+        if (_servicesGrid != null)
+        {
+            await _servicesGrid.Reload();
+        }
         StateHasChanged();
     }
 
@@ -321,6 +412,7 @@
         _config.Commands ??= [];
         _config.ResourcesTypes ??= [];
         _config.PromptsTypes ??= [];
+        _config.Services ??= [];
         Context.Update(_config);
     }
 
@@ -454,6 +546,56 @@
         if (_promptsGrid != null)
         {
             await _promptsGrid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task AddService()
+    {
+        _servicesErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newServiceImplementationType))
+        {
+            _servicesErrorMessage = "Debe indicar el tipo de implementación.";
+            return;
+        }
+
+        var trimmedImplementation = _newServiceImplementationType.Trim();
+        var trimmedInterface = string.IsNullOrWhiteSpace(_newServiceInterfaceType) ? string.Empty : _newServiceInterfaceType.Trim();
+
+        if (_config.Services.Any(s =>
+                string.Equals(s.ImplementationType, trimmedImplementation, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(s.InterfaceType ?? string.Empty, trimmedInterface, StringComparison.OrdinalIgnoreCase)))
+        {
+            _servicesErrorMessage = $"El servicio con implementación '{trimmedImplementation}' e interfaz '{trimmedInterface}' ya está registrado.";
+            return;
+        }
+
+        _config.Services.Add(new MCPServiceDef
+        {
+            Scope = _newServiceScope,
+            InterfaceType = trimmedInterface,
+            ImplementationType = trimmedImplementation
+        });
+
+        _newServiceInterfaceType = null;
+        _newServiceImplementationType = null;
+        _newServiceScope = ServiceLifetime.Singleton;
+
+        if (_servicesGrid != null)
+        {
+            await _servicesGrid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task RemoveService(MCPServiceDef service)
+    {
+        _config.Services.Remove(service);
+
+        if (_servicesGrid != null)
+        {
+            await _servicesGrid.Reload();
         }
         StateHasChanged();
     }
