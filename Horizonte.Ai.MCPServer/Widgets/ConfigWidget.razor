@@ -32,6 +32,15 @@
                             <RadzenText TextStyle="TextStyle.Caption" Text="Ruta relativa para el endpoint SSE/HTTP del protocolo MCP." />
                         </Helper>
                     </RadzenFormField>
+
+                    <RadzenFormField Text="Tipo Middleware Validador" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_config.ValidatorMiddlewareType" style="width: 100%;" Placeholder="Horizonte.Ai.MCPServer.Middleware.ValidatorMiddleware" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenText TextStyle="TextStyle.Caption" Text="Nombre de tipo completo del middleware para validación de peticiones MCP." />
+                        </Helper>
+                    </RadzenFormField>
                 </RadzenStack>
             </RadzenTabsItem>
 
@@ -117,12 +126,126 @@
                     }
                 </RadzenStack>
             </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Recursos">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenCard Variant="Variant.Filled" Class="rz-p-3">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Text="Añadir tipo de recurso" Class="rz-mb-2" />
+                        <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenColumn Size="12" SizeMD="10">
+                                <RadzenTextBox @bind-Value="@_newResourceType"
+                                               Placeholder="Nombre completo del tipo de recurso..."
+                                               Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2">
+                                <RadzenButton Text="Añadir"
+                                              Icon="add"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Click="AddResourceType"
+                                              Style="width: 100%;" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        @if (!string.IsNullOrEmpty(_resourcesErrorMessage))
+                        {
+                            <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Class="rz-mt-2" AllowClose="true" Close="@(() => _resourcesErrorMessage = null)">
+                                @_resourcesErrorMessage
+                            </RadzenAlert>
+                        }
+                    </RadzenCard>
+
+                    @if (_config.ResourcesTypes.Count == 0)
+                    {
+                        <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                            No hay tipos de recursos configurados.
+                        </RadzenAlert>
+                    }
+                    else
+                    {
+                        <RadzenDataGrid @ref="_resourcesGrid" Data="@_config.ResourcesTypes" TItem="string" AllowPaging="false" AllowSorting="true" Density="Density.Compact">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="string" Title="Tipo de Recurso" Width="90%">
+                                    <Template Context="resType">
+                                        <RadzenText TextStyle="TextStyle.Body2" Text="@resType" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="string" Title="Acciones" TextAlign="TextAlign.Center" Width="10%">
+                                    <Template Context="resType">
+                                        <RadzenButton Icon="delete"
+                                                      ButtonStyle="ButtonStyle.Danger"
+                                                      Variant="Variant.Outlined"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => RemoveResourceType(resType))" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Prompts">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenCard Variant="Variant.Filled" Class="rz-p-3">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Text="Añadir tipo de prompt" Class="rz-mb-2" />
+                        <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenColumn Size="12" SizeMD="10">
+                                <RadzenTextBox @bind-Value="@_newPromptType"
+                                               Placeholder="Nombre completo del tipo de prompt..."
+                                               Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2">
+                                <RadzenButton Text="Añadir"
+                                              Icon="add"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Click="AddPromptType"
+                                              Style="width: 100%;" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        @if (!string.IsNullOrEmpty(_promptsErrorMessage))
+                        {
+                            <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Class="rz-mt-2" AllowClose="true" Close="@(() => _promptsErrorMessage = null)">
+                                @_promptsErrorMessage
+                            </RadzenAlert>
+                        }
+                    </RadzenCard>
+
+                    @if (_config.PromptsTypes.Count == 0)
+                    {
+                        <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                            No hay tipos de prompts configurados.
+                        </RadzenAlert>
+                    }
+                    else
+                    {
+                        <RadzenDataGrid @ref="_promptsGrid" Data="@_config.PromptsTypes" TItem="string" AllowPaging="false" AllowSorting="true" Density="Density.Compact">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="string" Title="Tipo de Prompt" Width="90%">
+                                    <Template Context="promptType">
+                                        <RadzenText TextStyle="TextStyle.Body2" Text="@promptType" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="string" Title="Acciones" TextAlign="TextAlign.Center" Width="10%">
+                                    <Template Context="promptType">
+                                        <RadzenButton Icon="delete"
+                                                      ButtonStyle="ButtonStyle.Danger"
+                                                      Variant="Variant.Outlined"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => RemovePromptType(promptType))" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
         </Tabs>
     </RadzenTabs>
 </RadzenCard>
 
 @code {
     private RadzenDataGrid<MCPCommandDef>? _grid;
+    private RadzenDataGrid<string>? _resourcesGrid;
+    private RadzenDataGrid<string>? _promptsGrid;
     private MCPServerConfig _config = new();
     private List<string> _availableCommandKeys = [];
     private Dictionary<string, string> _commandDescriptions = new(StringComparer.OrdinalIgnoreCase);
@@ -130,6 +253,12 @@
     private string? _newCommandKey;
     private string? _newCommandDescription;
     private string? _errorMessage;
+
+    private string? _newResourceType;
+    private string? _resourcesErrorMessage;
+
+    private string? _newPromptType;
+    private string? _promptsErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,9 +299,19 @@
     {
         _config = Context.Get<MCPServerConfig>() ?? new MCPServerConfig();
         _config.Commands ??= [];
+        _config.ResourcesTypes ??= [];
+        _config.PromptsTypes ??= [];
         if (_grid != null)
         {
             await _grid.Reload();
+        }
+        if (_resourcesGrid != null)
+        {
+            await _resourcesGrid.Reload();
+        }
+        if (_promptsGrid != null)
+        {
+            await _promptsGrid.Reload();
         }
         StateHasChanged();
     }
@@ -180,6 +319,8 @@
     private void Update()
     {
         _config.Commands ??= [];
+        _config.ResourcesTypes ??= [];
+        _config.PromptsTypes ??= [];
         Context.Update(_config);
     }
 
@@ -235,6 +376,84 @@
         if (_grid != null)
         {
             await _grid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task AddResourceType()
+    {
+        _resourcesErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newResourceType))
+        {
+            _resourcesErrorMessage = "Debe indicar el tipo de recurso.";
+            return;
+        }
+
+        var trimmedType = _newResourceType.Trim();
+
+        if (_config.ResourcesTypes.Any(t => string.Equals(t, trimmedType, StringComparison.OrdinalIgnoreCase)))
+        {
+            _resourcesErrorMessage = $"El tipo de recurso '{trimmedType}' ya está en la lista.";
+            return;
+        }
+
+        _config.ResourcesTypes.Add(trimmedType);
+        _newResourceType = null;
+
+        if (_resourcesGrid != null)
+        {
+            await _resourcesGrid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task RemoveResourceType(string resType)
+    {
+        _config.ResourcesTypes.Remove(resType);
+
+        if (_resourcesGrid != null)
+        {
+            await _resourcesGrid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task AddPromptType()
+    {
+        _promptsErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newPromptType))
+        {
+            _promptsErrorMessage = "Debe indicar el tipo de prompt.";
+            return;
+        }
+
+        var trimmedType = _newPromptType.Trim();
+
+        if (_config.PromptsTypes.Any(t => string.Equals(t, trimmedType, StringComparison.OrdinalIgnoreCase)))
+        {
+            _promptsErrorMessage = $"El tipo de prompt '{trimmedType}' ya está en la lista.";
+            return;
+        }
+
+        _config.PromptsTypes.Add(trimmedType);
+        _newPromptType = null;
+
+        if (_promptsGrid != null)
+        {
+            await _promptsGrid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task RemovePromptType(string promptType)
+    {
+        _config.PromptsTypes.Remove(promptType);
+
+        if (_promptsGrid != null)
+        {
+            await _promptsGrid.Reload();
         }
         StateHasChanged();
     }

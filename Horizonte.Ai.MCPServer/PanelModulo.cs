@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Horizonte;
 using Horizonte.Ai.MCPServer.Widgets;
 using Horizonte.Interfaces;
@@ -28,4 +29,14 @@ public class PanelModulo
     [HorizonteCommand("MCPServer_ConfigPage", "Widget de configuración del módulo MCPServer")]
     public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigWidget), Parameters = null };
 
+    /*
+    [HorizonteCommand("Sample_Encriptar","Encripta la cadena de texto introducida")]
+    public string HazAlgo(string args, ClaimsPrincipal? user)
+    {
+        string userjson = user.FindFirst("clienteid")?.Value ?? "sin datos";
+        Console.WriteLine("===>" + userjson);
+        Console.WriteLine(args+"-----");
+        return "[" + args + "]";
+    }
+    */
 }

@@ -3,7 +3,14 @@ namespace Horizonte.Ai.MCPServer;
 public class MCPServerConfig
 {
     public string Path { get; set; } = "mcp";
+    
     public string Url { get; set; } = "http://localhost:5005";
+    
+    public string? ValidatorMiddlewareType { get; set; } = "Horizonte.Ai.MCPServer.Middleware.ValidatorMiddleware";
+    
+    public List<string> ResourcesTypes { get; set; } = new();
+    
+    public List<string> PromptsTypes { get; set; } = new();
     
     public List<MCPCommandDef> Commands { get; set; } = new();    
     

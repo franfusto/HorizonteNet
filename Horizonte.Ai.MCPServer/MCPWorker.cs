@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Horizonte;
 using System.Threading;
+using Horizonte.Ai.MCPServer.Middleware;
 using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,11 +34,15 @@ public class MCPWorker : BackgroundService
         
         var builder = WebApplication.CreateBuilder();
 
+        builder.Services.AddSingleton<IApiKeyValidator, ApiKeyValidator>();
         builder.Services
             .AddMcpServer()
             .WithHttpTransport()
             .WithCommands(cfg,_gesCom,_log);
         _app = builder.Build();
+        
+        _app.UseMiddleware<ValidatorMiddleware>();
+        
         _app.MapMcp("/"+cfg.Path);
 
         await _app.RunAsync(cfg.Url);
