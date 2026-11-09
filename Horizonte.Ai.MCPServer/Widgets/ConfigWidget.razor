@@ -1,0 +1,247 @@
+@inject IhContext Context
+@inject IHGesCom GesCom
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween" Class="rz-mb-4">
+        <RadzenText TextStyle="TextStyle.DisplayH5" Text="Configuración de Horizonte.Ai MCP Server" class="rz-m-0" />
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+            <RadzenButton Icon="refresh" Variant="Variant.Outlined" Click="Get" Text="" />
+            <RadzenButton Icon="save" ButtonStyle="ButtonStyle.Primary" Click="Update" Text="Guardar" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+        <Tabs>
+            <RadzenTabsItem Text="Parámetros del Servidor">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenFormField Text="URL" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_config.Url" style="width: 100%;" Placeholder="http://localhost:5005" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenText TextStyle="TextStyle.Caption" Text="Dirección base donde escucha o se expone el servidor MCP." />
+                        </Helper>
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="Ruta del Endpoint (Path)" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_config.Path" style="width: 100%;" Placeholder="mcp" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenText TextStyle="TextStyle.Caption" Text="Ruta relativa para el endpoint SSE/HTTP del protocolo MCP." />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Comandos Expuestos">
+                <RadzenStack Gap="1rem" Class="rz-p-4">
+                    <RadzenCard Variant="Variant.Filled" Class="rz-p-3">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Text="Añadir nuevo comando MCP" Class="rz-mb-2" />
+                        <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenDropDown TValue="string"
+                                                Data="@_availableCommandKeys"
+                                                @bind-Value="@_newCommandKey"
+                                                AllowClear="true"
+                                                AllowFiltering="true"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Placeholder="Seleccionar o escribir comando..."
+                                                AllowCustomValues="true"
+                                                Change="@OnCommandSelected"
+                                                Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenTextBox @bind-Value="@_newCommandDescription"
+                                               Placeholder="Descripción personalizada para clientes MCP..."
+                                               Style="width: 100%;" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2">
+                                <RadzenButton Text="Añadir"
+                                              Icon="add"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Click="AddCommand"
+                                              Style="width: 100%;" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Class="rz-mt-2" AllowClose="true" Close="@(() => _errorMessage = null)">
+                                @_errorMessage
+                            </RadzenAlert>
+                        }
+                    </RadzenCard>
+
+                    @if (_config.Commands.Count == 0)
+                    {
+                        <RadzenAlert Severity="AlertSeverity.Info" Variant="Variant.Outlined">
+                            No hay comandos expuestos actualmente. Añade comandos para que los clientes MCP puedan ejecutarlos.
+                        </RadzenAlert>
+                    }
+                    else
+                    {
+                        <RadzenDataGrid @ref="_grid" Data="@_config.Commands" TItem="MCPCommandDef" AllowPaging="false" AllowSorting="true" Density="Density.Compact">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="MCPCommandDef" Property="Command" Title="Comando" Width="35%">
+                                    <Template Context="cmd">
+                                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                            <RadzenBadge BadgeStyle="@(IsKnownCommand(cmd.Command) ? BadgeStyle.Success : BadgeStyle.Warning)"
+                                                         Text="@(IsKnownCommand(cmd.Command) ? "Registrado" : "Desconocido")"
+                                                         IsPill="true" />
+                                            <RadzenText TextStyle="TextStyle.Body2" Text="@cmd.Command" Class="rz-font-weight-bold" />
+                                        </RadzenStack>
+                                    </Template>
+                                    <EditTemplate Context="cmd">
+                                        <RadzenTextBox @bind-Value="cmd.Command" Style="width: 100%;" />
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="MCPCommandDef" Property="Description" Title="Descripción" Width="55%">
+                                    <Template Context="cmd">
+                                        <RadzenTextBox @bind-Value="cmd.Description"
+                                                       Placeholder="Descripción para clientes MCP"
+                                                       Style="width: 100%;" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="MCPCommandDef" Title="Acciones" TextAlign="TextAlign.Center" Width="10%">
+                                    <Template Context="cmd">
+                                        <RadzenButton Icon="delete"
+                                                      ButtonStyle="ButtonStyle.Danger"
+                                                      Variant="Variant.Outlined"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => RemoveCommand(cmd))" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    }
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+</RadzenCard>
+
+@code {
+    private RadzenDataGrid<MCPCommandDef>? _grid;
+    private MCPServerConfig _config = new();
+    private List<string> _availableCommandKeys = [];
+    private Dictionary<string, string> _commandDescriptions = new(StringComparer.OrdinalIgnoreCase);
+
+    private string? _newCommandKey;
+    private string? _newCommandDescription;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadAvailableCommands();
+        await Get();
+        await base.OnInitializedAsync();
+    }
+
+    private void LoadAvailableCommands()
+    {
+        try
+        {
+            var commands = GesCom.GetCommandList()?.ToList() ?? [];
+            _availableCommandKeys = commands
+                .Select(c => c.CommandKey)
+                .Where(key => !string.IsNullOrWhiteSpace(key))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(key => key)
+                .ToList();
+
+            _commandDescriptions = commands
+                .Where(c => !string.IsNullOrWhiteSpace(c.CommandKey))
+                .GroupBy(c => c.CommandKey, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.First().Description ?? string.Empty,
+                    StringComparer.OrdinalIgnoreCase
+                );
+        }
+        catch
+        {
+            _availableCommandKeys = [];
+            _commandDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private async Task Get()
+    {
+        _config = Context.Get<MCPServerConfig>() ?? new MCPServerConfig();
+        _config.Commands ??= [];
+        if (_grid != null)
+        {
+            await _grid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private void Update()
+    {
+        _config.Commands ??= [];
+        Context.Update(_config);
+    }
+
+    private void OnCommandSelected(object? value)
+    {
+        if (value is string key && !string.IsNullOrWhiteSpace(key))
+        {
+            if (string.IsNullOrWhiteSpace(_newCommandDescription) && _commandDescriptions.TryGetValue(key, out var desc))
+            {
+                _newCommandDescription = desc;
+            }
+        }
+    }
+
+    private async Task AddCommand()
+    {
+        _errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newCommandKey))
+        {
+            _errorMessage = "Debe indicar el nombre del comando.";
+            return;
+        }
+
+        var trimmedKey = _newCommandKey.Trim();
+
+        if (_config.Commands.Any(c => string.Equals(c.Command, trimmedKey, StringComparison.OrdinalIgnoreCase)))
+        {
+            _errorMessage = $"El comando '{trimmedKey}' ya está en la lista de comandos expuestos.";
+            return;
+        }
+
+        _config.Commands.Add(new MCPCommandDef
+        {
+            Command = trimmedKey,
+            Description = _newCommandDescription?.Trim() ?? string.Empty
+        });
+
+        _newCommandKey = null;
+        _newCommandDescription = null;
+
+        if (_grid != null)
+        {
+            await _grid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private async Task RemoveCommand(MCPCommandDef cmd)
+    {
+        _config.Commands.Remove(cmd);
+
+        if (_grid != null)
+        {
+            await _grid.Reload();
+        }
+        StateHasChanged();
+    }
+
+    private bool IsKnownCommand(string? commandKey)
+    {
+        return !string.IsNullOrWhiteSpace(commandKey) &&
+               _availableCommandKeys.Contains(commandKey.Trim(), StringComparer.OrdinalIgnoreCase);
+    }
+}

@@ -18,10 +18,12 @@
     <ItemGroup Condition="'$(UseProjectReferences)' == 'true'">
       <ProjectReference Include="..\Horizonte.Extension.AspNetCore\Horizonte.Extension.AspNetCore.csproj" />
       <ProjectReference Include="..\Horizonte\Horizonte.csproj" />
+      <ProjectReference Include="..\Horizonte.AdminUi.Components\Horizonte.AdminUi.Components.csproj" />
     </ItemGroup>
     <ItemGroup Condition="'$(UseProjectReferences)' == 'false'">
       <PackageReference Include="Horizonte.Extension.AspNetCore" Version="$(InternalPackageVersion)" />
       <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
+      <PackageReference Include="Horizonte.AdminUi.Components" Version="$(InternalPackageVersion)" />
     </ItemGroup>
 
 </Project>

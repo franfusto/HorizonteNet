@@ -1,4 +1,5 @@
 using Horizonte;
+using Horizonte.Ai.MCPServer.Widgets;
 using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,6 @@ public class PanelModulo
     }
     [HorizonteRole("configpage")]
     [HorizonteCommand("MCPServer_ConfigPage", "Widget de configuración del módulo MCPServer")]
-    public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigMCPServerWidget), Parameters = null };
+    public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigWidget), Parameters = null };
 
 }

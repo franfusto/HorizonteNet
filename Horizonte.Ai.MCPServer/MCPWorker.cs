@@ -18,10 +18,11 @@ public class MCPWorker : BackgroundService
     private readonly IhContext _context;
     private WebApplication? _app;
 
-    public MCPWorker(ILogger<MCPWorker> logger, IHGesCom gesCom)
+    public MCPWorker(ILogger<MCPWorker> logger, IHGesCom gesCom, IhContext context)
     {
         _log = logger;
         _gesCom = gesCom;   
+        _context = context;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,9 +38,9 @@ public class MCPWorker : BackgroundService
             .WithHttpTransport()
             .WithCommands(cfg,_gesCom,_log);
         _app = builder.Build();
-        _app.MapMcp("/mcp");
+        _app.MapMcp("/"+cfg.Path);
 
-        await _app.RunAsync("http://localhost:5005");
+        await _app.RunAsync(cfg.Url);
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)

@@ -34,6 +34,6 @@ public class MCPServerConfig
 
 public class MCPCommandDef
 {
-    public string Command {get; set; }
-    public string Description {get; set; }
+    public string Command { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 }
