@@ -41,6 +41,14 @@
                             <RadzenText TextStyle="TextStyle.Caption" Text="Nombre de tipo completo del middleware para validación de peticiones MCP." />
                         </Helper>
                     </RadzenFormField>
+                    <RadzenFormField Text="Comando de Autenticación Integrado" Variant="Variant.Outlined">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="@_config.BuiltInAuthCommand" style="width: 100%;" Placeholder="MCPServer_GetClaimFromApiKey" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenText TextStyle="TextStyle.Caption" Text="Comando GesCom invocado por el validador integrado para resolver claims a partir de la API Key." />
+                        </Helper>
+                    </RadzenFormField>
                 </RadzenStack>
             </RadzenTabsItem>
 

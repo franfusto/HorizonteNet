@@ -28,15 +28,17 @@ public class PanelModulo
     [HorizonteRole("configpage")]
     [HorizonteCommand("MCPServer_ConfigPage", "Widget de configuración del módulo MCPServer")]
     public WidgetDef ConfigPage() => new WidgetDef() { Type = typeof(ConfigWidget), Parameters = null };
-
-    /*
-    [HorizonteCommand("Sample_Encriptar","Encripta la cadena de texto introducida")]
-    public string HazAlgo(string args, ClaimsPrincipal? user)
+    
+    
+    [HorizonteCommand("MCPServer_GetClaimFromApiKey", "Built-in Fake validator")]
+    public ClaimsPrincipal? GetClaimFromApiKey(string apiKey)
     {
-        string userjson = user.FindFirst("clienteid")?.Value ?? "sin datos";
-        Console.WriteLine("===>" + userjson);
-        Console.WriteLine(args+"-----");
-        return "[" + args + "]";
+        var claims = new List<Claim>
+        {
+            new("api-key", apiKey)
+        };
+        var result =  new ClaimsPrincipal(new ClaimsIdentity(claims, authenticationType: "ApiKey"));
+        return result;
     }
-    */
+
 }

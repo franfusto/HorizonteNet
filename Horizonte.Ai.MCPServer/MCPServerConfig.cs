@@ -9,6 +9,8 @@ public class MCPServerConfig
     public string Url { get; set; } = "http://localhost:5005";
     
     public string? ValidatorMiddlewareType { get; set; } = "Horizonte.Ai.MCPServer.Middleware.ValidatorMiddleware, Horizonte.Ai.MCPServer";
+
+    public string BuiltInAuthCommand { get; set; } = "MCPServer_GetClaimFromApiKey";
     
     public List<string> ResourcesTypes { get; set; } = new();
     
@@ -43,8 +45,8 @@ public class MCPServerConfig
         Services.Add(new MCPServiceDef
         {
             Scope = ServiceLifetime.Singleton,
-            InterfaceType = "Horizonte.Ai.MCPServer.Middleware.IApiKeyValidator, Horizonte.Ai.MCPServer",
-            ImplementationType = "Horizonte.Ai.MCPServer.Middleware.ApiKeyValidator, Horizonte.Ai.MCPServer"
+            InterfaceType = "Horizonte.Ai.MCPServer.Services.IApiKeyValidator, Horizonte.Ai.MCPServer",
+            ImplementationType = "Horizonte.Ai.MCPServer.Services.ApiKeyValidator, Horizonte.Ai.MCPServer"
         });
         ResourcesTypes.Add("Horizonte.Ai.MCPServer.McpResources.AppStateResource, Horizonte.Ai.MCPServer");
         PromptsTypes.Add("Horizonte.Ai.MCPServer.McpResources.PromptsResource, Horizonte.Ai.MCPServer");

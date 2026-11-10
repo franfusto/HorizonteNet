@@ -8,6 +8,7 @@ using Horizonte.Ai.MCPServer.Middleware;
 using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Server;
 
 namespace Horizonte.Ai.MCPServer;
 
@@ -32,11 +33,39 @@ public class MCPWorker : BackgroundService
         _log.LogInformation("Iniciando MCPWorker");
         
         var cfg = _context.Get<MCPServerConfig>() ?? new();
-        
-        
-        
         var builder = WebApplication.CreateBuilder();
 
+        ConfigureLogging(builder);
+        ConfigureCustomServices(builder.Services, cfg);
+        ConfigureMcpServer(builder.Services, cfg);
+        
+        _app = builder.Build();
+        
+        ConfigureMiddleware(_app, cfg);
+        
+        _app.MapMcp("/" + cfg.Path);
+
+        await _app.RunAsync(cfg.Url);
+    }
+
+    private void ConfigureLogging(WebApplicationBuilder builder)
+    {
+        if (_log != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
+            // builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
+            // builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Services.AddSingleton(_log);
+        }
+    }
+
+    private void ConfigureCustomServices(IServiceCollection services, MCPServerConfig cfg)
+    {
+        services.AddSingleton<IHGesCom>(_gesCom);
+        services.AddSingleton<IhContext>(_context);
+        
         foreach (var svc in cfg.Services)
         {
             if (string.IsNullOrWhiteSpace(svc.ImplementationType))
@@ -67,15 +96,25 @@ public class MCPWorker : BackgroundService
                 ? new ServiceDescriptor(ifaceType, implType, svc.Scope)
                 : new ServiceDescriptor(implType, implType, svc.Scope);
 
-            builder.Services.Add(descriptor);
+            services.Add(descriptor);
             _log.LogInformation("Registrado servicio {ServiceType} -> {ImplementationType} con ciclo de vida {Scope}",
                 ifaceType?.FullName ?? implType.FullName, implType.FullName, svc.Scope);
         }
-        var mcpBuilder = builder.Services
+    }
+
+    private void ConfigureMcpServer(IServiceCollection services, MCPServerConfig cfg)
+    {
+        var mcpBuilder = services
             .AddMcpServer()
             .WithHttpTransport()
             .WithCommands(cfg, _gesCom, _log);
 
+        ConfigureResources(mcpBuilder, cfg);
+        ConfigurePrompts(mcpBuilder, cfg);
+    }
+
+    private void ConfigureResources(IMcpServerBuilder mcpBuilder, MCPServerConfig cfg)
+    {
         foreach (var resourceTypeName in cfg.ResourcesTypes)
         {
             if (string.IsNullOrWhiteSpace(resourceTypeName))
@@ -93,7 +132,10 @@ public class MCPWorker : BackgroundService
             mcpBuilder.WithResources(resourceType);
             _log.LogInformation("Registrado recurso MCP: {ResourceType}", resourceType.FullName);
         }
+    }
 
+    private void ConfigurePrompts(IMcpServerBuilder mcpBuilder, MCPServerConfig cfg)
+    {
         foreach (var promptTypeName in cfg.PromptsTypes)
         {
             if (string.IsNullOrWhiteSpace(promptTypeName))
@@ -111,16 +153,17 @@ public class MCPWorker : BackgroundService
             mcpBuilder.WithPrompts(promptType);
             _log.LogInformation("Registrado prompt MCP: {PromptType}", promptType.FullName);
         }
-        
-        _app = builder.Build();
-        
+    }
+
+    private void ConfigureMiddleware(WebApplication app, MCPServerConfig cfg)
+    {
         if (!string.IsNullOrWhiteSpace(cfg.ValidatorMiddlewareType))
         {
             var middlewareType = Type.GetType(cfg.ValidatorMiddlewareType.Trim());
             if (middlewareType != null)
             {
                 _log.LogInformation("Registrando middleware de validación: {MiddlewareType}", middlewareType.FullName);
-                _app.UseMiddleware(middlewareType);
+                app.UseMiddleware(middlewareType);
             }
             else
             {
@@ -131,10 +174,6 @@ public class MCPWorker : BackgroundService
         {
             _log.LogInformation("No se configuró middleware de validación (ValidatorMiddlewareType vacío).");
         }
-        
-        _app.MapMcp("/"+cfg.Path);
-
-        await _app.RunAsync(cfg.Url);
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)

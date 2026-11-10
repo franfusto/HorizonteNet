@@ -36,7 +36,7 @@ public class WsWorker : BackgroundService
             builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
             // builder.Logging.AddFilter("Microsoft", LogLevel.Error); 
             // builder.Logging.AddFilter("Horizonte", LogLevel.Trace); 
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            //builder.Logging.SetMinimumLevel(LogLevel.Information);
             builder.Services.AddSingleton(_log);
         }
 
