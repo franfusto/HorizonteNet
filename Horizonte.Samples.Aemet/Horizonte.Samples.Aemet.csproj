@@ -16,11 +16,6 @@
         <PackageReference Include="Horizonte" Version="$(InternalPackageVersion)" />
         <PackageReference Include="Horizonte.AdminUi.Components" Version="$(InternalPackageVersion)" />
     </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-      <PackageReference Include="Polly" Version="8.6.5" />
-      <PackageReference Include="RestSharp" Version="113.0.1-alpha.0.3" />
-    </ItemGroup>
 
     <ItemGroup>
       <None Update="README.md">

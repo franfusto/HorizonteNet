@@ -42,7 +42,7 @@ public sealed class ApiKeyValidator : IApiKeyValidator
         catch (Exception e)
         {
             logger.LogError(e,"Error al ejecutar el comando de validación");
-            return null;
+            return null!;
         }
 
     }
