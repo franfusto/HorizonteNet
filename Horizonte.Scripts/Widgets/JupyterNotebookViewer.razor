@@ -206,8 +206,19 @@ else
 
 
 @code {
+    /// <summary>
+    /// Obtiene o establece el documento interactivo (Jupyter Notebook) a visualizar y ejecutar.
+    /// </summary>
     [Parameter] public InteractiveDocument? Notebook { get; set; }
+
+    /// <summary>
+    /// Obtiene o establece un valor que indica si el documento se encuentra en proceso de carga.
+    /// </summary>
     [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// Evento de callback que se dispara cuando el usuario solicita guardar o exportar el notebook.
+    /// </summary>
     [Parameter] public EventCallback<InteractiveDocument> OnSaveRequest { get; set; }
 
     private KernelConfig? _kernelConfig;

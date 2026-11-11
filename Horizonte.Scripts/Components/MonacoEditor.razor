@@ -30,10 +30,29 @@
     private IScriptCompletionService? _activeCompletionService;
     private bool _ownsCompletionService;
 
+    /// <summary>
+    /// Obtiene o establece el lenguaje de programación asociado al editor Monaco (por defecto "csharp").
+    /// </summary>
     [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>
+    /// Obtiene o establece el código fuente o texto contenido en el editor.
+    /// </summary>
     [Parameter] public string? Value { get; set; }
+
+    /// <summary>
+    /// Evento de callback que se dispara cuando el contenido del editor cambia.
+    /// </summary>
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Obtiene o establece un valor que indica si el autocompletado e IntelliSense están habilitados en el editor.
+    /// </summary>
     [Parameter] public bool EnableCompletion { get; set; } = true;
+
+    /// <summary>
+    /// Obtiene o establece una instancia personalizada opcional de <see cref="IScriptCompletionService"/> para suministrar autocompletado.
+    /// </summary>
     [Parameter] public IScriptCompletionService? CompletionService { get; set; }
 
     protected override async Task OnInitializedAsync()

@@ -82,6 +82,9 @@ public class ScriptCompletionService : IScriptCompletionService
     /// <summary>
     /// Registra el proveedor de autocompletado globalmente en Monaco Editor si aún no ha sido registrado para ese lenguaje.
     /// </summary>
+    /// <param name="jsRuntime">Instancia de <see cref="IJSRuntime"/> para registrar el proveedor vía interoperabilidad JavaScript.</param>
+    /// <param name="language">El lenguaje al cual asociar las sugerencias (por defecto "csharp").</param>
+    /// <returns>Una tarea que representa la operación asíncrona de registro.</returns>
     public async Task RegisterProviderAsync(IJSRuntime jsRuntime, string language = "csharp")
     {
         if (jsRuntime == null) return;
@@ -119,6 +122,10 @@ public class ScriptCompletionService : IScriptCompletionService
     /// <summary>
     /// Provee la lista de elementos de autocompletado en la posición actual del modelo de texto.
     /// </summary>
+    /// <param name="modelUri">El identificador de URI del modelo de texto en el editor.</param>
+    /// <param name="position">La posición actual del cursor dentro del editor.</param>
+    /// <param name="context">El contexto de invocación del autocompletado.</param>
+    /// <returns>Una tarea que devuelve la lista de elementos de autocompletado (<see cref="CompletionList"/>).</returns>
     public Task<CompletionList> ProvideCompletionItemsAsync(string modelUri, Position position, CompletionContext context)
     {
         if (!IsEnabled)
@@ -139,6 +146,7 @@ public class ScriptCompletionService : IScriptCompletionService
     /// <summary>
     /// Obtiene o construye la lista de elementos de autocompletado a partir de los ensamblados cargados.
     /// </summary>
+    /// <returns>Una lista de sugerencias de autocompletado (<see cref="CompletionItem"/>).</returns>
     public List<CompletionItem> GetOrBuildCompletionItems()
     {
         lock (_lock)

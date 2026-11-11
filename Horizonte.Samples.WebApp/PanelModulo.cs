@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 namespace Horizonte.Samples.WebApp;
 
 /// <summary>
-/// La clase PanelModulo representa un módulo dentro de la aplicación Horizonte.Samples.WebApp.
-/// Está marcada con el atributo <see cref="HorizonteModule"/> para identificarla como parte del marco Horizonte.
-/// Proporciona funcionalidad de inicialización de la aplicación mediante el método <c>Init</c>.
+/// Representa el módulo de la aplicación web de ejemplo dentro del marco Horizonte.
 /// </summary>
+/// <remarks>
+/// Identificado mediante el atributo <see cref="HorizonteModule"/>, este módulo proporciona los puntos
+/// de entrada para inicializar la aplicación web de ejemplo en el entorno de Horizonte.
+/// </remarks>
 [HorizonteModule("Horizonte.Samples.WebApp")]
 public class PanelModulo
 {
@@ -16,12 +18,10 @@ public class PanelModulo
     private readonly IhContext _context;
 
     /// <summary>
-    /// Clase que representa un módulo dentro de la aplicación WebApp del marco Horizonte.
+    /// Inicializa una nueva instancia de la clase <see cref="PanelModulo"/>.
     /// </summary>
-    /// <remarks>
-    /// Esta clase está destinada a ser utilizada como un módulo en el entorno de ejecución de Horizonte,
-    /// proporcionando funcionalidad específica para la inicialización de la aplicación web.
-    /// </remarks>
+    /// <param name="logger">Instancia de <see cref="ILogger{TCategoryName}"/> utilizada para registrar eventos y diagnósticos del módulo.</param>
+    /// <param name="context">Instancia de <see cref="IhContext"/> que proporciona acceso al contexto y configuración de Horizonte.</param>
     public PanelModulo(ILogger<PanelModulo> logger, IhContext context)
     {
         _logger = logger;
@@ -29,9 +29,12 @@ public class PanelModulo
     }
 
     /// <summary>
-    /// Método que inicia el módulo de aplicación web Horizonte. Al ser invocado, registra una información de que el módulo ha sido iniciado exitosamente.
+    /// Inicializa el módulo de aplicación web Horizonte.
     /// </summary>
-    /// <returns>Devuelve un valor booleano indicando el éxito del inicio del módulo, que en este caso es siempre verdadero.</returns>
+    /// <remarks>
+    /// Este método es invocado por el marco Horizonte para inicializar el módulo y registra un mensaje informativo en el log.
+    /// </remarks>
+    /// <returns><c>true</c> si el módulo se inicializa correctamente.</returns>
     [HorizonteRole("init")]
     [HorizonteCommand("WebApp_Init")]
     public bool Init()

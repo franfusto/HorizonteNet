@@ -3,24 +3,17 @@ using Horizonte.Extensions.Interactive;
 namespace Horizonte.Scripts.Config;
 
 /// <summary>
-/// La clase ScriptsConfig gestiona la configuración relacionada con los scripts del sistema.
+/// Gestiona la configuración relacionada con los scripts del sistema.
 /// </summary>
 /// <remarks>
 /// Esta clase proporciona una estructura para definir y almacenar fuentes y definiciones de scripts en el sistema.
-/// Al inicializar una instancia de ScriptsConfig, se agregan automáticamente dos fuentes de script predeterminadas:
+/// Al inicializar una instancia de <see cref="ScriptsConfig"/>, se agregan automáticamente dos fuentes de script predeterminadas:
 /// "App" con la ruta "./scripts" y "Privado" con la ruta "~/horizonte/scripts".
 /// </remarks>
-/// <example>
-/// ScriptsConfig se utiliza dentro del sistema para acceder y modificar las fuentes y scripts disponibles.
-/// Cualquier cambio en la lista de scripts o fuentes debe realizarse a través de una instancia de esta clase.
-/// </example>
 public class ScriptsConfig
 {
     /// <summary>
-    /// La clase ScriptsConfig es responsable de la configuración y gestión de las fuentes de scripts en el proyecto.
-    /// Se inicializa con dos fuentes predeterminadas:
-    /// - Una fuente llamada "App" con la ruta "./scripts".
-    /// - Una fuente llamada "Privado" con la ruta "~/horizonte/scripts".
+    /// Inicializa una nueva instancia de la clase <see cref="ScriptsConfig"/> con las fuentes de scripts predeterminadas.
     /// </summary>
     public ScriptsConfig()
     {
@@ -29,17 +22,16 @@ public class ScriptsConfig
     }
 
     /// <summary>
-    /// La propiedad Sources es una lista de objetos de tipo ScriptsSourceItem que representa distintas ubicaciones
-    /// desde las cuales se pueden cargar scripts. Cada ScriptsSourceItem incluye un nombre y una ruta
-    /// correspondiente al origen del script. Esta propiedad está inicializada por defecto como una lista vacía.
+    /// Obtiene o establece la lista de ubicaciones o fuentes (<see cref="ScriptsSourceItem"/>) desde las cuales se pueden cargar scripts.
     /// </summary>
     public List<ScriptsSourceItem> Sources { get; set; } = new List<ScriptsSourceItem>();
 
-    /// La propiedad `Scripts` representa una lista de definiciones de scripts (`ScriptDef`) utilizados dentro de la configuración de scripts de un sistema.
-    /// Esta propiedad permite obtener o establecer una colección de objetos `ScriptDef`, que conforman los scripts actualmente configurados y disponibles.
-    /// La lista inicializada al instanciar un objeto de `ScriptsConfig` es una lista vacía y se espera que se agreguen elementos conforme se vayan añadiendo nuevos scripts al sistema.
-    /// Esta colección es utilizada en diferentes partes del sistema para cargar y manipular los módulos de script necesarios, así como para gestionar la visualización y la interactividad con scripts dentro de interfaces de usuario.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la lista de definiciones de scripts (<see cref="ScriptDef"/>) configurados en el sistema.
+    /// </summary>
+    /// <remarks>
+    /// Esta colección es utilizada para cargar, compilar y ejecutar los módulos de script dentro del entorno de Horizonte.
+    /// </remarks>
     public List<ScriptDef> Scripts { get; set; } = new List<ScriptDef>();
 }
 

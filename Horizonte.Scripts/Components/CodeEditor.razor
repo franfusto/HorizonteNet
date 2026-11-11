@@ -18,12 +18,21 @@
 </RadzenStack>
 
 @code {
+    /// <summary>
+    /// Obtiene o establece la celda o elemento de código del documento interactivo a editar.
+    /// </summary>
     [Parameter]
     public InteractiveDocumentElement Cell { get; set; } = null!;
 
+    /// <summary>
+    /// Obtiene o establece un valor que indica si la ejecución y edición de la celda están deshabilitadas.
+    /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>
+    /// Evento de callback que se dispara al solicitar la ejecución de la celda de código.
+    /// </summary>
     [Parameter]
     public EventCallback OnRun { get; set; }
 
