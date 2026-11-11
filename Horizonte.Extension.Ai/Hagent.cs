@@ -9,6 +9,9 @@ using Horizonte.Extension.Ai.Runtime.Tools;
 
 namespace Horizonte.Extension.Ai;
 
+/// <summary>
+/// Representa una instancia operativa de un agente de IA en Horizonte, capaz de procesar consultas, invocar herramientas y gestionar archivos.
+/// </summary>
 public class Hagent
 {
     private readonly AgentDef _agentDef;
@@ -43,11 +46,19 @@ public class Hagent
     /// Ejecuta una consulta de forma síncrona.
     /// La API principal recomendada es <see cref="QueryAsync(ChatQuery, CancellationToken)"/>.
     /// </summary>
+    /// <param name="query">Consulta enviada por el usuario con texto y archivos adjuntos.</param>
+    /// <returns>La respuesta generada por el agente (<see cref="ChatResponse"/>).</returns>
     public ChatResponse Query(ChatQuery query)
     {
         return QueryAsync(query).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Procesa de forma asincrónica una consulta con el agente de IA, ejecutando el ciclo de razonamiento y herramientas.
+    /// </summary>
+    /// <param name="query">Consulta enviada por el usuario (<see cref="ChatQuery"/>).</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>La respuesta final y elementos de traza generados por el agente (<see cref="ChatResponse"/>).</returns>
     public async Task<ChatResponse> QueryAsync(
         ChatQuery query,
         CancellationToken cancellationToken = default)

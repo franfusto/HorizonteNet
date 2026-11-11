@@ -5,21 +5,33 @@ using OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 namespace Horizonte.Extension.AiWorkFlows.Tools;
 
+/// <summary>
+/// Proporciona un conjunto de herramientas de IA (<see cref="AITool"/>) para interactuar con los comandos del sistema y el almacén vectorial de Horizonte.
+/// </summary>
 public class HCommandToolSet
 {
     private CommandVectorManager _commandVectorManager;
     private IHGesCom _gesCom;
     private ILogger _logger;
+
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="HCommandToolSet"/>.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="embedderCliente">Cliente de OpenAI utilizado para calcular embeddings vectoriales.</param>
+    /// <param name="emmbedderModel">Nombre del modelo de embeddings a utilizar.</param>
     public HCommandToolSet(IServiceProvider serviceProvider, OpenAIClient embedderCliente, string emmbedderModel)
     {
         _gesCom = serviceProvider.GetService<IHGesCom>()!;
         _logger = serviceProvider.GetService<ILogger<HCommandToolSet>>()!;
         _commandVectorManager = new CommandVectorManager(serviceProvider, embedderCliente, emmbedderModel);
         _ = _commandVectorManager.InitializeManagerAsync();
-        
     }
 
-
+    /// <summary>
+    /// Crea una herramienta de IA para ejecutar un comando de Horizonte y devolver su resultado.
+    /// </summary>
+    /// <returns>Una instancia de <see cref="AITool"/> que encapsula la ejecución de comandos.</returns>
     public AITool RunCommand()
     {
         return AIFunctionFactory.Create(
@@ -29,6 +41,10 @@ public class HCommandToolSet
         );
     }
 
+    /// <summary>
+    /// Crea una herramienta de IA para consultar y buscar comandos disponibles en el almacén vectorial del sistema.
+    /// </summary>
+    /// <returns>Una instancia de <see cref="AITool"/> para realizar búsquedas semánticas de comandos.</returns>
     public AITool QueryVectorStore()
     {
         return AIFunctionFactory.Create(
@@ -38,6 +54,10 @@ public class HCommandToolSet
         );
     }
 
+    /// <summary>
+    /// Crea una herramienta de IA para obtener la hora actual del sistema en formato ISO 8601.
+    /// </summary>
+    /// <returns>Una instancia de <see cref="AITool"/> que devuelve la fecha y hora actual del sistema.</returns>
     public AITool GetSystemTime()
     {
         return AIFunctionFactory.Create(

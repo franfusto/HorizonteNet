@@ -4,8 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Horizonte.Extension.AiWorkFlows;
 
+/// <summary>
+/// Proporciona métodos de extensión para la construcción, ejecución y reanudación de flujos de trabajo basados en <see cref="WorkFlowDef"/>.
+/// </summary>
 public static class Extensions
 {
+    /// <summary>
+    /// Ejecuta un flujo de trabajo a partir de su definición, procesando un mensaje de entrada de tipo <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">Tipo del mensaje o datos de entrada y salida del flujo (debe ser una clase de referencia).</typeparam>
+    /// <param name="def">Definición del flujo de trabajo (<see cref="WorkFlowDef"/>).</param>
+    /// <param name="serviceProvider">Proveedor de servicios para la resolución de dependencias y comandos.</param>
+    /// <param name="message">Mensaje o carga útil de entrada para el flujo.</param>
+    /// <param name="token">Token de cancelación para abortar la ejecución.</param>
+    /// <param name="procMessage">Acción opcional para recibir y procesar eventos generados durante la ejecución.</param>
+    /// <param name="manager">Instancia opcional de <see cref="WorkFlowRunManager"/> para supervisar o pausar la ejecución.</param>
+    /// <returns>El resultado producido al finalizar el flujo de trabajo.</returns>
     public static async Task<T> RunWorkFlow<T>(this WorkFlowDef def, IServiceProvider serviceProvider, T message,
         CancellationToken token = default, Action<WorkflowEvent>? procMessage = null,
         WorkFlowRunManager? manager = null) where T : class
@@ -15,6 +29,16 @@ public static class Extensions
         return result?.Data as T ?? null!;
     }
 
+    /// <summary>
+    /// Construye una instancia ejecutable de <see cref="Workflow"/> a partir de su definición <see cref="WorkFlowDef"/>.
+    /// </summary>
+    /// <typeparam name="T">Tipo del mensaje o datos que fluirán por los nodos del flujo.</typeparam>
+    /// <param name="def">Definición del flujo con sus nodos, enlaces y condiciones.</param>
+    /// <param name="serviceProvider">Proveedor de servicios para resolver el gestor de comandos <see cref="IHGesCom"/>.</param>
+    /// <param name="token">Token de cancelación.</param>
+    /// <param name="manager">Gestor de ejecución opcional.</param>
+    /// <returns>Una instancia de <see cref="Workflow"/> compilada y lista para ser ejecutada.</returns>
+    /// <exception cref="InvalidOperationException">Se lanza si no se encuentra el servicio <see cref="IHGesCom"/> o si falta el nodo de entrada 'In'.</exception>
     public static Workflow Build<T>(this WorkFlowDef def, IServiceProvider serviceProvider,
         CancellationToken token = default, WorkFlowRunManager? manager = null)
     {
@@ -87,6 +111,17 @@ public static class Extensions
         };
     }
 
+    /// <summary>
+    /// Ejecuta el flujo de trabajo en modo streaming, procesando el mensaje de entrada y emitiendo eventos.
+    /// </summary>
+    /// <typeparam name="T">Tipo del mensaje de entrada (clase de referencia).</typeparam>
+    /// <param name="workflow">Instancia de <see cref="Workflow"/> a ejecutar.</param>
+    /// <param name="message">Mensaje o datos de entrada para el flujo.</param>
+    /// <param name="eventhandler">Acción opcional para recibir eventos de ejecución.</param>
+    /// <param name="token">Token de cancelación.</param>
+    /// <param name="manager">Gestor de ejecución opcional para control de estados y checkpoints.</param>
+    /// <param name="workflowId">Identificador opcional del flujo de trabajo.</param>
+    /// <returns>El evento final producido por el flujo de trabajo (<see cref="WorkflowEvent"/>), o null.</returns>
     public static async Task<WorkflowEvent?> Run<T>(this Workflow workflow, T message,
         Action<WorkflowEvent>? eventhandler = null, CancellationToken token = default,
         WorkFlowRunManager? manager = null, string workflowId = "") where T : class
@@ -147,6 +182,15 @@ public static class Extensions
         return result;
     }
 
+    /// <summary>
+    /// Reanuda la ejecución en streaming de un flujo de trabajo a partir de un punto de control específico.
+    /// </summary>
+    /// <param name="workflow">Instancia de <see cref="Workflow"/> a reanudar.</param>
+    /// <param name="checkpoint">Información del punto de control previo (<see cref="CheckpointInfo"/>).</param>
+    /// <param name="manager">Gestor de ejecución opcional.</param>
+    /// <param name="eventhandler">Acción opcional para recibir eventos de ejecución durante la reanudación.</param>
+    /// <param name="token">Token de cancelación.</param>
+    /// <returns>El evento final producido tras la reanudación (<see cref="WorkflowEvent"/>), o null.</returns>
     public static async Task<WorkflowEvent?> Resume(this Workflow workflow, CheckpointInfo checkpoint,
         WorkFlowRunManager? manager = null, Action<WorkflowEvent>? eventhandler = null,
         CancellationToken token = default)

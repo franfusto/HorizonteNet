@@ -5,8 +5,18 @@ using Horizonte.Extension.Ai.Runtime.Tools;
 
 namespace Horizonte.Extension.Ai.Factories;
 
+/// <summary>
+/// Factoría encargada de instanciar y ensamblar agentes <see cref="Hagent"/> resolviendo sus clientes de chat, servidores y herramientas.
+/// </summary>
 public static class HagentFactory
 {
+    /// <summary>
+    /// Crea y configura un nuevo agente <see cref="Hagent"/> a partir de una definición de agente y un conjunto de configuraciones.
+    /// </summary>
+    /// <param name="agentDef">Definición del agente a construir (<see cref="AgentDef"/>).</param>
+    /// <param name="configuration">Conjunto de configuraciones del sistema (<see cref="ConfigSet"/>).</param>
+    /// <returns>Una instancia de <see cref="Hagent"/> completamente configurada.</returns>
+    /// <exception cref="HagentFactoryException">Se produce si faltan componentes requeridos o si las referencias de configuración son inválidas.</exception>
     public static Hagent Create(AgentDef? agentDef, ConfigSet? configuration)
     {
         if (agentDef is null)

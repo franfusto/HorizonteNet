@@ -5,8 +5,16 @@ using OpenAI;
 
 namespace Horizonte.Extension.Ai.Runtime.Chat;
 
+/// <summary>
+/// Cliente de chat oficial para los servicios y modelos de OpenAI.
+/// </summary>
 public sealed class OpenAIHagentChatClient : MicrosoftExtensionsHagentChatClient
 {
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="OpenAIHagentChatClient"/> para el servicio oficial de OpenAI.
+    /// </summary>
+    /// <param name="clientDef">Definición del cliente de chat (<see cref="ClientDef"/>).</param>
+    /// <param name="serverDef">Definición del servidor OpenAI (<see cref="ServerDef"/>).</param>
     public OpenAIHagentChatClient(
         ClientDef clientDef,
         ServerDef serverDef)

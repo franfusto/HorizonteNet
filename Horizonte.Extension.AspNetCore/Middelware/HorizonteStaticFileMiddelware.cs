@@ -45,11 +45,9 @@ public class HorizonteStaticFileMiddelware
     /// </summary>
     private readonly ILogger<HorizonteStaticFileMiddelware> _logger;
 
+    /// <summary>
     /// Proveedor de archivos utilizado para acceder a los recursos estáticos en el middleware de Horizonte.
-    /// Es una instancia de `IFileProvider` que proporciona una abstracción para acceder al sistema de archivos.
-    /// Si no se especifica un proveedor de archivos en las opciones, se utiliza un proveedor determinado por el entorno de hospedaje, típicamente el proveedor de archivos raíz web.
-    /// En casos donde el proveedor de archivos raíz web no está disponible, se emite una advertencia en los registros y se recurre al proveedor de archivos raíz de contenido.
-    /// /
+    /// </summary>
     private readonly IFileProvider _fileProvider;
 
     /// <summary>
@@ -75,9 +73,14 @@ public class HorizonteStaticFileMiddelware
 
 
     /// <summary>
-    /// Representa un middleware para manejar archivos estáticos en una aplicación ASP.NET Core,
-    /// específicamente diseñado para ser utilizado con el componente "Horizonte".
+    /// Inicializa una nueva instancia de la clase <see cref="HorizonteStaticFileMiddelware"/>.
     /// </summary>
+    /// <param name="next">El delegado que representa el siguiente middleware en el pipeline de ASP.NET Core.</param>
+    /// <param name="hostingEnv">El entorno de alojamiento web para resolver proveedores de archivos raíz.</param>
+    /// <param name="options">Las opciones de configuración para la entrega de archivos estáticos.</param>
+    /// <param name="logger">El registrador de eventos para registrar operaciones y advertencias del middleware.</param>
+    /// <param name="assemblyManager">El gestor de ensamblados de Horizonte para el acceso al registro de archivos estáticos.</param>
+    /// <param name="registeringAssembly">El ensamblado que registra el middleware, utilizado para resolver el dominio asociado.</param>
     public HorizonteStaticFileMiddelware(RequestDelegate next, IWebHostEnvironment hostingEnv,
         IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger,IhAssemblyManager assemblyManager,
         Assembly? registeringAssembly = null)
@@ -237,12 +240,14 @@ public class HorizonteStaticFileMiddelware
         return false;
     }
 
+    /// <summary>
     /// Intenta servir un archivo estático al cliente. Este método verifica si el archivo solicitado existe
     /// y, de ser así, lo envía como respuesta. Si no se encuentra el archivo, se registra una advertencia.
+    /// </summary>
     /// <param name="context">El contexto HTTP que contiene toda la información de la solicitud HTTP actual.</param>
     /// <param name="contentType">El tipo de contenido del archivo que se desea servir, usado para establecer el encabezado Content-Type en la respuesta.</param>
     /// <param name="subPath">La ruta parcial al archivo solicitado, utilizada para localizar el archivo dentro del sistema de archivos.</param>
-    /// <return>Una tarea que representa la operación asincrónica de servir el archivo HTTP.</return>
+    /// <returns>Una tarea que representa la operación asincrónica de servir el archivo HTTP.</returns>
     private async Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
     {
         if (subPath.Value == null) return;

@@ -7,6 +7,9 @@ using OpenAI;
 
 namespace Horizonte.Extension.AiWorkFlows.Tools;
 
+/// <summary>
+/// Gestiona el almacenamiento vectorial y la búsqueda semántica de comandos de Horizonte mediante embeddings de IA.
+/// </summary>
 public class CommandVectorManager
 {
     private readonly IHGesCom _commandManager;
@@ -22,10 +25,11 @@ public class CommandVectorManager
     private readonly string _embedderModel;
 
     /// <summary>
-    /// La clase CommandVectorManager es responsable de gestionar el almacenamiento y la búsqueda de comandos
-    /// utilizando vectores de embeddings generados por un modelo de IA.
-    /// Se comunica con los servicios OpenAI y utiliza un modelo especificado para generar los embeddings.
+    /// Inicializa una nueva instancia de la clase <see cref="CommandVectorManager"/>.
     /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="openAiClient">Cliente de OpenAI para la generación de embeddings.</param>
+    /// <param name="embedderModel">Nombre del modelo de IA a utilizar para calcular embeddings.</param>
     public CommandVectorManager(IServiceProvider serviceProvider, OpenAIClient openAiClient, string embedderModel)
     {
         _embedderModel = embedderModel;
@@ -296,6 +300,10 @@ public class CommandVectorManager
         }
     }
 
+    /// <summary>
+    /// Puebla la colección del almacén vectorial en memoria a partir de las definiciones de comandos cargadas.
+    /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica de poblar el almacén vectorial.</returns>
     public async Task PopulateVectorStorageAsync()
     {
         try
@@ -321,12 +329,10 @@ public class CommandVectorManager
 
     /// <summary>
     /// Busca un comando en el almacén de vectores utilizando el texto de consulta proporcionado.
-    /// Genera embeddings a partir del texto y realiza una búsqueda en la colección de vectores
-    /// para encontrar comandos relacionados. Devuelve los resultados de búsqueda en forma de cadena.
     /// </summary>
     /// <param name="queryText">Texto de consulta utilizado para buscar en el almacén de vectores.</param>
     /// <param name="cancellationToken">Token de cancelación para detener la operación de búsqueda si es necesario.</param>
-    /// <return>Una cadena con los resultados de los comandos encontrados o null en caso de error durante la búsqueda.</return>
+    /// <returns>Una cadena con los resultados de los comandos encontrados o null en caso de error durante la búsqueda.</returns>
     public async Task<string?> SearchCommandInVectorStoreAsync(string queryText, CancellationToken cancellationToken)
     {
         _logService.LogInformation("Buscando comandos en la base de datos vectorial para la consulta: {QueryText}.",
@@ -353,6 +359,13 @@ public class CommandVectorManager
         }
     }
 
+    /// <summary>
+    /// Realiza una búsqueda vectorial de comandos filtrada por catálogo.
+    /// </summary>
+    /// <param name="catalog">Nombre del catálogo o espacio de comandos a consultar.</param>
+    /// <param name="queryText">Texto de consulta para la búsqueda semántica.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Una cadena con las definiciones de los comandos encontrados o null en caso de error.</returns>
     public async Task<string?> SearchCommandInVectorStoreAsync222(string catalog, string queryText,
         CancellationToken cancellationToken)
     {
@@ -411,6 +424,12 @@ public class CommandVectorManager
         return definition;
     }
 
+    /// <summary>
+    /// Genera un vector de embeddings a partir de una cadena de texto dada utilizando el modelo configurado.
+    /// </summary>
+    /// <param name="text">El texto de entrada para el cual generar los embeddings.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Una memoria de solo lectura de floats con el vector de embeddings generado.</returns>
     public async Task<ReadOnlyMemory<float>> GenerateEmbeddingsFromTextAsync(string text,
         CancellationToken cancellationToken)
     {
@@ -430,33 +449,86 @@ public class CommandVectorManager
     }
 }
 
+/// <summary>
+/// Representa un registro de comando almacenado en la colección vectorial.
+/// </summary>
 public class CommandVectorRecord
 {
+    /// <summary>
+    /// Obtiene o establece el identificador numérico único del registro vectorial.
+    /// </summary>
     [VectorStoreKey] public int Id { get; set; }
 
+    /// <summary>
+    /// Obtiene o establece el nombre o clave del comando.
+    /// </summary>
     [VectorStoreData] public string Name { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Obtiene o establece la definición serializada en JSON del comando.
+    /// </summary>
     [VectorStoreData] public string Definition { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Obtiene o establece el vector de embeddings del comando.
+    /// </summary>
     [VectorStoreVector(1536)] public ReadOnlyMemory<float> Embedding { get; set; }
 }
 
+/// <summary>
+/// Define la estructura de un comando activo en memoria.
+/// </summary>
 public class ActiveCommandDefinition
 {
+    /// <summary>
+    /// Obtiene o establece el nombre o clave del comando.
+    /// </summary>
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Obtiene o establece la definición serializada del comando.
+    /// </summary>
     public string Definition { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Describe la estructura completa de metadatos de un comando de Horizonte.
+/// </summary>
 public class CommandDefinition
 {
+    /// <summary>
+    /// Nombre o identificador del comando.
+    /// </summary>
     public string CommandName = string.Empty;
+
+    /// <summary>
+    /// Descripción funcional del comando.
+    /// </summary>
     public string CommandDescription = string.Empty;
+
+    /// <summary>
+    /// Lista de roles asignados al comando.
+    /// </summary>
     public string[] CommandRoles = Array.Empty<string>();
+
+    /// <summary>
+    /// Lista de definiciones de parámetros esperados por el comando.
+    /// </summary>
     public List<CommandParameterDefinition> Parameters = new List<CommandParameterDefinition>();
 }
 
+/// <summary>
+/// Describe un parámetro individual de un comando de Horizonte.
+/// </summary>
 public class CommandParameterDefinition
 {
+    /// <summary>
+    /// Nombre del parámetro.
+    /// </summary>
     public string Name = string.Empty;
+
+    /// <summary>
+    /// Nombre calificado del tipo de datos del parámetro.
+    /// </summary>
     public string Type = string.Empty;
 }

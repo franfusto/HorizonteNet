@@ -3,15 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace Horizonte.Extensions.Interactive;
 
-/// La clase ScriptDef representa la definición de un script dentro del contexto de la extensión interactiva de Horizonte.
-/// Esta clase gestionará los detalles básicos y el código asociado al script, permitiendo su manipulación y almacenamiento.
-/// Propiedades:
-/// - Id: Cadena que identifica de manera única al script.
-/// - Name: Nombre del script, el cual se procesa para asegurar que sea válido de acuerdo a restricciones específicas.
-/// - Description: Breve texto que describe la funcionalidad o propósito del script.
-/// - Code: Cadena en formato Base64 que contiene el código del script. Está diseñado para facilitar su almacenamiento y transmisión.
-/// - CodeText: Propiedad que proporciona el acceso al código del script en texto plano. Gestiona la codificación y decodificación en Base64 del código del script.
-/// - Active: Indicador booleano que señala si el script está activo y disponible para su uso.
+/// <summary>
+/// Representa la definición de un script ejecutable dentro del contexto de las extensiones interactivas de Horizonte.
+/// </summary>
+/// <remarks>
+/// Gestiona los metadatos del script (identificador, nombre sanitizado, descripción), su código fuente
+/// en formato texto o codificado en Base64, y su estado de activación en el sistema.
+/// </remarks>
 public class ScriptDef
 {
     /// <summary>

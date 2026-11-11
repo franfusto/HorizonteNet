@@ -9,20 +9,13 @@ namespace Horizonte.Extensions.Interactive;
 /// </summary>
 public class ScriptDefCompileResponse
 {
-    /// La propiedad `Assembly` representa un conjunto compilado de código en forma de un arreglo de bytes.
-    /// Esta propiedad es utilizada para almacenar el resultado de una compilación de un script en tiempo de ejecución.
-    /// En el contexto de la clase `ScriptDefCompileResponse`, `Assembly` se inicializa como un arreglo vacío de bytes,
-    /// y posteriormente, durante el proceso de compilación de código mediante el método `Compile` en la clase `Extensions`,
-    /// se asigna el resultado del ensamblado generado al flujo de memoria (`MemoryStream`).
-    /// Esto permite que el código de script dinámico sea compilado y ejecutado en tiempo de ejecución.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el ensamblado compilado en forma de arreglo de bytes.
+    /// </summary>
     public byte[] Assembly { get; set; } = Array.Empty<byte>();
 
-    /// Propiedad que proporciona una colección enumerable de errores generados durante un proceso de compilación de scripts.
-    /// Es utilizada para recuperar la lista de mensajes de error que se producen al compilar un script.
-    /// Cada error es representado como una cadena que describe el problema específico encontrado durante la compilación.
-    /// Esta propiedad es particularmente útil para la depuración y para informar al usuario sobre los problemas que deben corregirse.
-    /// Por defecto, se inicializa como una colección vacía, lo que indica que no hubo errores en el proceso de compilación.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la colección de mensajes de error generados durante el proceso de compilación del script.
+    /// </summary>
     public IEnumerable<string> Errors { get; set; } = Enumerable.Empty<string>();
 }

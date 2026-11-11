@@ -4,12 +4,21 @@ using Microsoft.Extensions.AI;
 
 namespace Horizonte.Extension.Ai.Runtime.Chat;
 
+/// <summary>
+/// Cliente de chat adaptador que integra cualquier implementación de <see cref="IChatClient"/> de Microsoft.Extensions.AI con el entorno Hagent.
+/// </summary>
 public class MicrosoftExtensionsHagentChatClient : IHagentChatClient
 {
     private readonly IChatClient _chatClient;
     private readonly ClientDef _clientDef;
     private readonly ServerDef _serverDef;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="MicrosoftExtensionsHagentChatClient"/>.
+    /// </summary>
+    /// <param name="chatClient">Cliente de chat de Microsoft.Extensions.AI subyacente.</param>
+    /// <param name="clientDef">Definición de configuración del cliente (<see cref="ClientDef"/>).</param>
+    /// <param name="serverDef">Definición de configuración del servidor (<see cref="ServerDef"/>).</param>
     public MicrosoftExtensionsHagentChatClient(
         IChatClient chatClient,
         ClientDef clientDef,
@@ -24,6 +33,12 @@ public class MicrosoftExtensionsHagentChatClient : IHagentChatClient
         _serverDef = serverDef;
     }
 
+    /// <summary>
+    /// Ejecuta una solicitud de completado de chat de forma asincrónica.
+    /// </summary>
+    /// <param name="request">Solicitud de chat que contiene los mensajes, herramientas y opciones (<see cref="HagentChatRequest"/>).</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Resultado con el texto generado, llamadas a herramientas y metadatos (<see cref="HagentChatResult"/>).</returns>
     public async Task<HagentChatResult> CompleteAsync(
         HagentChatRequest request,
         CancellationToken cancellationToken = default)
