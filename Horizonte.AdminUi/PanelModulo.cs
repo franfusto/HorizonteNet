@@ -95,6 +95,16 @@ public class PanelModulo
     [HorizonteCommand("HorizonteGui_NetConfig", "")]
     public WidgetDef NetConfig() => new WidgetDef() { Type = typeof(NetConfig), Parameters = null };
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [HorizonteRole("configpage")]
+    [HorizonteCommand("HorizonteGui_ProtectConfig", "")]
+    public WidgetDef ProtectConfig() => new WidgetDef() { Type = typeof(ProtectApp), Parameters = null };
+    
+    
     /// <summary>
     /// El método <c>OpenGui</c> tiene como propósito abrir una interfaz gráfica de usuario en un navegador web.
     /// </summary>

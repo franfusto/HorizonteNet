@@ -3,3 +3,5 @@ obj/
 /packages/
 .idea/
 .june/
+Docker/AppFiles/*
+!Docker/AppFiles/.gitkeep

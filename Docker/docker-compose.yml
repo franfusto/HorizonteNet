@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    image: franfusto/horizontenet:10.0.5-beta
+    container_name: app_horizonte
+    ports:
+      - "5000:5000"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_HTTP_PORTS=5000
+      - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - ./horizonte:/home/horizonte
+    restart: unless-stopped
+    
