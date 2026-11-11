@@ -146,6 +146,64 @@ Este archivo puede utilizarse como punto de partida para revisar cómo se define
 
 ---
 
+## Docker
+
+HorizonteNet está disponible como imagen Docker publicada en [Docker Hub](https://hub.docker.com/r/franfusto/horizontenet/tags).
+
+### Ejecución con Docker CLI
+
+Puedes iniciar un contenedor directamente con el siguiente comando:
+
+```bash
+docker run -d \
+  --name app_horizonte \
+  -p 5000:5000 \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e ASPNETCORE_URLS=http://+:5000 \
+  -e ASPNETCORE_HTTP_PORTS=5000 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -v ./horizonte:/home/horizonte \
+  --restart unless-stopped \
+  franfusto/horizontenet:10.0.5-beta
+```
+
+### Ejecución con Docker Compose
+
+Crea un archivo `docker-compose.yml` con la siguiente configuración:
+
+```yaml
+services:
+  app:
+    image: franfusto/horizontenet:10.0.5-beta
+    container_name: app_horizonte
+    ports:
+      - "5000:5000"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_HTTP_PORTS=5000
+      - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - ./horizonte:/home/horizonte
+    restart: unless-stopped
+```
+
+Inicia el servicio ejecutando:
+
+```bash
+docker compose up -d
+```
+
+Abre la aplicación en el navegador:
+
+```text
+http://localhost:5000
+```
+
+---
+
 ## Estado del proyecto
 
 HorizonteNet se encuentra actualmente en fase **Beta**.
