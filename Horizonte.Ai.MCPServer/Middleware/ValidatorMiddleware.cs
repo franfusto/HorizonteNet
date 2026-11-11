@@ -6,15 +6,29 @@ using Microsoft.Extensions.Logging;
 namespace Horizonte.Ai.MCPServer.Middleware;
 using Microsoft.Extensions.Primitives;
 
+/// <summary>
+/// Middleware de ASP.NET Core que valida la autenticación mediante API Key en las peticiones del servidor MCP.
+/// </summary>
 public sealed class ValidatorMiddleware
 {
     private readonly RequestDelegate _next;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="ValidatorMiddleware"/>.
+    /// </summary>
+    /// <param name="next">El siguiente delegado en el pipeline de peticiones HTTP.</param>
     public ValidatorMiddleware(RequestDelegate next)
     {
         _next = next;
     }
 
+    /// <summary>
+    /// Procesa la petición HTTP entrante validando la cabecera X-API-Key mediante <see cref="IApiKeyValidator"/>.
+    /// </summary>
+    /// <param name="context">El contexto HTTP de la petición actual.</param>
+    /// <param name="validator">El validador de claves de API inyectado.</param>
+    /// <param name="loger">El servicio de registro de eventos.</param>
+    /// <returns>Una tarea que representa la operación asíncrona de procesamiento de la petición.</returns>
     public async Task InvokeAsync(
         HttpContext context,
         IApiKeyValidator validator, ILogger<ValidatorMiddleware> loger)

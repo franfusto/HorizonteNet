@@ -12,8 +12,14 @@ using ModelContextProtocol.Server;
 
 namespace Horizonte.Ai.MCPServer;
 
+/// <summary>
+/// Servicio en segundo plano (BackgroundService) que hospeda e inicia el servidor Model Context Protocol (MCP) en Horizonte.
+/// </summary>
 public class MCPWorker : BackgroundService
 {
+    /// <summary>
+    /// Obtiene o establece un valor que indica si el servidor MCP está actualmente en ejecución.
+    /// </summary>
     public bool IsRunning { get; set; } = false;
 
     private readonly ILogger<MCPWorker> _log;
@@ -21,6 +27,12 @@ public class MCPWorker : BackgroundService
     private readonly IhContext _context;
     private WebApplication? _app;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="MCPWorker"/>.
+    /// </summary>
+    /// <param name="logger">El servicio de registro de eventos.</param>
+    /// <param name="gesCom">El gestor de comandos de Horizonte para resolver herramientas MCP.</param>
+    /// <param name="context">El contexto principal de Horizonte para acceder a la configuración del servidor MCP.</param>
     public MCPWorker(ILogger<MCPWorker> logger, IHGesCom gesCom, IhContext context)
     {
         _log = logger;
@@ -28,6 +40,11 @@ public class MCPWorker : BackgroundService
         _context = context;
     }
 
+    /// <summary>
+    /// Ejecuta el ciclo de vida del servidor web ASP.NET Core que aloja los endpoints MCP.
+    /// </summary>
+    /// <param name="stoppingToken">Token de cancelación que indica cuándo detener el servicio.</param>
+    /// <returns>Una tarea que representa la ejecución del servidor MCP.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log.LogInformation("Iniciando MCPWorker");
@@ -176,12 +193,22 @@ public class MCPWorker : BackgroundService
         }
     }
 
+    /// <summary>
+    /// Inicia de forma asíncrona el servicio de fondo del servidor MCP.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Una tarea que representa el inicio del servicio.</returns>
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Starting MCPWorker");
         return base.StartAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Detiene de forma asíncrona el servidor web ASP.NET Core y el servicio MCP.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Una tarea que representa la detención del servicio.</returns>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Finalizando MCPWorker");

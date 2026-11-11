@@ -23,16 +23,9 @@ namespace Horizonte.WorkFlows.NodeModels;
 /// </remarks>
 public class LinkSettingsControl : ExecutableControl
 {
-    /// `WorkFlowDef` es una clase que representa la definición de un flujo de trabajo en el contexto de una aplicación.
-    /// Contiene las propiedades esenciales para definir las características y la estructura de un flujo de trabajo.
-    /// Propiedades:
-    /// - `Id`: Identificador único del flujo de trabajo. Se inicializa con un valor de GUID vacío.
-    /// - `Name`: Nombre del flujo de trabajo. Se inicializa como una cadena vacía.
-    /// - `Nodes`: Lista de nodos (`WorkFlowNode`) que conforman el flujo de trabajo. Se inicializa como una lista vacía.
-    /// - `Links`: Lista de enlaces (`WorkFlowLink`) que conectan los nodos del flujo de trabajo. Se inicializa como una lista vacía.
-    /// La clase `WorkFlowDef` permite la configuración y seguimiento de los nodos y enlaces que componen un flujo de trabajo automatizado,
-    /// permitiendo así la creación de procesos dinámicos y personalizados.
-    /// /
+    /// <summary>
+    /// Obtiene la definición del flujo de trabajo asociada al control.
+    /// </summary>
     public WorkFlowDef WorkFlowDef { get; private set; }
 
     /// <summary>
@@ -54,22 +47,15 @@ public class LinkSettingsControl : ExecutableControl
     /// </remarks>
     public Rectangle Bounds { get; private set; } = Rectangle.Zero;
 
-    /// La propiedad `Diagram` en la clase `LinkSettingsControl` representa el diagrama asociado al control de configuración del enlace.
-    /// Esta propiedad es de solo lectura, ya que se define con un modificador de acceso privado para el set.
-    /// El propósito de esta propiedad es proporcionar acceso al diagrama en el cual está operando el control de enlace,
-    /// permitiendo así realizar operaciones relacionadas con la interacción y configuración de enlaces en el contexto del diagrama.
-    /// /
+    /// <summary>
+    /// Obtiene el diagrama al cual pertenece y en el cual opera el control de configuración del enlace.
+    /// </summary>
     public Diagram Diagram { get; private set; }
 
     /// <summary>
-    /// La clase <c>LinkSettingsControl</c> representa un control ejecutable dentro de un flujo de trabajo
-    /// que actúa sobre un enlace de flujo de trabajo definido.
+    /// Inicializa una nueva instancia de la clase <see cref="LinkSettingsControl"/> asociada a un enlace de flujo de trabajo.
     /// </summary>
-    /// <remarks>
-    /// Esta clase se utiliza dentro del contexto de los flujos de trabajo en el espacio de nombres
-    /// <c>Horizonte.WorkFlows.NodeModels</c>. Hereda de <c>ExecutableControl</c> y requiere una instancia
-    /// de <c>WorkFlowLink</c> para su construcción.
-    /// </remarks>
+    /// <param name="LinkDef">Instancia de <see cref="WorkFlowLink"/> que define el enlace del flujo.</param>
     public LinkSettingsControl(WorkFlowLink LinkDef)
     {
         WorkFlowLink = LinkDef;
@@ -108,10 +94,9 @@ public class LinkSettingsControl : ExecutableControl
         return new ValueTask();
     }
 
-    /// La propiedad OnConditionChanged es un delegado de tipo Action que se activa cuando ocurre un cambio en la condición de un enlace de flujo de trabajo.
-    /// Esta propiedad es utilizada en el contexto de un control de interfaz de usuario llamado LinkSettingsControl que maneja la configuración de enlaces en un flujo de trabajo.
-    /// Se invoca el delegado cada vez que se edita o se elimina una condición asociada a un enlace de flujo de trabajo, permitiendo así la ejecución de lógica personalizada en respuesta a estos cambios.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el delegado que se ejecuta cuando se modifica o elimina la condición del enlace.
+    /// </summary>
     public required Action OnConditionChanged { get; set; }
 
     /// <summary>

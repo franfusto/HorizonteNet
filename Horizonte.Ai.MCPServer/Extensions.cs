@@ -7,8 +7,20 @@ using ModelContextProtocol.Server;
 
 namespace Horizonte.Ai.MCPServer;
 
+/// <summary>
+/// Métodos de extensión para configurar y registrar herramientas y comandos en el servidor MCP.
+/// </summary>
 public static class Extensions
 {
+    /// <summary>
+    /// Registra los comandos de Horizonte definidos en la configuración como herramientas ejecutables (Tools) en el servidor MCP.
+    /// </summary>
+    /// <param name="builder">El constructor de servidor MCP (<see cref="IMcpServerBuilder"/>).</param>
+    /// <param name="config">La configuración del servidor MCP que contiene los comandos a exponer.</param>
+    /// <param name="gesCom">El gestor de comandos de Horizonte para resolver las acciones de los comandos.</param>
+    /// <param name="log">El servicio de registro de eventos para advertencias y trazabilidad.</param>
+    /// <param name="serializerOptions">Opciones opcionales de serialización JSON para las herramientas registradas.</param>
+    /// <returns>El constructor <see cref="IMcpServerBuilder"/> con las herramientas registradas.</returns>
     public static IMcpServerBuilder WithCommands(
         this IMcpServerBuilder builder,
         MCPServerConfig config,

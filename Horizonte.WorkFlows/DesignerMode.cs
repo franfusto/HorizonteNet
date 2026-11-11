@@ -30,12 +30,13 @@ public enum DesignerMode
     /// </summary>
     Show,
 
-    /// Representa el modo de diseño en el que un usuario puede editar las propiedades de un nodo dentro de un flujo de trabajo.
-    /// Mientras se encuentra en este modo, los elementos de la interfaz permiten modificar el nombre y la acción de comando
-    /// del nodo, posibilitando la personalización y configuración del flujo según las necesidades del usuario.
-    /// /
+    /// <summary>
+    /// Modo de diseño que permite a los usuarios editar los detalles y configuración del nodo.
+    /// </summary>
     Design,
 
-    /// /
+    /// <summary>
+    /// Modo de ejecución utilizado para visualizar el estado y los mensajes generados durante la ejecución del flujo.
+    /// </summary>
     Run
 }

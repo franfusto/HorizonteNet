@@ -290,6 +290,9 @@
 
 @code {
 
+    /// <summary>
+    /// Obtiene o establece la definición del flujo de trabajo (<see cref="Extension.AiWorkFlows.WorkFlowDef"/>) a diseñar o ejecutar.
+    /// </summary>
     [Parameter]
     public WorkFlowDef? WorkFlowDef
     {
@@ -302,8 +305,19 @@
         }
     }
 
+    /// <summary>
+    /// Evento de callback que se dispara al solicitar guardar el flujo de trabajo.
+    /// </summary>
     [Parameter] public EventCallback OnSave { get; set; }
+
+    /// <summary>
+    /// Evento de callback que se dispara al solicitar eliminar el flujo de trabajo.
+    /// </summary>
     [Parameter] public EventCallback OnDelete { get; set; }
+
+    /// <summary>
+    /// Obtiene o establece el modo de operación del diseñador (<see cref="DesignerMode"/>).
+    /// </summary>
     [Parameter] public DesignerMode DesignerMode { get; set; } = DesignerMode.Show;
 
     private BlazorDiagram _diagram = new BlazorDiagram();

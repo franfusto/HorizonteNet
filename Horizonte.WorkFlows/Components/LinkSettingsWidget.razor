@@ -22,8 +22,14 @@
 
 @code
 {
+    /// <summary>
+    /// Obtiene o establece el control de configuración del enlace (<see cref="LinkSettingsControl"/>).
+    /// </summary>
     [Parameter] public LinkSettingsControl Control { get; set; } = null!;
 
+    /// <summary>
+    /// Obtiene o establece el modelo base del enlace en el diagrama.
+    /// </summary>
     [Parameter] public BaseLinkModel Model { get; set; } = null!;
 
     protected override void OnInitialized()

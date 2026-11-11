@@ -42,13 +42,9 @@ public class NodeOperationModel : NodeModel,IRunnableNode
     }
 
     /// <summary>
-    /// Representa un modelo de operación de nodo dentro de un flujo de trabajo.
+    /// Inicializa una nueva instancia de la clase <see cref="NodeOperationModel"/> a partir de la definición de un nodo.
     /// </summary>
-    /// <remarks>
-    /// Esta clase hereda de <c>NodeModel</c> e implementa la interfaz <c>IRunnableNode</c>,
-    /// proporcionando la funcionalidad para representar nodos que pueden ser ejecutados
-    /// dentro de un flujo de trabajo.
-    /// </remarks>
+    /// <param name="node">Definición del nodo (<see cref="WorkFlowNode"/>) que contiene la configuración y posición inicial.</param>
     public NodeOperationModel(WorkFlowNode node) : base(node.Id, new Point(node.PosX, node.PosY))
     {
         Node = node;  

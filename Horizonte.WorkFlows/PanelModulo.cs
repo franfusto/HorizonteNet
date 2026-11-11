@@ -34,11 +34,12 @@ public class PanelModulo
     private readonly IServiceProvider _serviceProvider;
     private readonly IhContext _context;
     /// <summary>
-    /// La clase PanelModulo pertenece al módulo Horizonte.WorkFlows y es responsable de manejar
-    /// la integración y funcionalidad del componente principal en la plataforma de workflows.
-    /// Esta clase incluye métodos para la inicialización del módulo y la gestión de widgets de visualización en el dashboard.
+    /// Inicializa una nueva instancia de la clase <see cref="PanelModulo"/>.
     /// </summary>
-    public PanelModulo(ILogger<PanelModulo> logger, IhContext context,IServiceProvider serviceProvider)
+    /// <param name="logger">El servicio de registro de eventos para el módulo.</param>
+    /// <param name="context">El contexto principal de Horizonte para acceso a estado y configuración.</param>
+    /// <param name="serviceProvider">El proveedor de servicios de inyección de dependencias para la ejecución de flujos.</param>
+    public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IServiceProvider serviceProvider)
     {
         _logger = logger;
         _context = context;
@@ -46,13 +47,9 @@ public class PanelModulo
     }
 
     /// <summary>
-    /// Inicializa el módulo Horizonte.WorkFlows. Este método es responsable de
-    /// registrar el inicio del módulo y asegurar que esté listo para su operación
-    /// en la plataforma de workflows.
+    /// Inicializa el módulo Horizonte.WorkFlows.
     /// </summary>
-    /// <returns>Devuelve un valor booleano que indica si el módulo se inició exitosamente.
-    /// Siempre devuelve true, pues el proceso de inicialización se registra como exitoso
-    /// mediante un mensaje de información en el logger.</returns>
+    /// <returns>Devuelve <c>true</c> si el módulo se inicializó correctamente.</returns>
     [HorizonteRole("init")]
     [HorizonteCommand("WorkFlows_Init")]
     public bool Init()
@@ -62,30 +59,35 @@ public class PanelModulo
     }
 
     /// <summary>
-    /// Define un widget que se utiliza para la visualización de scripts dentro del módulo
-    /// Horizonte.WorkFlows. Este método devuelve una instancia de WidgetDef que está
-    /// configurada para integrar el tipo de widget especificado en el panel de control
-    /// de workflows.
+    /// Obtiene la definición del widget de panel de control (Dashboard) para la gestión y diseño de flujos de trabajo.
     /// </summary>
-    /// <returns>Devuelve un objeto de tipo WidgetDef que representa el widget de visor de
-    /// scripts dentro del panel de control de workflows, estableciendo como tipo el
-    /// componente Dashboard.</returns>
+    /// <returns>Una instancia de <see cref="WidgetDef"/> configurada con el componente <see cref="Dashboard"/>.</returns>
     [HorizonteRole("widget")]
     [HorizonteCommand("WorkFlows_Dashboard", "")]
     public WidgetDef ScriptsViewerWidget() => new WidgetDef() { Type = typeof(Dashboard), Parameters = null };
 
-
-
+    /// <summary>
+    /// Ejecuta un flujo de trabajo por su nombre pasando un mensaje de entrada y manejando eventos de callback.
+    /// </summary>
+    /// <param name="workflowName">Nombre del flujo de trabajo a ejecutar.</param>
+    /// <param name="message">Mensaje u objeto de entrada para el flujo de trabajo.</param>
+    /// <param name="ctoken">Token de cancelación para abortar la ejecución.</param>
+    /// <param name="callback">Acción de callback para recibir eventos del flujo de trabajo durante su ejecución.</param>
+    /// <returns>El resultado producido por el flujo de trabajo tras su ejecución.</returns>
+    /// <exception cref="Exception">Se lanza si el flujo de trabajo especificado no existe en la configuración.</exception>
     [HorizonteCommand("WorkFlows_ExecuteWorkFlow", "")]
     public async Task<object?> ExecuteWorkFlow(string workflowName, object message, CancellationToken ctoken, Action<WorkflowEvent>? callback)
     {
-        var workflow =   _context.Get<WorkFlowConfig>().WorkFlows.FirstOrDefault(w => w.Name == workflowName);
-        if(workflow == null) throw new Exception("Workflow not found");
-        var result =await workflow.RunWorkFlow(_serviceProvider, message, ctoken, callback);
+        var workflow = _context.Get<WorkFlowConfig>().WorkFlows.FirstOrDefault(w => w.Name == workflowName);
+        if (workflow == null) throw new Exception("Workflow not found");
+        var result = await workflow.RunWorkFlow(_serviceProvider, message, ctoken, callback);
         return result;
     }
 
-    
+    /// <summary>
+    /// Ejecuta una prueba de flujo de trabajo de ejemplo con un mensaje predeterminado.
+    /// </summary>
+    /// <returns>Una cadena JSON con el resultado serializado de la ejecución del flujo de trabajo.</returns>
     [HorizonteCommand("WorkFlows_TestWorkFlow", "")]
     public async Task<string> TestWorkFlow()
     {

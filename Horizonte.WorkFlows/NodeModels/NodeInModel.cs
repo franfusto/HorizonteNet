@@ -16,21 +16,16 @@ public class NodeInModel : NodeModel,IRunnableNode
     /// </summary>
     public WorkFlowNode Node { get; }
 
-    /// La propiedad `RunMessage` es de tipo `string` y forma parte de la clase `NodeInModel` en el espacio de nombres `Horizonte.WorkFlows.NodeModels`.
-    /// Esta propiedad se utiliza para almacenar un mensaje asociado con la ejecución de un nodo que implementa la interfaz `IRunnableNode`.
-    /// El valor de `RunMessage` puede ser utilizado para proporcionar retroalimentación sobre el proceso de ejecución del nodo o para indicar su estado actual.
-    /// /
-    public required string RunMessage {get; set;}
+    /// <summary>
+    /// Obtiene o establece el mensaje o estado asociado a la ejecución del nodo de entrada.
+    /// </summary>
+    public required string RunMessage { get; set; }
 
     /// <summary>
-    /// La clase <c>NodeInModel</c> representa un modelo de nodo dentro de un flujo de trabajo.
-    /// Hereda de la clase <c>NodeModel</c> e implementa la interfaz <c>IRunnableNode</c>.
+    /// Inicializa una nueva instancia de la clase <see cref="NodeInModel"/> a partir de la definición de un nodo.
     /// </summary>
-    /// <remarks>
-    /// La clase está diseñada para ser utilizada en entornos de diagramación, específicamente dentro de un modelo de flujo de trabajo.
-    /// Se inicializa con un objeto <c>WorkFlowNode</c> que proporciona el identificador único y las coordenadas de posición del nodo.
-    /// </remarks>
-    public  NodeInModel(WorkFlowNode node) : base(node.Id, new Point(node.PosX, node.PosY))
+    /// <param name="node">Definición del nodo (<see cref="WorkFlowNode"/>) que contiene la configuración y posición inicial.</param>
+    public NodeInModel(WorkFlowNode node) : base(node.Id, new Point(node.PosX, node.PosY))
     {
         Node = node;    
     } 

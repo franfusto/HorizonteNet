@@ -29,7 +29,14 @@
 </RadzenCard>
 
 @code {
+    /// <summary>
+    /// Modo de visualización/edición en cascada del diseñador de flujos.
+    /// </summary>
     [CascadingParameter] public DesignerMode DesignerMode { get; set; } = DesignerMode.Show;
+
+    /// <summary>
+    /// Obtiene o establece el modelo del nodo de salida (<see cref="NodeOutModel"/>).
+    /// </summary>
     [Parameter] public NodeOutModel Node { get; set; } = null!;
 
 }

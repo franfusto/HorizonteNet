@@ -28,14 +28,8 @@ public class NodeOutModel : NodeModel,IRunnableNode
 
 
     /// <summary>
-    /// Representa un modelo de salida de nodo dentro de un flujo de trabajo en la aplicación.
-    /// Esta clase extiende de <c>NodeModel</c> e implementa la interfaz <c>IRunnableNode</c>,
-    /// permitiendo su ejecución como parte de un flujo de trabajo.
+    /// Inicializa una nueva instancia de la clase <see cref="NodeOutModel"/> a partir de la definición de un nodo.
     /// </summary>
-    /// <remarks>
-    /// La posición del nodo se inicializa utilizando las coordenadas en las propiedades <c>PosX</c> y <c>PosY</c>
-    /// del objeto <c>WorkFlowNode</c> suministrado.
-    /// </remarks>
     /// <param name="node">
     /// Una instancia de <c>WorkFlowNode</c> que provee la información necesaria para
     /// inicializar el modelo de nodo, incluyendo su identificador único y posición.
