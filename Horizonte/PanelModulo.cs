@@ -65,17 +65,6 @@ public class PanelModulo
     }
 
 
-/*
-    [HorizonteCommand("Horizonte_AssetsMap")]
-    public List<string> AssetsMap()
-    {
-        List<string> list = _assemblyManager.StaticFileRegistry.Files
-            .OrderBy(x => x.Key)
-            .Select(x => $"{x.Key} >> {x.Value}")
-            .ToList();
-        return list;
-    }
-    */
     
     //App
 

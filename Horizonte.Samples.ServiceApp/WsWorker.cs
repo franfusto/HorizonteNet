@@ -7,7 +7,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Horizonte.Samples.ServiceApp;
 
-/// <inheritdoc />
+/// <summary>
+/// Servicio en segundo plano que hospeda y ejecuta una aplicación web ASP.NET Core mínima dentro de Horizonte.
+/// </summary>
+/// <remarks>
+/// Administra el ciclo de vida de la aplicación web del servicio de ejemplo, configurando endpoints para la
+/// ejecución de comandos y diagnóstico, e integrando soporte para Swagger UI según lo definido en <see cref="ServiceConfig"/>.
+/// </remarks>
 public class WsWorker : BackgroundService
 {
     private WebApplication? _app;
@@ -17,7 +23,10 @@ public class WsWorker : BackgroundService
     private ServiceConfig _config = new();
 
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="WsWorker"/>.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios utilizado para resolver dependencias como el logger, el gestor de comandos (<see cref="IHGesCom"/>) y el contexto de configuración (<see cref="IhContext"/>).</param>
     public WsWorker(IServiceProvider serviceProvider)
     {
         _log = serviceProvider?.GetService<ILogger<WsWorker>>();
@@ -25,7 +34,11 @@ public class WsWorker : BackgroundService
         _context = serviceProvider?.GetService<IhContext>();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Ejecuta en segundo plano la aplicación web ASP.NET Core, configurando el enrutamiento de endpoints y la interfaz Swagger si está habilitada.
+    /// </summary>
+    /// <param name="stoppingToken">Token de cancelación que indica el momento en el que el servicio debe detenerse.</param>
+    /// <returns>Una tarea que representa la ejecución en curso del servidor web.</returns>
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var builder = WebApplication.CreateBuilder();
@@ -69,10 +82,13 @@ public class WsWorker : BackgroundService
         _app.MapGet("/assemblies", () => _gesCom?.RunCommand("Horizonte_ListLoadedAssemblies"));
 
         return _app.RunAsync();
-        ;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Inicia el servicio en segundo plano, cargando la configuración <see cref="ServiceConfig"/> desde el contexto de la aplicación.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelación para abortar el inicio del servicio.</param>
+    /// <returns>Una tarea que representa la operación asíncrona de inicio.</returns>
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _config = _context?.Get<ServiceConfig>() ?? new ServiceConfig();
@@ -81,7 +97,11 @@ public class WsWorker : BackgroundService
         return base.StartAsync(cancellationToken);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Detiene el servicio en segundo plano y la aplicación web hospedada si se encuentra en ejecución.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelación para abortar la detención del servicio.</param>
+    /// <returns>Una tarea que representa la operación asíncrona de detención.</returns>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log?.LogInformation("Ending Web Service Worker");

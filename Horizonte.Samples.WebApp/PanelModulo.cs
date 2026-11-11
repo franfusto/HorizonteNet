@@ -36,7 +36,7 @@ public class PanelModulo
     [HorizonteCommand("WebApp_Init")]
     public bool Init()
     {
-        _logger.LogInformation("HWebApp Inciciado");
+        _logger.LogInformation("WebApp Inciciado");
         return true;
     }
 
