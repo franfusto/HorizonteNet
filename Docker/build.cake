@@ -258,6 +258,7 @@ Task("Build")
     {
         Arguments = new ProcessArgumentBuilder()
             .Append("build")
+            .Append("--provenance=false")
             .AppendSwitchQuoted("-t", fullImageTag)
             .Append(".")
     });
