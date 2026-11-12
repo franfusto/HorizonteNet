@@ -236,6 +236,14 @@ Task("Publish-App")
         Information($"Copiando {configFile} a {outputDir}...");
         CopyFileToDirectory(configFile, outputDir);
     }
+
+    var packagesDir = "./packages";
+    var targetPackagesDir = $"{outputDir}/packages";
+    if (DirectoryExists(packagesDir))
+    {
+        Information($"Copiando {packagesDir} a {targetPackagesDir}...");
+        CopyDirectory(packagesDir, targetPackagesDir);
+    }
 });
 
 // Target: Build

@@ -21,6 +21,9 @@ if [ ! -f /home/horizonte/ConsoleApp ] && [ -d /app ]; then
     echo "Inicializando /home/horizonte con los archivos base de la aplicación..."
     mkdir -p /home/horizonte
     cp -a /app/. /home/horizonte/
+elif [ ! -d /home/horizonte/packages ] && [ -d /app/packages ]; then
+    echo "Copiando paquetes base a /home/horizonte/packages..."
+    cp -a /app/packages /home/horizonte/
 fi
 
 # Asegurar propiedad y permisos de ejecución en /home/horizonte

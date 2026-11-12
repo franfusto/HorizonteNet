@@ -34,6 +34,7 @@ ENV ASPNETCORE_URLS=http://+:5000 \
 # Copiar los binarios y configuración de la aplicación a una ruta base inmutable (/app)
 COPY --chown=horizonte:horizonte AppFiles/ /app/
 COPY --chown=horizonte:horizonte horizonte.json /app/
+COPY --chown=horizonte:horizonte packages/ /app/packages/
 
 # Asegurar permisos de ejecución en los binarios base
 RUN chmod -R u+x /app
