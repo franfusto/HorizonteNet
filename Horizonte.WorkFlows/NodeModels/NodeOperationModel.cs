@@ -23,7 +23,7 @@ public class NodeOperationModel : NodeModel,IRunnableNode
     /// <summary>
     /// Mensaje de ejecución asociado al nodo. Se utiliza para proporcionar detalles o registros sobre el proceso de ejecución de un nodo individual.
     /// </summary>
-    public string RunMessage {get; set;}
+    public  string RunMessage {get; set;}
 
     /// <summary>
     /// Evento disparado cuando ocurre un cambio en los puertos.

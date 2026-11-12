@@ -78,7 +78,7 @@ public class PanelModulo
     [HorizonteCommand("WorkFlows_ExecuteWorkFlow", "")]
     public async Task<object?> ExecuteWorkFlow(string workflowName, object message, CancellationToken ctoken, Action<WorkflowEvent>? callback)
     {
-        var workflow = _context.Get<WorkFlowConfig>().WorkFlows.FirstOrDefault(w => w.Name == workflowName);
+        var workflow = _context.Get<WorkFlowConfig>()?.WorkFlows.FirstOrDefault(w => w.Name == workflowName);
         if (workflow == null) throw new Exception("Workflow not found");
         var result = await workflow.RunWorkFlow(_serviceProvider, message, ctoken, callback);
         return result;

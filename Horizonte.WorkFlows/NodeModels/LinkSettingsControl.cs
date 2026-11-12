@@ -26,7 +26,7 @@ public class LinkSettingsControl : ExecutableControl
     /// <summary>
     /// Obtiene la definición del flujo de trabajo asociada al control.
     /// </summary>
-    public WorkFlowDef WorkFlowDef { get; private set; }
+    public WorkFlowDef WorkFlowDef { get; private set; } = new();
 
     /// <summary>
     /// La propiedad `WorkFlowLink` representa un enlace dentro de un flujo de trabajo en el contexto del control de configuración de enlaces.
@@ -36,7 +36,7 @@ public class LinkSettingsControl : ExecutableControl
     /// asociadas con el enlace en un flujo de trabajo. Es de solo lectura desde fuera de la clase, garantizando que solo se pueda modificar internamente,
     /// lo cual proporciona seguridad y control sobre las modificaciones que se realizan.
     /// </remarks>
-    public WorkFlowLink WorkFlowLink { get; private set; }
+    public  WorkFlowLink WorkFlowLink { get; private set; }
 
     /// <summary>
     /// La propiedad <c>Bounds</c> representa el área rectangular correspondiente a las dimensiones del control, de tipo <c>Rectangle</c>.
@@ -50,15 +50,15 @@ public class LinkSettingsControl : ExecutableControl
     /// <summary>
     /// Obtiene el diagrama al cual pertenece y en el cual opera el control de configuración del enlace.
     /// </summary>
-    public Diagram Diagram { get; private set; }
+    public Diagram Diagram { get; private set; } 
 
     /// <summary>
     /// Inicializa una nueva instancia de la clase <see cref="LinkSettingsControl"/> asociada a un enlace de flujo de trabajo.
     /// </summary>
-    /// <param name="LinkDef">Instancia de <see cref="WorkFlowLink"/> que define el enlace del flujo.</param>
-    public LinkSettingsControl(WorkFlowLink LinkDef)
+    /// <param name="linkDef">Instancia de <see cref="WorkFlowLink"/> que define el enlace del flujo.</param>
+    public LinkSettingsControl(WorkFlowLink linkDef)
     {
-        WorkFlowLink = LinkDef;
+        WorkFlowLink = linkDef;
     }
 
     /// <summary>

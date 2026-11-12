@@ -310,10 +310,12 @@ internal sealed class HGesComExecutor<T>(string id, string command, IHGesCom ges
     
     private async Task<T> HandleErrorAsync(T message, Exception ex)
     {
+        if (flowErrorProcessor == null) return message;
         return await gesCom.RunCommandAsync<T>(flowErrorProcessor, [message!, ex]);
     }    
     private async Task<T> HandleCancelAsync(T message)
     {
+        if (flowCancelProcessor == null) return message;
         return await gesCom.RunCommandAsync<T>(flowCancelProcessor, [message!]);
     }
     

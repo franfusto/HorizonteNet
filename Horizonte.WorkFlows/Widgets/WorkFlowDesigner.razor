@@ -508,7 +508,7 @@
         if (string.IsNullOrEmpty(intype) || string.IsNullOrEmpty(inmessage))
             return null;
         // 1. Obtener el objeto Type desde el string
-        Type targetType = Type.GetType(intype);
+        Type? targetType = Type.GetType(intype);
         if (targetType == null)
             throw new ArgumentException($"El tipo '{intype}' no pudo ser encontrado.");
 
@@ -528,8 +528,8 @@
             var inobject = DeserializeInput(_messageType, _inmessage);
             if (inobject == null) throw new Exception("No se pudo deserializar el mensaje de entrada");
             
-            Console.WriteLine("******** Token RunWorkflow.razor: " + _cts.Token.WaitHandle.Handle.ToString());
             //ejecutamos    
+            if(_currentWorkFlowNode is null) throw new Exception("No se pudo obtener el nodo actual");
             var res = await _currentWorkFlowNode.RunWorkFlow(ServiceProvider, inobject, _cts.Token, ProcLogMessge, _runManager);
             //procesa respuesta
             _outmessage = SerializeOutput(res);
