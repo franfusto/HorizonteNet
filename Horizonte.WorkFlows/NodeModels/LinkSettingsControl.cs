@@ -95,9 +95,9 @@ public class LinkSettingsControl : ExecutableControl
     }
 
     /// <summary>
-    /// Obtiene o establece el delegado que se ejecuta cuando se modifica o elimina la condición del enlace.
+    /// Evento que se ejecuta cuando se modifica o elimina la condición del enlace.
     /// </summary>
-    public required Action OnConditionChanged { get; set; }
+    public event Action? OnConditionChanged;
 
     /// <summary>
     /// Modifica la condición de un enlace de flujo de trabajo existente.

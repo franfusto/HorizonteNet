@@ -458,10 +458,7 @@
 
                     if (DesignerMode == DesignerMode.Design)
                     {
-                        var control = new LinkSettingsControl(linkDef)
-                        {
-                            OnConditionChanged = null!
-                        };
+                        var control = new LinkSettingsControl(linkDef);
                         control.OnConditionChanged += HandleConditionChanged;
                         _diagram.Controls.AddFor(link, ControlsType.OnSelection).Add(control);
                     }
@@ -638,7 +635,7 @@
     {
         var curnode = _diagram.Nodes.FirstOrDefault(x => x.Id == executorid);
         if (curnode == null) return;
-        ((IRunnableNode)curnode)?.RunMessage += eventtype+",";
+        ((IRunnableNode)curnode).RunMessage += eventtype+",";
         var x = ((IRunnableNode)curnode).RunMessage;
         curnode.Refresh();
         InvokeAsync(StateHasChanged);
