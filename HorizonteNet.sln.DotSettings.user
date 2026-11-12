@@ -117,6 +117,13 @@
   &lt;Assembly Path="/home/f.fuster/.nuget/packages/porcupine/3.0.7/lib/net8.0/Porcupine.dll" /&gt;
   &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/opentelemetry.api/1.13.1" Loaded="True" /&gt;
   &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/opentelemetry.api/1.15.3" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/10.0.1" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/10.0.10" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/10.0.15" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/10.0.5" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/8.0.10" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/8.0.13" Loaded="True" /&gt;
+  &lt;PhysicalFolder Path="/home/f.fuster/.nuget/packages/microsoft.dotnet.ilcompiler/8.0.7" Loaded="True" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:Boolean x:Key="/Default/Environment/Hierarchy/Build/BuildTool/RecentBuildToolPaths/=_002Fusr_002Fshare_002Fdotnet_002Fsdk_002F7_002E0_002E410_002FMicrosoft_002EBuild_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Int64 x:Key="/Default/Environment/Hierarchy/Build/BuildTool/MsbuildVersion/@EntryValue">1114122</s:Int64>
