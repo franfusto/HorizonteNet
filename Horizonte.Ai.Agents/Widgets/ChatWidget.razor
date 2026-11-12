@@ -176,10 +176,10 @@
     private readonly List<string> _pendingFiles = [];
     private readonly List<ChatTurnViewModel> _turns = [];
 
-    private Hagent _agent ;
+    private Hagent? _agent ;
     protected override void OnInitialized()
     {
-        var cfg = Context.Get<AgentsConfig>();
+        var cfg = Context.Get<AgentsConfig>() ?? new AgentsConfig();
         var agentcfg = cfg.ConfigSet.AgentDefs[1];
         _agent = agentcfg.GetHagent(cfg.ConfigSet);
         base.OnInitialized();
@@ -187,7 +187,7 @@
 
     private async Task<ChatResponse> StubQuery(ChatQuery query)
     {
-        var ret = await _agent.QueryAsync(query);
+        var ret = await _agent!.QueryAsync(query);
         return ret;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)

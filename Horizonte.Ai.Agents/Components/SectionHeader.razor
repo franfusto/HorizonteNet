@@ -20,10 +20,23 @@
     </RadzenStack>
 
 @code {
+    /// <summary>
+    /// Título mostrado en la cabecera de la sección.
+    /// </summary>
     [Parameter] public string Title { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Texto descriptivo para el botón de acción de añadir/crear.
+    /// </summary>
     [Parameter] public string AddText { get; set; } = "Nuevo";
 
+    /// <summary>
+    /// Callback invocado al pulsar el botón de añadir.
+    /// </summary>
     [Parameter] public EventCallback Add { get; set; }
+
+    /// <summary>
+    /// Callback invocado al pulsar el botón de eliminar.
+    /// </summary>
     [Parameter] public EventCallback Delete { get; set; }
 }

@@ -19,13 +19,12 @@ public class AemetConfig
     /// </remarks>
     public string ApiKey { get; set; } = "your_api_key";
 
-    /// Representa la URL base para acceder a los datos abiertos de AEMET.
-    /// La propiedad `BaseUrl` se utiliza para configurar la ruta base en las solicitudes
-    /// a la API de AEMET. Este valor es crítico para establecer la conexión correcta
-    /// con los servicios ofrecidos por la Agencia Estatal de Meteorología (AEMET) en España.
-    /// Valor por defecto: "https://opendata.aemet.es/opendata"
-    /// Esta propiedad es utilizada en la configuración de la instancia de API, asegurando
-    /// que las solicitudes se envíen al endpoint adecuado.
-    /// /
-    public string BaseUrl { get; set; } ="https://opendata.aemet.es/opendata";
+    /// <summary>
+    /// Obtiene o establece la URL base para acceder a los datos abiertos de la API de AEMET OpenData.
+    /// </summary>
+    /// <remarks>
+    /// Se utiliza para configurar la ruta base en las solicitudes HTTP hacia los servicios de la Agencia Estatal de Meteorología (AEMET).
+    /// Valor por defecto: "https://opendata.aemet.es/opendata".
+    /// </remarks>
+    public string BaseUrl { get; set; } = "https://opendata.aemet.es/opendata";
 }

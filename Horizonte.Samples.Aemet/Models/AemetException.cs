@@ -15,6 +15,12 @@ public class AemetException : Exception
     /// </summary>
     public string Descripcion { get; }
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="AemetException"/> con el mensaje de error, código de estado y descripción especificados.
+    /// </summary>
+    /// <param name="mensaje">Mensaje explicativo del error.</param>
+    /// <param name="estado">Código de estado devuelto por el servicio o código de estado HTTP.</param>
+    /// <param name="descripcion">Descripción detallada del error proporcionada por AEMET.</param>
     public AemetException(string mensaje, int estado = 0, string descripcion = "")
         : base(mensaje)
     {
@@ -22,6 +28,13 @@ public class AemetException : Exception
         Descripcion = descripcion;
     }
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="AemetException"/> con el mensaje de error, la excepción interna que causó este error, el código de estado y la descripción especificados.
+    /// </summary>
+    /// <param name="mensaje">Mensaje explicativo del error.</param>
+    /// <param name="innerException">Excepción interna que originó el error actual.</param>
+    /// <param name="estado">Código de estado devuelto por el servicio o código de estado HTTP.</param>
+    /// <param name="descripcion">Descripción detallada del error proporcionada por AEMET.</param>
     public AemetException(string mensaje, Exception innerException, int estado = 0, string descripcion = "")
         : base(mensaje, innerException)
     {

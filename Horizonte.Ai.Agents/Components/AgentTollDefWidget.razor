@@ -172,12 +172,21 @@ else
 }
 
 @code {
+    /// <summary>
+    /// Modelo de definición de la herramienta o tool de agente que se está configurando.
+    /// </summary>
     [Parameter]
     public AgentToolDef? Model { get; set; }
 
+    /// <summary>
+    /// Lista de clientes de IA disponibles en el sistema.
+    /// </summary>
     [Parameter]
     public ClientDef[] ClientDefs { get; set; } = [];
 
+    /// <summary>
+    /// Lista de configuraciones RAG disponibles en el sistema.
+    /// </summary>
     [Parameter]
     public RaGdef[] RagDefs { get; set; } = [];
 

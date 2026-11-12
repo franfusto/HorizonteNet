@@ -29,9 +29,11 @@ public class PanelModulo
 
 
     /// <summary>
-    /// La clase <c>PanelModulo</c> representa un módulo dentro del espacio de muestras de Horizonte, englobado en el contexto de "Aemet".
-    /// Se encarga de inicializar y configurar widgets específicos, así como de ofrecer predicciones meteorológicas para comunidades autónomas.
+    /// Inicializa una nueva instancia de la clase <see cref="PanelModulo"/>.
     /// </summary>
+    /// <param name="logger">El registrador de eventos para el módulo.</param>
+    /// <param name="context">El contexto de ejecución de Horizonte para acceso a configuraciones.</param>
+    /// <param name="credManager">El gestor de credenciales de Horizonte para resolver la clave de API configurada.</param>
     public PanelModulo(ILogger<PanelModulo> logger, IhContext context, IHCredManager credManager)
     {
         _logger = logger;
@@ -41,6 +43,10 @@ public class PanelModulo
 
     // module
 
+    /// <summary>
+    /// Inicializa el módulo Horizonte.Samples.Aemet cargando la configuración y creando el cliente de AEMET.
+    /// </summary>
+    /// <returns><c>true</c> si el módulo se inicializó correctamente.</returns>
     [HorizonteRole("init")]
     [HorizonteCommand("Aemet_Init")]
     public bool Init()

@@ -171,9 +171,15 @@ else
 }
 
 @code {
+    /// <summary>
+    /// Modelo de definición del cliente de IA que se está configurando.
+    /// </summary>
     [Parameter]
     public ClientDef? Model { get; set; }
 
+    /// <summary>
+    /// Lista de definiciones de servidores disponibles para enlazar con el cliente.
+    /// </summary>
     [Parameter]
     public ServerDef[] ServerDefs { get; set; } = [];
 

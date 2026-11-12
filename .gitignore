@@ -4,4 +4,5 @@ obj/
 .idea/
 .june/
 Docker/AppFiles/*
+Docker/Packages/*
 !Docker/AppFiles/.gitkeep

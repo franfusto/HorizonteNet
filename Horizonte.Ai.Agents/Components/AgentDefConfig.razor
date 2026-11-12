@@ -264,33 +264,26 @@ else
             </RadzenStack>
         </RadzenFieldset>
 
-        <DictionaryEditor Title="Settings del agente"
-                          Rows="_settingRows"
-                          Add="AddSetting"
-                          Remove="RemoveSetting"
-                          Sync="SyncSettings" />
 
-        <DictionaryEditor Title="Settings de archivos"
-                          Rows="_fileSettingRows"
-                          Add="AddFileSetting"
-                          Remove="RemoveFileSetting"
-                          Sync="SyncFileSettings" />
-
-        <DictionaryEditor Title="Settings de ejecución"
-                          Rows="_executionSettingRows"
-                          Add="AddExecutionSetting"
-                          Remove="RemoveExecutionSetting"
-                          Sync="SyncExecutionSettings" />
     </RadzenStack>
 }
 
 @code {
+    /// <summary>
+    /// Modelo de definición del agente de IA que se está configurando.
+    /// </summary>
     [Parameter]
     public AgentDef? Model { get; set; }
 
+    /// <summary>
+    /// Lista de clientes de IA disponibles para asociar al agente.
+    /// </summary>
     [Parameter]
     public ClientDef[] ClientDefs { get; set; } = [];
 
+    /// <summary>
+    /// Lista de herramientas o tools disponibles para asociar al agente.
+    /// </summary>
     [Parameter]
     public AgentToolDef[] ToolDefs { get; set; } = [];
 

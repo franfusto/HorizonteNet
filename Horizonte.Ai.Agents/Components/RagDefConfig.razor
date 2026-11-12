@@ -201,9 +201,15 @@ else
 }
 
 @code {
+    /// <summary>
+    /// Modelo de definición de la configuración RAG (Retrieval-Augmented Generation).
+    /// </summary>
     [Parameter]
     public RaGdef? Model { get; set; }
 
+    /// <summary>
+    /// Lista de clientes de IA disponibles para asociar como cliente embedder.
+    /// </summary>
     [Parameter]
     public ClientDef[] ClientDefs { get; set; } = [];
 

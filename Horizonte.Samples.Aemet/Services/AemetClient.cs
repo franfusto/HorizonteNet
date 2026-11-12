@@ -27,27 +27,58 @@ public class AemetClient : IAemetClient, IDisposable
     private readonly bool _disposeHttpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
+    /// <inheritdoc/>
     public AemetOptions Options { get; }
 
+    /// <inheritdoc/>
     public IAvisosCapService AvisosCap { get; }
+
+    /// <inheritdoc/>
     public IIndicesIncendiosService IndicesIncendios { get; }
+
+    /// <inheritdoc/>
     public IMaestroService Maestro { get; }
+
+    /// <inheritdoc/>
     public IMapasYGraficosService MapasYGraficos { get; }
+
+    /// <inheritdoc/>
     public IObservacionConvencionalService ObservacionConvencional { get; }
+
+    /// <inheritdoc/>
     public IPrediccionesEspecificasService PrediccionesEspecificas { get; }
+
+    /// <inheritdoc/>
     public IPrediccionesTextoService PrediccionesTexto { get; }
+
+    /// <inheritdoc/>
     public IPrediccionMaritimaService PrediccionMaritima { get; }
+
+    /// <inheritdoc/>
     public IProductosClimatologicosService ProductosClimatologicos { get; }
+
+    /// <inheritdoc/>
     public IRedesEspecialesService RedesEspeciales { get; }
+
+    /// <inheritdoc/>
     public IRedRadaresService RedRadares { get; }
+
+    /// <inheritdoc/>
     public IRedRayosService RedRayos { get; }
+
+    /// <inheritdoc/>
     public IInformacionSateliteService InformacionSatelite { get; }
+
+    /// <inheritdoc/>
     public IValoresClimatologicosService ValoresClimatologicos { get; }
+
+    /// <inheritdoc/>
     public IAntartidaService Antartida { get; }
 
     /// <summary>
     /// Crea una nueva instancia de <see cref="AemetClient"/> con la clave de API indicada.
     /// </summary>
+    /// <param name="apiKey">Clave de API para autenticación en AEMET OpenData.</param>
     public AemetClient(string apiKey) : this(new AemetOptions { ApiKey = apiKey })
     {
     }
@@ -55,13 +86,17 @@ public class AemetClient : IAemetClient, IDisposable
     /// <summary>
     /// Crea una nueva instancia de <see cref="AemetClient"/> con las opciones indicadas.
     /// </summary>
+    /// <param name="options">Opciones de configuración para el cliente.</param>
     public AemetClient(AemetOptions options) : this(new HttpClient(), options, disposeHttpClient: true)
     {
     }
 
     /// <summary>
-    /// Crea una nueva instancia de <see cref="AemetClient"/> usando un <see cref="HttpClient"/> personalizado.
+    /// Crea una nueva instancia de <see cref="AemetClient"/> usando un <see cref="HttpClient"/> personalizado y las opciones indicadas.
     /// </summary>
+    /// <param name="httpClient">Instancia de <see cref="HttpClient"/> a reutilizar.</param>
+    /// <param name="options">Opciones de configuración del cliente.</param>
+    /// <param name="disposeHttpClient">Indica si se debe liberar el <see cref="HttpClient"/> al desechar el cliente.</param>
     public AemetClient(HttpClient httpClient, AemetOptions options, bool disposeHttpClient = false)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -310,6 +345,9 @@ public class AemetClient : IAemetClient, IDisposable
         }
     }
 
+    /// <summary>
+    /// Libera los recursos administrados y no administrados utilizados por la instancia de <see cref="AemetClient"/>.
+    /// </summary>
     public void Dispose()
     {
         if (_disposeHttpClient)
