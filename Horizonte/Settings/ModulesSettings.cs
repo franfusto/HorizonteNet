@@ -38,6 +38,12 @@ public class ModulesSettings
     /// </remarks>
     public List<NugetFolderItem> NugetFolders { get; set; } = new List<NugetFolderItem>();
 
+
+    /// <summary>
+    /// Especifica si se debe utilizar el directorio de paquetes NuGet del usuario.
+    /// </summary>
+    public bool UseUserNugetFolder { get; set; } = false;
+    
     /// <summary>
     /// Obtiene o establece la lista ordenada de frameworks .NET por prioridad de resolución (ej. "net10.0", "net9.0", "net8.0").
     /// </summary>

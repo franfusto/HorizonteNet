@@ -130,8 +130,8 @@ public class HAssemblyManager : IhAssemblyManager
     {
         try
         {
-            if(args.Name.StartsWith("ℛ*")) return null; // ignoramos ensamblados internos
-            
+            if (args.Name.StartsWith("ℛ*")) return null; // ignoramos ensamblados internos
+
             var requesterDomain = sender is AssemblyLoadContext senderAlc
                 ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(_domains, senderAlc)
                 : Const.DefaultDomainName;
@@ -183,6 +183,7 @@ public class HAssemblyManager : IhAssemblyManager
                     name,
                     version);
             }
+
 //
             var packageName = GetPackageName(name);
 
@@ -1706,15 +1707,18 @@ public class HAssemblyManager : IhAssemblyManager
 
     private void SetUpAssemblyPaths()
     {
-        string systemNugetPackagesPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget",
-            "packages");
-
-        if (Directory.Exists(systemNugetPackagesPath))
+        if (_settings.UseUserNugetFolder)
         {
-            _searchPaths.Add(systemNugetPackagesPath);
-            _installFolder = systemNugetPackagesPath;
+            string systemNugetPackagesPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".nuget",
+                "packages");
+
+            if (Directory.Exists(systemNugetPackagesPath))
+            {
+                _searchPaths.Add(systemNugetPackagesPath);
+                _installFolder = systemNugetPackagesPath;
+            }
         }
 
         foreach (var folderItem in _settings.NugetFolders.OrderBy(x => x.Order))
@@ -1951,159 +1955,160 @@ public class HAssemblyManager : IhAssemblyManager
         }
     }
 
-  private void MapAssemblyToPackageFromAssembly(Assembly assembly)
+    private void MapAssemblyToPackageFromAssembly(Assembly assembly)
+    {
+        var assemblyKey = assembly.FullName
+                          ?? assembly.GetName().Name
+                          ?? assembly.Location;
+
+        if (string.IsNullOrWhiteSpace(assemblyKey))
+            return;
+
+        lock (_assemblyToPackageMapLock)
         {
-            var assemblyKey = assembly.FullName
-                              ?? assembly.GetName().Name
-                              ?? assembly.Location;
-
-            if (string.IsNullOrWhiteSpace(assemblyKey))
-                return;
-
-            lock (_assemblyToPackageMapLock)
+            if (_processedAssemblyMappingDefinitions.Contains(assemblyKey) ||
+                _processingAssemblyMappingDefinitions.Contains(assemblyKey))
             {
-                if (_processedAssemblyMappingDefinitions.Contains(assemblyKey) ||
-                    _processingAssemblyMappingDefinitions.Contains(assemblyKey))
-                {
-                    return;
-                }
-
-                _processingAssemblyMappingDefinitions.Add(assemblyKey);
+                return;
             }
 
-            var mappingScanCompleted = false;
+            _processingAssemblyMappingDefinitions.Add(assemblyKey);
+        }
+
+        var mappingScanCompleted = false;
+
+        try
+        {
+            IEnumerable<Type> types;
 
             try
             {
-                IEnumerable<Type> types;
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.OfType<Type>();
 
-                try
+                _logger.LogDebug(
+                    ex,
+                    "El ensamblado {AssemblyName} no pudo cargar todos sus tipos al buscar mapeos de paquetes. Se procesarán los tipos disponibles.",
+                    assembly.FullName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(
+                    ex,
+                    "No se pudieron inspeccionar los tipos del ensamblado {AssemblyName} para buscar mapeos de paquetes.",
+                    assembly.FullName);
+
+                return;
+            }
+
+            var typeList = types.ToArray();
+
+            if (typeList.Length == 0)
+                return;
+
+            foreach (var type in typeList)
+            {
+                var fields = type.GetFields(
+                    BindingFlags.Public |
+                    BindingFlags.NonPublic |
+                    BindingFlags.Static);
+
+                foreach (var field in fields)
                 {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    types = ex.Types.OfType<Type>();
+                    if (!HasAssemblyMappingDefinition(field))
+                        continue;
 
-                    _logger.LogDebug(
-                        ex,
-                        "El ensamblado {AssemblyName} no pudo cargar todos sus tipos al buscar mapeos de paquetes. Se procesarán los tipos disponibles.",
-                        assembly.FullName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(
-                        ex,
-                        "No se pudieron inspeccionar los tipos del ensamblado {AssemblyName} para buscar mapeos de paquetes.",
-                        assembly.FullName);
+                    object? value;
 
-                    return;
-                }
-
-                var typeList = types.ToArray();
-
-                if (typeList.Length == 0)
-                    return;
-
-                foreach (var type in typeList)
-                {
-                    var fields = type.GetFields(
-                        BindingFlags.Public |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Static);
-
-                    foreach (var field in fields)
+                    try
                     {
-                        if (!HasAssemblyMappingDefinition(field))
-                            continue;
+                        value = field.GetValue(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "No se pudo leer el campo de mapeo {FieldName} del tipo {TypeName} en el ensamblado {AssemblyName}.",
+                            field.Name,
+                            type.FullName,
+                            assembly.FullName);
 
-                        object? value;
+                        continue;
+                    }
 
-                        try
-                        {
-                            value = field.GetValue(null);
-                        }
-                        catch (Exception ex)
+                    if (value is not IEnumerable<KeyValuePair<string, string>> mappings)
+                    {
+                        _logger.LogWarning(
+                            "El campo {FieldName} del tipo {TypeName} está marcado con {AttributeName}, pero no contiene un diccionario compatible con string/string.",
+                            field.Name,
+                            type.FullName,
+                            nameof(AssemblyMappingDefinition));
+
+                        continue;
+                    }
+
+                    foreach (var mapping in mappings)
+                    {
+                        var assemblyName = mapping.Key;
+                        var packageName = mapping.Value;
+
+                        if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
                         {
                             _logger.LogWarning(
-                                ex,
-                                "No se pudo leer el campo de mapeo {FieldName} del tipo {TypeName} en el ensamblado {AssemblyName}.",
-                                field.Name,
+                                "Se ha ignorado un mapeo inválido en {TypeName}.{FieldName}: AssemblyName='{AssemblyName}', PackageName='{PackageName}'.",
                                 type.FullName,
-                                assembly.FullName);
+                                field.Name,
+                                assemblyName,
+                                packageName);
 
                             continue;
                         }
 
-                        if (value is not IEnumerable<KeyValuePair<string, string>> mappings)
+                        lock (_assemblyToPackageMapLock)
                         {
-                            _logger.LogWarning(
-                                "El campo {FieldName} del tipo {TypeName} está marcado con {AttributeName}, pero no contiene un diccionario compatible con string/string.",
-                                field.Name,
-                                type.FullName,
-                                nameof(AssemblyMappingDefinition));
-
-                            continue;
-                        }
-
-                        foreach (var mapping in mappings)
-                        {
-                            var assemblyName = mapping.Key;
-                            var packageName = mapping.Value;
-
-                            if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+                            if (_assemblyToPackageMap.TryGetValue(assemblyName, out var currentPackageName))
                             {
-                                _logger.LogWarning(
-                                    "Se ha ignorado un mapeo inválido en {TypeName}.{FieldName}: AssemblyName='{AssemblyName}', PackageName='{PackageName}'.",
-                                    type.FullName,
-                                    field.Name,
+                                _logger.LogInformation(
+                                    "El mapeo para el ensamblado {AssemblyName} ya existe como {CurrentPackageName}. Se mantiene el mapeo actual y se ignora {PackageName} definido en {MappingAssemblyName}.",
                                     assemblyName,
-                                    packageName);
+                                    currentPackageName,
+                                    packageName,
+                                    assembly.FullName);
 
                                 continue;
                             }
 
-                            lock (_assemblyToPackageMapLock)
-                            {
-                                if (_assemblyToPackageMap.TryGetValue(assemblyName, out var currentPackageName))
-                                {
-                                    _logger.LogInformation(
-                                        "El mapeo para el ensamblado {AssemblyName} ya existe como {CurrentPackageName}. Se mantiene el mapeo actual y se ignora {PackageName} definido en {MappingAssemblyName}.",
-                                        assemblyName,
-                                        currentPackageName,
-                                        packageName,
-                                        assembly.FullName);
+                            _assemblyToPackageMap[assemblyName] = packageName;
 
-                                    continue;
-                                }
-
-                                _assemblyToPackageMap[assemblyName] = packageName;
-
-                                _logger.LogInformation(
-                                    "Añadido mapeo de ensamblado {AssemblyName} a paquete {PackageName} desde {MappingAssemblyName}.",
-                                    assemblyName,
-                                    packageName,
-                                    assembly.FullName);
-                            }
+                            _logger.LogInformation(
+                                "Añadido mapeo de ensamblado {AssemblyName} a paquete {PackageName} desde {MappingAssemblyName}.",
+                                assemblyName,
+                                packageName,
+                                assembly.FullName);
                         }
                     }
                 }
-
-                mappingScanCompleted = true;
             }
-            finally
-            {
-                lock (_assemblyToPackageMapLock)
-                {
-                    _processingAssemblyMappingDefinitions.Remove(assemblyKey);
 
-                    if (mappingScanCompleted)
-                    {
-                        _processedAssemblyMappingDefinitions.Add(assemblyKey);
-                    }
+            mappingScanCompleted = true;
+        }
+        finally
+        {
+            lock (_assemblyToPackageMapLock)
+            {
+                _processingAssemblyMappingDefinitions.Remove(assemblyKey);
+
+                if (mappingScanCompleted)
+                {
+                    _processedAssemblyMappingDefinitions.Add(assemblyKey);
                 }
             }
         }
+    }
+
     private bool HasAssemblyMappingDefinition(FieldInfo field)
     {
         try
@@ -2151,5 +2156,4 @@ public class HAssemblyManager : IhAssemblyManager
             ? packageName
             : mapping.Key;
     }
-    
 }

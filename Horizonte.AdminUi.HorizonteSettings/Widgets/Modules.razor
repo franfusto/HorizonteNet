@@ -16,6 +16,10 @@
     <ModulesGrid ModuleSettings="_modules" Domains="_domains" @ref="_modulesGrid"/>
     <NugetServersGrid NugetServersSettings="_nugetServers" @ref="_nugetServersGrid"/>
     <NugetFoldersGrid NugetFolderSettings="_nugetFolders" @ref="_nugetFoldersGrid"/>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-my-2">
+        <RadzenCheckBox @bind-Value="_useUserNugetFolder" Name="UseUserNugetFolder" />
+        <RadzenLabel Text="Usar carpeta NuGet de usuario" Component="UseUserNugetFolder" />
+    </RadzenStack>
     <FrameworkPrioritiesGrid FrameworkPriorities="_frameworkPriorities" @ref="_frameworkPrioritiesGrid"/>
     <ForcedPackagesGrid ForcedPackages="_forcedPackages" Domains="_domains" @ref="_forcedPackagesGrid"/>
     <AssembliesMapping MappingDict="_mappingdict" @ref="_assembliesMapping"/>
@@ -31,6 +35,7 @@
     private List<NugetServerItem> _nugetServers = new ();
     private NugetFoldersGrid _nugetFoldersGrid = new();
     private List<NugetFolderItem> _nugetFolders = new ();
+    private bool _useUserNugetFolder;
     private FrameworkPrioritiesGrid _frameworkPrioritiesGrid = new();
     private List<string> _frameworkPriorities = new();
     private ForcedPackagesGrid _forcedPackagesGrid = new();
@@ -50,6 +55,7 @@
         _modulesSettings.Domains = _domains;
         _modulesSettings.NugetServers = _nugetServersGrid.NugetServersSettings;
         _modulesSettings.NugetFolders = _nugetFoldersGrid.NugetFolderSettings;
+        _modulesSettings.UseUserNugetFolder = _useUserNugetFolder;
         _modulesSettings.FrameworkPriorities = _frameworkPrioritiesGrid.FrameworkPriorities;
         _modulesSettings.ForcedPackages = _forcedPackagesGrid.ForcedPackages;
         _modulesSettings.AssemblyToPackageMap = _assembliesMapping.MappingDict;
@@ -63,6 +69,7 @@
         _domains = _modulesSettings.Domains;
         _nugetServers = _modulesSettings.NugetServers;
         _nugetFolders = _modulesSettings.NugetFolders;
+        _useUserNugetFolder = _modulesSettings.UseUserNugetFolder;
         _frameworkPriorities = _modulesSettings.FrameworkPriorities;
         _forcedPackages = _modulesSettings.ForcedPackages;
         _mappingdict = _modulesSettings.AssemblyToPackageMap;
