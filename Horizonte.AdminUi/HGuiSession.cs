@@ -50,10 +50,11 @@ public class HGuiSession
 
 
     /// <summary>
-    /// Clase HGuiSession se encarga de gestionar la sesión GUI dentro del sistema Horizonte.
-    /// Esta clase gestiona el estado de la sesión, incluyendo la verificación del estado de registro de usuario
-    /// y las operaciones de inicio y cierre de sesión.
+    /// Inicializa una nueva instancia de la clase <see cref="HGuiSession"/> con las dependencias requeridas.
     /// </summary>
+    /// <param name="gesCom">Instancia de <see cref="IHGesCom"/> para la gestión y ejecución de comandos.</param>
+    /// <param name="context">Instancia de <see cref="IhContext"/> para el acceso al contexto y configuraciones del sistema.</param>
+    /// <param name="logger">Instancia de <see cref="ILogger{TCategoryName}"/> para el registro de eventos de sesión.</param>
     public HGuiSession(IHGesCom gesCom, IhContext context, ILogger<HGuiSession> logger)
     {
         _hGuiSettings = context.Get<HGuiSettings>() ?? new HGuiSettings();

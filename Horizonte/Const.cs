@@ -6,12 +6,9 @@ namespace Horizonte;
 /// </summary>
 public static class Const
 {
-    /// `ScriptDomainName` es una constante de tipo cadena que define el nombre del dominio utilizado
-    /// por defecto para identificar un contexto de ejecución de scripts dentro de la plataforma Horizonte.
-    /// Su valor es "Script".
-    /// Es utilizada principalmente para comparar y determinar si un dominio de ensamblado es de tipo
-    /// script al verificar su coincidencia con este nombre predeterminado de dominio de scripts.
-    /// /
+    /// <summary>
+    /// Define el nombre del dominio utilizado por defecto para identificar un contexto de ejecución de scripts en Horizonte ("Script").
+    /// </summary>
     public const string ScriptDomainName = "Script";
 
     /// <summary>

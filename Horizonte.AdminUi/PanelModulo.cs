@@ -36,12 +36,10 @@ public class PanelModulo
     private HGuiSettings? _settings;
 
     /// <summary>
-    /// Clase <c>PanelModulo</c> que representa un módulo específico dentro del entorno de administración de la interfaz de usuario de Horizonte.
+    /// Inicializa una nueva instancia de la clase <see cref="PanelModulo"/>.
     /// </summary>
-    /// <remarks>
-    /// La clase está decorada con el atributo <c>HorizonteModule</c> que especifica el nombre del módulo como "Horizonte.AdminUi". Provee varios comandos y funciones
-    /// para inicializar y gestionar partes de la interfaz de usuario, tales como configurar páginas, editar el menú y configurar la red.
-    /// </remarks>
+    /// <param name="logger">El registrador de eventos para el módulo.</param>
+    /// <param name="context">El contexto de ejecución de Horizonte.</param>
     public PanelModulo(ILogger<PanelModulo> logger, IhContext context)
     {
         _logger = logger;
@@ -80,7 +78,7 @@ public class PanelModulo
     /// <summary>
     /// Representa la definición de un widget utilizado para la edición de menús en la interfaz de usuario.
     /// </summary>
-    /// <return>Un objeto <see cref="WidgetDef"/> que contiene el tipo <see cref="MenuEditor"/> y parámetros opcionales para la configuración del widget.</return>
+    /// <returns>Un objeto <see cref="WidgetDef"/> que contiene el tipo <see cref="MenuEditor"/> y parámetros opcionales para la configuración del widget.</returns>
     [HorizonteRole("configpage")]
     [HorizonteCommand("HorizonteGui_MenuEditor", "Menu Editor")]
     public WidgetDef MenuEditor() => new WidgetDef() { Type = typeof(MenuEditor), Parameters = null };
@@ -97,9 +95,9 @@ public class PanelModulo
 
 
     /// <summary>
-    /// 
+    /// Obtiene la definición de widget para la configuración de protección y contraseña de la interfaz gráfica.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Un objeto <see cref="WidgetDef"/> configurado para el componente <see cref="ProtectApp"/>.</returns>
     [HorizonteRole("configpage")]
     [HorizonteCommand("HorizonteGui_ProtectConfig", "")]
     public WidgetDef ProtectConfig() => new WidgetDef() { Type = typeof(ProtectApp), Parameters = null };
@@ -132,7 +130,7 @@ public class PanelModulo
     /// Renderiza un fragmento de interfaz de usuario basándose en la definición de widget proporcionada.
     /// </summary>
     /// <param name="widgetDef">Definición del widget que contiene el tipo y cualquier parámetro necesario para el renderizado.</param>
-    /// <return>Un fragmento de renderizado que representa el widget definido.</return>
+    /// <returns>Un fragmento de renderizado que representa el widget definido.</returns>
     [HorizonteCommand("HorizonteGui_RenderWidget",
         description: "Renderiza un widget en base a un WindgetDef proporcionado")]
     public RenderFragment RenderWidget(WidgetDef widgetDef) => (builder) =>

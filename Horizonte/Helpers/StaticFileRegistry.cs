@@ -67,11 +67,13 @@ public class StaticFileRegistry
         get => _files;
     }
 
+    /// <summary>
+    /// Registra los directorios de contenido estático ("Content" o "staticwebassets") pertenecientes a un paquete NuGet específico.
+    /// </summary>
     /// <param name="packagepath">Ruta del paquete desde donde se intentarán identificar y registrar
-        /// los directorios. Debe ser una ruta válida que apunte a un archivo o directorio existente.
-        /// Si la ruta es inválida, nula o vacía, no se realizará ninguna acción.</param>
-        /// <param name="domainName">Dominio lógico/ALC donde se ha cargado el paquete.</param>
-        public void RegisterPackageDirectory(string packagepath, string? domainName = null)
+    /// los directorios. Debe ser una ruta válida que apunte a un archivo o directorio existente.</param>
+    /// <param name="domainName">Dominio lógico/ALC donde se ha cargado el paquete.</param>
+    public void RegisterPackageDirectory(string packagepath, string? domainName = null)
         {
             // Validar que el path no sea nulo o vacío
             if (string.IsNullOrWhiteSpace(packagepath) || (!File.Exists(packagepath) && !Directory.Exists(packagepath)))

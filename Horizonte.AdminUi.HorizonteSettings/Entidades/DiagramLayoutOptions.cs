@@ -27,10 +27,11 @@ public sealed class DiagramLayoutOptions
     /// </remarks>
     public double NodeHeight { get; init; } = 60;
 
+    /// <summary>
     /// Propiedad que define la separación entre nodos en un diagrama.
     /// Se utiliza para establecer la distancia horizontal o vertical mínima entre nodos adyacentes en la disposición del diagrama.
     /// Un valor mayor incrementará el espacio entre nodos, mientras que un valor menor los acercará.
-    /// /
+    /// </summary>
     public double NodeSeparation { get; init; } = 50;
 
     /// <summary>
@@ -40,13 +41,10 @@ public sealed class DiagramLayoutOptions
     /// </summary>
     public double LayerSeparation { get; init; } = 80;
 
+    /// <summary>
     /// Representa la longitud ideal de una arista dentro de un diagrama en el contexto de las opciones de diseño de diagramas.
-    /// Esta propiedad se utiliza para determinar el espaciamiento óptimo entre nodos cuando se dibujan aristas que los conectan,
-    /// con el fin de mejorar la claridad y organización del diagrama.
-    /// La longitud ideal de una arista puede influir en el aspecto visual del diagrama, afectando cómo se distribuyen los nodos
-    /// y cómo se visualizan las conexiones entre ellos. Un valor adecuado para esta propiedad puede ayudar a minimizar el solapamiento
-    /// de aristas y mejorar la legibilidad del diagrama.
-    /// /
+    /// Esta propiedad se utiliza para determinar el espaciamiento óptimo entre nodos cuando se dibujan aristas que los conectan.
+    /// </summary>
     public double IdealEdgeLength { get; init; } = 120;
 
     /// <summary>
@@ -66,12 +64,8 @@ public sealed class DiagramLayoutOptions
     /// </remarks>
     public double OffsetY { get; init; } = 50;
 
+    /// <summary>
     /// Indica si se deben incluir enlaces a sí mismos (self-links) en el diseño del diagrama.
-    /// Los enlaces a sí mismos son conexiones en las que el nodo de origen y el nodo de destino
-    /// son el mismo. Esta propiedad permite controlar si se deben considerar tales conexiones al
-    /// establecer el diseño del diagrama.
-    /// Tipo de dato: booleano.
-    /// Valor por defecto: depende del contexto de uso donde se inicialice la propiedad.
-    /// /
+    /// </summary>
     public bool IncludeSelfLinks { get; init; }
 }

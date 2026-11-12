@@ -23,6 +23,9 @@ else
 
 @code {
 
+    /// <summary>
+    /// EventCallback invocado cuando finaliza la lectura y carga del archivo, devolviendo el nombre del archivo y su contenido en bytes.
+    /// </summary>
     [Parameter] public EventCallback<Tuple<string, byte[]>> OnMultipleOfThree { get; set; }
 
     private const int Buffersize = 1024 * 100 * 1000;

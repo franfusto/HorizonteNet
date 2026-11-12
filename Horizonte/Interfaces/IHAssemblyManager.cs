@@ -64,7 +64,7 @@ public interface IhAssemblyManager
     /// Descarga un dominio específico de la aplicación.
     /// </summary>
     /// <param name="domainName">El nombre del dominio que se desea descargar.</param>
-    /// <return>Una tarea que representa la operación asincrónica de descarga del dominio.</return>
+    /// <returns>Una tarea que representa la operación asincrónica de descarga del dominio.</returns>
     public Task UnloadDomain(string domainName);
 
     /// <summary>
@@ -97,9 +97,9 @@ public interface IhAssemblyManager
     /// <param name="domainName">
     /// El nombre del dominio que se desea recargar.
     /// </param>
-    /// <return>
+    /// <returns>
     /// Un objeto <see cref="Task"/> que representa la operación asincrónica de recarga del dominio.
-    /// </return>
+    /// </returns>
     public Task ReloadDomain(string domainName);
 
 

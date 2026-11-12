@@ -10,15 +10,9 @@ namespace Horizonte.Settings;
 /// </remarks>
 public class NugetFolderItem
 {
-    /// La propiedad `Folder` representa la ubicación del directorio asociada con un elemento de Nuget dentro de la configuración de módulos.
-    /// Esta propiedad es utilizada principalmente para especificar el directorio donde se almacenan los paquetes Nuget, y puede ser clave
-    /// para la instalación y gestión de dichos paquetes en la aplicación.
-    /// En el contexto de gestión de ensamblados, como se usa en `HAssemblyManager`, `Folder` es parte del proceso para determinar rutas de búsqueda
-    /// y la carpeta de instalación para los paquetes Nuget. Asegura que el directorio existe y organiza las rutas de búsqueda en base a
-    /// la configuración especificada en `ModulesSettings`.
-    /// El uso correcto de `Folder` es importante para mantener la estructura de directorios adecuada y para que el sistema pueda acceder
-    /// a los recursos Nuget necesarios sin inconvenientes.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la ruta del directorio local donde se almacenan o buscan paquetes NuGet.
+    /// </summary>
     public string Folder { get; set; } = string.Empty;
 
     /// <summary>
@@ -29,10 +23,9 @@ public class NugetFolderItem
     /// </remarks>
     public string Name { get; set; } = string.Empty;
 
-    /// La propiedad "Order" indica el orden de prioridad que se debe asignar a un elemento dentro de una colección, como puede ser una lista de servidores NuGet o carpetas NuGet.
-    /// Esta propiedad es utilizada para determinar el orden en el que se procesan o se muestran los elementos.
-    /// Un valor numérico más bajo generalmente indicará una mayor prioridad en el orden de manejo.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el orden de prioridad asignado a este directorio NuGet al resolver dependencias.
+    /// </summary>
     public int Order { get; set; } = 0;
 
     /// <summary>

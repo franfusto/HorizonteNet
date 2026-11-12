@@ -1,20 +1,16 @@
 namespace Horizonte;
 
-/// La clase SymLinkDef representa una definición de enlace simbólico en un sistema de archivos.
-/// Un enlace simbólico es una referencia que apunta a otro archivo o directorio en el sistema.
-/// Esta clase encapsula la información necesaria para definir un enlace simbólico incluyendo:
-/// - La ruta fuente (`Source`), que indica el archivo o directorio original al que se dirige el enlace.
-/// - La ruta de destino (`Destination`), que especifica la ubicación del nuevo enlace simbólico.
-/// - Un indicador (`IsDirecory`) para determinar si el enlace apunta a un directorio.
-/// - Un indicador (`HardCoded`) que determina si la definición del enlace es fija o puede ser modificada.
-/// /
+/// <summary>
+/// Representa la definición y configuración de un enlace simbólico en el sistema de archivos.
+/// </summary>
+/// <remarks>
+/// Encapsula la ruta origen, el destino, si se trata de un directorio y si está configurado de forma estática en la aplicación.
+/// </remarks>
 public class SymLinkDef
 {
-    /// La propiedad `Source` representa la ubicación de origen en el sistema de archivos para una definición de enlace simbólico.
-    /// En el contexto de enlaces simbólicos, esta propiedad almacena el camino del directorio o archivo desde donde el enlace simbólico
-    /// apunta. Es una cadena de texto que generalmente contiene una ruta relativa o absoluta. Se utiliza para especificar de dónde debe
-    /// comenzar el enlace simbólico al crear o verificar enlaces en el sistema.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la ruta de origen en el sistema de archivos a la que apunta el enlace simbólico.
+    /// </summary>
     public string  Source { get; set; } = string.Empty;
 
     /// <summary>
@@ -25,21 +21,13 @@ public class SymLinkDef
     /// </summary>
     public string Destination { get; set; } = string.Empty;
 
-    /// Propiedad que indica si el enlace simbólico está destinado a un directorio.
-    /// Esta propiedad es de tipo booleano y se utiliza para determinar si el destino del enlace simbólico tratado debe ser interpretado como un directorio.
-    /// Valor por defecto: `false`.
-    /// /
+    /// <summary>
+    /// Obtiene o establece si el enlace simbólico corresponde a un directorio (<c>true</c>) o a un archivo (<c>false</c>).
+    /// </summary>
     public bool IsDirecory { get; set; } = false;
 
-    /// Propiedad que indica si el enlace simbólico es predefinido o fijo en el sistema.
-    /// En el contexto de la clase `SymLinkDef`, esta propiedad se utiliza para señalar
-    /// si el enlace simbólico fue determinado de forma explícita, es decir,
-    /// configurado manualmente o a través de un fichero de configuración estática,
-    /// en contraposición a aquellos enlaces que son generados o resueltos
-    /// dinámicamente durante la ejecución del programa.
-    /// La propiedad se establece como `true` por defecto, lo que implica que, a menos
-    /// que se especifique lo contrario, los enlaces simbólicos se consideran codificados
-    /// de forma estricta.
-    /// /
+    /// <summary>
+    /// Obtiene o establece si la definición del enlace simbólico está predefinida estáticamente en el código (<c>true</c> por defecto).
+    /// </summary>
     public bool HardCoded { get; set; } = true;
 }

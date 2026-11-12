@@ -1,17 +1,13 @@
 namespace Horizonte.Settings;
 
 
-/// La clase ModulesSettingsItem representa la configuración de un módulo dentro de un sistema.
-/// Esta clase se utiliza para definir propiedades específicas de cada módulo, tales como su estado activo, nombre, versión, y demás configuraciones adicionales que puedan ser necesarias.
-/// Propiedades:
-/// - Active: Indica si el módulo está activo o no.
-/// - ModuleName: Especifica el nombre del módulo.
-/// - ModuleVersion: Define la versión actual del módulo.
-/// - Path: Puede contener la ruta en la que se encuentra el módulo, si es aplicable.
-/// - LoadAdditionalDlls: Indica si se deben cargar DLLs adicionales para el módulo.
-/// - Domain: Permite especificar el dominio al que pertenece el módulo.
-/// Esta clase es esencial para manejar dinámicamente la configuración de módulos en aplicaciones que requieren modularidad y extensibilidad.
-/// /
+/// <summary>
+/// Representa la configuración individual de un módulo dentro del sistema Horizonte.
+/// </summary>
+/// <remarks>
+/// Define propiedades como el estado activo, el nombre del módulo, la versión, la ruta personalizada,
+/// la carga de DLLs adicionales y el dominio de aislamiento al que pertenece.
+/// </remarks>
 public class ModulesSettingsItem
 {
     /// <summary>
@@ -24,20 +20,14 @@ public class ModulesSettingsItem
     /// </remarks>
     public bool Active { get; set; }
 
-    /// Representa el nombre de un módulo en el sistema de configuraciones de módulos.
-    /// Esta propiedad es utilizada para identificar de manera única a un módulo dentro de la aplicación.
-    /// Es fundamental para la carga de módulos, ya que se utiliza en múltiples procesos, como el registro
-    /// de directorios de módulos y la resolución de ensamblados. La correcta asignación de este nombre
-    /// asegura la correcta operación del sistema de gestión de módulos.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el nombre identificador del módulo (usualmente coincidente con el nombre de su paquete o ensamblado).
+    /// </summary>
     public string ModuleName { get; set; } = string.Empty;
 
-    /// Propiedad que representa la versión del módulo en el sistema.
-    /// Esta propiedad es utilizada para especificar la versión actual de un módulo dentro del sistema.
-    /// Es un valor clave para asegurar la correcta gestión y carga de los distintos módulos disponibles,
-    /// permitiendo mantener la integridad y compatibilidad entre ellos. Su valor típicamente sigue el
-    /// formato de versión semántica (por ejemplo, "1.0.0").
-    /// /
+    /// <summary>
+    /// Obtiene o establece la versión semántica requerida del módulo (por ejemplo "1.0.0").
+    /// </summary>
     public string ModuleVersion { get; set; }= string.Empty;
 
     /// <summary>

@@ -2,16 +2,9 @@ using Horizonte.Settings;
 
 namespace Horizonte;
 
-/// La clase ModulesSettings se utiliza para gestionar la configuración de módulos, servidores NuGet, carpetas NuGet, prioridades de frameworks y dominios.
-/// En el constructor de la clase, se inicializa una lista de configuraciones predeterminadas, incluida la definición de un módulo activo, la especificación de un servidor NuGet, y una lista de prioridades de framework.
-/// Proporciona varias colecciones para mantener configuraciones específicas:
-/// - List: Almacena configuraciones individuales de módulos.
-/// - NugetServers: Contiene configuraciones de servidores NuGet.
-/// - NugetFolders: Lista las carpetas de instalación de NuGet.
-/// - FrameworkPriorities: Define una lista de prioridades para diferentes versiones de frameworks.
-/// - ForcedPackages: Mantiene una lista de paquetes que están forzados dentro del entorno.
-/// - Domains: Lista de dominios utilizados en la aplicación.
-/// /
+/// <summary>
+/// Gestiona la configuración global de módulos, servidores NuGet, carpetas locales de paquetes, prioridades de framework y dominios en Horizonte.
+/// </summary>
 public class ModulesSettings
 {
 
@@ -45,20 +38,14 @@ public class ModulesSettings
     /// </remarks>
     public List<NugetFolderItem> NugetFolders { get; set; } = new List<NugetFolderItem>();
 
-    /// La propiedad `FrameworkPriorities` es una lista de cadenas que especifica las prioridades de los frameworks .NET
-    /// que se utilizarán en el contexto de configuración de módulos. Esta propiedad determina el orden de preferencia
-    /// para seleccionar el framework adecuado durante la gestión de módulos y puede incluir versiones específicas de .NET,
-    /// como "net10.0", "net9.0", "net8.0", entre otras. Facilita la identificación de qué versiones de framework deben recibir
-    /// prioridad al implementar o ejecutar aplicaciones y bibliotecas dentro del sistema.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la lista ordenada de frameworks .NET por prioridad de resolución (ej. "net10.0", "net9.0", "net8.0").
+    /// </summary>
     public List<string> FrameworkPriorities { get; set; } = new List<string>();
 
-    /// La propiedad ForcedPackages es una lista que contiene elementos de tipo ForcedPackageItem.
-    /// Esta lista representa un conjunto de paquetes que se deben incluir de manera obligatoria en el contexto del sistema de ensamblado del proyecto.
-    /// Cada entrada en esta lista incluye detalles específicos sobre el paquete, como su identificador y versión.
-    /// Uso típico de ForcedPackages incluye la gestión de dependencias que no deben ser omitidas durante el cargado de dominios o módulos.
-    /// Los paquetes forzados garantizan que ciertas bibliotecas necesarias estén presentes independientemente de otras configuraciones del entorno.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la lista de paquetes forzados (<see cref="ForcedPackageItem"/>) requeridos obligatoriamente por el sistema.
+    /// </summary>
     public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
 
 

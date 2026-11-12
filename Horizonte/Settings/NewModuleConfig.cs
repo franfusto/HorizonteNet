@@ -1,13 +1,8 @@
 namespace Horizonte;
 
-/// La clase NewModuleConfig representa la configuración de un módulo en el sistema.
-/// Permite definir las características principales del módulo, como su nombre, versión,
-/// ruta binaria y carpetas raíz asociadas.
-/// ModuleName: Nombre del módulo.
-/// ModuleVersion: Versión del módulo.
-/// BinPath: Ruta al directorio binario donde se encuentran los ejecutables o binarios del módulo.
-/// RootFolders: Lista de carpetas raíz relevantes para el módulo.
-/// /
+/// <summary>
+/// Representa la configuración completa de un nuevo módulo en el sistema, incluyendo sus rutas binarias y carpetas raíz.
+/// </summary>
 public class NewModuleConfig
 {
     /// <summary>
@@ -20,7 +15,9 @@ public class NewModuleConfig
     /// </summary>
     public string ModuleVersion { get; set; } = string.Empty;
 
-    /// /
+    /// <summary>
+    /// Obtiene o establece la ruta al directorio de binarios ejecutables del módulo.
+    /// </summary>
     public string BinPath { get; set; } = string.Empty;
 
     /// <summary>

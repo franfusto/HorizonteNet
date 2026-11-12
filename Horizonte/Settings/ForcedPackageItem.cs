@@ -1,21 +1,16 @@
 namespace Horizonte.Settings;
 
 /// <summary>
-/// Representa un ítem de paquete que se obliga a incluir en un pedido o proceso logístico.
+/// Representa un paquete NuGet cuya inclusión y carga es obligatoria en el entorno de ensamblados de Horizonte.
 /// </summary>
 /// <remarks>
-/// La clase ForcedPackageItem se utiliza en situaciones donde ciertos artículos deben ser incluidos por defecto
-/// en un paquete o envío, independientemente de las preferencias del usuario o del contexto.
+/// Permite especificar paquetes y versiones críticas que deben cargarse en un dominio determinado.
 /// </remarks>
 public class ForcedPackageItem
 {
-    /// La propiedad `Active` determina si un paquete forzado está activo o inactivo.
-    /// Cuando está configurada como `true`, el paquete será procesado y cargado por el sistema.
-    /// Si está configurada como `false`, el paquete será ignorado y no se llevará a cabo ninguna acción sobre él.
-    /// Esta propiedad es útil para controlar dinámicamente qué paquetes deben estar activos, permitiendo
-    /// a los administradores del sistema gestionar los paquetes que se requieren en diferentes contextos o entorno
-    /// sin necesidad de eliminar su configuración del sistema.
-    /// /
+    /// <summary>
+    /// Obtiene o establece si el paquete forzado está activo y debe ser procesado por el sistema.
+    /// </summary>
     public bool Active { get; set; } = true;
 
     /// <summary>
@@ -29,18 +24,18 @@ public class ForcedPackageItem
     /// </remarks>
     public string PackageId { get; set; } = string.Empty;
 
-    /// Propiedad `Version` en la clase `ForcedPackageItem`, utilizada para definir la versión específica de un paquete forzado que se desea cargar o gestionar dentro del sistema.
-    /// Es una cadena de texto que contiene el número de versión del paquete, y se utiliza fundamentalmente para identificar de manera precisa qué versión del paquete debe manejarse en las operaciones de carga.
-    /// Esta propiedad es particularmente útil cuando se implementan métodos que requieren la carga de paquetes con versiones específicas, como en la clase `HAssemblyManager`, permitiendo el manejo correcto de diferentes versiones de paquetes.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la versión específica del paquete NuGet requerida.
+    /// </summary>
     public string Version { get; set; } = string.Empty;
 
-    /// Representa el marco de trabajo (framework) específico que debe utilizarse para resolver y cargar un paquete forzado.
-    /// Esta propiedad permite determinar el entorno de ejecución o conjunto de bibliotecas de clases bajo el cual el paquete está diseñado para funcionar. Algunos ejemplos de frameworks pueden incluir .NET Framework, .NET Core, y otros.
-    /// Es fundamental que esta propiedad se configure apropiadamente para garantizar que el paquete se cargue y ejecute en un entorno compatible, evitando así posibles conflictos o errores de incompatibilidad.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el framework de destino compatible (ej. "net10.0").
+    /// </summary>
     public string Framework { get; set; } = string.Empty;
 
-    /// /
+    /// <summary>
+    /// Obtiene o establece el nombre del dominio de ensamblados en el cual cargar este paquete (por defecto "Default").
+    /// </summary>
     public string Domain { get; set; } = "Default";
 }

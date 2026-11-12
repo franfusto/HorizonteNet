@@ -135,7 +135,7 @@ public sealed class Worker : BackgroundService
     /// <param name="cancellationToken">
     /// Un token de cancelación que puede usarse para comunicar una solicitud de cancelación del proceso de apagado.
     /// </param>
-    /// <return>Una tarea que representa la operación asíncrona de detener el servicio.</return>
+    /// <returns>Una tarea que representa la operación asíncrona de detener el servicio.</returns>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _log.LogInformation("Ending Horizonte.AdminUi.Worker");
@@ -144,21 +144,18 @@ public sealed class Worker : BackgroundService
         return base.StopAsync(cancellationToken);
     }
 
-    /// Propiedad que indica si el servicio `Worker` está actualmente en ejecución.
-    /// El valor es `true` cuando el servicio se ha iniciado y está operativo.
-    /// Se establece como `true` en el método `StartAsync` y se cambia a `false`
-    /// en el método `StopAsync`, representando así el estado de ejecución del servicio.
-    /// /
+    /// <summary>
+    /// Obtiene o establece si el servicio <see cref="Worker"/> está actualmente en ejecución.
+    /// </summary>
     public bool IsRunning { get; set; } = false;
 
-    /// /
+    /// <summary>
+    /// Obtiene o establece si el servicio debe ejecutarse automáticamente al iniciar la aplicación.
+    /// </summary>
     public bool RunOnStart { get; set; }
 
-    /// Propiedad que representa el nombre del servicio en la aplicación.
-    /// `ServiceName` se utiliza para identificar el servicio específico al que pertenece esta instancia
-    /// de trabajo dentro de la aplicación. El valor predeterminado de esta propiedad es "Horizonte Net Gui".
-    /// Es posible modificar este nombre según sea necesario para adaptarlo a distintas configuraciones
-    /// o entornos de ejecución.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el nombre identificador del servicio en la aplicación.
+    /// </summary>
     public string ServiceName { get; set; } = "Horizonte Net Gui";
 }

@@ -12,31 +12,24 @@ namespace Horizonte.AdminUi;
 /// </remarks>
 public class HGuiSettings 
 {
-    /// CustomMenuItems es una propiedad que representa una lista de elementos de menú personalizados que se pueden configurar
-    /// en la interfaz de usuario de la aplicación Horizonte AdminUI. Cada elemento de menú está definido por la clase HGuiMenuItem,
-    /// que incluye propiedades como Id, ParentId, Icon, Caption y Component.
-    /// La lista se inicializa de forma predeterminada como una lista vacía y puede ser modificada para incluir diversos
-    /// elementos de menú según las necesidades del usuario. Esta colección permite al usuario definir y gestionar
-    /// dinámicamente el conjunto de opciones que aparecerán en el menú de la aplicación.
-    /// CustomMenuItems es importante para proporcionar flexibilidad en la configuración de la interfaz, permitiendo una
-    /// organización jerárquica de los menús y personalización en términos de iconografía y componentes asociados.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la lista de elementos de menú personalizados que se configuran en la interfaz de usuario de Horizonte AdminUI.
+    /// </summary>
     public List<HGuiMenuItem> CustomMenuItems { get; set; } = new();
 
-    /// /
+    /// <summary>
+    /// Obtiene o establece un valor que indica si la aplicación requiere autenticación por contraseña para su acceso.
+    /// </summary>
     public bool ProtectApp { get; set; } = false;
 
-    /// La propiedad `AppPassword` representa la contraseña utilizada para proteger la aplicación en el sistema Horizonte.
-    /// Esta propiedad es parte del objeto `HGuiSettings` y su propósito es almacenar la contraseña que se necesita para
-    /// autenticar los intentos de inicio de sesión cuando la protección de la aplicación está habilitada (`ProtectApp` es verdadero).
-    /// Valor por defecto: `"admin"`.
-    /// /
+    /// <summary>
+    /// Obtiene o establece la contraseña utilizada para proteger la aplicación cuando <see cref="ProtectApp"/> está habilitado.
+    /// </summary>
     public string AppPassword { get; set; } = "admin";
 
-    /// Propiedad que representa el título de la aplicación.
-    /// El valor por defecto de esta propiedad es "Horizonte Net".
-    /// Se utiliza para mostrar el nombre de la aplicación en distintas partes de la interfaz de usuario.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el título descriptivo de la aplicación mostrado en la interfaz gráfica.
+    /// </summary>
     public string AppTitle { get; set; } = "Horizonte Net";
 
     /// <summary>
@@ -53,21 +46,14 @@ public class HGuiSettings
     /// </summary>
     /// <remarks>
     /// Almacena el valor del tema que se aplicará inicialmente al cargar la aplicación.
-    /// El valor predeterminado es "material-dar", y puede ser modificado para aplicar
+    /// El valor predeterminado es "material-dark", y puede ser modificado para aplicar
     /// diferentes estilos visuales según las necesidades del usuario.
     /// </remarks>
     public string DefaultTheme { get; set; } = "material-dark";
 
-    /// CustomServices es una propiedad que define una configuración personalizada de servicios
-    /// utilizada en la aplicación Horizonte AdminUI. La configuración está representada por la
-    /// clase CustomServiceConfig, que permite especificar detalles como el tipo de servicio,
-    /// el tipo de implementación y el tiempo de vida asociado al servicio (Singleton, Scoped o Transient).
-    /// 
-    /// Esta propiedad proporciona flexibilidad y personalización para registrar y gestionar servicios
-    /// específicos requeridos por la aplicación, lo que permite adaptarse a diversas arquitecturas
-    /// o requisitos de implementación. CustomServices resulta clave para configurar servicios
-    /// adicionales que no están definidos en la configuración predeterminada, facilitando así
-    /// una estructura modular y escalable dentro del entorno de la aplicación.
+    /// <summary>
+    /// Obtiene o establece la configuración de un servicio personalizado registrado en la aplicación.
+    /// </summary>
     public CustomServiceConfig CustomServices { get; set; } = new CustomServiceConfig();
 }
 

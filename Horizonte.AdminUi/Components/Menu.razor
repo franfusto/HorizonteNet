@@ -43,6 +43,9 @@
 
 @code
 {
+    /// <summary>
+    /// EventCallback invocado cuando se selecciona un elemento del menú.
+    /// </summary>
     [Parameter] public EventCallback<MenuItemEventArgs> OnSelected { get; set; }
 
     private HGuiMenu _hGruiMenu = new();

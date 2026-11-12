@@ -1,20 +1,16 @@
 namespace Horizonte;
 
-/// La clase `WidgetDef` se utiliza para definir un widget en el marco Horizonte.
-/// Ofrece propiedades para especificar el tipo de widget y un diccionario opcional
-/// para los parámetros que configuran el comportamiento o la apariencia del widget.
-/// - `Type`: Indica el tipo del widget a través de una referencia al tipo de clase.
-/// - `Parameters`: Un diccionario opcional que puede contener pares clave-valor para
-/// personalizar el widget. Si no se especifican parámetros, su valor es nulo.
-/// Esta clase se utiliza principalmente en el contexto de creación o configuración
-/// de widgets dentro de módulos definidos en Horizonte, facilitando la extensión
-/// y personalización de la interfaz de usuario de la aplicación.
-/// /
+/// <summary>
+/// Define la estructura y configuración de un widget visual dentro de los módulos del marco Horizonte.
+/// </summary>
+/// <remarks>
+/// Permite especificar el tipo CLR del componente o widget y los parámetros personalizados necesarios para su inicialización.
+/// </remarks>
 public class WidgetDef
 {
-    /// La propiedad `Type` en la clase `WidgetDef` representa un identificador de tipo CLR (Common Language Runtime) utilizado para definir el tipo del widget correspondiente en las aplicaciones de la plataforma Horizonte.
-    /// Esta propiedad permite almacenar y acceder dinámicamente al tipo específico de widget, lo cual es crucial para gestionar la configuración y el comportamiento de los widgets en tiempo de ejecución. Se utiliza en conjunto con otros componentes para personalizar las interacciones y funcionalidades del usuario con el sistema.
-    /// /
+    /// <summary>
+    /// Obtiene o establece el <see cref="System.Type"/> del componente que implementa el widget.
+    /// </summary>
     public required Type Type { get; set; }
 
     /// <summary>

@@ -14,11 +14,13 @@ namespace Horizonte.AdminUi.HorizonteSettings;
 [HorizonteModule("Horizonte.AdminUi.HorizonteSettings")]
 public class PanelModulo
 {
-    /// `AssemblyToPackageMap` es un diccionario estático de solo lectura que se utiliza para mapear nombres de ensamblados a nombres de paquetes.
+    /// <summary>
+    /// Diccionario estático de solo lectura que mapea nombres de ensamblados a nombres de paquetes NuGet correspondientes.
+    /// </summary>
+    /// <remarks>
     /// Este mapeo ayuda a identificar qué paquete corresponde a cada ensamblado dentro de la configuración de la aplicación.
-    /// El diccionario utiliza `StringComparer.OrdinalIgnoreCase` para permitir coincidencias de claves sin diferenciar entre mayúsculas y minúsculas.
-    /// Cada entrada en el diccionario tiene como clave el nombre del ensamblado y como valor el nombre del paquete correspondiente.
-    /// /
+    /// El diccionario utiliza <see cref="StringComparer.OrdinalIgnoreCase"/> para permitir coincidencias sin distinguir mayúsculas de minúsculas.
+    /// </remarks>
     [AssemblyMappingDefinition]
     public static readonly Dictionary<string, string> AssemblyToPackageMap =
         new(StringComparer.OrdinalIgnoreCase)
@@ -29,23 +31,18 @@ public class PanelModulo
     private readonly ILogger<PanelModulo> _logger;
 
     /// <summary>
-    /// La clase <c>PanelModulo</c> forma parte del namespace <c>Horizonte.AdminUi.HorizonteSettings</c> y está marcado con el atributo <c>[HorizonteModule("Horizonte.AdminUi.HorizonteSettings")]</c>.
-    /// Esta clase se encarga de implementar varios métodos que devuelven objetos <c>WidgetDef</c>, los cuales representan diferentes widgets para administrar y visualizar configuraciones en la aplicación.
-    /// También incluye un método para inicializar el módulo utilizando el atributo <c>[HorizonteRole("init")]</c>.
+    /// Inicializa una nueva instancia de la clase <see cref="PanelModulo"/>.
     /// </summary>
+    /// <param name="logger">Instancia de <see cref="ILogger{TCategoryName}"/> para el registro de eventos del módulo.</param>
     public PanelModulo(ILogger<PanelModulo> logger)
     {
         _logger = logger;
     }
 
     /// <summary>
-    /// El método <c>Init</c> forma parte de la clase <c>PanelModulo</c> en el namespace <c>Horizonte.AdminUi.HorizonteSettings</c>.
-    /// Está marcado con los atributos <c>[HorizonteRole("init")]</c> y <c>[HorizonteCommand("HorizonteConfig_Init")]</c>.
-    /// Este método se encarga de inicializar el módulo correspondiente a Horizonte.AdminUi.HorizonteSettings,
-    /// lo que incluye la carga forzada del ensamblado <c>Blazor.Diagrams</c>.
-    /// Además, genera un registro de información indicando que el módulo ha sido iniciado correctamente.
-    /// <return>Devuelve un <c>bool</c> indicando el éxito de la operación, siempre retorna <c>true</c>.</return>
+    /// Inicializa el módulo Horizonte.AdminUi.HorizonteSettings forzando la carga de dependencias de diagramas.
     /// </summary>
+    /// <returns>Devuelve un valor booleano indicando el éxito de la operación (siempre <c>true</c>).</returns>
     [HorizonteRole("init")]
     [HorizonteCommand("HorizonteConfig_Init")]
     public bool Init()
@@ -167,8 +164,8 @@ public class PanelModulo
     /// Está anotado con el atributo <c>[HorizonteCommand("HorizonteConfig_AppFilesViewer", "")]</c>, lo que sugiere que se utiliza para manejar comandos o interacciones configuradas.
     /// Este método devuelve un objeto <c>WidgetDef</c>, que representa un widget específico de tipo <c>AppFilesViewer</c>.
     /// No define parámetros, lo que indica que es un método sencillo para obtener y posiblemente visualizar la información relacionada con los archivos de la aplicación.
-    /// <return>Un objeto <c>WidgetDef</c> configurado para la visualización de archivos de la aplicación.</return>
     /// </summary>
+    /// <returns>Un objeto <c>WidgetDef</c> configurado para la visualización de archivos de la aplicación.</returns>
     [HorizonteCommand("HorizonteConfig_AppFilesViewer", "")]
     public WidgetDef AppFilesViewer() => new WidgetDef() { Type = typeof(AppFilesViewer), Parameters = null };
 

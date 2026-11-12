@@ -38,9 +38,10 @@ public class HAssemblyManager : IhAssemblyManager
 
     //propiedades púlicas
 
-    /// La propiedad `Assemblies` proporciona una lista de objetos `Assembly` que están cargados actualmente tanto en el contexto de carga de ensamblados predeterminado como en los contextos de dominio personalizados.
-    /// Esta propiedad combina los ensamblados del contexto de carga por defecto con aquellos cargados en los contextos de dominio adicionales administrados por la clase `HAssemblyManager`. Se usa principalmente para inspeccionar y gestionar los ensamblados cargados en tiempo de ejecución, permitiendo acciones como la resolución de dependencias, la carga forzada de paquetes y el registro de directorios de paquetes.
-    /// /
+    /// <summary>
+    /// Proporciona una lista de todos los ensamblados cargados actualmente en el contexto de carga predeterminado
+    /// y en los contextos de dominio personalizados administrados.
+    /// </summary>
     public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
         .Concat(_domains.Values.SelectMany(x => x.Assemblies)).ToList();
 

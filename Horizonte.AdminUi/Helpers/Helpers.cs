@@ -4,10 +4,16 @@ using Horizonte.AdminUi.Extensions;
 
 namespace Horizonte.AdminUi;
 
+/// <summary>
+/// Proporciona métodos auxiliares para el descubrimiento y configuración de servicios en AdminUI.
+/// </summary>
 public static class Helpers
 {
-    
-    
+    /// <summary>
+    /// Examina los tipos cargados en los ensamblados del dominio actual en busca de campos estáticos
+    /// decorados con <see cref="AdminUiCustomServiceDefinition"/> y los añade a la configuración de servicios.
+    /// </summary>
+    /// <param name="config">Instancia de <see cref="CustomServicesConfig"/> donde se añadirán los servicios encontrados.</param>
     public static void SetUpHarcodedServices(CustomServicesConfig config)
     {
         var fields = AppDomain.CurrentDomain

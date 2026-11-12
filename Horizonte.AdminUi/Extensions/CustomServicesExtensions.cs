@@ -4,20 +4,38 @@ using Microsoft.Extensions.Logging;
 
 namespace Horizonte.AdminUi.Extensions;
 
+/// <summary>
+/// Proporciona métodos de extensión para la configuración e inyección de servicios personalizados en la aplicación AdminUI.
+/// </summary>
 public static class CustomServicesExtensions
 {
+    /// <summary>
+    /// Obtiene si el autocompletado está activo en el sistema.
+    /// </summary>
     public static bool IsCompletionActive { get; private set; } = true;
 
+    /// <summary>
+    /// Habilita el estado de autocompletado.
+    /// </summary>
     public static void StartCompletion()
     {
         IsCompletionActive = true;
     }
 
+    /// <summary>
+    /// Deshabilita el estado de autocompletado.
+    /// </summary>
     public static void StopCompletion()
     {
         IsCompletionActive = false;
     }
 
+    /// <summary>
+    /// Registra los servicios personalizados configurados en la colección de servicios de inyección de dependencias.
+    /// </summary>
+    /// <param name="services">Colección de servicios <see cref="IServiceCollection"/>.</param>
+    /// <param name="config">Configuración de servicios personalizados a cargar.</param>
+    /// <param name="logger">Instancia de <see cref="ILogger"/> para registrar eventos y posibles errores de resolución de tipos.</param>
     public static void ConfigureCustomService(this IServiceCollection services, CustomServicesConfig? config, ILogger? logger = null)
     {
         if(config == null) config = new CustomServicesConfig();

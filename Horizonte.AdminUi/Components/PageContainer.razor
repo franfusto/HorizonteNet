@@ -56,6 +56,10 @@
         if (_elementItems.Count > 0) _elementItems.LastOrDefault()!.Selected = true;
     }
 
+    /// <summary>
+    /// Añade una nueva página o pestaña al contenedor basándose en el elemento de menú seleccionado.
+    /// </summary>
+    /// <param name="args">Argumentos del evento de menú que contienen el identificador de comando y texto.</param>
     public void AddPage(MenuItemEventArgs args)
     {
         try
@@ -86,13 +90,38 @@
         }
     }
 
+    /// <summary>
+    /// Representa un elemento de página o pestaña dentro del contenedor de páginas.
+    /// </summary>
     public class PageItemItem
     {
+        /// <summary>
+        /// Obtiene el identificador único del elemento de página.
+        /// </summary>
         public int Id { get; init; }
+
+        /// <summary>
+        /// Obtiene el nombre o título de la pestaña.
+        /// </summary>
         public string Name { get; init; }
+
+        /// <summary>
+        /// Obtiene el tipo del componente que se renderizará en la página.
+        /// </summary>
         public Type? Type { get; init; }
+
+        /// <summary>
+        /// Obtiene o establece si la pestaña está actualmente seleccionada y activa.
+        /// </summary>
         public bool Selected { get; set; }
 
+        /// <summary>
+        /// Inicializa una nueva instancia de la clase <see cref="PageItemItem"/>.
+        /// </summary>
+        /// <param name="id">Identificador numérico.</param>
+        /// <param name="name">Nombre o título.</param>
+        /// <param name="type">Tipo de componente.</param>
+        /// <param name="selected">Indica si está seleccionado.</param>
         public PageItemItem(int id, string name, Type? type, bool selected)
         {
             Id = id;
