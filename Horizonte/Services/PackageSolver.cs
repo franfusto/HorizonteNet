@@ -343,7 +343,8 @@ public class PackageSolver : IPackageSolver
         {
             try
             {
-                var repository = Repository.Factory.GetCoreV3(server.Server);
+                var normalizedUrl = NormalizeNugetServerUrl(server.Server, server.Version);
+                var repository = Repository.Factory.GetCoreV3(normalizedUrl);
                 var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
                 if (resource != null)
@@ -358,6 +359,17 @@ public class PackageSolver : IPackageSolver
                         cacheContext,
                         NullLogger.Instance,
                         CancellationToken.None);
+
+                    if (!copied && !string.Equals(packageName, packageName.ToLowerInvariant(), StringComparison.Ordinal))
+                    {
+                        copied = await resource.CopyNupkgToStreamAsync(
+                            packageName.ToLowerInvariant(),
+                            nugetVersion,
+                            memoryStream,
+                            cacheContext,
+                            NullLogger.Instance,
+                            CancellationToken.None);
+                    }
 
                     if (copied)
                     {
@@ -492,7 +504,8 @@ public class PackageSolver : IPackageSolver
         NuGetVersion? requestedVersion,
         CancellationToken cancellationToken)
     {
-        var repository = Repository.Factory.GetCoreV3(server.Server);
+        var normalizedUrl = NormalizeNugetServerUrl(server.Server, server.Version);
+        var repository = Repository.Factory.GetCoreV3(normalizedUrl);
         var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
 
         if (resource == null)
@@ -500,11 +513,38 @@ public class PackageSolver : IPackageSolver
 
         using var cacheContext = new SourceCacheContext();
 
-        var versions = await resource.GetAllVersionsAsync(
-            packageId,
-            cacheContext,
-            NullLogger.Instance,
-            cancellationToken);
+        IEnumerable<NuGetVersion>? versions = null;
+        try
+        {
+            versions = await resource.GetAllVersionsAsync(
+                packageId,
+                cacheContext,
+                NullLogger.Instance,
+                cancellationToken);
+        }
+        catch
+        {
+            // Fallback a minúsculas si el endpoint remoto es sensible
+        }
+
+        if ((versions == null || !versions.Any()) && !string.Equals(packageId, packageId.ToLowerInvariant(), StringComparison.Ordinal))
+        {
+            try
+            {
+                versions = await resource.GetAllVersionsAsync(
+                    packageId.ToLowerInvariant(),
+                    cacheContext,
+                    NullLogger.Instance,
+                    cancellationToken);
+            }
+            catch
+            {
+                // Ignorar error de fallback
+            }
+        }
+
+        if (versions == null)
+            return Array.Empty<PackageVersionInfo>();
 
         return versions
             .Distinct()
@@ -514,5 +554,24 @@ public class PackageSolver : IPackageSolver
                 IsRequestedVersion: requestedVersion != null && v.Equals(requestedVersion),
                 LocalPath: null))
             .ToArray();
+    }
+
+    private static string NormalizeNugetServerUrl(string? url, int? version = null)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var trimmed = url.Trim();
+
+        // Si es una URL V3 o está marcada con versión 3, asegurar que termine en index.json si apunta a /v3
+        if (version == 3 || trimmed.EndsWith("/v3", StringComparison.OrdinalIgnoreCase) || trimmed.EndsWith("/v3/", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!trimmed.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmed = trimmed.TrimEnd('/') + "/index.json";
+            }
+        }
+
+        return trimmed;
     }
 }
