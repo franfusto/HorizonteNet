@@ -142,7 +142,7 @@ public static class AssemblyHelpers
     /// <returns>Devuelve el contexto de carga de ensamblados asociado con el nombre del dominio especificado,
     /// o el contexto de carga de ensamblados predeterminado si el nombre del dominio no es válido o no se encuentra.</returns>
     public static AssemblyLoadContext GetAssemblyLoadContextByDomain(
-        Dictionary<string, AssemblyLoadContext> domains, string? domainName)
+        IReadOnlyDictionary<string, AssemblyLoadContext> domains, string? domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
             string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
@@ -165,7 +165,7 @@ public static class AssemblyHelpers
     /// <param name="alc">El contexto de carga de ensamblados para el cual se quiere determinar el nombre del dominio.</param>
     /// <returns>El nombre del dominio si se encuentra en el diccionario; de lo contrario, el nombre del contexto proporcionado o "Default" si no está disponible.</returns>
     public static string GetDomainNameForAssemblyLoadContext(
-        Dictionary<string, AssemblyLoadContext> domains, AssemblyLoadContext alc)
+        IReadOnlyDictionary<string, AssemblyLoadContext> domains, AssemblyLoadContext alc)
     {
         if (ReferenceEquals(alc, AssemblyLoadContext.Default))
             return Const.DefaultDomainName;
