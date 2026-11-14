@@ -68,6 +68,8 @@ public static class EnvExtensions
         hostBuilder.Services.AddSingleton<IHCredManager, HCredManager>();
         hostBuilder.Services.AddSingleton<ISymLinkScafolder, SymLinkScafolder>();
         hostBuilder.Services.AddSingleton<IHDomainManager, HDomainManager>();
+        hostBuilder.Services.AddSingleton<IHAssemblyCache, HAssemblyCache>();
+        hostBuilder.Services.AddSingleton<IPackageSolver, PackageSolver>();
         hostBuilder.Services.AddSingleton<IHAssemblySolver, HAssemblySolver>();
         hostBuilder.Services.AddSingleton<IHGesCom, HGesCom>();
         hostBuilder.Services.AddSingleton<IhWorkersManager, HWorkersManager>();

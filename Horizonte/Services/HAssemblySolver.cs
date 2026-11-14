@@ -21,6 +21,8 @@ public class HAssemblySolver : IHAssemblySolver
     private readonly IServiceProvider _serviceProvider;
     private readonly ModulesSettings _settings;
     private readonly ISymLinkScafolder _linkScafolder;
+    private readonly IHAssemblyCache _assemblyCache;
+    private readonly IPackageSolver _packageSolver;
     private readonly List<string> _searchPaths = new();
     private string _installFolder = "packages";
 
@@ -36,17 +38,34 @@ public class HAssemblySolver : IHAssemblySolver
     public StaticFileRegistry StaticFileRegistry { get; } = new();
 
     public HAssemblySolver(
+        IHAssemblyCache assemblyCache,
+        IPackageSolver packageSolver,
         IServiceProvider serviceProvider,
         ISymLinkScafolder linkScafolder,
         ILogger<HAssemblySolver> logger)
     {
-        _serviceProvider = serviceProvider;
-        _linkScafolder = linkScafolder;
-        _logger = logger;
+        _assemblyCache = assemblyCache ?? throw new ArgumentNullException(nameof(assemblyCache));
+        _packageSolver = packageSolver ?? throw new ArgumentNullException(nameof(packageSolver));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _linkScafolder = linkScafolder ?? throw new ArgumentNullException(nameof(linkScafolder));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _settings = serviceProvider.GetService<IhContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
 
         MapAssemblyToPackage();
         SetUpAssemblyPaths();
+    }
+
+    public HAssemblySolver(
+        IServiceProvider serviceProvider,
+        ISymLinkScafolder linkScafolder,
+        ILogger<HAssemblySolver> logger)
+        : this(
+            serviceProvider.GetRequiredService<IHAssemblyCache>(),
+            serviceProvider.GetRequiredService<IPackageSolver>(),
+            serviceProvider,
+            linkScafolder,
+            logger)
+    {
     }
 
     /// <summary>
@@ -150,17 +169,51 @@ public class HAssemblySolver : IHAssemblySolver
                 return null;
             }
 
-            var resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, true);
-
-            if (resAssemblyPath == null)
+            // 1. Consultar IHAssemblyCache (Caché Positiva o Negativa)
+            var cachedItem = _assemblyCache.Get(name, version, requesterDomain);
+            if (cachedItem != null)
             {
-                resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, false);
+                if (!cachedItem.Found && cachedItem.IsResolved)
+                {
+                    _logger.LogInformation(
+                        "Assembly {AssemblyName} registrado en caché negativa para el dominio {DomainName}.",
+                        args.Name,
+                        requesterDomain);
+                    return null;
+                }
+
+                if (cachedItem.Found && cachedItem.ResolvedAssembly != null)
+                {
+                    _logger.LogInformation(
+                        "Assembly {AssemblyName} obtenido de caché de ensamblados resueltos para el dominio {DomainName}.",
+                        args.Name,
+                        requesterDomain);
+                    return cachedItem.ResolvedAssembly;
+                }
+
+                if (cachedItem.Found && !string.IsNullOrEmpty(cachedItem.DllPath) && File.Exists(cachedItem.DllPath))
+                {
+                    var loadedFromCache = sender is AssemblyLoadContext reqContext
+                        ? reqContext.LoadFromAssemblyPath(cachedItem.DllPath)
+                        : Assembly.LoadFrom(cachedItem.DllPath);
+                    cachedItem.ResolvedAssembly = loadedFromCache;
+                    return loadedFromCache;
+                }
             }
 
-            if (resAssemblyPath == null)
+            // 2. Resolver paquete mediante IPackageSolver
+            var resolutionResult = _packageSolver.ResolvePackageAsync(name, version, requesterDomain).GetAwaiter().GetResult();
+            string? resAssemblyPath = null;
+
+            if (resolutionResult.Success && !string.IsNullOrEmpty(resolutionResult.DllPath))
             {
-                DownloadAndExtractPackage(packageName, version);
-                resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, false);
+                resAssemblyPath = resolutionResult.DllPath;
+            }
+            else
+            {
+                // Fallback a búsqueda local interna
+                resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, true)
+                               ?? ResolveNugetFromLocalDirectory(packageName, version, null, false);
             }
 
             if (resAssemblyPath == null)
@@ -170,6 +223,18 @@ public class HAssemblySolver : IHAssemblySolver
                     args.Name,
                     packageName,
                     requesterDomain);
+
+                _assemblyCache.Add(new AssemblyCacheItem
+                {
+                    AssemblyName = name,
+                    Version = version ?? string.Empty,
+                    DomainName = requesterDomain,
+                    PackageId = packageName,
+                    PackageVersion = version,
+                    IsResolved = true,
+                    Found = false
+                });
+
                 return null;
             }
 
@@ -199,26 +264,41 @@ public class HAssemblySolver : IHAssemblySolver
                 _logger.LogError(ex, "Error processing MSBuild targets for symlinks.");
             }
 
+            Assembly loadedAssembly;
             if (sender is AssemblyLoadContext context)
             {
-                var loadedAssembly = context.LoadFromAssemblyPath(resAssemblyPath);
+                loadedAssembly = context.LoadFromAssemblyPath(resAssemblyPath);
                 _logger.LogInformation(
                     "Assembly {AssemblyName} loaded into domain {DomainName}",
                     loadedAssembly.FullName,
                     domainsDict != null
                         ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, context)
                         : context.Name ?? Const.DefaultDomainName);
-                return loadedAssembly;
+            }
+            else
+            {
+                loadedAssembly = Assembly.LoadFrom(resAssemblyPath);
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
+
+                _logger.LogInformation(
+                    "Assembly {AssemblyName} loaded into domain Default",
+                    loadedAssembly.FullName);
             }
 
-            var defaultAssembly = Assembly.LoadFrom(resAssemblyPath);
-            MapAssemblyToPackageFromAssembly(defaultAssembly);
+            _assemblyCache.Add(new AssemblyCacheItem
+            {
+                AssemblyName = name,
+                Version = version ?? string.Empty,
+                DomainName = requesterDomain,
+                PackageId = resolutionResult.PackageId ?? packageName,
+                PackageVersion = resolutionResult.Version ?? version,
+                DllPath = resAssemblyPath,
+                ResolvedAssembly = loadedAssembly,
+                IsResolved = true,
+                Found = true
+            });
 
-            _logger.LogInformation(
-                "Assembly {AssemblyName} loaded into domain Default",
-                defaultAssembly.FullName);
-
-            return defaultAssembly;
+            return loadedAssembly;
         }
         catch (Exception ex)
         {
@@ -233,11 +313,17 @@ public class HAssemblySolver : IHAssemblySolver
     public string? ResolveAssemblyDllPath(string packageName, string version)
     {
         var resolvedPackageName = GetPackageName(packageName);
-        var path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, true);
+        var cached = _assemblyCache.Get(resolvedPackageName, version);
+        if (cached != null && cached.Found && !string.IsNullOrEmpty(cached.DllPath))
+        {
+            return cached.DllPath;
+        }
 
+        var path = _packageSolver.ResolveLocalDllPath(resolvedPackageName, version);
         if (path == null)
         {
-            path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, false);
+            path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, true)
+                ?? ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, false);
         }
 
         if (path != null && !Path.IsPathRooted(path))
@@ -251,14 +337,11 @@ public class HAssemblySolver : IHAssemblySolver
     /// <summary>
     /// Descarga de forma asíncrona un paquete NuGet si no existe localmente.
     /// </summary>
-    public Task<string?> DownloadNuGetPackageAsync(string packageName, string version)
+    public async Task<string?> DownloadNuGetPackageAsync(string packageName, string version)
     {
-        return Task.Run(() =>
-        {
-            var resolvedPackageName = GetPackageName(packageName);
-            DownloadAndExtractPackage(resolvedPackageName, version);
-            return ResolveAssemblyDllPath(resolvedPackageName, version);
-        });
+        var resolvedPackageName = GetPackageName(packageName);
+        var downloaded = await _packageSolver.DownloadAndInstallPackageAsync(resolvedPackageName, version);
+        return ResolveAssemblyDllPath(resolvedPackageName, version);
     }
 
     /// <summary>
