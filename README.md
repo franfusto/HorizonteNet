@@ -165,7 +165,7 @@ docker run -d \
   -e ASPNETCORE_ENVIRONMENT=Production \
   -v ./horizonte:/home/horizonte \
   --restart unless-stopped \
-  franfusto/horizontenet:10.0.5-beta
+  franfusto/horizontenet:10.0.6-beta
 ```
 
 ### Running with Docker Compose
@@ -175,7 +175,7 @@ Create a `docker-compose.yml` file with the following configuration:
 ```yaml
 services:
   app:
-    image: franfusto/horizontenet:10.0.5-beta
+    image: franfusto/horizontenet:10.0.6-beta
     container_name: app_horizonte
     ports:
       - "5000:5000"

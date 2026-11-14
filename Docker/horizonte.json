@@ -4,15 +4,24 @@
       {
         "Active": true,
         "ModuleName": "Horizonte",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
+        "LoadAdditionalDlls": false,
+        "Domain": "Default"
+      },
+
+      {
+        "Active": true,
+        "ModuleName": "",
+        "ModuleVersion": "Horizonte.Extensions.Interactive",
+        "Path": "10.0.6-beta",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
       },
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -20,7 +29,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -28,7 +37,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.WebApp",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "App"
@@ -36,7 +45,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Samples.ServiceApp",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "App"
@@ -44,7 +53,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Scripts",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -52,7 +61,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.WorkFlows",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -60,7 +69,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.Ai.MCPServer",
-        "ModuleVersion": "10.0.5-beta",
+        "ModuleVersion": "10.0.6-beta",
         "Path": null,
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -79,7 +88,7 @@
         "Name": "Local BaGet",
         "Order": 1,
         "Version": 3,
-        "Active": false
+        "Active": true
       }
     ],
     "NugetFolders": [
@@ -104,7 +113,14 @@
       {
         "Active": true,
         "PackageId": "Horizonte",
-        "Version": "10.0.5-beta",
+        "Version": "10.0.6-beta",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "OpenTelemetry.Api",
+        "Version": "1.21.0",
         "Framework": "net10.0",
         "Domain": "Default"
       },
@@ -133,6 +149,48 @@
         "Active": true,
         "PackageId": "microsoft.dotnet.interactive.csharp",
         "Version": "1.0.0-beta.26120.1",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Microsoft.Extensions.VectorData.Abstractions",
+        "Version": "10.1.0",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Microsoft.DotNet.Interactive.CSharp",
+        "Version": "1.0.0-beta.26120.1",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Microsoft.DotNet.Interactive.Formatting",
+        "Version": "1.0.0-beta.26120.1",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Microsoft.DotNet.Interactive.Documents",
+        "Version": "1.0.0-beta.26120.1",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Microsoft.DotNet.Interactive",
+        "Version": "1.0.0-beta.26120.1",
+        "Framework": "net10.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "System.Memory.Data",
+        "Version": "10.0.3",
         "Framework": "net10.0",
         "Domain": "Default"
       }

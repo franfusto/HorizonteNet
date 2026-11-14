@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: franfusto/horizontenet:10.0.5-beta
+    image: franfusto/horizontenet:10.0.6-beta
     container_name: app_horizonte
     ports:
       - "5000:5000"
