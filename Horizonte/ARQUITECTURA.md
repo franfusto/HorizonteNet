@@ -714,3 +714,143 @@ Si a pesar de la restricción se solicita la carga de dos versiones de un paquet
 ##### 4. Recomendaciones Arquitectónicas
 1. **Unificación en Dominio `"Default"`**: Los paquetes con dependencias nativas o archivos `.targets` deben configurarse en `ForcedPackages` o cargarse exclusivamente en el dominio `"Default"` para asegurar una versión única y consistente.
 2. **Ciclo de Descarga (*Hot Reload*)**: Al descargar un dominio (`UnloadDomainAsync`), `ISymLinkScafolder` debe limpiar los enlaces y `StaticFileRegistry` debe desregistrar los mapeos del dominio correspondiente.
+
+---
+
+### Apéndice B: Resolución de Ensamblados y Paquetes con SDK NuGet y Caché Unificada (`VersionResources`)
+
+Este apéndice formaliza el diseño del motor de resolución de dependencias basado en el SDK oficial de NuGet (`NuGet.Protocol`, `NuGet.Versioning`) y el modelo de caché unificada en memoria.
+
+#### B.1. Motivación y Desacoplamiento
+En implementaciones previas, la detección de versiones locales y remotas dependía de lecturas directas del sistema de archivos (`Directory.EnumerateDirectories`), parseo manual de cadenas y consultas HTTP no tipadas. 
+
+La nueva arquitectura estandariza estas operaciones mediante:
+1. **SDK Oficial de Microsoft NuGet**: Empleo de `NuGetVersion`, `FindPackageByIdResource`, `Repository.Factory.GetCoreV3` y `SourceCacheContext` para una introspección robusta conforme a SemVer.
+2. **Caché Unificada en Memoria**: `IHAssemblyCache` almacena tanto el estado de resolución de los ensamblados (`AssemblyCacheItem`) como el catálogo de versiones descubiertas por origen (`VersionResources`), evitando lecturas redundantes en disco y llamadas de red repetidas.
+3. **Gestión de Políticas de Seguridad**: Evaluación formal de `BlockedPackagesPolicy` (`Null`, `Error`, `Mayor`) sobre las versiones identificadas.
+
+---
+
+#### B.2. Modelos de Datos y Estructura de la Caché Unificada
+
+```csharp
+namespace Horizonte.Entities;
+
+/// <summary>
+/// Información de una versión individual de un paquete en un origen específico.
+/// </summary>
+public sealed record PackageVersionInfo(
+    NuGetVersion Version,
+    bool IsRequestedVersion,
+    string? LocalPath);
+
+/// <summary>
+/// Origen de paquetes (directorio local o servidor NuGet remoto) y sus versiones disponibles.
+/// </summary>
+public sealed record PackageSourceResource(
+    string SourceName,
+    bool IsLocal,
+    IReadOnlyList<PackageVersionInfo> Versions);
+
+/// <summary>
+/// Catálogo unificado de orígenes y versiones descubiertas para un paquete NuGet.
+/// </summary>
+public class VersionResources
+{
+    public string PackageId { get; set; } = string.Empty;
+    public DateTime RetrievedAtUtc { get; set; } = DateTime.UtcNow;
+    public List<PackageSourceResource> Sources { get; set; } = new();
+}
+
+/// <summary>
+/// Registro persistido en la caché en memoria de resolución de ensamblados.
+/// </summary>
+public class AssemblyCacheItem
+{
+    public string AssemblyName { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public string DomainName { get; set; } = "Default";
+    public string? PackageId { get; set; }
+    public string? PackageVersion { get; set; }
+    public string? DllPath { get; set; }
+    public Assembly? ResolvedAssembly { get; set; }
+    public bool IsResolved { get; set; }
+    public bool Found { get; set; }
+    public VersionResources? VersionResources { get; set; }
+    public DateTime ResolvedAtUtc { get; set; } = DateTime.UtcNow;
+}
+```
+
+---
+
+#### B.3. Diagrama de Flujo del Proceso de Resolución
+
+El flujo de resolución se inicia a partir de dos cadenas de entrada: `assemblyNameString` y `versionString`.
+
+```mermaid
+graph TD
+    Input[Entrada: assemblyNameString, versionString] --> NormVersion[1. Normalizar Version: NuGetVersion.TryParse]
+    NormVersion --> CheckMap{2. ¿Existe en AssemblyToPackageMap?}
+    
+    CheckMap -->|Sí| MapPackage[packageId = AssemblyToPackageMap[assemblyName]]
+    CheckMap -->|No| DefaultPackage[packageId = assemblyName]
+    
+    MapPackage --> CheckCache{3. ¿Existe AssemblyCacheItem en HAssemblyCache?}
+    DefaultPackage --> CheckCache
+    
+    CheckCache -->|Cache Hit - Resuelto| ReturnAsm[Retornar Ensamblado / DllPath]
+    CheckCache -->|Cache Hit - Negativo / Bloqueado| ReturnNull[Retornar Fallo / Null]
+    CheckCache -->|Cache Miss| CheckResources{4. ¿Tiene VersionResources en Caché?}
+    
+    CheckResources -->|Sí| EvalVersions[Evaluar Versiones Disponibles]
+    CheckResources -->|No| FetchResources[PackageSolver: Consultar Local y NuGet Remoto via SDK]
+    FetchResources --> SaveResources[Guardar VersionResources en HAssemblyCache]
+    SaveResources --> EvalVersions
+    
+    EvalVersions --> CheckBlocked{5. ¿Versión Solicitada Bloqueada?}
+    CheckBlocked -->|No| MatchVersion[Localizar .nupkg / DLL de la versión solicitada]
+    CheckBlocked -->|Sí| PolicySwitch{BlockedPackagesPolicy}
+    
+    PolicySwitch -->|Null| CacheNegNull[Registrar Caché Negativa y Retornar Null]
+    PolicySwitch -->|Error| ThrowErr[Lanzar Excepción / Log Crítico]
+    PolicySwitch -->|Mayor| FindHigher[Seleccionar Menor Versión Superior No Bloqueada]
+    
+    FindHigher --> MatchVersion
+    MatchVersion --> ExtractAndLoad[6. Descargar/Extraer .nupkg y Cargar DLL]
+    ExtractAndLoad --> UpdateCache[Actualizar HAssemblyCache con AssemblyCacheItem resuelto]
+    UpdateCache --> PostProcess[StaticFileRegistry + ISymLinkScafolder]
+    PostProcess --> ReturnAsm
+```
+
+---
+
+#### B.4. Etapas Detalladas de la Resolución
+
+1. **Normalización de Versión y Mapeo de Identidad**:
+   - `versionString` se parsea y normaliza mediante `NuGetVersion.TryParse` / `ToNormalizedString()`.
+   - Se consulta `ModulesSettings.AssemblyToPackageMap`. Si el ensamblado posee un mapeo explícito a un nombre de paquete (por ejemplo, `Microsoft.Data.SqlClient` o sub-ensamblados con prefijos distintos), se obtiene el `packageId` correspondiente; en caso contrario, se asume `packageId = assemblyNameString`.
+
+2. **Consulta de Caché de Ensamblado (`HAssemblyCache`)**:
+   - Se consulta la clave compuesta `domain:assemblyName:version`.
+   - Si existe una entrada positiva (`Found = true`), se entrega directamente el ensamblado o ruta ya resuelta.
+   - Si existe una entrada negativa (`Found = false`, `IsResolved = true`), se interrumpe inmediatamente la búsqueda evitando accesos repetitivos a disco o red.
+
+3. **Consulta y Población de `VersionResources`**:
+   - Si hay un *cache-miss* a nivel de ensamblado, se verifica si ya se dispone de `VersionResources` para ese `packageId`.
+   - Si no existe, `PackageSolver` ejecuta la consulta en paralelo:
+     - **Repositorios Locales (`NugetFolders`)**: Inspecciona carpetas locales buscando `.nupkg` mediante `NuGetVersion`.
+     - **Servidores Remotos (`NugetServers`)**: Obtiene las versiones vía `FindPackageByIdResource.GetAllVersionsAsync` usando `Repository.Factory.GetCoreV3`.
+   - Se consolida el resultado en `VersionResources` y se guarda en `HAssemblyCache`.
+
+4. **Evaluación de `BlockedPackagesPolicy`**:
+   - Se comprueba si la versión requerida está presente en `ModulesSettings.BlockedPackages`.
+   - Si está bloqueada, se evalúa la política configurada:
+     - **`BlockedPackagesPolicy.Null`**: Registra advertencia, guarda un `AssemblyCacheItem` en caché negativa (`Found = false`, `IsResolved = true`) y retorna `null`.
+     - **`BlockedPackagesPolicy.Error`**: Interrumpe la ejecución lanzando una excepción o emitiendo log crítico con la causa (`Reason`).
+     - **`BlockedPackagesPolicy.Mayor`**: Recorre las versiones disponibles en `VersionResources` y selecciona la menor versión estrictamente superior a la solicitada que no se encuentre en la lista de paquetes bloqueados.
+
+5. **Resolución Física, Carga y Post-Procesamiento**:
+   - Se descarga/extrae el paquete `.nupkg` para la versión seleccionada y se ubica la DLL compatible con el framework destino.
+   - Se actualiza `HAssemblyCache` con el `AssemblyCacheItem` resuelto (`Found = true`, `DllPath`, `ResolvedAssembly`).
+   - Se ejecuta el registro de activos estáticos web en `StaticFileRegistry` y el andamiaje de `.targets` en `ISymLinkScafolder`.
+   - Se retorna el ensamblado cargado en el `AssemblyLoadContext` correspondiente.
