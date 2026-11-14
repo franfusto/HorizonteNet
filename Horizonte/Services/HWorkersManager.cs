@@ -1,5 +1,6 @@
 using Horizonte.Entities;
 using Horizonte.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Horizonte;
@@ -17,15 +18,11 @@ public class HWorkersManager : IhWorkersManager
 {
     private readonly IhContext _context;
     private readonly ILogger<HWorkersManager> _logger;
-    private readonly IhAssemblyManager _assemblyManager;
+    private readonly Lazy<IhAssemblyManager> _assemblyManager;
     
     /// <summary>
     /// Inicializa una nueva instancia de <see cref="HWorkersManager"/>.
     /// </summary>
-    /// <param name="assemblyManager">
-    /// Gestor encargado de arrancar, detener y consultar servicios en segundo plano a partir
-    /// del tipo configurado para cada worker.
-    /// </param>
     /// <param name="context">
     /// Contexto de Horizonte desde el que se obtienen las definiciones de workers disponibles.
     /// </param>
@@ -33,15 +30,17 @@ public class HWorkersManager : IhWorkersManager
     /// Registrador utilizado para informar de errores, advertencias y eventos de ejecución
     /// relacionados con los workers.
     /// </param>
-
+    /// <param name="serviceProvider">
+    /// Proveedor de servicios para la resolución diferida de <see cref="IhAssemblyManager"/>.
+    /// </param>
     public HWorkersManager(
-        IhAssemblyManager assemblyManager,
         IhContext context,
-        ILogger<HWorkersManager> logger)
+        ILogger<HWorkersManager> logger,
+        IServiceProvider serviceProvider)
     {
         _context = context;
         _logger = logger;
-        _assemblyManager = assemblyManager;
+        _assemblyManager = new Lazy<IhAssemblyManager>(() => serviceProvider.GetRequiredService<IhAssemblyManager>());
     }
 
     /// <inheritdoc />
@@ -83,7 +82,7 @@ public class HWorkersManager : IhWorkersManager
         if (worker == null)
             return false;
 
-        return _assemblyManager.BackgroundServiceRunning(worker.WorkerType);
+        return _assemblyManager.Value.BackgroundServiceRunning(worker.WorkerType);
     }
     
     /// <inheritdoc />
@@ -99,7 +98,7 @@ public class HWorkersManager : IhWorkersManager
             return false;
         }
 
-        var started = _assemblyManager.StartBackgroundService(worker.WorkerType);
+        var started = _assemblyManager.Value.StartBackgroundService(worker.WorkerType);
 
         if (started)
             _logger.LogInformation("Worker iniciado: '{ServiceName}'.", serviceName);
@@ -121,7 +120,7 @@ public class HWorkersManager : IhWorkersManager
             return false;
         }
 
-        var stopped = _assemblyManager.StopBackgroundService(worker.WorkerType);
+        var stopped = _assemblyManager.Value.StopBackgroundService(worker.WorkerType);
 
         if (stopped)
             _logger.LogInformation("Worker detenido: '{ServiceName}'.", serviceName);

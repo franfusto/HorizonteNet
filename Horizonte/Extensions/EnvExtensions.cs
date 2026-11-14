@@ -67,9 +67,13 @@ public static class EnvExtensions
         // Cargamos gestores principales
         hostBuilder.Services.AddSingleton<IHCredManager, HCredManager>();
         hostBuilder.Services.AddSingleton<ISymLinkScafolder, SymLinkScafolder>();
-        hostBuilder.Services.AddSingleton<IhAssemblyManager, HAssemblyManager>();
+        hostBuilder.Services.AddSingleton<IHDomainManager, HDomainManager>();
+        hostBuilder.Services.AddSingleton<IHAssemblySolver, HAssemblySolver>();
         hostBuilder.Services.AddSingleton<IHGesCom, HGesCom>();
         hostBuilder.Services.AddSingleton<IhWorkersManager, HWorkersManager>();
+        hostBuilder.Services.AddSingleton<EnvCoordinator>();
+        hostBuilder.Services.AddSingleton<IEnvCoordinator>(sp => sp.GetRequiredService<EnvCoordinator>());
+        hostBuilder.Services.AddSingleton<IhAssemblyManager>(sp => sp.GetRequiredService<EnvCoordinator>());
         hostBuilder.Services.AddSingleton<IAppManager, AppManager>();
     }
 
