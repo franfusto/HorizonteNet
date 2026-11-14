@@ -221,7 +221,7 @@ public class HAssemblySolver : IHAssemblySolver
                 requesterDomain);
 
             // 2. Resolver paquete mediante IPackageSolver
-            var resolutionResult = _packageSolver.ResolvePackageAsync(name, version, requesterDomain).GetAwaiter().GetResult();
+            var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(name, version, requesterDomain)).GetAwaiter().GetResult();
             string? resAssemblyPath = null;
 
             if (resolutionResult.Success && !string.IsNullOrEmpty(resolutionResult.DllPath))
@@ -381,7 +381,7 @@ public class HAssemblySolver : IHAssemblySolver
     public async Task<string?> DownloadNuGetPackageAsync(string packageName, string version)
     {
         var resolvedPackageName = GetPackageName(packageName);
-        var downloaded = await _packageSolver.DownloadAndInstallPackageAsync(resolvedPackageName, version);
+        var downloaded = await _packageSolver.DownloadAndInstallPackageAsync(resolvedPackageName, version).ConfigureAwait(false);
         return ResolveAssemblyDllPath(resolvedPackageName, version);
     }
 

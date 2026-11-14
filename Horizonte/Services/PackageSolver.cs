@@ -165,7 +165,7 @@ public class PackageSolver : IPackageSolver
                             server.Server,
                             packageId);
 
-                        var remoteVersions = await FindRemoteVersionsAsync(server, packageId, requestedVersion, cancellationToken);
+                        var remoteVersions = await FindRemoteVersionsAsync(server, packageId, requestedVersion, cancellationToken).ConfigureAwait(false);
                         return (server, remoteVersions);
                     }
                     catch (Exception ex)
@@ -174,9 +174,9 @@ public class PackageSolver : IPackageSolver
                             packageId, server.Server);
                         return (server, (IReadOnlyList<PackageVersionInfo>)Array.Empty<PackageVersionInfo>());
                     }
-                });
+                }).ToList();
 
-                var results = await Task.WhenAll(queryTasks);
+                var results = await Task.WhenAll(queryTasks).ConfigureAwait(false);
                 foreach (var (server, remoteVersions) in results)
                 {
                     if (remoteVersions.Count > 0)
@@ -227,7 +227,7 @@ public class PackageSolver : IPackageSolver
         NuGetVersion.TryParse(requestedVersion, out var requestedNuGetVersion);
 
         // 1. Consultar VersionResources (Caché -> Local -> Remoto)
-        var versionResources = await FindVersionResourcesAsync(packageId, requestedNuGetVersion);
+        var versionResources = await FindVersionResourcesAsync(packageId, requestedNuGetVersion).ConfigureAwait(false);
 
         // 2. Evaluar BlockedPackages
         var targetVersionStr = requestedVersion;
@@ -296,7 +296,7 @@ public class PackageSolver : IPackageSolver
             _logger.LogInformation("[PKGSOLVER-REMOTE-DOWNLOAD-TRIGGER] Paquete '{PackageId}' v'{Version}' no localizado localmente. Iniciando descarga remota...",
                 packageId, targetVersionStr);
 
-            var downloaded = await DownloadAndInstallPackageAsync(packageId, targetVersionStr);
+            var downloaded = await DownloadAndInstallPackageAsync(packageId, targetVersionStr).ConfigureAwait(false);
             if (downloaded != null)
             {
                 _logger.LogDebug("[PKGSOLVER-POST-DOWNLOAD-RESOLVE] Localizando DLL tras descarga e instalación en '{DownloadedDir}'...", downloaded);
@@ -443,7 +443,9 @@ public class PackageSolver : IPackageSolver
                     packageName, version, server.Name ?? "NuGet", normalizedUrl);
 
                 var repository = Repository.Factory.GetCoreV3(normalizedUrl);
-                var resource = await repository.GetResourceAsync<FindPackageByIdResource>(downloadCts.Token);
+                var resource = await repository.GetResourceAsync<FindPackageByIdResource>(downloadCts.Token)
+                    .WaitAsync(DefaultRemoteDownloadTimeout, downloadCts.Token)
+                    .ConfigureAwait(false);
 
                 if (resource != null)
                 {
@@ -456,7 +458,9 @@ public class PackageSolver : IPackageSolver
                         memoryStream,
                         cacheContext,
                         NullLogger.Instance,
-                        downloadCts.Token);
+                        downloadCts.Token)
+                        .WaitAsync(DefaultRemoteDownloadTimeout, downloadCts.Token)
+                        .ConfigureAwait(false);
 
                     if (!copied && !string.Equals(packageName, packageName.ToLowerInvariant(), StringComparison.Ordinal))
                     {
@@ -469,7 +473,9 @@ public class PackageSolver : IPackageSolver
                             memoryStream,
                             cacheContext,
                             NullLogger.Instance,
-                            downloadCts.Token);
+                            downloadCts.Token)
+                            .WaitAsync(DefaultRemoteDownloadTimeout, downloadCts.Token)
+                            .ConfigureAwait(false);
                     }
 
                     if (copied)
@@ -488,6 +494,11 @@ public class PackageSolver : IPackageSolver
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("[PKGSOLVER-DOWNLOAD-TIMEOUT] Tiempo de espera agotado ({TimeoutSeconds}s) al descargar paquete '{PackageName}' {Version} desde servidor '{Server}'.",
+                    DefaultRemoteDownloadTimeout.TotalSeconds, packageName, version, server.Server);
+            }
+            catch (TimeoutException)
+            {
+                _logger.LogWarning("[PKGSOLVER-DOWNLOAD-TIMEOUT] Tiempo de espera estricto agotado ({TimeoutSeconds}s) al descargar paquete '{PackageName}' {Version} desde servidor '{Server}'.",
                     DefaultRemoteDownloadTimeout.TotalSeconds, packageName, version, server.Server);
             }
             catch (Exception ex)
@@ -622,7 +633,9 @@ public class PackageSolver : IPackageSolver
         try
         {
             var repository = Repository.Factory.GetCoreV3(normalizedUrl);
-            var resource = await repository.GetResourceAsync<FindPackageByIdResource>(queryCts.Token);
+            var resource = await repository.GetResourceAsync<FindPackageByIdResource>(queryCts.Token)
+                .WaitAsync(DefaultRemoteQueryTimeout, queryCts.Token)
+                .ConfigureAwait(false);
 
             if (resource == null)
                 return Array.Empty<PackageVersionInfo>();
@@ -636,9 +649,15 @@ public class PackageSolver : IPackageSolver
                     packageId,
                     cacheContext,
                     NullLogger.Instance,
-                    queryCts.Token);
+                    queryCts.Token)
+                    .WaitAsync(DefaultRemoteQueryTimeout, queryCts.Token)
+                    .ConfigureAwait(false);
             }
             catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (TimeoutException)
             {
                 throw;
             }
@@ -655,9 +674,15 @@ public class PackageSolver : IPackageSolver
                         packageId.ToLowerInvariant(),
                         cacheContext,
                         NullLogger.Instance,
-                        queryCts.Token);
+                        queryCts.Token)
+                        .WaitAsync(DefaultRemoteQueryTimeout, queryCts.Token)
+                        .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (TimeoutException)
                 {
                     throw;
                 }
@@ -680,6 +705,10 @@ public class PackageSolver : IPackageSolver
                 .ToArray();
         }
         catch (OperationCanceledException)
+        {
+            return Array.Empty<PackageVersionInfo>();
+        }
+        catch (TimeoutException)
         {
             return Array.Empty<PackageVersionInfo>();
         }

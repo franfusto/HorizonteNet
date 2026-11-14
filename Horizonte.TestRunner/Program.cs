@@ -59,6 +59,12 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunPackageSolverDiagnosticAsync(targetPackage, targetVersion);
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST CONCURRENTE CON SERVIDOR INACCESIBLE Y PackageSolver.FindVersionResourcesAsync ===");
+        Console.WriteLine("================================================================================");
+
+        await RunConcurrentTimeoutTestAsync("Newtonsoft.Json");
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -124,6 +130,50 @@ public class Program
         catch (Exception ex)
         {
             Console.WriteLine($"[EXCEPCION PackageSolver] {ex.GetType().Name} - {ex.Message} tras {sw.ElapsedMilliseconds} ms");
+        }
+    }
+
+    private static async Task RunConcurrentTimeoutTestAsync(string packageId)
+    {
+        var settings = new ModulesSettings
+        {
+            NugetServers = new List<NugetServerItem>
+            {
+                new NugetServerItem
+                {
+                    Name = "Nuget.org Oficial",
+                    Server = "https://api.nuget.org/v3/index.json",
+                    Order = 1,
+                    Version = 3,
+                    Active = true
+                },
+                new NugetServerItem
+                {
+                    Name = "Servidor Caido / Lento",
+                    Server = "http://10.255.255.1:5555/v3/index.json",
+                    Order = 2,
+                    Version = 3,
+                    Active = true
+                }
+            },
+            NugetFolders = new List<NugetFolderItem>()
+        };
+
+        var cache = new HAssemblyCache();
+        var logger = NullLogger<PackageSolver>.Instance;
+        var packageSolver = new PackageSolver(cache, settings, logger);
+
+        Console.WriteLine($"Consultando en paralelo '{packageId}' con un servidor activo oficial y un servidor no alcanzable...");
+        var sw = Stopwatch.StartNew();
+
+        var resources = await packageSolver.FindVersionResourcesAsync(packageId);
+        sw.Stop();
+
+        Console.WriteLine($"[FIN CONCURRENTE] Tiempo total: {sw.ElapsedMilliseconds} ms");
+        Console.WriteLine($"Orígenes obtenidos: {resources.Sources.Count}");
+        foreach (var src in resources.Sources)
+        {
+            Console.WriteLine($"  - Origen: {src.SourceName}, Versiones: {src.Versions.Count}");
         }
     }
 
