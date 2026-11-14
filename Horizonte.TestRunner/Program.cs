@@ -65,6 +65,12 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunConcurrentTimeoutTestAsync("Newtonsoft.Json");
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE SELECCION SEMANTICA Y COMPATIBILIDAD DE VERSIONES (PackageSolver) ===");
+        Console.WriteLine("================================================================================");
+
+        await RunSemanticVersionSelectionTestsAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -174,6 +180,128 @@ public class Program
         foreach (var src in resources.Sources)
         {
             Console.WriteLine($"  - Origen: {src.SourceName}, Versiones: {src.Versions.Count}");
+        }
+    }
+
+    private static async Task RunSemanticVersionSelectionTestsAsync()
+    {
+        var packageId = "Horizonte.Extension.AspNetCore";
+        var cache = new HAssemblyCache();
+
+        // Sembrar en cache VersionResources simulados como en BaGet / Nuget remoto
+        var versionResources = new Horizonte.Entities.VersionResources
+        {
+            PackageId = packageId,
+            RetrievedAtUtc = DateTime.UtcNow
+        };
+
+        versionResources.Sources.Add(new Horizonte.Entities.PackageSourceResource(
+            SourceName: "Local BaGet",
+            IsLocal: false,
+            Versions: new List<Horizonte.Entities.PackageVersionInfo>
+            {
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.7-beta"), false, null),
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.6"), false, null),
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.5"), false, null)
+            }));
+
+        cache.SetVersionResources(packageId, versionResources);
+
+        var settings = new ModulesSettings
+        {
+            NugetServers = new List<NugetServerItem>(),
+            NugetFolders = new List<NugetFolderItem>()
+        };
+
+        var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+
+        // Test 1: Solicitud con versión de ensamblado de 4 componentes "10.0.7.0"
+        Console.WriteLine("\n[TEST 1] Solicitando '10.0.7.0' cuando existe '10.0.7-beta'...");
+        var res1 = await packageSolver.ResolvePackageAsync(packageId, "10.0.7.0");
+        Console.WriteLine($"  -> Target version resuelta: '{res1.Version}' (Esperada: '10.0.7-beta')");
+        if (res1.Version == "10.0.7-beta")
+        {
+            Console.WriteLine("  ✓ [OK] Versión de ensamblado 10.0.7.0 seleccionó correctamente 10.0.7-beta.");
+        }
+        else
+        {
+            Console.WriteLine($"  ✗ [FAIL] Versión incorrecta: '{res1.Version}'");
+        }
+
+        // Test 2: Solicitud sin versión especificada (null o "any")
+        Console.WriteLine("\n[TEST 2] Solicitando versión null/any...");
+        var res2 = await packageSolver.ResolvePackageAsync(packageId, null);
+        Console.WriteLine($"  -> Target version resuelta: '{res2.Version}' (Esperada: '10.0.7-beta')");
+        if (res2.Version == "10.0.7-beta")
+        {
+            Console.WriteLine("  ✓ [OK] Versión vacía seleccionó correctamente la versión más reciente.");
+        }
+        else
+        {
+            Console.WriteLine($"  ✗ [FAIL] Versión incorrecta: '{res2.Version}'");
+        }
+
+        // Test 3: Preferencia de versión estable sobre prerelease
+        var packageId2 = "Horizonte.Samples.WebApp";
+        var versionResources2 = new Horizonte.Entities.VersionResources
+        {
+            PackageId = packageId2,
+            RetrievedAtUtc = DateTime.UtcNow
+        };
+
+        versionResources2.Sources.Add(new Horizonte.Entities.PackageSourceResource(
+            SourceName: "Nuget.org",
+            IsLocal: false,
+            Versions: new List<Horizonte.Entities.PackageVersionInfo>
+            {
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.7-beta"), false, null),
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.7"), false, null),
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("10.0.6"), false, null)
+            }));
+
+        cache.SetVersionResources(packageId2, versionResources2);
+
+        Console.WriteLine("\n[TEST 3] Solicitando '10.0.7.0' cuando existen '10.0.7' (estable) y '10.0.7-beta'...");
+        var res3 = await packageSolver.ResolvePackageAsync(packageId2, "10.0.7.0");
+        Console.WriteLine($"  -> Target version resuelta: '{res3.Version}' (Esperada: '10.0.7')");
+        if (res3.Version == "10.0.7")
+        {
+            Console.WriteLine("  ✓ [OK] Versión de ensamblado 10.0.7.0 priorizó correctamente la versión estable 10.0.7.");
+        }
+        else
+        {
+            Console.WriteLine($"  ✗ [FAIL] Versión incorrecta: '{res3.Version}'");
+        }
+
+        // Test 4: Solicitud de versión inexistente garantiza resolución a una versión descubierta real
+        var packageId3 = "Horizonte.PorcupineMod";
+        var versionResources3 = new Horizonte.Entities.VersionResources
+        {
+            PackageId = packageId3,
+            RetrievedAtUtc = DateTime.UtcNow
+        };
+
+        versionResources3.Sources.Add(new Horizonte.Entities.PackageSourceResource(
+            SourceName: "Nuget.org",
+            IsLocal: false,
+            Versions: new List<Horizonte.Entities.PackageVersionInfo>
+            {
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("2.1.0-preview"), false, null),
+                new Horizonte.Entities.PackageVersionInfo(NuGetVersion.Parse("2.0.0"), false, null)
+            }));
+
+        cache.SetVersionResources(packageId3, versionResources3);
+
+        Console.WriteLine("\n[TEST 4] Solicitando '99.0.0' inexistente con versiones disponibles '2.1.0-preview', '2.0.0'...");
+        var res4 = await packageSolver.ResolvePackageAsync(packageId3, "99.0.0");
+        Console.WriteLine($"  -> Target version resuelta: '{res4.Version}' (Esperada: '2.1.0-preview')");
+        if (res4.Version == "2.1.0-preview")
+        {
+            Console.WriteLine("  ✓ [OK] Solicitud de versión inexistente seleccionó la versión real más reciente descubierta.");
+        }
+        else
+        {
+            Console.WriteLine($"  ✗ [FAIL] Versión incorrecta: '{res4.Version}'");
         }
     }
 

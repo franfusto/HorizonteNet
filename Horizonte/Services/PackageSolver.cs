@@ -229,13 +229,22 @@ public class PackageSolver : IPackageSolver
         // 1. Consultar VersionResources (Caché -> Local -> Remoto)
         var versionResources = await FindVersionResourcesAsync(packageId, requestedNuGetVersion).ConfigureAwait(false);
 
-        // 2. Evaluar BlockedPackages
-        var targetVersionStr = requestedVersion;
-        if (IsVersionBlocked(packageId, requestedVersion, out var blockedItem))
+        // 2. Seleccionar la mejor versión candidata descubierta en VersionResources
+        var targetVersionStr = SelectBestMatchingVersion(packageId, requestedVersion, versionResources);
+        if (!string.Equals(targetVersionStr, requestedVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation("[PKGSOLVER-VERSION-SELECTED] Versión solicitada '{RequestedVersion}' ajustada a versión candidata '{SelectedVersion}' para '{PackageId}'.",
+                requestedVersion ?? "any",
+                targetVersionStr ?? "none",
+                packageId);
+        }
+
+        // 3. Evaluar BlockedPackages
+        if (IsVersionBlocked(packageId, targetVersionStr, out var blockedItem))
         {
             _logger.LogWarning("[PKGSOLVER-BLOCKED] Paquete '{PackageId}' versión '{Version}' BLOQUEADO por directiva: {Reason} (Política activa: {Policy})",
                 packageId,
-                requestedVersion,
+                targetVersionStr,
                 blockedItem?.Reason,
                 _settings.BlockedPackagesPolicy);
 
@@ -248,12 +257,12 @@ public class PackageSolver : IPackageSolver
                         Success = false,
                         Blocked = true,
                         PackageId = packageId,
-                        Version = requestedVersion,
+                        Version = targetVersionStr,
                         ErrorMessage = $"Paquete bloqueado por política de seguridad (Null): {blockedItem?.Reason}"
                     };
 
                 case BlockedPackagesPolicy.Error:
-                    var errorMsg = $"Resolución rechazada. Paquete '{packageId}' versión '{requestedVersion}' bloqueado: {blockedItem?.Reason}";
+                    var errorMsg = $"Resolución rechazada. Paquete '{packageId}' versión '{targetVersionStr}' bloqueado: {blockedItem?.Reason}";
                     _logger.LogError("[PKGSOLVER-POLICY-ERROR] {ErrorMsg}", errorMsg);
                     throw new InvalidOperationException(errorMsg);
 
@@ -262,14 +271,14 @@ public class PackageSolver : IPackageSolver
                     var higherVersion = SelectLowestHigherUnblockedVersion(packageId, requestedNuGetVersion, versionResources);
                     if (higherVersion == null)
                     {
-                        var noHigherMsg = $"No se encontró ninguna versión superior no bloqueada para el paquete '{packageId}' (solicitada: '{requestedVersion}').";
+                        var noHigherMsg = $"No se encontró ninguna versión superior no bloqueada para el paquete '{packageId}' (solicitada: '{targetVersionStr}').";
                         _logger.LogError("[PKGSOLVER-POLICY-MAYOR-NONE] {NoHigherMsg}", noHigherMsg);
                         return new PackageResolutionResult
                         {
                             Success = false,
                             Blocked = true,
                             PackageId = packageId,
-                            Version = requestedVersion,
+                            Version = targetVersionStr,
                             ErrorMessage = noHigherMsg
                         };
                     }
@@ -281,7 +290,7 @@ public class PackageSolver : IPackageSolver
             }
         }
 
-        // 3. Resolución física local
+        // 4. Resolución física local
         string? resolvedDllPath = null;
         if (!string.IsNullOrEmpty(targetVersionStr))
         {
@@ -511,6 +520,139 @@ public class PackageSolver : IPackageSolver
         _logger.LogWarning("[PKGSOLVER-DOWNLOAD-FAIL-ALL] Ningún servidor remoto pudo suministrar el paquete '{PackageName}' versión '{Version}'.",
             packageName, version);
         return null;
+    }
+
+    private string? SelectBestMatchingVersion(
+        string packageId,
+        string? requestedVersion,
+        VersionResources versionResources)
+    {
+        if (versionResources == null || versionResources.Sources.Count == 0)
+            return requestedVersion;
+
+        var allDiscoveredVersions = versionResources.Sources
+            .SelectMany(s => s.Versions.Select(v => v.Version))
+            .Distinct()
+            .OrderByDescending(v => v)
+            .ToList();
+
+        if (allDiscoveredVersions.Count == 0)
+            return requestedVersion;
+
+        // 1. Si no se solicitó versión explícita (null, vacía, o "any")
+        if (string.IsNullOrWhiteSpace(requestedVersion) ||
+            string.Equals(requestedVersion, "any", StringComparison.OrdinalIgnoreCase))
+        {
+            var unblockedLatest = allDiscoveredVersions.FirstOrDefault(v => !IsVersionBlocked(packageId, v.ToNormalizedString(), out _));
+            return (unblockedLatest ?? allDiscoveredVersions.First()).ToNormalizedString();
+        }
+
+        // 2. Coincidencia exacta de cadena o NuGetVersion
+        if (NuGetVersion.TryParse(requestedVersion, out var reqNugetVersion))
+        {
+            var exactMatch = allDiscoveredVersions.FirstOrDefault(v => v.Equals(reqNugetVersion));
+            if (exactMatch != null)
+            {
+                return exactMatch.ToNormalizedString();
+            }
+        }
+        else
+        {
+            var exactStrMatch = allDiscoveredVersions.FirstOrDefault(v =>
+                string.Equals(v.ToNormalizedString(), requestedVersion, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(v.OriginalVersion, requestedVersion, StringComparison.OrdinalIgnoreCase));
+
+            if (exactStrMatch != null)
+            {
+                return exactStrMatch.ToNormalizedString();
+            }
+        }
+
+        // 3. Normalización de versiones de ensamblado de 4 partes (.NET System.Version) ej: 10.0.7.0 -> 10.0.7
+        int? reqMajor = reqNugetVersion?.Major;
+        int? reqMinor = reqNugetVersion?.Minor;
+        int? reqPatch = reqNugetVersion?.Patch;
+
+        if (Version.TryParse(requestedVersion, out var sysVersion))
+        {
+            reqMajor = sysVersion.Major;
+            reqMinor = sysVersion.Minor;
+            reqPatch = sysVersion.Build >= 0 ? sysVersion.Build : 0;
+
+            if (sysVersion.Revision == 0 && sysVersion.Build >= 0)
+            {
+                var threePartString = $"{sysVersion.Major}.{sysVersion.Minor}.{sysVersion.Build}";
+                if (NuGetVersion.TryParse(threePartString, out var nuget3Part))
+                {
+                    var match3 = allDiscoveredVersions.FirstOrDefault(v => v.Equals(nuget3Part));
+                    if (match3 != null)
+                    {
+                        return match3.ToNormalizedString();
+                    }
+                }
+            }
+        }
+
+        // 4. Coincidencia en Major.Minor.Patch (con o sin prerelease, ej: 10.0.7.0 o 10.0.7 coincide con 10.0.7-beta)
+        if (reqMajor.HasValue && reqMinor.HasValue && reqPatch.HasValue)
+        {
+            var samePatchCandidates = allDiscoveredVersions
+                .Where(v => v.Major == reqMajor.Value && v.Minor == reqMinor.Value && v.Patch == reqPatch.Value)
+                .ToList();
+
+            if (samePatchCandidates.Count > 0)
+            {
+                // Preferir versiones estables si existen, luego prereleases ordenadas descendentemente
+                var stableMatch = samePatchCandidates.FirstOrDefault(v => !v.IsPrerelease);
+                if (stableMatch != null)
+                {
+                    return stableMatch.ToNormalizedString();
+                }
+
+                return samePatchCandidates.First().ToNormalizedString();
+            }
+
+            // 5. Coincidencia en Major.Minor (versión más alta compatible >= requestedVersion)
+            var sameMinorCandidates = allDiscoveredVersions
+                .Where(v => v.Major == reqMajor.Value && v.Minor == reqMinor.Value && (reqNugetVersion == null || v >= reqNugetVersion))
+                .OrderBy(v => v)
+                .ToList();
+
+            if (sameMinorCandidates.Count > 0)
+            {
+                return sameMinorCandidates.First().ToNormalizedString();
+            }
+
+            // 6. Coincidencia en Major
+            var sameMajorCandidates = allDiscoveredVersions
+                .Where(v => v.Major == reqMajor.Value && (reqNugetVersion == null || v >= reqNugetVersion))
+                .OrderBy(v => v)
+                .ToList();
+
+            if (sameMajorCandidates.Count > 0)
+            {
+                return sameMajorCandidates.First().ToNormalizedString();
+            }
+        }
+
+        // 7. Heurística de fallback usando NugetHelpers
+        var rawDiscovered = allDiscoveredVersions.Select(v => v.ToNormalizedString()).ToList();
+        var bestHeuristic = NugetHelpers.SelectBestRemoteVersion(requestedVersion, rawDiscovered);
+        if (!string.IsNullOrEmpty(bestHeuristic))
+        {
+            var matchedCandidate = allDiscoveredVersions.FirstOrDefault(v =>
+                string.Equals(v.ToNormalizedString(), bestHeuristic, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(v.OriginalVersion, bestHeuristic, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedCandidate != null)
+            {
+                return matchedCandidate.ToNormalizedString();
+            }
+        }
+
+        // Si ninguna regla previa coincidió pero existen versiones descubiertas, retornar la más reciente no bloqueada
+        var fallbackUnblocked = allDiscoveredVersions.FirstOrDefault(v => !IsVersionBlocked(packageId, v.ToNormalizedString(), out _));
+        return (fallbackUnblocked ?? allDiscoveredVersions.First()).ToNormalizedString();
     }
 
     private string GetPackageName(string assemblyName)
