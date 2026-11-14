@@ -54,6 +54,16 @@ public class ModulesSettings
     /// </summary>
     public List<ForcedPackageItem> ForcedPackages { get; set; } = new List<ForcedPackageItem>();
 
+    /// <summary>
+    /// Obtiene o establece la lista de paquetes o versiones bloqueadas/excluidas por seguridad o incompatibilidad.
+    /// </summary>
+    public List<BlockedPackageItem> BlockedPackages { get; set; } = new List<BlockedPackageItem>();
+
+    /// <summary>
+    /// Obtiene o establece la política que aplica el resolvedor al encontrar un paquete bloqueado (Null, Error, Mayor).
+    /// </summary>
+    public BlockedPackagesPolicy BlockedPackagesPolicy { get; set; } = BlockedPackagesPolicy.Null;
+
 
     /// <summary>
     /// Propiedad que representa un diccionario para mapear nombres de ensamblados a sus paquetes correspondientes.
