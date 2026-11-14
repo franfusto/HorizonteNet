@@ -783,74 +783,103 @@ public class AssemblyCacheItem
 
 ---
 
-#### B.3. Diagrama de Flujo del Proceso de Resolución
+#### B.3. Diagrama de Flujo Exhaustivo del Proceso de Resolución
 
-El flujo de resolución se inicia a partir de dos cadenas de entrada: `assemblyNameString` y `versionString`.
+El flujo de resolución orquesta las decisiones y subprocesos a través de las diferentes capas del sistema (Normalización, Mapeos, ALC, Caché Unificada, SDK de NuGet, Políticas de Seguridad, Descarga/Extracción, Frameworks, Symlinks y Web Assets):
 
 ```mermaid
 graph TD
-    Input[Entrada: assemblyNameString, versionString] --> NormVersion[1. Normalizar Version: NuGetVersion.TryParse]
-    NormVersion --> CheckMap{2. ¿Existe en AssemblyToPackageMap?}
+    Start([1. Solicitud de Resolución: AssemblyName, Version, Dominio]) --> Norm[2. Normalizar Nombre y Parsear Versión SemVer]
+    Norm --> CheckShared{3. ¿Es ensamblado compartido / base?}
+    CheckShared -->|Sí| ReturnShared[Entregar ensamblado compartido desde Default]
+    CheckShared -->|No| MapAlias[4. Resolver Mapeo AssemblyToPackageMap]
     
-    CheckMap -->|Sí| MapPackage[packageId = AssemblyToPackageMap[assemblyName]]
-    CheckMap -->|No| DefaultPackage[packageId = assemblyName]
+    MapAlias --> CheckLoaded{5. ¿Ya está cargado en el ALC destino?}
+    CheckLoaded -->|Sí| ReturnLoaded[Entregar ensamblado en memoria ALC]
+    CheckLoaded -->|No| CheckSkip{6. ¿Pertenece a ensamblados del runtime .NET a omitir?}
     
-    MapPackage --> CheckCache{3. ¿Existe AssemblyCacheItem en HAssemblyCache?}
-    DefaultPackage --> CheckCache
+    CheckSkip -->|Sí| ReturnNullSkip[Omitir resolución NuGet y retornar null]
+    CheckSkip -->|No| QueryCache{7. Consultar IHAssemblyCache domain:name:version}
     
-    CheckCache -->|Cache Hit - Resuelto| ReturnAsm[Retornar Ensamblado / DllPath]
-    CheckCache -->|Cache Hit - Negativo / Bloqueado| ReturnNull[Retornar Fallo / Null]
-    CheckCache -->|Cache Miss| CheckResources{4. ¿Tiene VersionResources en Caché?}
+    QueryCache -->|Cache Hit Negativo / Fallido previo| ReturnNegCache[Retornar null inmediato - Caché Negativa]
+    QueryCache -->|Cache Hit Positivo| ReturnCache[Entregar ensamblado/DLL desde Caché]
+    QueryCache -->|Cache Miss| QueryVR{8. Consultar VersionResources en Caché}
     
-    CheckResources -->|Sí| EvalVersions[Evaluar Versiones Disponibles]
-    CheckResources -->|No| FetchResources[PackageSolver: Consultar Local y NuGet Remoto via SDK]
-    FetchResources --> SaveResources[Guardar VersionResources en HAssemblyCache]
-    SaveResources --> EvalVersions
+    QueryVR -->|Miss| FetchVR[9. PackageSolver: Escanear NugetFolders locales y consultar NugetServers remotos]
+    FetchVR --> StoreVR[Guardar VersionResources en IHAssemblyCache]
+    QueryVR -->|Hit| EvalVR[10. Evaluar Versiones Disponibles]
+    StoreVR --> EvalVR
     
-    EvalVersions --> CheckBlocked{5. ¿Versión Solicitada Bloqueada?}
-    CheckBlocked -->|No| MatchVersion[Localizar .nupkg / DLL de la versión solicitada]
-    CheckBlocked -->|Sí| PolicySwitch{BlockedPackagesPolicy}
+    EvalVR --> CheckBlocked{11. ¿Versión solicitada en BlockedPackages?}
+    CheckBlocked -->|Sí| EvalPolicy{Evaluar BlockedPackagesPolicy}
     
-    PolicySwitch -->|Null| CacheNegNull[Registrar Caché Negativa y Retornar Null]
-    PolicySwitch -->|Error| ThrowErr[Lanzar Excepción / Log Crítico]
-    PolicySwitch -->|Mayor| FindHigher[Seleccionar Menor Versión Superior No Bloqueada]
+    EvalPolicy -->|Null| LogNegPolicy[Registrar advertencia, guardar caché negativa y retornar null]
+    EvalPolicy -->|Error| ThrowPolicy[Emitir error crítico / excepción de seguridad]
+    EvalPolicy -->|Mayor| FindHigher[Seleccionar menor versión superior no bloqueada]
     
-    FindHigher --> MatchVersion
-    MatchVersion --> ExtractAndLoad[6. Descargar/Extraer .nupkg y Cargar DLL]
-    ExtractAndLoad --> UpdateCache[Actualizar HAssemblyCache con AssemblyCacheItem resuelto]
-    UpdateCache --> PostProcess[StaticFileRegistry + ISymLinkScafolder]
-    PostProcess --> ReturnAsm
+    CheckBlocked -->|No| SelectVersion[Seleccionar versión compatible solicitada]
+    FindHigher --> SelectVersion
+    
+    SelectVersion --> CheckLocalNupkg{12. ¿Existe .nupkg / DLL localmente?}
+    CheckLocalNupkg -->|No| DownloadNupkg[13. Descargar .nupkg desde NugetServer remoto V3 / Index.json]
+    CheckLocalNupkg -->|Sí| ExtractNupkg[14. Extraer / Inspeccionar carpeta de instalación]
+    DownloadNupkg --> ExtractNupkg
+    
+    ExtractNupkg --> SelectTfm[15. Seleccionar DLL según FrameworkPriorities]
+    SelectTfm --> LoadAlc[16. Cargar DLL en AssemblyLoadContext del dominio]
+    LoadAlc --> UpdateCacheItem[17. Actualizar IHAssemblyCache con resultado exitoso]
+    UpdateCacheItem --> Symlinks[18. ISymLinkScafolder: Procesar .targets y enlaces simbólicos]
+    Symlinks --> WebAssets[19. StaticFileRegistry: Registrar activos web por dominio]
+    WebAssets --> EndSuccess([20. Retornar Ensamblado Cargado])
 ```
 
 ---
 
-#### B.4. Etapas Detalladas de la Resolución
+#### B.4. Descripción Detallada de las 20 Fases y Subprocesos
 
-1. **Normalización de Versión y Mapeo de Identidad**:
-   - `versionString` se parsea y normaliza mediante `NuGetVersion.TryParse` / `ToNormalizedString()`.
-   - Se consulta `ModulesSettings.AssemblyToPackageMap`. Si el ensamblado posee un mapeo explícito a un nombre de paquete (por ejemplo, `Microsoft.Data.SqlClient` o sub-ensamblados con prefijos distintos), se obtiene el `packageId` correspondiente; en caso contrario, se asume `packageId = assemblyNameString`.
+1. **Solicitud de Resolución**: Invocación desde `AssemblyLoadContext.Resolving` o llamada directa a `ResolveAssemblyFromNuGetPackages` con el nombre del ensamblado, versión y dominio solicitante.
+2. **Normalización SemVer**: Parseo de identidad y versión usando `AssemblyHelpers.ParseAssemblyName` y `NuGetVersion.TryParse`.
+3. **Evaluación de Ensamblados Compartidos**: Si el ensamblado está en `Default` y es compartido para plugins, se entrega directamente sin duplicar en ALCs secundarios.
+4. **Mapeo `AssemblyToPackageMap`**: Conversión de nombres de ensamblado a paquetes NuGet cuando difieren (p. ej. subensamblados de librerías cliente).
+5. **Inspección de ALC**: Si el ensamblado ya se encuentra cargado en el `AssemblyLoadContext` del dominio, se reutiliza inmediatamente.
+6. **Filtro de Runtime .NET**: Ensamblados del runtime base o framework BCL que no deben resolverse vía NuGet se omiten devolviendo `null`.
+7. **Consulta a `IHAssemblyCache`**: Búsqueda por clave compuesta `domain:assemblyName:version`.
+   - **Cache Hit Positivo**: Retorna el `Assembly` o carga desde `DllPath`.
+   - **Cache Hit Negativo**: Retorna `null` inmediato sin volver a intentar lecturas en disco o red.
+   - **Cache Miss**: Continúa al resolvedor de paquetes.
+8. **Consulta de `VersionResources`**: Comprueba si el catálogo de versiones por origen ya existe en memoria en `IHAssemblyCache.GetVersionResources`.
+9. **Sondeo de Orígenes Locales y Remotos**: Si no está en caché, `PackageSolver` escanea carpetas locales (`NugetFolders`, `~/.nuget/packages`) y consulta los servidores NuGet remotos (`NugetServers`) mediante `FindPackageByIdResource.GetAllVersionsAsync` normalizando URLs V3.
+10. **Evaluación de Versiones Disponibles**: Consolidación y ordenación de versiones descubiertas en `VersionResources`.
+11. **Evaluación de Paquetes Bloqueados**: Verificación contra `ModulesSettings.BlockedPackages`.
+12. **Aplicación de `BlockedPackagesPolicy`**:
+    - `Null`: Registra en caché negativa y finaliza con `null`.
+    - `Error`: Emite error crítico o lanza excepción.
+    - `Mayor`: Elige la menor versión superior no bloqueada.
+13. **Verificación de DLL / `.nupkg` Local**: Comprueba si la versión deseada ya se encuentra en las carpetas de paquetes.
+14. **Descarga Remota**: Si no existe localmente, descarga el `.nupkg` desde el servidor NuGet remoto mediante `CopyNupkgToStreamAsync` (con fallback de ID en minúsculas).
+15. **Extracción y Descompresión**: Descomprime el paquete en la carpeta de instalación (`packages/id/version`).
+16. **Selección de Target Framework (TFM)**: `NugetHelpers.SelectedVersion` inspecciona las carpetas `lib/` según `FrameworkPriorities` (`net10.0`, `net8.0`, `netstandard2.1`).
+17. **Carga en `AssemblyLoadContext`**: Carga de la DLL en el contexto de aislamiento del dominio destino.
+18. **Actualización de `IHAssemblyCache`**: Registro del resultado exitoso (`Found = true`, `DllPath`, `ResolvedAssembly`) para acelerar resoluciones posteriores.
+19. **Andamiaje de Enlaces Simbólicos (`ISymLinkScafolder`)**: Procesa archivos `.targets`/`.props` para recrear enlaces simbólicos en el directorio de trabajo sin sobrescribir colisiones.
+20. **Registro de Activos Web (`StaticFileRegistry`)**: Mapea la carpeta `staticwebassets` en memoria bajo el namespace `dominio#ruta` para que `HorizonteStaticFileMiddelware` sirva los recursos estáticos.
 
-2. **Consulta de Caché de Ensamblado (`HAssemblyCache`)**:
-   - Se consulta la clave compuesta `domain:assemblyName:version`.
-   - Si existe una entrada positiva (`Found = true`), se entrega directamente el ensamblado o ruta ya resuelta.
-   - Si existe una entrada negativa (`Found = false`, `IsResolved = true`), se interrumpe inmediatamente la búsqueda evitando accesos repetitivos a disco o red.
+---
 
-3. **Consulta y Población de `VersionResources`**:
-   - Si hay un *cache-miss* a nivel de ensamblado, se verifica si ya se dispone de `VersionResources` para ese `packageId`.
-   - Si no existe, `PackageSolver` ejecuta la consulta en paralelo:
-     - **Repositorios Locales (`NugetFolders`)**: Inspecciona carpetas locales buscando `.nupkg` mediante `NuGetVersion`.
-     - **Servidores Remotos (`NugetServers`)**: Obtiene las versiones vía `FindPackageByIdResource.GetAllVersionsAsync` usando `Repository.Factory.GetCoreV3`.
-   - Se consolida el resultado en `VersionResources` y se guarda en `HAssemblyCache`.
+#### B.5. Resiliencia, Timeouts y Concurrencia en Feeds NuGet
 
-4. **Evaluación de `BlockedPackagesPolicy`**:
-   - Se comprueba si la versión requerida está presente en `ModulesSettings.BlockedPackages`.
-   - Si está bloqueada, se evalúa la política configurada:
-     - **`BlockedPackagesPolicy.Null`**: Registra advertencia, guarda un `AssemblyCacheItem` en caché negativa (`Found = false`, `IsResolved = true`) y retorna `null`.
-     - **`BlockedPackagesPolicy.Error`**: Interrumpe la ejecución lanzando una excepción o emitiendo log crítico con la causa (`Reason`).
-     - **`BlockedPackagesPolicy.Mayor`**: Recorre las versiones disponibles en `VersionResources` y selecciona la menor versión estrictamente superior a la solicitada que no se encuentre en la lista de paquetes bloqueados.
+Para prevenir bloqueos (*deadlocks*) y latencias excesivas en el hilo de sincronización de `AssemblyLoadContext.Resolving`, el subsistema `PackageSolver` incorpora mecanismos avanzados de resiliencia:
 
-5. **Resolución Física, Carga y Post-Procesamiento**:
-   - Se descarga/extrae el paquete `.nupkg` para la versión seleccionada y se ubica la DLL compatible con el framework destino.
-   - Se actualiza `HAssemblyCache` con el `AssemblyCacheItem` resuelto (`Found = true`, `DllPath`, `ResolvedAssembly`).
-   - Se ejecuta el registro de activos estáticos web en `StaticFileRegistry` y el andamiaje de `.targets` en `ISymLinkScafolder`.
-   - Se retorna el ensamblado cargado en el `AssemblyLoadContext` correspondiente.
+1. **Normalización Automática de Endpoints (`NormalizeNugetServerUrl`)**:
+   - Detección y migración automática de endpoints de `nuget.org` (legacy V2/HTTP o URLs base) hacia el feed oficial V3 seguro: `https://api.nuget.org/v3/index.json`.
+   - Ajuste automático de feeds compatibles con protocolo V3 (como BaGet o servidores locales) asegurando que finalicen en `/index.json` si apuntan a la raíz `/v3`.
+
+2. **Timeouts Explícitos y Vinculados (`CancellationTokenSource`)**:
+   - **Consulta de Versiones (`FindRemoteVersionsAsync`)**: Límite estricto de timeout (por defecto 8 segundos) por servidor remoto mediante `CancellationTokenSource.CreateLinkedTokenSource`. Si un servidor no responde o sufre un bloqueo de red, la operación se cancela de forma controlada sin detener la ejecución de otros servidores o del hilo principal.
+   - **Descarga de Paquetes (`DownloadAndInstallPackageAsync`)**: Timeout dedicado (por defecto 20 segundos) por intento de descarga y extracción de `.nupkg`.
+
+3. **Consultas Concurrentes en Paralelo (`Task.WhenAll`)**:
+   - La consulta de versiones a múltiples servidores remotos activos configurados en `NugetServers` se ejecuta de forma concurrente, reduciendo el tiempo total de sondeo a la latencia del servidor más lento en lugar de la suma secuencial acumulada.
+
+4. **Trazabilidad y Diagnóstico Estructurado**:
+   - Registro de trazas con prefijos normalizados para auditoría en tiempo de ejecución: `[PKGSOLVER-VR-FETCH]`, `[PKGSOLVER-LOCAL-VERSIONS]`, `[PKGSOLVER-REMOTE-QUERY]`, `[PKGSOLVER-REMOTE-VERSIONS]`, `[PKGSOLVER-REMOTE-ERROR]`, `[PKGSOLVER-BLOCKED]`, `[PKGSOLVER-POLICY-*]`, `[PKGSOLVER-DOWNLOAD-*]`, `[RESOLVER-*]`.

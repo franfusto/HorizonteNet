@@ -95,11 +95,16 @@ public class HAssemblySolver : IHAssemblySolver
                 : Const.DefaultDomainName;
 
             _logger.LogInformation(
-                "Resolving assembly: {AssemblyName} requested by domain {DomainName}",
+                "[RESOLVER] Solicitud de resolución: {AssemblyName} en dominio: {DomainName}",
                 args.Name,
                 requesterDomain);
 
             var (name, version) = AssemblyHelpers.ParseAssemblyName(args.Name);
+            _logger.LogDebug(
+                "[RESOLVER-PARSED] AssemblyName: '{Name}', Version: '{Version}', Raw: '{RawName}'",
+                name,
+                version ?? "any",
+                args.Name);
 
             if (AssemblyHelpers.TryCreateAssemblyNameForRuntimeResolution(args.Name, out var requestedAssemblyName))
             {
@@ -107,15 +112,16 @@ public class HAssemblySolver : IHAssemblySolver
                 if (sharedAssembly != null)
                 {
                     _logger.LogInformation(
-                        "Sharing assembly {AssemblyName} from domain Default instead of loading it into plugin domain.",
-                        sharedAssembly.FullName);
+                        "[RESOLVER-SHARED] Ensamblado base compartido {AssemblyName} entregado desde dominio Default para {DomainName}.",
+                        sharedAssembly.FullName,
+                        requesterDomain);
                     return sharedAssembly;
                 }
             }
             else
             {
                 _logger.LogDebug(
-                    "Skipping AssemblyName parsing for {AssemblyName} because it is not a valid runtime assembly identity. It will be resolved as NuGet package {PackageName} {Version}.",
+                    "[RESOLVER-NOT-RUNTIME-ID] '{AssemblyName}' no es una identidad de runtime estricta. Se resolverá como paquete NuGet '{PackageName}' versión '{Version}'.",
                     args.Name,
                     name,
                     version);
@@ -126,7 +132,7 @@ public class HAssemblySolver : IHAssemblySolver
             if (!string.Equals(name, packageName, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogInformation(
-                    "Assembly {AssemblyName} mapped to NuGet package {PackageName}",
+                    "[RESOLVER-MAP] Ensamblado '{AssemblyName}' mapeado a ID de paquete NuGet '{PackageName}'",
                     name,
                     packageName);
             }
@@ -147,14 +153,16 @@ public class HAssemblySolver : IHAssemblySolver
             if (alreadyLoaded != null)
             {
                 var loadedAlc = AssemblyLoadContext.GetLoadContext(alreadyLoaded);
+                var loadedDomain = loadedAlc != null
+                    ? (domainsDict != null
+                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, loadedAlc)
+                        : loadedAlc.Name ?? Const.DefaultDomainName)
+                    : Const.DefaultDomainName;
+
                 _logger.LogInformation(
-                    "Assembly {AssemblyName} ya estaba cargado en el dominio solicitado {DomainName}",
+                    "[RESOLVER-ALC-LOADED] Ensamblado {AssemblyName} ya cargado previamente en dominio {DomainName}",
                     alreadyLoaded.FullName,
-                    loadedAlc != null
-                        ? (domainsDict != null
-                            ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, loadedAlc)
-                            : loadedAlc.Name ?? Const.DefaultDomainName)
-                        : Const.DefaultDomainName);
+                    loadedDomain);
 
                 MapAssemblyToPackageFromAssembly(alreadyLoaded);
                 return alreadyLoaded;
@@ -162,8 +170,8 @@ public class HAssemblySolver : IHAssemblySolver
 
             if (AssemblyHelpers.ShouldSkipNuGetResolution(name))
             {
-                _logger.LogInformation(
-                    "Skipping NuGet resolution for runtime assembly: {AssemblyName} requested by domain {DomainName}",
+                _logger.LogDebug(
+                    "[RESOLVER-SKIP] Omitiendo resolución NuGet para ensamblado del runtime .NET: {AssemblyName} (dominio: {DomainName})",
                     name,
                     requesterDomain);
                 return null;
@@ -176,7 +184,7 @@ public class HAssemblySolver : IHAssemblySolver
                 if (!cachedItem.Found && cachedItem.IsResolved)
                 {
                     _logger.LogInformation(
-                        "Assembly {AssemblyName} registrado en caché negativa para el dominio {DomainName}.",
+                        "[RESOLVER-CACHE-HIT-NEG] Ensamblado {AssemblyName} en caché negativa para dominio {DomainName}. Retornando null.",
                         args.Name,
                         requesterDomain);
                     return null;
@@ -185,7 +193,7 @@ public class HAssemblySolver : IHAssemblySolver
                 if (cachedItem.Found && cachedItem.ResolvedAssembly != null)
                 {
                     _logger.LogInformation(
-                        "Assembly {AssemblyName} obtenido de caché de ensamblados resueltos para el dominio {DomainName}.",
+                        "[RESOLVER-CACHE-HIT-POS] Ensamblado {AssemblyName} recuperado de caché en memoria para dominio {DomainName}.",
                         args.Name,
                         requesterDomain);
                     return cachedItem.ResolvedAssembly;
@@ -193,6 +201,11 @@ public class HAssemblySolver : IHAssemblySolver
 
                 if (cachedItem.Found && !string.IsNullOrEmpty(cachedItem.DllPath) && File.Exists(cachedItem.DllPath))
                 {
+                    _logger.LogInformation(
+                        "[RESOLVER-CACHE-HIT-PATH] Cargando ensamblado desde ruta en caché {DllPath} para dominio {DomainName}.",
+                        cachedItem.DllPath,
+                        requesterDomain);
+
                     var loadedFromCache = sender is AssemblyLoadContext reqContext
                         ? reqContext.LoadFromAssemblyPath(cachedItem.DllPath)
                         : Assembly.LoadFrom(cachedItem.DllPath);
@@ -201,6 +214,12 @@ public class HAssemblySolver : IHAssemblySolver
                 }
             }
 
+            _logger.LogDebug(
+                "[RESOLVER-CACHE-MISS] No existe entrada en caché para '{AssemblyName}', versión '{Version}' en dominio '{DomainName}'. Delegando en IPackageSolver...",
+                name,
+                version ?? "any",
+                requesterDomain);
+
             // 2. Resolver paquete mediante IPackageSolver
             var resolutionResult = _packageSolver.ResolvePackageAsync(name, version, requesterDomain).GetAwaiter().GetResult();
             string? resAssemblyPath = null;
@@ -208,10 +227,20 @@ public class HAssemblySolver : IHAssemblySolver
             if (resolutionResult.Success && !string.IsNullOrEmpty(resolutionResult.DllPath))
             {
                 resAssemblyPath = resolutionResult.DllPath;
+                _logger.LogInformation(
+                    "[RESOLVER-PKG-SUCCESS] PackageSolver resolvió '{PackageId}' v'{Version}' -> '{DllPath}'",
+                    resolutionResult.PackageId,
+                    resolutionResult.Version,
+                    resAssemblyPath);
             }
             else
             {
-                // Fallback a búsqueda local interna
+                _logger.LogDebug(
+                    "[RESOLVER-FALLBACK-LOCAL] PackageSolver no resolvió DLL directamente ({Error}). Ejecutando fallback local para '{PackageName}' v'{Version}'...",
+                    resolutionResult.ErrorMessage,
+                    packageName,
+                    version);
+
                 resAssemblyPath = ResolveNugetFromLocalDirectory(packageName, version, null, true)
                                ?? ResolveNugetFromLocalDirectory(packageName, version, null, false);
             }
@@ -219,7 +248,7 @@ public class HAssemblySolver : IHAssemblySolver
             if (resAssemblyPath == null)
             {
                 _logger.LogError(
-                    "Could not resolve assembly: {AssemblyName} from NuGet package {PackageName} requested by domain {DomainName}",
+                    "[RESOLVER-NOT-FOUND] No fue posible resolver el ensamblado: {AssemblyName} desde el paquete NuGet {PackageName} para el dominio {DomainName}",
                     args.Name,
                     packageName,
                     requesterDomain);
@@ -244,11 +273,12 @@ public class HAssemblySolver : IHAssemblySolver
             }
 
             _logger.LogInformation(
-                "Assembly {AssemblyName} resolved to path {AssemblyPath} for domain {DomainName}",
+                "[RESOLVER-RESOLVED] Ensamblado {AssemblyName} resuelto a la ruta física {AssemblyPath} para dominio {DomainName}",
                 args.Name,
                 resAssemblyPath,
                 requesterDomain);
 
+            _logger.LogDebug("[RESOLVER-POSTPROCESS] Registrando activos estáticos web en StaticFileRegistry para dominio '{DomainName}'...", requesterDomain);
             StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath, requesterDomain);
 
             try
@@ -256,24 +286,30 @@ public class HAssemblySolver : IHAssemblySolver
                 var symLinks = GetContentMappingsFromPackage(resAssemblyPath);
                 if (symLinks.Any())
                 {
+                    _logger.LogInformation(
+                        "[RESOLVER-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de .targets para '{AssemblyPath}'...",
+                        symLinks.Count,
+                        resAssemblyPath);
                     _linkScafolder.BuildScafolder(symLinks);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing MSBuild targets for symlinks.");
+                _logger.LogError(ex, "[RESOLVER-SYMLINKS-ERROR] Error al procesar enlaces simbólicos MSBuild para '{AssemblyPath}'.", resAssemblyPath);
             }
 
             Assembly loadedAssembly;
             if (sender is AssemblyLoadContext context)
             {
                 loadedAssembly = context.LoadFromAssemblyPath(resAssemblyPath);
+                var targetDomain = domainsDict != null
+                    ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, context)
+                    : context.Name ?? Const.DefaultDomainName;
+
                 _logger.LogInformation(
-                    "Assembly {AssemblyName} loaded into domain {DomainName}",
+                    "[RESOLVER-ALC-LOAD] Ensamblado {AssemblyName} cargado exitosamente en ALC del dominio {DomainName}",
                     loadedAssembly.FullName,
-                    domainsDict != null
-                        ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, context)
-                        : context.Name ?? Const.DefaultDomainName);
+                    targetDomain);
             }
             else
             {
@@ -281,7 +317,7 @@ public class HAssemblySolver : IHAssemblySolver
                 MapAssemblyToPackageFromAssembly(loadedAssembly);
 
                 _logger.LogInformation(
-                    "Assembly {AssemblyName} loaded into domain Default",
+                    "[RESOLVER-ALC-LOAD] Ensamblado {AssemblyName} cargado exitosamente en contexto Default",
                     loadedAssembly.FullName);
             }
 
@@ -297,6 +333,11 @@ public class HAssemblySolver : IHAssemblySolver
                 IsResolved = true,
                 Found = true
             });
+
+            _logger.LogDebug(
+                "[RESOLVER-CACHE-SAVED] Resultado de resolución para '{AssemblyName}' almacenado en HAssemblyCache (dominio: {DomainName}).",
+                name,
+                requesterDomain);
 
             return loadedAssembly;
         }

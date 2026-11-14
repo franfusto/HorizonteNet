@@ -77,14 +77,14 @@
     ],
     "NugetServers": [
       {
-        "Server": "http://www.nuget.org/api/v2",
+        "Server": "https://api.nuget.org/v3/index.json",
         "Name": "Nuget.org",
         "Order": 2,
-        "Version": 2,
+        "Version": 3,
         "Active": true
       },
       {
-        "Server": "http://localhost:5555/v3",
+        "Server": "http://localhost:5555/v3/index.json",
         "Name": "Local BaGet",
         "Order": 1,
         "Version": 3,
