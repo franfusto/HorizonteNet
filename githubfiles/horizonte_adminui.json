@@ -8,7 +8,7 @@
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
-      },      
+      },
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi",
@@ -20,7 +20,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.6-beta",
+        "ModuleVersion": "10.0.6beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
@@ -60,7 +60,22 @@
       "net7.0",
       "net6.0"
     ],
-    "ForcedPackages": [],
+    "ForcedPackages": [
+      {
+        "Active": true,
+        "PackageId": "Z.Blazor.Diagrams.Core",
+        "Version": "3.0.4",
+        "Framework": "net6.0",
+        "Domain": "Default"
+      },
+      {
+        "Active": true,
+        "PackageId": "Z.Blazor.Diagrams",
+        "Version": "3.0.4",
+        "Framework": "net6.0",
+        "Domain": "Default"
+      }
+    ],
     "AssemblyToPackageMap": {
       "Microsoft.CodeAnalysis.Workspaces": "Microsoft.CodeAnalysis.Workspaces.Common",
       "Microsoft.CodeAnalysis": "Microsoft.CodeAnalysis.Common",
