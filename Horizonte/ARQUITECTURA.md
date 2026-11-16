@@ -524,7 +524,7 @@ public class BlockedPackageItem
       {
         "Active": true,
         "ModuleName": "Horizonte",
-        "ModuleVersion": "10.0.6-beta",
+        "ModuleVersion": "10.0.7-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"
