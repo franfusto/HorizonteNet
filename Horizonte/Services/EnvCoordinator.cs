@@ -12,11 +12,11 @@ using Microsoft.Extensions.Logging;
 namespace Horizonte.Services;
 
 /// <summary>
-/// Orquestador central del entorno modular de HorizonteNet y fachada de compatibilidad para IhAssemblyManager.
+/// Orquestador central del entorno modular de HorizonteNet y fachada principal.
 /// Coordina la gestión de dominios (IHDomainManager), ensamblados/recursos (IHAssemblySolver),
 /// comandos/módulos (IHGesCom) y servicios en segundo plano (IhWorkersManager).
 /// </summary>
-public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
+public class EnvCoordinator : IEnvCoordinator
 {
     private static readonly TimeSpan BackgroundServiceStopTimeout = TimeSpan.FromSeconds(5);
 
@@ -56,17 +56,15 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
     /// <summary>
     /// Lista de todos los ensamblados cargados en el contexto Default y en los contextos de dominios activos.
     /// </summary>
-    public List<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
+    public IReadOnlyList<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
         .Concat(_domainManager.Domains.Values.SelectMany(x => x.Assemblies))
         .Distinct()
         .ToList();
 
-    IReadOnlyList<Assembly> IEnvCoordinator.Assemblies => Assemblies;
-
     /// <summary>
     /// Diccionario de ensamblados agrupados por nombre de dominio.
     /// </summary>
-    public Dictionary<string, List<Assembly>> AssembliesByDomain
+    public IReadOnlyDictionary<string, List<Assembly>> AssembliesByDomain
     {
         get
         {
@@ -83,8 +81,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
             return result;
         }
     }
-
-    IReadOnlyDictionary<string, List<Assembly>> IEnvCoordinator.AssembliesByDomain => AssembliesByDomain;
 
     /// <summary>
     /// Registro y mapeo de archivos estáticos y activos web por dominio.
@@ -116,30 +112,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
     }
 
     /// <summary>
-    /// Resuelve y carga un ensamblado dado su contexto de carga y su nombre, delegando en IHAssemblySolver.
-    /// </summary>
-    public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName)
-    {
-        return _assemblySolver.ResolveAssemblyFromALC(context, assemblyName);
-    }
-
-    /// <summary>
-    /// Resuelve y carga un ensamblado desde paquetes NuGet, delegando en IHAssemblySolver.
-    /// </summary>
-    public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
-    {
-        return _assemblySolver.ResolveAssemblyFromNuGetPackages(sender, args);
-    }
-
-    /// <summary>
-    /// Resuelve la ruta del archivo DLL de un paquete NuGet específico, delegando en IHAssemblySolver.
-    /// </summary>
-    public string? ResolveAssemblyDllPath(string packageName, string version)
-    {
-        return _assemblySolver.ResolveAssemblyDllPath(packageName, version);
-    }
-
-    /// <summary>
     /// Descarga un dominio específico liberando sus servicios, comandos y contexto de carga.
     /// </summary>
     public async Task UnloadDomainAsync(string domainName)
@@ -159,11 +131,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
 
         DomainChanged?.Invoke();
     }
-
-    /// <summary>
-    /// Descarga un dominio específico (método fachada de compatibilidad).
-    /// </summary>
-    public Task UnloadDomain(string domainName) => UnloadDomainAsync(domainName);
 
     /// <summary>
     /// Carga un dominio específico y sus módulos, paquetes forzados y servicios asociados.
@@ -203,11 +170,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
     }
 
     /// <summary>
-    /// Carga un dominio específico (método fachada de compatibilidad).
-    /// </summary>
-    public Task LoadDomain(string domainName) => LoadDomainAsync(domainName);
-
-    /// <summary>
     /// Carga un dominio a partir de ensamblados en memoria y activa sus módulos y servicios.
     /// </summary>
     public async Task LoadDomainAsync(string domainName, IEnumerable<byte[]> assemblies)
@@ -238,11 +200,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
     }
 
     /// <summary>
-    /// Carga un dominio con ensamblados en memoria (método fachada de compatibilidad).
-    /// </summary>
-    public Task LoadDomain(string domainName, IEnumerable<byte[]> assemblies) => LoadDomainAsync(domainName, assemblies);
-
-    /// <summary>
     /// Recarga un dominio ejecutando de forma coordinada la descarga y posterior carga completa.
     /// </summary>
     public async Task ReloadDomainAsync(string domainName)
@@ -257,11 +214,6 @@ public class EnvCoordinator : IEnvCoordinator, IhAssemblyManager
         await UnloadDomainAsync(domainName);
         await LoadDomainAsync(domainName);
     }
-
-    /// <summary>
-    /// Recarga un dominio (método fachada de compatibilidad).
-    /// </summary>
-    public Task ReloadDomain(string domainName) => ReloadDomainAsync(domainName);
 
     /// <summary>
     /// Descarga los módulos asociados a un dominio.

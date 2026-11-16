@@ -1,6 +1,7 @@
 using BlazorMonaco;
 using BlazorMonaco.Languages;
 using Horizonte;
+using Horizonte.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Reflection;
@@ -10,13 +11,13 @@ using System.Text.Json;
 namespace Horizonte.Scripts.Services;
 
 /// <summary>
-/// Servicio que extrae tipos, métodos, propiedades y miembros de los ensamblados cargados en <see cref="IhAssemblyManager"/>
+/// Servicio que extrae tipos, métodos, propiedades y miembros de los ensamblados cargados en <see cref="IEnvCoordinator"/>
 /// y los convierte en elementos de autocompletado (<see cref="CompletionItem"/>) para Monaco Editor.
 /// </summary>
 public class ScriptCompletionService : IScriptCompletionService
 {
     
-    private readonly IhAssemblyManager? _assemblyManager;
+    private readonly IEnvCoordinator? _envCoordinator;
     private readonly ILogger<ScriptCompletionService>? _logger;
     private List<CompletionItem>? _cachedItems;
     private readonly object _lock = new();
@@ -49,16 +50,16 @@ public class ScriptCompletionService : IScriptCompletionService
     /// <summary>
     /// Inicializa una nueva instancia de <see cref="ScriptCompletionService"/>.
     /// </summary>
-    /// <param name="assemblyManager">El gestor de ensamblados de Horizonte.</param>
+    /// <param name="envCoordinator">El orquestador central de Horizonte.</param>
     /// <param name="logger">El servicio de logging opcional.</param>
-    public ScriptCompletionService(IhAssemblyManager? assemblyManager, ILogger<ScriptCompletionService>? logger = null)
+    public ScriptCompletionService(IEnvCoordinator? envCoordinator, ILogger<ScriptCompletionService>? logger = null)
     {
-        _assemblyManager = assemblyManager;
+        _envCoordinator = envCoordinator;
         _logger = logger;
 
-        if (_assemblyManager != null)
+        if (_envCoordinator != null)
         {
-            _assemblyManager.DomainChanged += OnDomainChanged;
+            _envCoordinator.DomainChanged += OnDomainChanged;
         }
     }
 
@@ -172,7 +173,7 @@ public class ScriptCompletionService : IScriptCompletionService
         var seenSignatures = new HashSet<string>(StringComparer.Ordinal);
         var seenNamespaces = new HashSet<string>(StringComparer.Ordinal);
 
-        if (_assemblyManager == null)
+        if (_envCoordinator == null)
         {
             return items;
         }
@@ -181,17 +182,17 @@ public class ScriptCompletionService : IScriptCompletionService
         var assemblies = new HashSet<Assembly>();
         try
         {
-            if (_assemblyManager.Assemblies != null)
+            if (_envCoordinator.Assemblies != null)
             {
-                foreach (var asm in _assemblyManager.Assemblies)
+                foreach (var asm in _envCoordinator.Assemblies)
                 {
                     if (asm != null) assemblies.Add(asm);
                 }
             }
 
-            if (_assemblyManager.AssembliesByDomain != null)
+            if (_envCoordinator.AssembliesByDomain != null)
             {
-                foreach (var domainList in _assemblyManager.AssembliesByDomain.Values)
+                foreach (var domainList in _envCoordinator.AssembliesByDomain.Values)
                 {
                     if (domainList != null)
                     {
@@ -205,7 +206,7 @@ public class ScriptCompletionService : IScriptCompletionService
         }
         catch (Exception ex)
         {
-            _logger?.LogWarning(ex, "Error al recopilar ensamblados desde IhAssemblyManager");
+            _logger?.LogWarning(ex, "Error al recopilar ensamblados desde IEnvCoordinator");
         }
 
         foreach (var asm in assemblies)
@@ -405,9 +406,9 @@ public class ScriptCompletionService : IScriptCompletionService
         if (!_disposed)
         {
             _disposed = true;
-            if (_assemblyManager != null)
+            if (_envCoordinator != null)
             {
-                _assemblyManager.DomainChanged -= OnDomainChanged;
+                _envCoordinator.DomainChanged -= OnDomainChanged;
             }
         }
     }

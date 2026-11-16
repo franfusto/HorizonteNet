@@ -26,7 +26,7 @@ public class PanelModulo
     private IServiceProvider _serviceProvider;
     private IAppManager _appManager;
     private IhWorkersManager _workersManager;
-    private IhAssemblyManager _assemblyManager;
+    private IEnvCoordinator _envCoordinator;
 
     /// <summary>
     /// Represent un panel de módulo en el framework Horizonte que funciona como una interfaz 
@@ -35,7 +35,7 @@ public class PanelModulo
     /// una descripción.
     /// </summary>
     public PanelModulo(IServiceProvider serviceProvider,
-        IhAssemblyManager assemblyManager,
+        IEnvCoordinator envCoordinator,
         IAppManager appManager,
         IhWorkersManager workersManager,
         IHGesCom gesCom,
@@ -46,7 +46,7 @@ public class PanelModulo
         _logger = logger;
         _appManager =  appManager;
         _workersManager = workersManager;
-        _assemblyManager = assemblyManager;
+        _envCoordinator = envCoordinator;
     }
 
     /// <summary>
@@ -208,10 +208,10 @@ public class PanelModulo
     [HorizonteCommand("Workers_GetAvailablesBackServices", "Obtiene los Tipos de los BackgroundService registrados en el sistema")]
     public List<string> Workers_GetAvailablesServices()
     {
-        var assemblymanager = _serviceProvider.GetService<IhAssemblyManager>();
-        if (assemblymanager == null) return new List<string>();
+        var envCoordinator = _serviceProvider.GetService<IEnvCoordinator>() ?? _envCoordinator;
+        if (envCoordinator == null) return new List<string>();
 
-        var types = assemblymanager.Assemblies
+        var types = envCoordinator.Assemblies
             .SelectMany(a => a.GetTypes())
             .Where(t => typeof(BackgroundService).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
             .Select(t => t.FullName)

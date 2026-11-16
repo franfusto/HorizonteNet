@@ -4,10 +4,11 @@
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Logging
 @using Horizonte
+@using Horizonte.Interfaces
 @using Horizonte.Scripts.Services
 @inject IJSRuntime JSRuntime
 @inject IServiceProvider ServiceProvider
-@inject IhAssemblyManager? AssemblyManager
+@inject IEnvCoordinator? EnvCoordinator
 @inject IScriptCompletionService? InjectedCompletionService
 
 <StandaloneCodeEditor
@@ -126,10 +127,10 @@
                 ?? InjectedCompletionService 
                 ?? ServiceProvider.GetService<IScriptCompletionService>();
 
-            if (service == null && AssemblyManager != null)
+            if (service == null && EnvCoordinator != null)
             {
                 var logger = ServiceProvider.GetService<ILogger<ScriptCompletionService>>();
-                _activeCompletionService = new ScriptCompletionService(AssemblyManager, logger);
+                _activeCompletionService = new ScriptCompletionService(EnvCoordinator, logger);
                 _ownsCompletionService = true;
                 service = _activeCompletionService;
             }

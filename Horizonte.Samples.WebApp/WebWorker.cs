@@ -24,7 +24,7 @@ public class WebWorker : BackgroundService
     private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private readonly ISymLinkScafolder _linkScafolder;
-    private readonly IhAssemblyManager _assemblyManager;
+    private readonly IEnvCoordinator _envCoordinator;
     private WebApplication? _app;
 
     /// <summary>
@@ -35,20 +35,20 @@ public class WebWorker : BackgroundService
     /// <param name="context">Contexto global de ejecución y configuración de Horizonte (<see cref="IhContext"/>).</param>
     /// <param name="credManager">Gestor de credenciales del marco Horizonte (<see cref="IHCredManager"/>).</param>
     /// <param name="linkScafolder">Herramienta de andamiaje y gestión de enlaces simbólicos (<see cref="ISymLinkScafolder"/>).</param>
-    /// <param name="assemblyManager">Gestor de ensamblados y tipos cargados en Horizonte (<see cref="IhAssemblyManager"/>).</param>
+    /// <param name="envCoordinator">Orquestador central y gestor de ensamblados de Horizonte (<see cref="IEnvCoordinator"/>).</param>
     public WebWorker(ILogger<WebWorker> log, 
         IHGesCom gesCom, 
         IhContext context, 
         IHCredManager credManager, 
         ISymLinkScafolder linkScafolder, 
-        IhAssemblyManager assemblyManager)
+        IEnvCoordinator envCoordinator)
     {
         _log = log;
         _gesCom = gesCom;
         _context = context;
         _credManager = credManager;
         _linkScafolder = linkScafolder;
-        _assemblyManager = assemblyManager;
+        _envCoordinator = envCoordinator;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class WebWorker : BackgroundService
                 WebRootPath = Path.Combine(dir, "wwwroot")
             });
         builder.Services.AddSingleton(_context);
-        builder.Services.AddSingleton(_assemblyManager);
+        builder.Services.AddSingleton(_envCoordinator);
         builder.Logging.ClearProviders();
         builder.Logging.AddProvider(new ExistingLoggerProvider(_log));
         builder.Logging.AddFilter("Microsoft", LogLevel.Error); 

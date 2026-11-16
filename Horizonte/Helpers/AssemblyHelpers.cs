@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Horizonte.Entities;
+using Horizonte.Interfaces;
 namespace Horizonte;
 
 /// <summary>
@@ -189,7 +190,7 @@ public static class AssemblyHelpers
         if (string.IsNullOrWhiteSpace(assemblyName))
             return false;
 
-        var coreAssemblyName = typeof(IhAssemblyManager).Assembly.GetName().Name;
+        var coreAssemblyName = typeof(IEnvCoordinator).Assembly.GetName().Name;
 
         return string.Equals(assemblyName, coreAssemblyName, StringComparison.OrdinalIgnoreCase);
     }

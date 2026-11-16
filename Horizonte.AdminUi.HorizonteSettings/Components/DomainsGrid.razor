@@ -1,6 +1,6 @@
 @using Horizonte.Interfaces
 @inject IhContext Context
-@inject IhAssemblyManager AssemblyManager
+@inject IEnvCoordinator EnvCoordinator
 <RadzenStack Orientation="Orientation.Vertical">
     <RadzenDataGrid @ref="_grid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="false"
                     AllowSorting="false" 
@@ -141,16 +141,16 @@
 
     private async Task UnloadDomain(DomainItem item)
     {
-        await AssemblyManager.UnloadDomain(item.Domain);
+        await EnvCoordinator.UnloadDomainAsync(item.Domain);
     }
 
     private async Task LoadDomain(DomainItem item)
     {
-        await AssemblyManager.LoadDomain(item.Domain);
+        await EnvCoordinator.LoadDomainAsync(item.Domain);
     }
 
     private async Task ReloadDomain(DomainItem item)
     {
-        await AssemblyManager.ReloadDomain(item.Domain);
+        await EnvCoordinator.ReloadDomainAsync(item.Domain);
     }
 }

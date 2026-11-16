@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
+using Horizonte.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Scripting;
@@ -97,17 +98,17 @@ public static class Extensions
                     {
                         var packageName = nugetMatch.Groups[1].Value.Trim();
                         var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0"; // Versión por defecto si no se especifica
-                        var assemblyManager = serviceProvider.GetService<IhAssemblyManager>() ;
-                        if (assemblyManager != null)
+                        var envCoordinator = serviceProvider.GetService<IEnvCoordinator>();
+                        if (envCoordinator != null)
                         {
                             var args = new ResolveEventArgs($"{packageName}, Version={version}");
-                            var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
+                            var assembly = envCoordinator.AssemblySolver.ResolveAssemblyFromNuGetPackages(null, args);
                             if (assembly != null)
                             {
                                 //si el ensamblado esta embedido en el ejecutable...no tiene localización
                                 if (string.IsNullOrEmpty(assembly.Location))
                                 {
-                                    var location = assemblyManager.ResolveAssemblyDllPath(packageName, version);
+                                    var location = envCoordinator.AssemblySolver.ResolveAssemblyDllPath(packageName, version);
                                     if (!string.IsNullOrEmpty(location))
                                     {
                                         // Asegurar que la ruta sea absoluta y normalizada
@@ -178,13 +179,13 @@ public static class Extensions
 
 
     /// <summary>
-    /// Compila un <see cref="ScriptDef"/> de forma asincrónica utilizando un administrador de ensamblados proporcionado.
+    /// Compila un <see cref="ScriptDef"/> de forma asincrónica utilizando un coordinador de entorno proporcionado.
     /// </summary>
     /// <param name="scriptDef">
     /// Definición del script que se va a compilar.
     /// </param>
-    /// <param name="assemblyManager">
-    /// Administrador de ensamblados que gestiona las referencias y dependencias durante la compilación.
+    /// <param name="envCoordinator">
+    /// Coordinador de entorno que gestiona las referencias y dependencias durante la compilación.
     /// </param>
     /// <returns>
     /// Una tarea que representa la operación asincrónica. La tarea contiene un <see cref="ScriptDefCompileResponse"/> con los resultados de la compilación.
@@ -192,7 +193,7 @@ public static class Extensions
     /// <exception cref="Exception">
     /// Se produce si ocurre un error durante el proceso de compilación.
     /// </exception>
-    public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef,IhAssemblyManager assemblyManager)
+    public static async Task<ScriptDefCompileResponse> Compile(this ScriptDef scriptDef, IEnvCoordinator envCoordinator)
     {
         var response = new ScriptDefCompileResponse();
         try
@@ -210,18 +211,18 @@ public static class Extensions
                 var nugetMatch = Regex.Match(trimmedLine, @"^#r\s+""nuget:\s*([^,/""]+)(?:,\s*([^""]+))?""\s*", RegexOptions.IgnoreCase);
                 if (nugetMatch.Success)
                 {
-                    if (assemblyManager != null)
+                    if (envCoordinator != null)
                     {
                         var packageName = nugetMatch.Groups[1].Value.Trim();
                         var version = nugetMatch.Groups[2].Success ? nugetMatch.Groups[2].Value.Trim() : "1.0.0";
                         var args = new ResolveEventArgs($"{packageName}, Version={version}");
-                        var assembly = assemblyManager.ResolveAssemblyFromNuGetPackages(null, args);
+                        var assembly = envCoordinator.AssemblySolver.ResolveAssemblyFromNuGetPackages(null, args);
                         if (assembly != null)
                         {
                             var location = assembly.Location;
                             if (string.IsNullOrEmpty(location))
                             {
-                                location = assemblyManager.ResolveAssemblyDllPath(packageName, version);
+                                location = envCoordinator.AssemblySolver.ResolveAssemblyDllPath(packageName, version);
                             }
 
                             if (!string.IsNullOrEmpty(location))
@@ -310,14 +311,14 @@ public static class Extensions
             }
 
             // Añadir Horizonte
-            var horizonteAssembly = typeof(IhAssemblyManager).Assembly; 
+            var horizonteAssembly = typeof(IEnvCoordinator).Assembly; 
             var horizonteLoc = horizonteAssembly.Location;
             
             //si la compilación es singlefile, horizonte esta embedido, descargamos el nuget
-            if (string.IsNullOrEmpty(horizonteLoc) && assemblyManager != null)
+            if (string.IsNullOrEmpty(horizonteLoc) && envCoordinator != null)
             {
                 var version = horizonteAssembly.GetName().Version?.ToString() ?? "10.0.0";
-                horizonteLoc = assemblyManager.ResolveAssemblyDllPath("Horizonte", version);
+                horizonteLoc = envCoordinator.AssemblySolver.ResolveAssemblyDllPath("Horizonte", version);
             }
             
             if (!string.IsNullOrEmpty(horizonteLoc) && addedFiles.Add(Path.GetFileName(horizonteLoc)))
@@ -389,7 +390,7 @@ public static class Extensions
     /// Colección de definiciones de scripts que se desean cargar. Solo se cargarán aquellos scripts que estén marcados como activos.
     /// </param>
     /// <param name="serviceProvider">
-    /// Proveedor de servicios utilizado para obtener instancias necesarias como <see cref="ILogger"/> e <see cref="IhAssemblyManager"/>.
+    /// Proveedor de servicios utilizado para obtener instancias necesarias como <see cref="ILogger"/> e <see cref="IEnvCoordinator"/>.
     /// </param>
     /// <returns>
     /// Una tarea que representa la operación asincrónica de carga de módulos de script.
@@ -405,10 +406,10 @@ public static class Extensions
             var  logger = serviceProvider.GetService<ILogger<PanelModulo>>();
             try
             {
-                var asmmanager = serviceProvider.GetService<IhAssemblyManager>();
-                if (asmmanager == null)
+                var envCoordinator = serviceProvider.GetService<IEnvCoordinator>();
+                if (envCoordinator == null)
                 {
-                    logger?.LogWarning("No se encontró IhAssemblyManager. No se pueden cargar scripts.");
+                    logger?.LogWarning("No se encontró IEnvCoordinator. No se pueden cargar scripts.");
                     return;
                 }
 
@@ -418,7 +419,7 @@ public static class Extensions
                 {
                     logger?.LogInformation($"Loading script {script.Name}...");
 
-                    var compileresponse = await script.Compile(asmmanager);
+                    var compileresponse = await script.Compile(envCoordinator);
 
                     if (compileresponse.Errors.Any() )
                     {
@@ -436,8 +437,8 @@ public static class Extensions
                     }
                 }
 
-                await asmmanager.UnloadDomain(Const.ScriptDomainName);
-                await asmmanager.LoadDomain(Const.ScriptDomainName, scriptasmlist);
+                await envCoordinator.UnloadDomainAsync(Const.ScriptDomainName);
+                await envCoordinator.LoadDomainAsync(Const.ScriptDomainName, scriptasmlist);
                 
                 // Forzar la inicialización de los nuevos comandos si tienen el rol "init"
                 var gesCom = serviceProvider.GetService<IHGesCom>();

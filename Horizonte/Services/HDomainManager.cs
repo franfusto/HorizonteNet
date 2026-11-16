@@ -60,13 +60,7 @@ public class HDomainManager : IHDomainManager
     private Assembly? OnResolving(AssemblyLoadContext context, AssemblyName assemblyName)
     {
         var assemblySolver = _serviceProvider.GetService<IHAssemblySolver>();
-        if (assemblySolver != null)
-        {
-            return assemblySolver.ResolveAssemblyFromALC(context, assemblyName);
-        }
-
-        var assemblyManager = _serviceProvider.GetService<IhAssemblyManager>();
-        return assemblyManager?.ResolveAssemblyFromALC(context, assemblyName);
+        return assemblySolver?.ResolveAssemblyFromALC(context, assemblyName);
     }
 
     /// <summary>

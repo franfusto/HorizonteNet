@@ -75,7 +75,6 @@ public static class EnvExtensions
         hostBuilder.Services.AddSingleton<IhWorkersManager, HWorkersManager>();
         hostBuilder.Services.AddSingleton<EnvCoordinator>();
         hostBuilder.Services.AddSingleton<IEnvCoordinator>(sp => sp.GetRequiredService<EnvCoordinator>());
-        hostBuilder.Services.AddSingleton<IhAssemblyManager>(sp => sp.GetRequiredService<EnvCoordinator>());
         hostBuilder.Services.AddSingleton<IAppManager, AppManager>();
     }
 

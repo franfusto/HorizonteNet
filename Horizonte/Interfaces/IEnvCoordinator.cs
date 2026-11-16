@@ -4,7 +4,7 @@ using Horizonte.Helpers;
 namespace Horizonte.Interfaces;
 
 /// <summary>
-/// Interfaz del orquestador central y fachada de compatibilidad para el entorno modular de HorizonteNet.
+/// Interfaz del orquestador central y fachada del entorno modular de HorizonteNet.
 /// </summary>
 public interface IEnvCoordinator
 {
@@ -28,12 +28,12 @@ public interface IEnvCoordinator
     Task UnloadDomainAsync(string domainName);
     Task ReloadDomainAsync(string domainName);
 
-    // Métodos de compatibilidad de servicios en segundo plano (Workers)
+    // Servicios en segundo plano (Workers)
     bool StartBackgroundService(string serviceType);
     bool StopBackgroundService(string serviceType);
     bool BackgroundServiceRunning(string serviceType);
 
-    // Métodos de compatibilidad para gestión de módulos y comandos por dominio
+    // Gestión de módulos y comandos por dominio
     void LoadModule(string domainName);
     void UnloadModule(string domainName);
     void LoadCommandsByDomain(string domainName);

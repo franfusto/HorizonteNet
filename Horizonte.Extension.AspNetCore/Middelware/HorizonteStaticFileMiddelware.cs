@@ -1,4 +1,5 @@
 using System.Reflection;
+using Horizonte.Interfaces;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -58,10 +59,10 @@ public class HorizonteStaticFileMiddelware
     private readonly IContentTypeProvider _contentTypeProvider;
 
     /// <summary>
-    /// Variable privada que representa una instancia de <see cref="IhAssemblyManager"/>.
-    /// Se utiliza para gestionar y manipular ensamblados en el contexto del middleware de archivos estáticos de Horizonte.
+    /// Variable privada que representa una instancia de <see cref="IEnvCoordinator"/>.
+    /// Se utiliza para gestionar y manipular ensamblados y archivos estáticos en el contexto del middleware de Horizonte.
     /// </summary>
-    private readonly IhAssemblyManager _assemblyManager;
+    private readonly IEnvCoordinator _envCoordinator;
 
     /// <summary>
     /// Representa el nombre de dominio registrado para el middleware de archivos estáticos en el contexto de la aplicación.
@@ -79,19 +80,19 @@ public class HorizonteStaticFileMiddelware
     /// <param name="hostingEnv">El entorno de alojamiento web para resolver proveedores de archivos raíz.</param>
     /// <param name="options">Las opciones de configuración para la entrega de archivos estáticos.</param>
     /// <param name="logger">El registrador de eventos para registrar operaciones y advertencias del middleware.</param>
-    /// <param name="assemblyManager">El gestor de ensamblados de Horizonte para el acceso al registro de archivos estáticos.</param>
+    /// <param name="envCoordinator">El orquestador central de Horizonte para el acceso al registro de archivos estáticos.</param>
     /// <param name="registeringAssembly">El ensamblado que registra el middleware, utilizado para resolver el dominio asociado.</param>
     public HorizonteStaticFileMiddelware(RequestDelegate next, IWebHostEnvironment hostingEnv,
-        IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger,IhAssemblyManager assemblyManager,
+        IOptions<StaticFileOptions> options, ILogger<HorizonteStaticFileMiddelware> logger, IEnvCoordinator envCoordinator,
         Assembly? registeringAssembly = null)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(hostingEnv);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(assemblyManager);
-        _assemblyManager = assemblyManager;
-        _domainName = ResolveRegisteringAssemblyDomain(registeringAssembly, assemblyManager);
+        ArgumentNullException.ThrowIfNull(envCoordinator);
+        _envCoordinator = envCoordinator;
+        _domainName = ResolveRegisteringAssemblyDomain(registeringAssembly, envCoordinator);
         _next = next;
         _options = options.Value;
         _contentTypeProvider = _options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
@@ -251,7 +252,7 @@ public class HorizonteStaticFileMiddelware
     private async Task TryServeStaticFile(HttpContext context, string? contentType, PathString subPath)
     {
         if (subPath.Value == null) return;
-        FileInfo? fileInfo = _assemblyManager.StaticFileRegistry.GetFile(subPath.Value, _domainName);
+        FileInfo? fileInfo = _envCoordinator.StaticFileRegistry.GetFile(subPath.Value, _domainName);
         if (fileInfo != null)
         {
             context.Response.ContentType = contentType;
@@ -268,26 +269,26 @@ public class HorizonteStaticFileMiddelware
     }
 
     /// <summary>
-    /// Resuelve el dominio de ensamblaje de registro proporcionado, utilizando un administrador de ensamblajes para determinar
+    /// Resuelve el dominio de ensamblaje de registro proporcionado, utilizando un coordinador de entorno para determinar
     /// el nombre del dominio asociado al ensamblaje de registro.
     /// </summary>
     /// <param name="registeringAssembly">
     /// El ensamblaje que se está registrando. Si es nulo, el método devuelve nulo.
     /// </param>
-    /// <param name="assemblyManager">
-    /// El administrador de ensamblajes que contiene información sobre los dominios y sus ensamblajes asociados.
+    /// <param name="envCoordinator">
+    /// El coordinador de entorno que contiene información sobre los dominios y sus ensamblajes asociados.
     /// </param>
     /// <returns>
     /// El nombre del dominio asociado al ensamblaje de registro si se encuentra uno coincidente; de lo contrario, nulo.
     /// </returns>
     private static string? ResolveRegisteringAssemblyDomain(
         Assembly? registeringAssembly,
-        IhAssemblyManager assemblyManager)
+        IEnvCoordinator envCoordinator)
     {
         if (registeringAssembly == null)
             return null;
 
-        foreach (var domain in assemblyManager.AssembliesByDomain)
+        foreach (var domain in envCoordinator.AssembliesByDomain)
         {
             if (domain.Value.Any(assembly => ReferenceEquals(assembly, registeringAssembly)))
             {

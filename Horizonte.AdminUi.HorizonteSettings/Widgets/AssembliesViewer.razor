@@ -2,8 +2,9 @@
 @using System.Xml.Linq
 @using System.IO
 @using System.Runtime.Loader
+@using Horizonte.Interfaces
 @implements IDisposable
-@inject IhAssemblyManager AssemblyManager
+@inject IEnvCoordinator EnvCoordinator
 
 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="height: 100%">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Style="width: 40%; height: 100%">
@@ -50,7 +51,7 @@
 
     protected override void OnInitialized()
     {
-        AssemblyManager.DomainChanged += OnDomainChanged;
+        EnvCoordinator.DomainChanged += OnDomainChanged;
         RefreshTree();
         base.OnInitialized();
     }
@@ -66,13 +67,13 @@
 
     public void Dispose()
     {
-        AssemblyManager.DomainChanged -= OnDomainChanged;
+        EnvCoordinator.DomainChanged -= OnDomainChanged;
     }
 
     private void RefreshTree()
     {
         treeItems = new();
-        var assembliesByDomain = AssemblyManager.AssembliesByDomain;
+        var assembliesByDomain = EnvCoordinator.AssembliesByDomain;
 
         foreach (var domain in assembliesByDomain.OrderBy(d => d.Key == Const.DefaultDomainName ? 0 : 1).ThenBy(d => d.Key))
         {

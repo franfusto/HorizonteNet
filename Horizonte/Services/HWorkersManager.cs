@@ -10,7 +10,7 @@ namespace Horizonte;
 /// </summary>
 /// <remarks>
 /// Esta clase resuelve definiciones de workers mediante <see cref="IhContext"/> y delega en
-/// <see cref="IhAssemblyManager"/> el inicio, detención y consulta del estado de los servicios
+/// <see cref="IEnvCoordinator"/> el inicio, detención y consulta del estado de los servicios
 /// en segundo plano. También registra en el sistema de logging los eventos relevantes del ciclo
 /// de vida de cada worker.
 /// </remarks>
@@ -18,7 +18,7 @@ public class HWorkersManager : IhWorkersManager
 {
     private readonly IhContext _context;
     private readonly ILogger<HWorkersManager> _logger;
-    private readonly Lazy<IhAssemblyManager> _assemblyManager;
+    private readonly Lazy<IEnvCoordinator> _envCoordinator;
     
     /// <summary>
     /// Inicializa una nueva instancia de <see cref="HWorkersManager"/>.
@@ -31,7 +31,7 @@ public class HWorkersManager : IhWorkersManager
     /// relacionados con los workers.
     /// </param>
     /// <param name="serviceProvider">
-    /// Proveedor de servicios para la resolución diferida de <see cref="IhAssemblyManager"/>.
+    /// Proveedor de servicios para la resolución diferida de <see cref="IEnvCoordinator"/>.
     /// </param>
     public HWorkersManager(
         IhContext context,
@@ -40,7 +40,7 @@ public class HWorkersManager : IhWorkersManager
     {
         _context = context;
         _logger = logger;
-        _assemblyManager = new Lazy<IhAssemblyManager>(() => serviceProvider.GetRequiredService<IhAssemblyManager>());
+        _envCoordinator = new Lazy<IEnvCoordinator>(() => serviceProvider.GetRequiredService<IEnvCoordinator>());
     }
 
     /// <inheritdoc />
@@ -82,7 +82,7 @@ public class HWorkersManager : IhWorkersManager
         if (worker == null)
             return false;
 
-        return _assemblyManager.Value.BackgroundServiceRunning(worker.WorkerType);
+        return _envCoordinator.Value.BackgroundServiceRunning(worker.WorkerType);
     }
     
     /// <inheritdoc />
@@ -98,7 +98,7 @@ public class HWorkersManager : IhWorkersManager
             return false;
         }
 
-        var started = _assemblyManager.Value.StartBackgroundService(worker.WorkerType);
+        var started = _envCoordinator.Value.StartBackgroundService(worker.WorkerType);
 
         if (started)
             _logger.LogInformation("Worker iniciado: '{ServiceName}'.", serviceName);
@@ -120,7 +120,7 @@ public class HWorkersManager : IhWorkersManager
             return false;
         }
 
-        var stopped = _assemblyManager.Value.StopBackgroundService(worker.WorkerType);
+        var stopped = _envCoordinator.Value.StopBackgroundService(worker.WorkerType);
 
         if (stopped)
             _logger.LogInformation("Worker detenido: '{ServiceName}'.", serviceName);

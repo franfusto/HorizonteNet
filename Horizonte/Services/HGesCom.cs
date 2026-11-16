@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using log4net;
+using Horizonte.Interfaces;
 
 
 namespace Horizonte;
@@ -43,7 +44,7 @@ public class HGesCom : IHGesCom
     private readonly Dictionary<string, HCommand> _commandList = new();
 
 
-    private readonly Lazy<IhAssemblyManager> _assemblyManager;
+    private readonly Lazy<IEnvCoordinator> _envCoordinator;
 
     /// <summary>
     /// Una clase que implementa la interfaz IHGesCom, responsable de gestionar y ejecutar comandos
@@ -52,32 +53,32 @@ public class HGesCom : IHGesCom
     /// </summary>
     public HGesCom(IServiceProvider serviceProvider)
     {
-        _assemblyManager = new Lazy<IhAssemblyManager>(() => serviceProvider.GetRequiredService<IhAssemblyManager>());
+        _envCoordinator = new Lazy<IEnvCoordinator>(() => serviceProvider.GetRequiredService<IEnvCoordinator>());
     }
 
     /// <summary>
     /// Carga e inicializa los módulos decorados con el atributo <see cref="HorizonteModule"/> 
     /// desde los ensamblados del dominio de aplicación actual.
-    /// Este método delega la carga a HAssemblyManager.
+    /// Este método delega la carga a IEnvCoordinator.
     /// </summary>
     public void LoadModules()
     {
         try
         {
-            var assemblyManager = _assemblyManager.Value;
-            if (assemblyManager == null)
+            var envCoordinator = _envCoordinator.Value;
+            if (envCoordinator == null)
             {
-                Log.Error("IhAssemblyManager not found. Cannot load modules.");
+                Log.Error("IEnvCoordinator not found. Cannot load modules.");
                 return;
             }
 
             // Limpiamos comandos previos si los hubiera (útil para re-carga)
             _commandList.Clear();
 
-            var assembliesByDomain = assemblyManager.AssembliesByDomain;
+            var assembliesByDomain = envCoordinator.AssembliesByDomain;
             foreach (var domainName in assembliesByDomain.Keys)
             {
-                assemblyManager.LoadCommandsByDomain(domainName);
+                envCoordinator.LoadCommandsByDomain(domainName);
             }
 
             Log.Info($"Loaded {_commandList.Count} HCommands");
@@ -453,15 +454,15 @@ public class HGesCom : IHGesCom
     {
         try
         {
-            var assemblyManager = _assemblyManager.Value;
+            var envCoordinator = _envCoordinator.Value;
 
-            if (assemblyManager == null)
+            if (envCoordinator == null)
             {
-                Log.Error("No se puede cargar comandos por dominio: IhAssemblyManager no disponible.");
+                Log.Error("No se puede cargar comandos por dominio: IEnvCoordinator no disponible.");
                 return;
             }
 
-            assemblyManager.LoadCommandsByDomain(domainName);
+            envCoordinator.LoadCommandsByDomain(domainName);
         }
         catch (Exception e)
         {

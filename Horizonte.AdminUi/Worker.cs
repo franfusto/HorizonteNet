@@ -26,7 +26,7 @@ public sealed class Worker : BackgroundService
     private readonly IhContext _context;
     private readonly IHCredManager _credManager;
     private readonly ISymLinkScafolder _linkScafolder;
-    private readonly IhAssemblyManager _assemblyManager;
+    private readonly IEnvCoordinator _envCoordinator;
     private WebApplication? _app;
 
     /// <summary>
@@ -44,20 +44,20 @@ public sealed class Worker : BackgroundService
     /// <param name="context">Objeto que implementa la interfaz <c>IhContext</c>.</param>
     /// <param name="credManager">Instancia de <c>IHCredManager</c> para la gestión de credenciales.</param>
     /// <param name="linkScafolder">Implementación de la interfaz <c>ISymLinkScafolder</c> para operaciones de enlaces simbólicos.</param>
-    /// <param name="assemblyManager">Instancia de <c>IhAssemblyManager</c> para la gestión de ensamblados.</param>
+    /// <param name="envCoordinator">Instancia de <c>IEnvCoordinator</c> para la orquestación del entorno y gestión de ensamblados.</param>
     public Worker(ILogger<Worker> log, 
                   IHGesCom gesCom, 
                   IhContext context, 
                   IHCredManager credManager, 
                   ISymLinkScafolder linkScafolder, 
-                  IhAssemblyManager assemblyManager)
+                  IEnvCoordinator envCoordinator)
     {
         _log = log;
         _gesCom = gesCom;
         _context = context;
         _credManager = credManager;
         _linkScafolder = linkScafolder;
-        _assemblyManager = assemblyManager;
+        _envCoordinator = envCoordinator;
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public sealed class Worker : BackgroundService
         builder.Services.AddSingleton(_context);
         builder.Services.AddSingleton(_credManager);
         builder.Services.AddSingleton(_linkScafolder);
-        builder.Services.AddSingleton(_assemblyManager);
+        builder.Services.AddSingleton(_envCoordinator);
         builder.Services.AddScoped<HGuiSession>();
         //añadimos servicios de los módulos desde la configuración
         builder.Services.ConfigureCustomService(new CustomServicesConfig(), _log);
