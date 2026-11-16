@@ -2,7 +2,7 @@ namespace Horizonte.Entities;
 
 
 /// <summary>
-/// Represents an individual worker configuration item within the system.
+/// Representa un elemento individual de configuración de un trabajador (worker) en el sistema.
 /// </summary>
 public class WorkerDefItem
 {

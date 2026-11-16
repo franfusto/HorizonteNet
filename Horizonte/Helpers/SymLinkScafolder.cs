@@ -36,23 +36,10 @@ public class SymLinkScafolder :ISymLinkScafolder
         _logger = logger;
     }
     
-    /// <summary>
-    /// Devuelve la colección de definiciones de enlaces simbólicos registradas
-    /// por esta instancia del andamio.
-    /// </summary>
-    /// <returns>
-    /// Secuencia con las definiciones de enlaces simbólicos creadas o cargadas en memoria.
-    /// </returns>
+    /// <inheritdoc/>
     public IEnumerable<SymLinkDef> GetScafolder() => _symLinkDefs;
     
-    /// <summary>
-    /// Limpia el andamio actual eliminando los enlaces simbólicos encontrados de forma recursiva
-    /// desde el directorio de trabajo.
-    /// </summary>
-    /// <remarks>
-    /// Antes de realizar la limpieza se intenta adquirir un archivo de bloqueo exclusivo.
-    /// Si otra instancia posee el bloqueo, la operación se omite.
-    /// </remarks>
+    /// <inheritdoc/>
     public void CleanScafolder()
     {
         string currentDirectory = Directory.GetCurrentDirectory();
@@ -264,18 +251,7 @@ public class SymLinkScafolder :ISymLinkScafolder
             }
         }
     }
-    /// <summary>
-    /// Construye el andamio de enlaces simbólicos a partir de una colección de definiciones.
-    /// </summary>
-    /// <param name="symlinklist">
-    /// Colección de definiciones que describen el origen, el destino y el tipo
-    /// de cada enlace simbólico a crear.
-    /// </param>
-    /// <remarks>
-    /// Los destinos deben ser rutas relativas al directorio de trabajo actual.
-    /// Si una definición apunta fuera de dicho directorio o produce un error durante
-    /// la creación, se registra la incidencia y se continúa con el resto.
-    /// </remarks>
+    /// <inheritdoc/>
     public void BuildScafolder(IEnumerable<SymLinkDef> symlinklist)
     {
         string currentDirectory = Directory.GetCurrentDirectory();

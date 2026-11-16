@@ -32,11 +32,17 @@ public class HAssemblySolver : IHAssemblySolver
     private readonly HashSet<string> _processedAssemblyMappingDefinitions = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _processingAssemblyMappingDefinitions = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Registro de archivos estáticos y activos web indexados por dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public StaticFileRegistry StaticFileRegistry { get; } = new();
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="HAssemblySolver"/> con todas sus dependencias explícitas.
+    /// </summary>
+    /// <param name="assemblyCache">Caché unificada de resolución de ensamblados.</param>
+    /// <param name="packageSolver">Resolutor y descargador de paquetes NuGet.</param>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="linkScafolder">Gestor de enlaces simbólicos.</param>
+    /// <param name="logger">Servicio de registro de eventos.</param>
     public HAssemblySolver(
         IHAssemblyCache assemblyCache,
         IPackageSolver packageSolver,
@@ -55,6 +61,12 @@ public class HAssemblySolver : IHAssemblySolver
         SetUpAssemblyPaths();
     }
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="HAssemblySolver"/> resolviendo la caché y el paquete desde el proveedor de servicios.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="linkScafolder">Gestor de enlaces simbólicos.</param>
+    /// <param name="logger">Servicio de registro de eventos.</param>
     public HAssemblySolver(
         IServiceProvider serviceProvider,
         ISymLinkScafolder linkScafolder,
@@ -68,17 +80,13 @@ public class HAssemblySolver : IHAssemblySolver
     {
     }
 
-    /// <summary>
-    /// Intenta resolver y cargar un ensamblado dado su contexto de carga y su nombre.
-    /// </summary>
+    /// <inheritdoc/>
     public Assembly? ResolveAssemblyFromALC(AssemblyLoadContext context, AssemblyName assemblyName)
     {
         return ResolveAssemblyFromNuGetPackages(context, new ResolveEventArgs(assemblyName.FullName));
     }
 
-    /// <summary>
-    /// Resuelve y carga un ensamblado a partir de los repositorios NuGet locales o remotos.
-    /// </summary>
+    /// <inheritdoc/>
     public Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args)
     {
         try
@@ -348,9 +356,7 @@ public class HAssemblySolver : IHAssemblySolver
         }
     }
 
-    /// <summary>
-    /// Resuelve la ruta del archivo DLL de un paquete NuGet específico, dado su nombre y versión.
-    /// </summary>
+    /// <inheritdoc/>
     public string? ResolveAssemblyDllPath(string packageName, string version)
     {
         var resolvedPackageName = GetPackageName(packageName);
@@ -375,9 +381,7 @@ public class HAssemblySolver : IHAssemblySolver
         return path;
     }
 
-    /// <summary>
-    /// Descarga de forma asíncrona un paquete NuGet si no existe localmente.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task<string?> DownloadNuGetPackageAsync(string packageName, string version)
     {
         var resolvedPackageName = GetPackageName(packageName);
@@ -385,9 +389,7 @@ public class HAssemblySolver : IHAssemblySolver
         return ResolveAssemblyDllPath(resolvedPackageName, version);
     }
 
-    /// <summary>
-    /// Obtiene el nombre del paquete mapeado para un nombre de ensamblado.
-    /// </summary>
+    /// <inheritdoc/>
     public string GetPackageName(string assemblyName)
     {
         lock (_assemblyToPackageMapLock)
@@ -398,18 +400,14 @@ public class HAssemblySolver : IHAssemblySolver
         }
     }
 
-    /// <summary>
-    /// Guarda un ensamblado en bytes en la memoria caché rápida.
-    /// </summary>
+    /// <inheritdoc/>
     public void CacheAssembly(string key, byte[] assemblyBytes)
     {
         if (string.IsNullOrWhiteSpace(key) || assemblyBytes == null) return;
         _memoryAssemblyCache[key] = assemblyBytes;
     }
 
-    /// <summary>
-    /// Obtiene un ensamblado en bytes desde la caché en memoria.
-    /// </summary>
+    /// <inheritdoc/>
     public byte[]? GetCachedAssembly(string key)
     {
         if (string.IsNullOrWhiteSpace(key)) return null;
@@ -417,9 +415,7 @@ public class HAssemblySolver : IHAssemblySolver
         return bytes;
     }
 
-    /// <summary>
-    /// Verifica si un ensamblado se encuentra en la caché en memoria.
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsAssemblyCached(string key)
     {
         if (string.IsNullOrWhiteSpace(key)) return false;

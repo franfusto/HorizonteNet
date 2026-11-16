@@ -17,11 +17,14 @@ public class HDomainManager : IHDomainManager
     private readonly ModulesSettings _settings;
     private readonly Dictionary<string, AssemblyLoadContext> _domains = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Diccionario de solo lectura con los contextos de dominio activos y registrados.
-    /// </summary>
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, AssemblyLoadContext> Domains => _domains;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="HDomainManager"/>.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios para resolver dependencias.</param>
+    /// <param name="logger">Servicio de registro de eventos para el gestor de dominios.</param>
     public HDomainManager(IServiceProvider serviceProvider, ILogger<HDomainManager> logger)
     {
         _serviceProvider = serviceProvider;
@@ -63,9 +66,7 @@ public class HDomainManager : IHDomainManager
         return assemblySolver?.ResolveAssemblyFromALC(context, assemblyName);
     }
 
-    /// <summary>
-    /// Obtiene el contexto de carga asociado a un nombre de dominio, retornando el contexto Default si es el dominio predeterminado.
-    /// </summary>
+    /// <inheritdoc/>
     public AssemblyLoadContext? GetDomain(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -82,9 +83,7 @@ public class HDomainManager : IHDomainManager
         return null;
     }
 
-    /// <summary>
-    /// Crea o recupera un contexto de carga de ensamblados para el dominio especificado.
-    /// </summary>
+    /// <inheritdoc/>
     public AssemblyLoadContext CreateDomain(string domainName, bool isCollectible = true)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -105,18 +104,14 @@ public class HDomainManager : IHDomainManager
         return alc;
     }
 
-    /// <summary>
-    /// Carga y asegura la existencia de un contexto de dominio para el nombre especificado.
-    /// </summary>
+    /// <inheritdoc/>
     public Task<AssemblyLoadContext> LoadDomainContextAsync(string domainName)
     {
         var alc = CreateDomain(domainName, isCollectible: true);
         return Task.FromResult(alc);
     }
 
-    /// <summary>
-    /// Carga un conjunto de ensamblados en memoria dentro del contexto de carga del dominio especificado.
-    /// </summary>
+    /// <inheritdoc/>
     public Task<AssemblyLoadContext> LoadDomainContextAsync(string domainName, IEnumerable<byte[]> assemblyBytes)
     {
         var alc = CreateDomain(domainName, isCollectible: true);
@@ -143,9 +138,7 @@ public class HDomainManager : IHDomainManager
         return Task.FromResult(alc);
     }
 
-    /// <summary>
-    /// Descarga y libera un contexto de dominio coleccionable, forzando la recolección de basura.
-    /// </summary>
+    /// <inheritdoc/>
     public Task UnloadDomainContextAsync(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -170,9 +163,7 @@ public class HDomainManager : IHDomainManager
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Retorna los ensamblados cargados en el contexto del dominio solicitado.
-    /// </summary>
+    /// <inheritdoc/>
     public IEnumerable<Assembly> GetDomainAssemblies(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||

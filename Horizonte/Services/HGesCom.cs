@@ -26,10 +26,8 @@ public class HGesCom : IHGesCom
     /// <summary>
     /// Representa un elemento en la lista de comandos específicos de un rol.
     /// </summary>
-    /// <remarks>
-    /// Cada instancia de esta clase contiene información básica sobre un comando,
-    /// incluyendo su nombre y una descripción de su funcionalidad.
-    /// </remarks>
+    /// <param name="CommandName">Nombre o clave del comando.</param>
+    /// <param name="Description">Descripción de la funcionalidad del comando.</param>
     public record RoleListItem(string CommandName, string Description);
 
     /// <summary>
@@ -47,20 +45,15 @@ public class HGesCom : IHGesCom
     private readonly Lazy<IEnvCoordinator> _envCoordinator;
 
     /// <summary>
-    /// Una clase que implementa la interfaz IHGesCom, responsable de gestionar y ejecutar comandos
-    /// dentro del entorno de Horizonte. Carga módulos de comandos, gestiona los comandos disponibles
-    /// y facilita la interacción con estos comandos usando entradas basadas en objetos o JSON.
+    /// Inicializa una nueva instancia de la clase <see cref="HGesCom"/>.
     /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
     public HGesCom(IServiceProvider serviceProvider)
     {
         _envCoordinator = new Lazy<IEnvCoordinator>(() => serviceProvider.GetRequiredService<IEnvCoordinator>());
     }
 
-    /// <summary>
-    /// Carga e inicializa los módulos decorados con el atributo <see cref="HorizonteModule"/> 
-    /// desde los ensamblados del dominio de aplicación actual.
-    /// Este método delega la carga a IEnvCoordinator.
-    /// </summary>
+    /// <inheritdoc/>
     public void LoadModules()
     {
         try
@@ -89,14 +82,7 @@ public class HGesCom : IHGesCom
         }
     }
 
-    /// <summary>
-    /// Inicializa varios módulos en el sistema invocando sus respectivos comandos de inicialización.
-    /// </summary>
-    /// <remarks>
-    /// Este método recupera los comandos de inicialización asociados con el rol "init" de la lista
-    /// de comandos por rol y los ejecuta secuencialmente. También registra información relevante
-    /// durante el proceso de inicialización.
-    /// </remarks>
+    /// <inheritdoc/>
     public void InitzializeModules()
     {
         foreach (var item in GetRoleCommands("init"))
@@ -108,13 +94,7 @@ public class HGesCom : IHGesCom
         Log.Info("Módulos iniciados");
     }
 
-    /// <summary>
-    /// Recupera una lista de comandos asociados con un rol específico.
-    /// </summary>
-    /// <param name="role">El rol para el que deben recuperarse los comandos.</param>
-    /// <returns>
-    /// Una lista de objetos <c>HGesCom.RoleListItem</c> que representan los comandos disponibles para el rol especificado.
-    /// </returns>
+    /// <inheritdoc/>
     public List<RoleListItem> GetRoleCommands(string role)
     {
         return _commandList
@@ -123,10 +103,7 @@ public class HGesCom : IHGesCom
             .ToList();
     }
 
-    /// <summary>
-    /// Registra un comando en el sistema.
-    /// </summary>
-    /// <param name="command">El comando a registrar.</param>
+    /// <inheritdoc/>
     public void RegisterCommand(HCommand command)
     {
         if (command == null) return;
@@ -142,15 +119,7 @@ public class HGesCom : IHGesCom
         }
     }
 
-    /// <summary>
-    /// Ejecuta un comando identificado por su clave usando argumentos en formato JSON.
-    /// Este método deserializa los argumentos, ejecuta el comando y serializa el resultado.
-    /// </summary>
-    /// <param name="commandKey">Clave única que identifica el comando a ejecutar.</param>
-    /// <param name="jsonarglist">Matriz de cadenas JSON que representan los argumentos requeridos por el comando.</param>
-    /// <returns>
-    /// Una cadena JSON que representa el resultado de la ejecución del comando o null si falla.
-    /// </returns>
+    /// <inheritdoc/>
     public string? RunCommandJson(string commandKey, string[]? jsonarglist)
     {
         try
@@ -171,12 +140,7 @@ public class HGesCom : IHGesCom
     }
 
 
-    /// <summary>
-    /// Ejecuta un comando de forma asíncrona basado en su clave y argumentos en formato JSON.
-    /// </summary>
-    /// <param name="commandKey">El identificador único o clave del comando que se va a ejecutar.</param>
-    /// <param name="jsonarglist">Opcional. Un arreglo de argumentos serializados en formato JSON.</param>
-    /// <returns>Una tarea que devuelve el resultado de la ejecución serializado en JSON o null.</returns>
+    /// <inheritdoc/>
     public async Task<string?> RunCommandJsonAsync(string commandKey, string[]? jsonarglist = null)
     {
         try
@@ -249,46 +213,27 @@ public class HGesCom : IHGesCom
         return tmpobjlst.ToArray();
     }
 
-    /// <summary>
-    /// Determina si un comando está marcado como asíncrono.
-    /// </summary>
-    /// <param name="commandKey">La clave del comando a comprobar.</param>
-    /// <returns>True si el comando es asíncrono, False en caso contrario.</returns>
+    /// <inheritdoc/>
     public bool IsAsyncCommand(string commandKey)
     {
         var method = GetHCommand(commandKey);
         return method is { IsAsync: true };
     }
 
-    /// <summary>
-    /// Comprueba si existe un comando dada su clave.
-    /// </summary>
-    /// <param name="commandKey">La clave del comando a comprobar.</param>
-    /// <returns>True si el comando existe, False en caso contrario.</returns>
+    /// <inheritdoc/>
     public bool ExistCommand(string commandKey)
     {
         return _commandList.ContainsKey(commandKey);
     }
 
-    /// <summary>
-    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada.
-    /// </summary>
-    /// <param name="commandKeyor">La clave o identificador del comando que se va a ejecutar.</param>
-    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
-    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado de la ejecución como un objeto, o null.</returns>
+    /// <inheritdoc/>
     public async Task<object?> RunCommandAsync(string commandKeyor, object[]? arg = null)
     {
         return await RunCommandAsync<object?>(commandKeyor, arg).ConfigureAwait(false);
     }
 
 
-    /// <summary>
-    /// Ejecuta un comando de forma asíncrona identificado por la clave proporcionada y devuelve un resultado tipado.
-    /// </summary>
-    /// <typeparam name="T">El tipo del resultado devuelto por la ejecución del comando.</typeparam>
-    /// <param name="commandKeyor">La clave o identificador asociado con el comando específico a ejecutar.</param>
-    /// <param name="arg">Un arreglo opcional de argumentos para pasar al comando. Por defecto es null.</param>
-    /// <returns>Una tarea que representa la operación asíncrona y devuelve el resultado convertido al tipo <typeparamref name="T"/>.</returns>
+    /// <inheritdoc/>
     public async Task<T> RunCommandAsync<T>(string commandKeyor, object[]? arg = null)
     {
         try
@@ -355,65 +300,32 @@ public class HGesCom : IHGesCom
         }
     }
 
-    /// <summary>
-    /// Ejecuta un comando identificado por la clave de comando especificada, opcionalmente con una lista de argumentos.
-    /// </summary>
-    /// <param name="commandKeyor">La clave que representa el comando a ser ejecutado.</param>
-    /// <param name="arg">Matriz opcional de argumentos necesarios para la ejecución del comando.</param>
-    /// <returns>
-    /// El resultado de la ejecución del comando como un objeto, o null si el comando falla o no se encuentra.
-    /// </returns>
+    /// <inheritdoc/>
     public object? RunCommand(string commandKeyor, object[]? arg = null)
     {
         return RunCommandAsync(commandKeyor, arg).GetAwaiter().GetResult();
     }
 
-    /// <summary>
-    /// Ejecuta un comando basado en la clave de comando proporcionada y los argumentos, y devuelve el resultado.
-    /// El valor devuelto puede convertirse al tipo genérico especificado <typeparamref name="T"/>.
-    /// </summary>
-    /// <typeparam name="T">El tipo esperado del resultado del comando.</typeparam>
-    /// <param name="commandKeyor">La clave utilizada para identificar el comando a ejecutar.</param>
-    /// <param name="arg">Una matriz de argumentos para pasar al comando. Puede ser null si no se requieren argumentos.</param>
-    /// <returns>
-    /// El resultado del comando ejecutado, convertido al tipo especificado <typeparamref name="T"/>.
-    /// Devuelve el valor predeterminado del tipo <typeparamref name="T"/> si el comando falla o no se encuentra.
-    /// </returns>
+    /// <inheritdoc/>
     public T? RunCommand<T>(string commandKeyor, object[]? arg = null)
     {
         return RunCommandAsync<T>(commandKeyor, arg).GetAwaiter().GetResult();
     }
 
-    /// <summary>
-    /// Recupera una instancia de un HCommand asociada con la clave de comando especificada.
-    /// </summary>
-    /// <param name="commandKey">
-    /// El identificador único del comando que se desea recuperar.
-    /// </param>
-    /// <returns>
-    /// Una instancia de HCommand asociada con la clave de comando proporcionada si se encuentra; de lo contrario, null.
-    /// </returns>
+    /// <inheritdoc/>
     public HCommand? GetHCommand(string commandKey)
     {
         _commandList.TryGetValue(commandKey, out HCommand? rCommand);
         return rCommand;
     }
 
-    /// <summary>
-    /// Recupera la lista de todos los comandos registrados en la instancia actual.
-    /// </summary>
-    /// <returns>
-    /// Una colección de objetos <see cref="HCommand"/> que representan los comandos disponibles.
-    /// </returns>
+    /// <inheritdoc/>
     public IEnumerable<HCommand> GetCommandList()
     {
         return _commandList.Values.ToList();
     }
 
-    /// <summary>
-    /// Elimina de la lista de comandos aquellos que pertenezcan al dominio especificado.
-    /// </summary>
-    /// <param name="domainName">Nombre del dominio (ALC).</param>
+    /// <inheritdoc/>
     public void UnloadCommandsByDomain(string domainName)
     {
         try
@@ -446,10 +358,7 @@ public class HGesCom : IHGesCom
         }
     }
 
-    /// <summary>
-    /// Cargamos los comandos de los ensamblados asociados a un dominio específico.
-    /// </summary>
-    /// <param name="domainName">El nombre del dominio (ALC).</param>
+    /// <inheritdoc/>
     public void LoadCommandsByDomain(string domainName)
     {
         try

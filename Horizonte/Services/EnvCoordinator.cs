@@ -33,37 +33,25 @@ public class EnvCoordinator : IEnvCoordinator
 
     private List<byte[]> _scriptAssemblyCache = new();
 
-    /// <summary>
-    /// Gestor de resolución y carga de ensamblados, recursos y archivos estáticos.
-    /// </summary>
+    /// <inheritdoc/>
     public IHAssemblySolver AssemblySolver => _assemblySolver;
 
-    /// <summary>
-    /// Gestor de dominios y contextos AssemblyLoadContext aislados.
-    /// </summary>
+    /// <inheritdoc/>
     public IHDomainManager DomainManager => _domainManager;
 
-    /// <summary>
-    /// Gestor de catálogo de módulos y ejecución de comandos.
-    /// </summary>
+    /// <inheritdoc/>
     public IHGesCom GesCom => _gesCom;
 
-    /// <summary>
-    /// Gestor de servicios y trabajadores en segundo plano (Workers).
-    /// </summary>
+    /// <inheritdoc/>
     public IhWorkersManager WorkersManager => _workersManager;
 
-    /// <summary>
-    /// Lista de todos los ensamblados cargados en el contexto Default y en los contextos de dominios activos.
-    /// </summary>
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> Assemblies => AssemblyLoadContext.Default.Assemblies
         .Concat(_domainManager.Domains.Values.SelectMany(x => x.Assemblies))
         .Distinct()
         .ToList();
 
-    /// <summary>
-    /// Diccionario de ensamblados agrupados por nombre de dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, List<Assembly>> AssembliesByDomain
     {
         get
@@ -82,16 +70,21 @@ public class EnvCoordinator : IEnvCoordinator
         }
     }
 
-    /// <summary>
-    /// Registro y mapeo de archivos estáticos y activos web por dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public StaticFileRegistry StaticFileRegistry => _assemblySolver.StaticFileRegistry;
 
-    /// <summary>
-    /// Evento disparado tras la carga, descarga o recarga de un dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public event Action? DomainChanged;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="EnvCoordinator"/>.
+    /// </summary>
+    /// <param name="domainManager">Gestor de dominios y contextos de carga.</param>
+    /// <param name="assemblySolver">Resolutor de ensamblados y paquetes NuGet.</param>
+    /// <param name="gesCom">Gestor de comandos de la aplicación.</param>
+    /// <param name="workersManager">Gestor de trabajadores y servicios en segundo plano.</param>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="logger">Servicio de registro de eventos para el coordinador.</param>
     public EnvCoordinator(
         IHDomainManager domainManager,
         IHAssemblySolver assemblySolver,
@@ -111,9 +104,7 @@ public class EnvCoordinator : IEnvCoordinator
         LoadModulesFromEnvironment();
     }
 
-    /// <summary>
-    /// Descarga un dominio específico liberando sus servicios, comandos y contexto de carga.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task UnloadDomainAsync(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -132,9 +123,7 @@ public class EnvCoordinator : IEnvCoordinator
         DomainChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Carga un dominio específico y sus módulos, paquetes forzados y servicios asociados.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task LoadDomainAsync(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -169,9 +158,7 @@ public class EnvCoordinator : IEnvCoordinator
         DomainChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Carga un dominio a partir de ensamblados en memoria y activa sus módulos y servicios.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task LoadDomainAsync(string domainName, IEnumerable<byte[]> assemblies)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -199,9 +186,7 @@ public class EnvCoordinator : IEnvCoordinator
         DomainChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Recarga un dominio ejecutando de forma coordinada la descarga y posterior carga completa.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task ReloadDomainAsync(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName) ||
@@ -215,35 +200,27 @@ public class EnvCoordinator : IEnvCoordinator
         await LoadDomainAsync(domainName);
     }
 
-    /// <summary>
-    /// Descarga los módulos asociados a un dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public void UnloadModule(string domainName)
     {
         _logger.LogInformation("UnloadModule for domain: {DomainName}", domainName);
         UnloadCommandsByDomain(domainName);
     }
 
-    /// <summary>
-    /// Desregistra los comandos asociados a un dominio en IHGesCom.
-    /// </summary>
+    /// <inheritdoc/>
     public void UnloadCommandsByDomain(string domainName)
     {
         _gesCom.UnloadCommandsByDomain(domainName);
     }
 
-    /// <summary>
-    /// Carga los módulos asociados a un dominio.
-    /// </summary>
+    /// <inheritdoc/>
     public void LoadModule(string domainName)
     {
         _logger.LogInformation("LoadModule for domain: {DomainName}", domainName);
         LoadCommandsByDomain(domainName);
     }
 
-    /// <summary>
-    /// Carga y registra los comandos de los ensamblados del dominio en IHGesCom.
-    /// </summary>
+    /// <inheritdoc/>
     public void LoadCommandsByDomain(string domainName)
     {
         try
@@ -363,9 +340,7 @@ public class EnvCoordinator : IEnvCoordinator
         }
     }
 
-    /// <summary>
-    /// Inicia un servicio en segundo plano por su tipo de trabajador.
-    /// </summary>
+    /// <inheritdoc/>
     public bool StartBackgroundService(string serviceType)
     {
         serviceType = serviceType.Trim();
@@ -462,9 +437,7 @@ public class EnvCoordinator : IEnvCoordinator
         }
     }
 
-    /// <summary>
-    /// Detiene un servicio en segundo plano por su tipo de trabajador.
-    /// </summary>
+    /// <inheritdoc/>
     public bool StopBackgroundService(string serviceType)
     {
         serviceType = serviceType.Trim();
@@ -509,9 +482,7 @@ public class EnvCoordinator : IEnvCoordinator
         }
     }
 
-    /// <summary>
-    /// Comprueba si un servicio en segundo plano está en ejecución.
-    /// </summary>
+    /// <inheritdoc/>
     public bool BackgroundServiceRunning(string serviceType)
     {
         serviceType = serviceType.Trim();
@@ -523,9 +494,7 @@ public class EnvCoordinator : IEnvCoordinator
                state.Instance != null;
     }
 
-    /// <summary>
-    /// Crea una instancia del tipo especificado utilizando el contenedor de servicios y resolución manual de constructores.
-    /// </summary>
+    /// <inheritdoc/>
     public object? CreateInstance(Type type)
     {
         try

@@ -39,22 +39,10 @@ public class HContext : IhContext
     private static readonly object _fileLock = new();
     private string? _userDirectory = null;
     
-    /// <summary>
-    /// Obtiene la ruta raíz asociada al contexto actual.
-    /// </summary>
-    /// <remarks>
-    /// Esta propiedad identifica la ubicación base utilizada por la implementación para resolver
-    /// archivos, recursos o rutas relacionadas con el contexto.
-    /// </remarks>
+    /// <inheritdoc/>
     public string RootPath { get; }
     
-    /// <summary>
-    /// Obtiene el nombre del contexto actual.
-    /// </summary>
-    /// <remarks>
-    /// Este valor representa el identificador lógico del contexto predeterminado que utilizará
-    /// la implementación cuando no se especifique uno explícitamente en las operaciones.
-    /// </remarks>
+    /// <inheritdoc/>
     public string ContextName { get; }
 
     /// <summary>
@@ -142,15 +130,7 @@ public class HContext : IhContext
         return Path.Combine(GetLocalOverridesDir(contextName), typeof(T).Name + ".json");
     }
 
-    /// <summary>
-    /// Determina el origen efectivo de la sección para el tipo especificado.
-    /// </summary>
-    /// <typeparam name="T">Tipo cuya procedencia se desea consultar.</typeparam>
-    /// <param name="contextname">Nombre opcional del contexto.</param>
-    /// <returns>
-    /// <see cref="SectionSource.LocalOverride"/> si existe una sobrescritura local para el tipo;
-    /// en caso contrario, <see cref="SectionSource.Context"/>.
-    /// </returns>
+    /// <inheritdoc/>
     public SectionSource Source<T>(string? contextname = null)
     {
         lock (_fileLock)
@@ -160,19 +140,7 @@ public class HContext : IhContext
         }
     }
 
-    /// <summary>
-    /// Recupera y deserializa la sección asociada al tipo especificado.
-    /// </summary>
-    /// <typeparam name="T">Tipo de la sección a recuperar.</typeparam>
-    /// <param name="contextname">Nombre opcional del contexto.</param>
-    /// <returns>
-    /// La instancia de <typeparamref name="T"/> obtenida desde el origen efectivo, o <see langword="default"/>
-    /// si la sección no existe o si ocurre un error durante la operación.
-    /// </returns>
-    /// <remarks>
-    /// Si existe una sobrescritura local, se utiliza en prioridad. En caso contrario, se consulta
-    /// el contexto principal.
-    /// </remarks>
+    /// <inheritdoc/>
     public T? Get<T>(string? contextname = null)
     {
         try
@@ -195,16 +163,7 @@ public class HContext : IhContext
         }
     }
 
-    /// <summary>
-    /// Actualiza la sección asociada al tipo especificado aplicando una acción de modificación.
-    /// </summary>
-    /// <typeparam name="T">Tipo de la sección a modificar.</typeparam>
-    /// <param name="update">Acción que modifica la sección existente.</param>
-    /// <param name="contextname">Nombre opcional del contexto.</param>
-    /// <remarks>
-    /// La escritura se realiza sobre el origen efectivo de la sección: si existe una sobrescritura local,
-    /// se actualiza ese archivo; en caso contrario, se actualiza el archivo del contexto principal.
-    /// </remarks>
+    /// <inheritdoc/>
     public void Update<T>(Action<T> update, string? contextname = null)
     {
         try
@@ -228,16 +187,7 @@ public class HContext : IhContext
         }
     }
 
-    /// <summary>
-    /// Reemplaza o crea la sección asociada al tipo especificado con el valor proporcionado.
-    /// </summary>
-    /// <typeparam name="T">Tipo de la sección a guardar.</typeparam>
-    /// <param name="newvalue">Nuevo valor de la sección.</param>
-    /// <param name="contextname">Nombre opcional del contexto.</param>
-    /// <remarks>
-    /// La escritura se realiza sobre el origen efectivo de la sección: si existe una sobrescritura local,
-    /// se actualiza ese archivo; en caso contrario, se actualiza el archivo del contexto principal.
-    /// </remarks>
+    /// <inheritdoc/>
     public void Update<T>(T newvalue, string? contextname = null)
     {
         try

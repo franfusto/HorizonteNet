@@ -14,14 +14,16 @@ public class HAssemblyCache : IHAssemblyCache
     private readonly ConcurrentDictionary<string, AssemblyCacheItem> _assemblyCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, VersionResources> _versionResourcesCache = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="HAssemblyCache"/>.
+    /// </summary>
+    /// <param name="logger">Instancia opcional del registrador de eventos.</param>
     public HAssemblyCache(ILogger<HAssemblyCache>? logger = null)
     {
         _logger = logger;
     }
 
-    /// <summary>
-    /// Obtiene un elemento de caché para el ensamblado, versión y dominio especificados.
-    /// </summary>
+    /// <inheritdoc/>
     public AssemblyCacheItem? Get(string assemblyName, string? version = null, string? domainName = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyName);
@@ -37,9 +39,7 @@ public class HAssemblyCache : IHAssemblyCache
         return null;
     }
 
-    /// <summary>
-    /// Agrega o actualiza un elemento en la caché de ensamblados.
-    /// </summary>
+    /// <inheritdoc/>
     public void Add(AssemblyCacheItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -51,9 +51,7 @@ public class HAssemblyCache : IHAssemblyCache
             key, item.Found, item.IsResolved);
     }
 
-    /// <summary>
-    /// Comprueba si existe una entrada en caché para el ensamblado, versión y dominio indicados.
-    /// </summary>
+    /// <inheritdoc/>
     public bool Contains(string assemblyName, string? version = null, string? domainName = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyName);
@@ -61,9 +59,7 @@ public class HAssemblyCache : IHAssemblyCache
         return _assemblyCache.ContainsKey(key);
     }
 
-    /// <summary>
-    /// Limpia todas las entradas de caché de ensamblados y recursos de versiones.
-    /// </summary>
+    /// <inheritdoc/>
     public void Clear()
     {
         _assemblyCache.Clear();
@@ -71,9 +67,7 @@ public class HAssemblyCache : IHAssemblyCache
         _logger?.LogInformation("Caché unificada limpiada por completo.");
     }
 
-    /// <summary>
-    /// Invalida las entradas de caché de ensamblados asociadas a un dominio específico.
-    /// </summary>
+    /// <inheritdoc/>
     public void Clear(string domainName)
     {
         if (string.IsNullOrWhiteSpace(domainName)) return;
@@ -92,9 +86,7 @@ public class HAssemblyCache : IHAssemblyCache
             keysToRemove.Count, domainName);
     }
 
-    /// <summary>
-    /// Obtiene los recursos de versión cacheados para un identificador de paquete NuGet.
-    /// </summary>
+    /// <inheritdoc/>
     public VersionResources? GetVersionResources(string packageId)
     {
         if (string.IsNullOrWhiteSpace(packageId)) return null;
@@ -109,9 +101,7 @@ public class HAssemblyCache : IHAssemblyCache
         return null;
     }
 
-    /// <summary>
-    /// Almacena o actualiza los recursos de versiones descubiertos para un identificador de paquete.
-    /// </summary>
+    /// <inheritdoc/>
     public void SetVersionResources(string packageId, VersionResources versionResources)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageId);

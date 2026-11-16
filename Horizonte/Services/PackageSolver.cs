@@ -26,6 +26,12 @@ public class PackageSolver : IPackageSolver
     private static readonly TimeSpan DefaultRemoteQueryTimeout = TimeSpan.FromSeconds(8);
     private static readonly TimeSpan DefaultRemoteDownloadTimeout = TimeSpan.FromSeconds(20);
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="PackageSolver"/> utilizando el proveedor de servicios para obtener la configuración.
+    /// </summary>
+    /// <param name="assemblyCache">Caché unificada de resolución de ensamblados y versiones.</param>
+    /// <param name="serviceProvider">Proveedor de servicios para inyección de dependencias.</param>
+    /// <param name="logger">Servicio de registro de eventos para <see cref="PackageSolver"/>.</param>
     public PackageSolver(
         IHAssemblyCache assemblyCache,
         IServiceProvider serviceProvider,
@@ -38,6 +44,12 @@ public class PackageSolver : IPackageSolver
         SetUpSearchPaths();
     }
 
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="PackageSolver"/> con la configuración explícita proporcionada.
+    /// </summary>
+    /// <param name="assemblyCache">Caché unificada de resolución de ensamblados y versiones.</param>
+    /// <param name="settings">Configuración modular y de paquetes NuGet.</param>
+    /// <param name="logger">Servicio de registro de eventos para <see cref="PackageSolver"/>.</param>
     public PackageSolver(
         IHAssemblyCache assemblyCache,
         ModulesSettings settings,
@@ -94,6 +106,10 @@ public class PackageSolver : IPackageSolver
     /// <summary>
     /// Consulta y consolida los recursos de versiones disponibles para un paquete tanto en repositorios locales como en servidores NuGet remotos.
     /// </summary>
+    /// <param name="packageId">Identificador del paquete NuGet.</param>
+    /// <param name="requestedVersion">Versión específica solicitada, si aplica.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
+    /// <returns>Una tarea que devuelve la estructura <see cref="VersionResources"/> con las versiones descubiertas.</returns>
     public async Task<VersionResources> FindVersionResourcesAsync(
         string packageId,
         NuGetVersion? requestedVersion = null,
@@ -208,9 +224,7 @@ public class PackageSolver : IPackageSolver
         return versionResources;
     }
 
-    /// <summary>
-    /// Resuelve un paquete aplicando el mapeo de nombres, búsqueda local/remota y directivas de BlockedPackagesPolicy.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task<PackageResolutionResult> ResolvePackageAsync(
         string packageOrAssemblyName,
         string? requestedVersion = null,
@@ -339,9 +353,7 @@ public class PackageSolver : IPackageSolver
         };
     }
 
-    /// <summary>
-    /// Localiza la ruta a la librería DLL de un paquete instalado en las carpetas locales.
-    /// </summary>
+    /// <inheritdoc/>
     public string? ResolveLocalDllPath(string packageName, string version)
     {
         if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(version))
@@ -416,9 +428,7 @@ public class PackageSolver : IPackageSolver
         return null;
     }
 
-    /// <summary>
-    /// Descarga un paquete NuGet desde los servidores configurados y lo extrae en la carpeta de instalación.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task<string?> DownloadAndInstallPackageAsync(string packageName, string version)
     {
         if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(version))

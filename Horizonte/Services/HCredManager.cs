@@ -258,16 +258,10 @@ public class HCredManager : IHCredManager
         }
     }
 
-    /// <summary>
-    /// Obtiene la lista de todas las claves de credenciales disponibles.
-    /// </summary>
+    /// <inheritdoc/>
     public IEnumerable<string> KeyList => _credentials.Keys;
 
-    /// <summary>
-    /// Obtiene el valor de una credencial. Si no existe, crea una nueva entrada vacía en el archivo JSON.
-    /// </summary>
-    /// <param name="key">La clave de la credencial.</param>
-    /// <returns>El valor de la credencial o string.Empty si no existía.</returns>
+    /// <inheritdoc/>
     public string GetCredential(string key)
     {
         if (_credentials.TryGetValue(key, out var item))
@@ -291,11 +285,7 @@ public class HCredManager : IHCredManager
         return string.Empty;
     }
 
-    /// <summary>
-    /// Establece o actualiza el valor de una credencial.
-    /// </summary>
-    /// <param name="key">Clave de la credencial.</param>
-    /// <param name="value">Nuevo valor.</param>
+    /// <inheritdoc/>
     public void SetCredential(string key, string value)
     {
         if (_credentials.TryGetValue(key, out var item))
@@ -316,10 +306,7 @@ public class HCredManager : IHCredManager
         SaveCollectionValue(item);
     }
 
-    /// <summary>
-    /// Elimina una credencial de la memoria y del almacenamiento persistente.
-    /// </summary>
-    /// <param name="key">Clave de la credencial a eliminar.</param>
+    /// <inheritdoc/>
     public void DeleteCredential(string key)
     {
         if (_credentials.TryRemove(key, out var item))
