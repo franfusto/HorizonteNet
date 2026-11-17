@@ -1,0 +1,17 @@
+# Excluir control de versiones e IDEs
+.git/
+.gitignore
+.gitattributes
+.vs/
+.idea/
+.vscode/
+
+# Excluir logs y temporales
+*.log
+*.tmp
+*.bak
+
+# Excluir artefactos de build y tests
+bin/
+obj/
+TestResults/

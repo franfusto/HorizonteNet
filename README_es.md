@@ -45,27 +45,27 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 ## Documentación técnica
 
-Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas disponibles en español e inglés:
+Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas:
 
 - **Núcleo de HorizonteNet (`Horizonte`)**:  
   Arquitectura del orquestador central (`IEnvCoordinator`), ciclo de vida de dominios en ALC coleccionables, resolución y caché NuGet (`IHAssemblyCache`), andamiaje de enlaces simbólicos y despacho de comandos desacoplados.  
-  📖 [Arquitectura en Español](Horizonte/ARQUITECTURA_ES.md) | [English Architecture](Horizonte/ARQUITECTURA_EN.md)
+  📖 [Especificación de arquitectura](Horizonte/ARQUITECTURA_ES.md)
 
 - **Extensiones Interactivas (`Horizonte.Extensions.Interactive`)**:  
   Integración con .NET Interactive y compilación dinámica en memoria mediante Roslyn (`CSharpCompilation`), intercepción de directivas `#r` y despliegue automático en dominios aislados.  
-  📖 [Arquitectura en Español](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extensions.Interactive/ARQUITECTURA_EN.md)
+  📖 [Especificación de arquitectura](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md)
 
 - **Soporte Web y Middleware (`Horizonte.Extension.AspNetCore`)**:  
   Middleware de entrega de archivos estáticos y recursos web empaquetados (`_content/...`) con resolución contextual por dominio y streaming optimizado con `IHttpResponseBodyFeature`.  
-  📖 [Arquitectura en Español](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.AspNetCore/ARQUITECTURA_EN.md)
+  📖 [Especificación de arquitectura](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md)
 
 - **Flujos de Trabajo Inteligentes (`Horizonte.Extension.AiWorkFlows`)**:  
   Orquestación de grafos dirigidos con `Microsoft.Agents.AI.Workflows`, puntos de control (checkpoints), pausa/reanudación, agentes de IA e indexación semántica vectorial de comandos con OpenAI y Semantic Kernel.  
-  📖 [Arquitectura en Español](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
+  📖 [Especificación de arquitectura](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
 
 - **Agentes Declarativos (`Horizonte.Extension.Ai`)**:  
   Runtime declarativo de agentes `Hagent`, modelo de composición desacoplado mediante factoría, políticas de gestión de archivos, ejecución de herramientas automáticas y clientes IA intercambiables.  
-  📖 [Arquitectura en Español](Horizonte.Extension.Ai/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
+  📖 [Especificación de arquitectura](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
 
 ---
 
