@@ -44,6 +44,32 @@ HorizonteNet is based on a microservices and decoupled modules architecture:
 
 ---
 
+## Technical documentation
+
+Each component of the HorizonteNet ecosystem provides detailed technical architecture specifications available in English and Spanish:
+
+- **HorizonteNet Core (`Horizonte`)**:  
+  Architecture of the central orchestrator (`IEnvCoordinator`), collectible ALC domain lifecycle, NuGet resolution and caching (`IHAssemblyCache`), symbolic link scaffolding, and decoupled command dispatching.  
+  📖 [English Architecture](Horizonte/ARQUITECTURA_EN.md) | [Spanish Architecture](Horizonte/ARQUITECTURA_ES.md)
+
+- **Interactive Extensions (`Horizonte.Extensions.Interactive`)**:  
+  Integration with .NET Interactive and dynamic in-memory compilation with Roslyn (`CSharpCompilation`), `#r` directive interception, and automatic deployment to isolated domains.  
+  📖 [English Architecture](Horizonte.Extensions.Interactive/ARQUITECTURA_EN.md) | [Spanish Architecture](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md)
+
+- **Web Support & Middleware (`Horizonte.Extension.AspNetCore`)**:  
+  Middleware for serving static files and packaged web resources (`_content/...`) with domain contextual resolution and optimized streaming via `IHttpResponseBodyFeature`.  
+  📖 [English Architecture](Horizonte.Extension.AspNetCore/ARQUITECTURA_EN.md) | [Spanish Architecture](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md)
+
+- **Intelligent Workflows (`Horizonte.Extension.AiWorkFlows`)**:  
+  Directed graph orchestration powered by `Microsoft.Agents.AI.Workflows`, execution checkpoints, pause/resume lifecycle, AI agents, and semantic vector command indexing with OpenAI and Semantic Kernel.  
+  📖 [English Architecture](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md) | [Spanish Architecture](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
+
+- **Declarative Agents (`Horizonte.Extension.Ai`)**:  
+  Declarative `Hagent` agent runtime, decoupled factory composition model, file management policies, automatic tool execution, and interchangeable AI clients.  
+  📖 [English Architecture](Horizonte.Extension.Ai/ARQUITECTURA_EN.md) | [Spanish Architecture](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
+
+---
+
 ## Preview 10.0.4-beta
 
 HorizonteNet can be run directly from the compiled binaries available in the project release:
