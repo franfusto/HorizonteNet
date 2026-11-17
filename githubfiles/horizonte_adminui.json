@@ -20,7 +20,7 @@
       {
         "Active": true,
         "ModuleName": "Horizonte.AdminUi.HorizonteSettings",
-        "ModuleVersion": "10.0.6beta",
+        "ModuleVersion": "10.0.7-beta",
         "Path": "",
         "LoadAdditionalDlls": false,
         "Domain": "Default"

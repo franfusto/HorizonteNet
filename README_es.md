@@ -69,12 +69,12 @@ Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arqui
 
 ---
 
-## Vista previa 10.0.4-beta
+## Vista previa 10.0.7-beta
 
 Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
 
-- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp.exe)
-- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp)
+- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.7-beta/ConsoleApp.exe)
+- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.7-beta/ConsoleApp)
 
 ### Ejecución desde binarios
 
