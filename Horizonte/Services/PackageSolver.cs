@@ -104,31 +104,16 @@ public class PackageSolver : IPackageSolver
     }
 
     /// <summary>
-    /// Consulta y consolida los recursos de versiones disponibles para un paquete tanto en repositorios locales como en servidores NuGet remotos.
+    /// Escanea exclusivamente los repositorios y carpetas locales configuradas para descubrir las versiones disponibles de un paquete.
     /// </summary>
     /// <param name="packageId">Identificador del paquete NuGet.</param>
     /// <param name="requestedVersion">Versión específica solicitada, si aplica.</param>
-    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
-    /// <returns>Una tarea que devuelve la estructura <see cref="VersionResources"/> con las versiones descubiertas.</returns>
-    public async Task<VersionResources> FindVersionResourcesAsync(
+    /// <returns>Estructura <see cref="VersionResources"/> con las versiones locales encontradas.</returns>
+    public VersionResources FindLocalVersionResources(
         string packageId,
-        NuGetVersion? requestedVersion = null,
-        CancellationToken cancellationToken = default)
+        NuGetVersion? requestedVersion = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
-
-        var cachedResources = _assemblyCache.GetVersionResources(packageId);
-        if (cachedResources != null)
-        {
-            _logger.LogDebug("[PKGSOLVER-VR-CACHE-HIT] VersionResources para '{PackageId}' obtenidos de caché unificada ({Count} orígenes).",
-                packageId,
-                cachedResources.Sources.Count);
-            return cachedResources;
-        }
-
-        _logger.LogDebug("[PKGSOLVER-VR-FETCH] Consultando orígenes de versiones para '{PackageId}' (versión solicitada: {RequestedVersion})...",
-            packageId,
-            requestedVersion?.ToNormalizedString() ?? "any");
 
         var versionResources = new VersionResources
         {
@@ -136,7 +121,6 @@ public class PackageSolver : IPackageSolver
             RetrievedAtUtc = DateTime.UtcNow
         };
 
-        // 1. Escaneo de orígenes locales
         foreach (var searchPath in _searchPaths)
         {
             if (!Directory.Exists(searchPath))
@@ -166,7 +150,26 @@ public class PackageSolver : IPackageSolver
             }
         }
 
-        // 2. Consulta de servidores remotos en paralelo con timeouts individuales
+        return versionResources;
+    }
+
+    /// <summary>
+    /// Consulta los servidores NuGet remotos configurados y fusiona las versiones descubiertas en la estructura <see cref="VersionResources"/> existente.
+    /// </summary>
+    /// <param name="packageId">Identificador del paquete NuGet.</param>
+    /// <param name="versionResources">Instancia de <see cref="VersionResources"/> donde fusionar los orígenes remotos.</param>
+    /// <param name="requestedVersion">Versión específica solicitada, si aplica.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
+    /// <returns>La instancia actualizada de <see cref="VersionResources"/> con los orígenes remotos consolidados.</returns>
+    public async Task<VersionResources> FetchAndMergeRemoteVersionResourcesAsync(
+        string packageId,
+        VersionResources versionResources,
+        NuGetVersion? requestedVersion = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+        versionResources ??= new VersionResources { PackageId = packageId, RetrievedAtUtc = DateTime.UtcNow };
+
         if (_settings.NugetServers != null)
         {
             var activeServers = _settings.NugetServers.Where(s => s.Active).OrderBy(s => s.Order).ToList();
@@ -195,32 +198,70 @@ public class PackageSolver : IPackageSolver
                 var results = await Task.WhenAll(queryTasks).ConfigureAwait(false);
                 foreach (var (server, remoteVersions) in results)
                 {
+                    var sourceName = server.Name ?? server.Server;
+                    versionResources.Sources.RemoveAll(s => !s.IsLocal && string.Equals(s.SourceName, sourceName, StringComparison.OrdinalIgnoreCase));
+
                     if (remoteVersions.Count > 0)
                     {
                         _logger.LogInformation("[PKGSOLVER-REMOTE-VERSIONS] Servidor remoto '{ServerName}': {Count} versión(es) encontrada(s) para '{PackageId}'.",
-                            server.Name ?? server.Server,
+                            sourceName,
                             remoteVersions.Count,
                             packageId);
 
                         versionResources.Sources.Add(new PackageSourceResource(
-                            SourceName: server.Name ?? server.Server,
+                            SourceName: sourceName,
                             IsLocal: false,
                             Versions: remoteVersions));
                     }
                     else
                     {
                         _logger.LogDebug("[PKGSOLVER-REMOTE-VERSIONS-NONE] Servidor remoto '{ServerName}': no se encontraron versiones para '{PackageId}'.",
-                            server.Name ?? server.Server,
+                            sourceName,
                             packageId);
                     }
                 }
             }
         }
 
+        versionResources.RetrievedAtUtc = DateTime.UtcNow;
         _assemblyCache.SetVersionResources(packageId, versionResources);
-        _logger.LogDebug("[PKGSOLVER-VR-SAVED] VersionResources consolidados y guardados en caché para '{PackageId}' ({Count} orígenes).",
+        _logger.LogDebug("[PKGSOLVER-VR-SAVED] VersionResources consolidados y actualizados en caché para '{PackageId}' ({Count} orígenes).",
             packageId,
             versionResources.Sources.Count);
+
+        return versionResources;
+    }
+
+    /// <summary>
+    /// Consulta y consolida los recursos de versiones disponibles para un paquete tanto en repositorios locales como en servidores NuGet remotos.
+    /// </summary>
+    /// <param name="packageId">Identificador del paquete NuGet.</param>
+    /// <param name="requestedVersion">Versión específica solicitada, si aplica.</param>
+    /// <param name="cancellationToken">Token para cancelar la operación asíncrona.</param>
+    /// <returns>Una tarea que devuelve la estructura <see cref="VersionResources"/> con las versiones descubiertas.</returns>
+    public async Task<VersionResources> FindVersionResourcesAsync(
+        string packageId,
+        NuGetVersion? requestedVersion = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+
+        var cachedResources = _assemblyCache.GetVersionResources(packageId);
+        if (cachedResources != null && cachedResources.Sources.Any(s => !s.IsLocal))
+        {
+            _logger.LogDebug("[PKGSOLVER-VR-CACHE-HIT] VersionResources completos para '{PackageId}' obtenidos de caché unificada ({Count} orígenes).",
+                packageId,
+                cachedResources.Sources.Count);
+            return cachedResources;
+        }
+
+        _logger.LogDebug("[PKGSOLVER-VR-FETCH] Consultando orígenes de versiones para '{PackageId}' (versión solicitada: {RequestedVersion})...",
+            packageId,
+            requestedVersion?.ToNormalizedString() ?? "any");
+
+        var versionResources = cachedResources ?? FindLocalVersionResources(packageId, requestedVersion);
+        versionResources = await FetchAndMergeRemoteVersionResourcesAsync(packageId, versionResources, requestedVersion, cancellationToken).ConfigureAwait(false);
+
         return versionResources;
     }
 
@@ -240,26 +281,128 @@ public class PackageSolver : IPackageSolver
         var packageId = GetPackageName(packageOrAssemblyName);
         NuGetVersion.TryParse(requestedVersion, out var requestedNuGetVersion);
 
-        // 1. Consultar VersionResources (Caché -> Local -> Remoto)
-        var versionResources = await FindVersionResourcesAsync(packageId, requestedNuGetVersion).ConfigureAwait(false);
+        // 1. Obtener VersionResources desde caché o escanear orígenes locales prioritariamente
+        var versionResources = _assemblyCache.GetVersionResources(packageId);
+        if (versionResources == null)
+        {
+            _logger.LogDebug("[PKGSOLVER-LOCAL-FIRST-SCAN] Escaneando orígenes locales inicialmente para '{PackageId}'...", packageId);
+            versionResources = FindLocalVersionResources(packageId, requestedNuGetVersion);
+            _assemblyCache.SetVersionResources(packageId, versionResources);
+        }
 
-        // 2. Seleccionar la mejor versión candidata descubierta en VersionResources
-        var targetVersionStr = SelectBestMatchingVersion(packageId, requestedVersion, versionResources);
+        // 2. Intentar resolución local inicial si se descubrieron versiones locales
+        string? targetVersionStr = null;
+        string? resolvedDllPath = null;
+        bool requiresRemoteFallback = false;
+
+        if (versionResources.Sources.Count > 0)
+        {
+            targetVersionStr = SelectBestMatchingVersion(packageId, requestedVersion, versionResources);
+            if (!string.Equals(targetVersionStr, requestedVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("[PKGSOLVER-VERSION-SELECTED-LOCAL] Versión solicitada '{RequestedVersion}' ajustada a versión candidata local '{SelectedVersion}' para '{PackageId}'.",
+                    requestedVersion ?? "any",
+                    targetVersionStr ?? "none",
+                    packageId);
+            }
+
+            // Evaluar BlockedPackages sobre candidato local
+            if (IsVersionBlocked(packageId, targetVersionStr, out var blockedItem))
+            {
+                _logger.LogWarning("[PKGSOLVER-BLOCKED] Paquete '{PackageId}' versión '{Version}' BLOQUEADO por directiva: {Reason} (Política activa: {Policy})",
+                    packageId,
+                    targetVersionStr,
+                    blockedItem?.Reason,
+                    _settings.BlockedPackagesPolicy);
+
+                switch (_settings.BlockedPackagesPolicy)
+                {
+                    case BlockedPackagesPolicy.Null:
+                        _logger.LogInformation("[PKGSOLVER-POLICY-NULL] Aplicando política Null: devolviendo fallo y registrando caché negativa para '{PackageId}'.", packageId);
+                        return new PackageResolutionResult
+                        {
+                            Success = false,
+                            Blocked = true,
+                            PackageId = packageId,
+                            Version = targetVersionStr,
+                            ErrorMessage = $"Paquete bloqueado por política de seguridad (Null): {blockedItem?.Reason}"
+                        };
+
+                    case BlockedPackagesPolicy.Error:
+                        var errorMsg = $"Resolución rechazada. Paquete '{packageId}' versión '{targetVersionStr}' bloqueado: {blockedItem?.Reason}";
+                        _logger.LogError("[PKGSOLVER-POLICY-ERROR] {ErrorMsg}", errorMsg);
+                        throw new InvalidOperationException(errorMsg);
+
+                    case BlockedPackagesPolicy.Mayor:
+                        _logger.LogDebug("[PKGSOLVER-POLICY-MAYOR-LOCAL] Buscando menor versión superior no bloqueada en orígenes locales para '{PackageId}'...", packageId);
+                        var higherLocal = SelectLowestHigherUnblockedVersion(packageId, requestedNuGetVersion, versionResources);
+                        if (higherLocal != null)
+                        {
+                            _logger.LogInformation("[PKGSOLVER-POLICY-MAYOR-LOCAL-SELECTED] Política 'Mayor' seleccionó versión superior local '{HigherVersion}' para '{PackageId}'.",
+                                higherLocal.ToNormalizedString(), packageId);
+                            targetVersionStr = higherLocal.ToNormalizedString();
+                        }
+                        else
+                        {
+                            _logger.LogInformation("[PKGSOLVER-POLICY-MAYOR-LOCAL-NONE] No se encontró versión superior en local. Se requerirá sondeo remoto para '{PackageId}'.", packageId);
+                            requiresRemoteFallback = true;
+                        }
+                        break;
+                }
+            }
+
+            // Si tenemos versión candidata no bloqueada y no se requiere fallback remoto explícito, intentar resolver DLL local
+            if (!requiresRemoteFallback && !string.IsNullOrEmpty(targetVersionStr))
+            {
+                _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia de DLL local para '{PackageId}' v'{Version}'...",
+                    packageId, targetVersionStr);
+                resolvedDllPath = ResolveLocalDllPath(packageId, targetVersionStr);
+                if (resolvedDllPath != null)
+                {
+                    _logger.LogInformation("[PKGSOLVER-LOCAL-HIT-SUCCESS] Paquete '{PackageId}' v'{Version}' resuelto localmente sin consultas remotas -> '{DllPath}'",
+                        packageId, targetVersionStr, resolvedDllPath);
+
+                    return new PackageResolutionResult
+                    {
+                        Success = true,
+                        PackageId = packageId,
+                        Version = targetVersionStr,
+                        DllPath = resolvedDllPath
+                    };
+                }
+                else
+                {
+                    _logger.LogDebug("[PKGSOLVER-LOCAL-DLL-MISS] DLL física no encontrada localmente para '{PackageId}' v'{Version}'. Procediendo a fallback remoto.",
+                        packageId, targetVersionStr);
+                }
+            }
+        }
+
+        // 3. Fallback Remoto: Consultar servidores NuGet remotos si el paquete no se resolvió localmente
+        var hasRemoteSources = versionResources.Sources.Any(s => !s.IsLocal);
+        if (!hasRemoteSources)
+        {
+            _logger.LogInformation("[PKGSOLVER-REMOTE-FALLBACK] Iniciando consulta a servidores NuGet remotos para '{PackageId}'...", packageId);
+            versionResources = await FetchAndMergeRemoteVersionResourcesAsync(packageId, versionResources, requestedNuGetVersion).ConfigureAwait(false);
+        }
+
+        // 4. Reevaluar mejor versión descubierta con fuentes remotas
+        targetVersionStr = SelectBestMatchingVersion(packageId, requestedVersion, versionResources);
         if (!string.Equals(targetVersionStr, requestedVersion, StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogInformation("[PKGSOLVER-VERSION-SELECTED] Versión solicitada '{RequestedVersion}' ajustada a versión candidata '{SelectedVersion}' para '{PackageId}'.",
+            _logger.LogInformation("[PKGSOLVER-VERSION-SELECTED-REMOTE] Versión solicitada '{RequestedVersion}' ajustada a versión descubierta '{SelectedVersion}' para '{PackageId}'.",
                 requestedVersion ?? "any",
                 targetVersionStr ?? "none",
                 packageId);
         }
 
-        // 3. Evaluar BlockedPackages
-        if (IsVersionBlocked(packageId, targetVersionStr, out var blockedItem))
+        // 5. Reevaluar BlockedPackages
+        if (IsVersionBlocked(packageId, targetVersionStr, out var remoteBlockedItem))
         {
             _logger.LogWarning("[PKGSOLVER-BLOCKED] Paquete '{PackageId}' versión '{Version}' BLOQUEADO por directiva: {Reason} (Política activa: {Policy})",
                 packageId,
                 targetVersionStr,
-                blockedItem?.Reason,
+                remoteBlockedItem?.Reason,
                 _settings.BlockedPackagesPolicy);
 
             switch (_settings.BlockedPackagesPolicy)
@@ -272,16 +415,16 @@ public class PackageSolver : IPackageSolver
                         Blocked = true,
                         PackageId = packageId,
                         Version = targetVersionStr,
-                        ErrorMessage = $"Paquete bloqueado por política de seguridad (Null): {blockedItem?.Reason}"
+                        ErrorMessage = $"Paquete bloqueado por política de seguridad (Null): {remoteBlockedItem?.Reason}"
                     };
 
                 case BlockedPackagesPolicy.Error:
-                    var errorMsg = $"Resolución rechazada. Paquete '{packageId}' versión '{targetVersionStr}' bloqueado: {blockedItem?.Reason}";
+                    var errorMsg = $"Resolución rechazada. Paquete '{packageId}' versión '{targetVersionStr}' bloqueado: {remoteBlockedItem?.Reason}";
                     _logger.LogError("[PKGSOLVER-POLICY-ERROR] {ErrorMsg}", errorMsg);
                     throw new InvalidOperationException(errorMsg);
 
                 case BlockedPackagesPolicy.Mayor:
-                    _logger.LogDebug("[PKGSOLVER-POLICY-MAYOR] Buscando menor versión superior no bloqueada en VersionResources para '{PackageId}'...", packageId);
+                    _logger.LogDebug("[PKGSOLVER-POLICY-MAYOR-REMOTE] Buscando menor versión superior no bloqueada en VersionResources para '{PackageId}'...", packageId);
                     var higherVersion = SelectLowestHigherUnblockedVersion(packageId, requestedNuGetVersion, versionResources);
                     if (higherVersion == null)
                     {
@@ -304,16 +447,12 @@ public class PackageSolver : IPackageSolver
             }
         }
 
-        // 4. Resolución física local
-        string? resolvedDllPath = null;
+        // 6. Comprobar si tras la resolución la DLL ya existía o descargarlo
         if (!string.IsNullOrEmpty(targetVersionStr))
         {
-            _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia de DLL local para '{PackageId}' v'{Version}'...",
-                packageId, targetVersionStr);
             resolvedDllPath = ResolveLocalDllPath(packageId, targetVersionStr);
         }
 
-        // 4. Si no se encuentra localmente, descargar e instalar
         if (resolvedDllPath == null && !string.IsNullOrEmpty(targetVersionStr))
         {
             _logger.LogInformation("[PKGSOLVER-REMOTE-DOWNLOAD-TRIGGER] Paquete '{PackageId}' v'{Version}' no localizado localmente. Iniciando descarga remota...",

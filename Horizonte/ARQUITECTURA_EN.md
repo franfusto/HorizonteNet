@@ -168,13 +168,12 @@ The core of the modular system is organized around a central orchestrator (`IEnv
                           v                                         v
           +-------------------------------+         +----------------------------------+
           | 3. Cache Item Found           |         | 4. Invoke IPackageSolver         |
-          |  - If Dll/Assembly != null    |         |  - Validate BlockedPackages      |
-          |    -> Return Assembly         |         |    (Policy: Null/Error/Mayor)    |
-          |  - If Dll/Assembly == null    |         |  - Inspect NugetFolders          |
-          |    -> Prior failure recorded  |         |  - Query NugetServers (V3)       |
-          |       (Return null immediate) |         |  - Download / Extract nupkg      |
-          +-------------------------------+         |  - Select TFM by priority        |
-                                                    +-----------------+----------------+
+          |  - If Dll/Assembly != null    |         |  - Local NugetFolders scan       |
+          |    -> Return Assembly         |         |  - Immediate local resolution    |
+          |  - If Dll/Assembly == null    |         |  - Fallback: NugetServers (V3)   |
+          |    -> Prior failure recorded  |         |  - Download / Extract nupkg      |
+          |       (Return null immediate) |         |  - Select TFM by priority        |
+          +-------------------------------+         +-----------------+----------------+
                                                                       |
                                                                       v
                                                     +----------------------------------+
@@ -454,29 +453,24 @@ graph TD
     QueryCache -->|Positive Cache Hit| ReturnCache[Return assembly/DLL from Cache]
     QueryCache -->|Cache Miss| QueryVR{8. Query VersionResources in Cache}
     
-    QueryVR -->|Miss| FetchVR[9. PackageSolver: Scan local NugetFolders and query remote NugetServers]
-    FetchVR --> StoreVR[Store VersionResources in IHAssemblyCache]
-    QueryVR -->|Hit| EvalVR[10. Evaluate Available Versions]
-    StoreVR --> EvalVR
+    QueryVR -->|Miss| ScanLocal[9. Exclusively scan NugetFolders and local disk]
+    ScanLocal --> StoreVRLocal[Store local VersionResources in IHAssemblyCache]
+    QueryVR -->|Hit| EvalLocal[10. Evaluate Version with available local sources]
+    StoreVRLocal --> EvalLocal
     
-    EvalVR --> CheckBlocked{11. Requested version in BlockedPackages?}
-    CheckBlocked -->|Yes| EvalPolicy{Evaluate BlockedPackagesPolicy}
+    EvalLocal --> CheckLocalMatch{11. Does version match and DLL exist locally?}
+    CheckLocalMatch -->|Yes and Unblocked| LoadAlcLocal[16. Load local DLL into domain ALC]
     
-    EvalPolicy -->|Null| LogNegPolicy[Log warning, store negative cache and return null]
-    EvalPolicy -->|Error| ThrowPolicy[Emit critical error / security exception]
-    EvalPolicy -->|Mayor| FindHigher[Select lowest higher non-blocked version]
+    CheckLocalMatch -->|Missing locally / Requires remote| FetchRemote[12. Query remote NugetServers V3]
+    FetchRemote --> MergeVR[13. Consolidate remote VersionResources in Cache]
+    MergeVR --> EvalRemote[14. Evaluate Version and Blocking Policies]
     
-    CheckBlocked -->|No| SelectVersion[Select requested compatible version]
-    FindHigher --> SelectVersion
+    EvalRemote --> DownloadNupkg[15. Download .nupkg from remote NugetServer]
+    DownloadNupkg --> ExtractNupkg[Extract & inspect installation folder]
+    ExtractNupkg --> SelectTfm[Select DLL according to FrameworkPriorities]
+    SelectTfm --> LoadAlcLocal
     
-    SelectVersion --> CheckLocalNupkg{12. Does local .nupkg / DLL exist?}
-    CheckLocalNupkg -->|No| DownloadNupkg[13. Download .nupkg from remote NugetServer V3 / Index.json]
-    CheckLocalNupkg -->|Yes| ExtractNupkg[14. Extract / Inspect installation folder]
-    DownloadNupkg --> ExtractNupkg
-    
-    ExtractNupkg --> SelectTfm[15. Select DLL according to FrameworkPriorities]
-    SelectTfm --> LoadAlc[16. Load DLL into domain AssemblyLoadContext]
-    LoadAlc --> UpdateCacheItem[17. Update IHAssemblyCache with successful result]
+    LoadAlcLocal --> UpdateCacheItem[17. Update IHAssemblyCache with successful result]
     UpdateCacheItem --> Symlinks[18. ISymLinkScafolder: Process .targets & symlinks]
     Symlinks --> WebAssets[19. StaticFileRegistry: Register web assets by domain]
     WebAssets --> EndSuccess([20. Return Loaded Assembly])
@@ -492,12 +486,12 @@ graph TD
 6. **Runtime Filter**: Exclusion of base .NET runtime assemblies that should not be resolved via NuGet.
 7. **Query `IHAssemblyCache`**: Lookup by domain, assembly, and version key. Returns positive hit if cached, or immediate `null` on negative cache.
 8. **Query `VersionResources`**: Checks if version catalog is already present in in-memory cache.
-9. **Origin Probing**: On cache miss, `IPackageSolver` scans local folders (`NugetFolders`, `~/.nuget/packages`) and queries remote NuGet servers (`NugetServers`) via `FindPackageByIdResource`.
-10. **Version Evaluation**: Sorting and consolidation of discovered versions in `VersionResources`.
-11. **Block Evaluation**: Checking against rules defined in `BlockedPackages`.
-12. **Block Policy Application**: Execution of action defined by `BlockedPackagesPolicy` (`Null`, `Error`, `Mayor`).
-13. **Local Binary Verification**: Checks existence of `.nupkg` or DLL file on local disk.
-14. **Remote Download**: Asynchronous download of `.nupkg` package from active NuGet server if missing locally.
+9. **Prioritized Local Scan**: On cache miss, `IPackageSolver` initially scans local folders (`NugetFolders`, `~/.nuget/packages`) exclusively and stores discovered versions in `VersionResources`.
+10. **Immediate Local Evaluation and Resolution**: Evaluation of best matching version and validation against `BlockedPackages`. If version matches and physical DLL exists on disk, it is resolved immediately skipping any remote NuGet server calls.
+11. **On-Demand Remote Probing**: If the requested package or version is missing locally (or if `BlockedPackagesPolicy.Mayor` requires a higher version not available locally), `IPackageSolver` queries remote NuGet servers (`NugetServers`) via `FindPackageByIdResource`.
+12. **Cache Consolidation**: Incremental merging of newly discovered remote sources and versions into the `VersionResources` instance stored in `IHAssemblyCache`.
+13. **Block Policy Evaluation and Final Selection**: Re-evaluation of best discovered version and application of `BlockedPackagesPolicy` (`Null`, `Error`, `Mayor`).
+14. **Remote Download**: Asynchronous download of `.nupkg` package from active remote feed if needed.
 15. **Extraction**: Unpacking package into configured installation folder.
 16. **Target Framework Selection**: Selection of optimal `lib/` folder according to `FrameworkPriorities` order.
 17. **Context Loading**: Loading DLL file into domain `AssemblyLoadContext`.

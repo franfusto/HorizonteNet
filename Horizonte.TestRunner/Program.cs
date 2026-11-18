@@ -67,6 +67,12 @@ public class Program
         await RunConcurrentTimeoutTestAsync("Newtonsoft.Json");
 
         Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE RESOLUCION LOCAL-FIRST Y FALLBACK REMOTO ===");
+        Console.WriteLine("================================================================================");
+
+        await RunLocalFirstResolutionTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
         Console.WriteLine("=== TEST DE SELECCION SEMANTICA Y COMPATIBILIDAD DE VERSIONES (PackageSolver) ===");
         Console.WriteLine("================================================================================");
 
@@ -302,6 +308,82 @@ public class Program
         else
         {
             Console.WriteLine($"  ✗ [FAIL] Versión incorrecta: '{res4.Version}'");
+        }
+    }
+
+    private static async Task RunLocalFirstResolutionTestsAsync()
+    {
+        // Test LF-1: Paquete existente localmente no consulta servidores remotos
+        var tempDir = Path.Combine(Path.GetTempPath(), "horizonte_test_packages_" + Guid.NewGuid().ToString("N"));
+        var pkgDir = Path.Combine(tempDir, "test.local.pkg", "1.0.0", "lib", "net10.0");
+        Directory.CreateDirectory(pkgDir);
+        var dummyDll = Path.Combine(pkgDir, "Test.Local.Pkg.dll");
+        await File.WriteAllTextAsync(dummyDll, "dummy");
+
+        try
+        {
+            var settings = new ModulesSettings
+            {
+                NugetFolders = new List<NugetFolderItem>
+                {
+                    new NugetFolderItem { Folder = tempDir, Active = true, InstallFolder = true }
+                },
+                NugetServers = new List<NugetServerItem>
+                {
+                    // Servidor inalcanzable configurado: si se llamara por error, fallaría o demoraría
+                    new NugetServerItem { Name = "Unreachable Server", Server = "http://10.255.255.1:5555/v3/index.json", Active = true, Order = 1 }
+                },
+                FrameworkPriorities = new List<string> { "net10.0" }
+            };
+
+            var cache = new HAssemblyCache();
+            var solver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+
+            Console.WriteLine("[TEST LF-1] Resolviendo paquete existente en disco local con servidor remoto inalcanzable configurado...");
+            var sw = Stopwatch.StartNew();
+            var result = await solver.ResolvePackageAsync("Test.Local.Pkg", "1.0.0");
+            sw.Stop();
+
+            Console.WriteLine($"  -> Tiempo: {sw.ElapsedMilliseconds} ms, Success: {result.Success}, Version: {result.Version}, DllPath: {result.DllPath}");
+            if (result.Success && result.Version == "1.0.0" && result.DllPath == dummyDll && sw.ElapsedMilliseconds < 500)
+            {
+                Console.WriteLine("  ✓ [OK] Paquete resuelto instantáneamente desde disco sin intentar contactar servidor remoto.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Resolución inesperada: Success={result.Success}, Tiempo={sw.ElapsedMilliseconds}ms");
+            }
+
+            // Test LF-2: Verificar que VersionResources en caché contiene inicialmente solo origen local
+            var vr = cache.GetVersionResources("Test.Local.Pkg");
+            if (vr != null && vr.Sources.Count == 1 && vr.Sources[0].IsLocal)
+            {
+                Console.WriteLine("  ✓ [OK] VersionResources poblado exclusivamente con fuentes locales.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] VersionResources inesperado: Sources={vr?.Sources.Count}");
+            }
+
+            // Test LF-3: Paquete ausente en disco dispara fallback remoto
+            Console.WriteLine("\n[TEST LF-2] Resolviendo paquete ausente en disco (debe intentar sondeo remoto)...");
+            var remoteResult = await solver.ResolvePackageAsync("Test.NonExistent.Pkg", "2.0.0");
+            var vrRemote = cache.GetVersionResources("Test.NonExistent.Pkg");
+            if (vrRemote != null)
+            {
+                Console.WriteLine("  ✓ [OK] Paquete ausente disparó consulta remota y actualizó VersionResources.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] VersionResources no actualizado tras fallback remoto.");
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
         }
     }
 
