@@ -24,7 +24,7 @@ public class NodeOutModel : NodeModel,IRunnableNode
     /// de un nodo en un flujo de trabajo. Esto puede incluir mensajes de error, instrucciones de ejecución, o cualquier otro tipo de
     /// información que necesite ser comunicada al usuario o al sistema.
     /// </summary>
-    public string RunMessage {get; set;}
+    public string RunMessage { get; set; } = string.Empty;
 
 
     /// <summary>

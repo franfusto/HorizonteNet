@@ -294,16 +294,7 @@
     /// Obtiene o establece la definición del flujo de trabajo (<see cref="Extension.AiWorkFlows.WorkFlowDef"/>) a diseñar o ejecutar.
     /// </summary>
     [Parameter]
-    public WorkFlowDef? WorkFlowDef
-    {
-        get => _currentWorkFlowNode;
-        set
-        {
-            if (_currentWorkFlowNode?.Id == value?.Id) return;
-            _currentWorkFlowNode = value;
-            LoadWorkFlow(value);
-        }
-    }
+    public WorkFlowDef? WorkFlowDef { get; set; }
 
     /// <summary>
     /// Evento de callback que se dispara al solicitar guardar el flujo de trabajo.
@@ -322,6 +313,7 @@
 
     private BlazorDiagram _diagram = new BlazorDiagram();
     private WorkFlowDef? _currentWorkFlowNode;
+    private string? _lastLoadedWorkFlowId;
     private WorkFlowRunManager _runManager = new();
     private string _inmessage = string.Empty;
     private string? _outmessage = string.Empty;
@@ -756,6 +748,17 @@
         _diagram.RegisterComponent<LinkSettingsControl, LinkSettingsWidget>();
         _runManager.StatusChanged += HandleStatusChanged;
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (WorkFlowDef?.Id != _lastLoadedWorkFlowId)
+        {
+            _lastLoadedWorkFlowId = WorkFlowDef?.Id;
+            _currentWorkFlowNode = WorkFlowDef;
+            LoadWorkFlow(WorkFlowDef);
+        }
+        base.OnParametersSet();
     }
 
     private void AddNode(WorkFlowNodeTypes type)

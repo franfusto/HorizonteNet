@@ -50,7 +50,7 @@ public class LinkSettingsControl : ExecutableControl
     /// <summary>
     /// Obtiene el diagrama al cual pertenece y en el cual opera el control de configuración del enlace.
     /// </summary>
-    public Diagram Diagram { get; private set; } 
+    public Diagram? Diagram { get; private set; }
 
     /// <summary>
     /// Inicializa una nueva instancia de la clase <see cref="LinkSettingsControl"/> asociada a un enlace de flujo de trabajo.
