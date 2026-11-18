@@ -424,7 +424,7 @@ public class HAssemblySolver : IHAssemblySolver
 
     private string? ResolveNugetFromLocalDirectory(
         string name,
-        string version,
+        string? version,
         string? framework = null,
         bool exactmatch = true)
     {

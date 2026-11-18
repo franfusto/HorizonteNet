@@ -238,12 +238,12 @@ Serializa la respuesta en Output usando el siguiente formato para la salida estr
         return chatElement;
     }
 
-    private RenderFragment CreateWidgetRenderFragment(string widgetCommandKey)
+    private RenderFragment? CreateWidgetRenderFragment(string widgetCommandKey)
     {
         var command = GesCom.GetCommandList().FirstOrDefault(x => x.CommandKey == widgetCommandKey);
         if (command == null) return null;
 
-        WidgetDef widgetDef;
+        WidgetDef? widgetDef;
         if (command.Roles.Contains("widget") || command.Roles.Contains("configpage"))
         {
             widgetDef = GesCom.RunCommand<WidgetDef>(widgetCommandKey);
@@ -263,7 +263,8 @@ Serializa la respuesta en Output usando el siguiente formato para la salida estr
             };
         }
 
-        return GesCom.RunCommand<RenderFragment>("HorizonteGui_RenderWidget", new object[] { widgetDef })
+        if (widgetDef == null) return builder => builder.AddMarkupContent(0, "<p>Error al cargar el widget</p>");
+        return GesCom.RunCommand<RenderFragment>("HorizonteGui_RenderWidget", [widgetDef])
                ?? (builder => builder.AddMarkupContent(0, "<p>Error al cargar el widget</p>"));
     }
 
