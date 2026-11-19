@@ -26,8 +26,8 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
   - **Admin UI:** panel de administración para gestionar extensiones y módulos.
   - **Scripts:** ejecución y gestión de scripts en C# y Jupyter Notebooks.
   - **Workflows:** orquestación de flujos de trabajo personalizables.
-  - **Agents:** definición y ejecución de agentes autónomos.
   - **MCP Server:** servicio basado en Model Context Protocol que integra las funcionalidades de los módulos.
+  
 
 ---
 
@@ -63,9 +63,7 @@ Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arqui
   Orquestación de grafos dirigidos con `Microsoft.Agents.AI.Workflows`, puntos de control (checkpoints), pausa/reanudación, agentes de IA e indexación semántica vectorial de comandos con OpenAI y Semantic Kernel.  
   📖 [Especificación de arquitectura](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
 
-- **Agentes Declarativos (`Horizonte.Extension.Ai`)**:  
-  Runtime declarativo de agentes `Hagent`, modelo de composición desacoplado mediante factoría, políticas de gestión de archivos, ejecución de herramientas automáticas y clientes IA intercambiables.  
-  📖 [Especificación de arquitectura](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
+
 
 ---
 
@@ -186,9 +184,6 @@ docker run -d \
   -p 5000:5000 \
   -e PUID=1000 \
   -e PGID=1000 \
-  -e ASPNETCORE_URLS=http://+:5000 \
-  -e ASPNETCORE_HTTP_PORTS=5000 \
-  -e ASPNETCORE_ENVIRONMENT=Production \
   -v ./horizonte:/home/horizonte \
   --restart unless-stopped \
   franfusto/horizontenet:10.0.7-beta
@@ -208,9 +203,6 @@ services:
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - ASPNETCORE_URLS=http://+:5000
-      - ASPNETCORE_HTTP_PORTS=5000
-      - ASPNETCORE_ENVIRONMENT=Production
     volumes:
       - ./horizonte:/home/horizonte
     restart: unless-stopped

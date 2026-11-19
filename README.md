@@ -28,7 +28,6 @@ HorizonteNet is based on a microservices and decoupled modules architecture:
   - **Scripts:** execution and management of C# scripts and Jupyter Notebooks.
   - **Workflows:** orchestration of customizable workflows.
   - **Agents:** definition and execution of autonomous agents.
-  - **MCP Server:** service based on the Model Context Protocol that integrates module functionality.
 
 ---
 
@@ -64,9 +63,7 @@ Each component of the HorizonteNet ecosystem provides detailed technical archite
   Directed graph orchestration powered by `Microsoft.Agents.AI.Workflows`, execution checkpoints, pause/resume lifecycle, AI agents, and semantic vector command indexing with OpenAI and Semantic Kernel.  
   📖 [Architecture Specification](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
 
-- **Declarative Agents (`Horizonte.Extension.Ai`)**:  
-  Declarative `Hagent` agent runtime, decoupled factory composition model, file management policies, automatic tool execution, and interchangeable AI clients.  
-  📖 [Architecture Specification](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
+
 
 ---
 
@@ -186,9 +183,6 @@ docker run -d \
   -p 5000:5000 \
   -e PUID=1000 \
   -e PGID=1000 \
-  -e ASPNETCORE_URLS=http://+:5000 \
-  -e ASPNETCORE_HTTP_PORTS=5000 \
-  -e ASPNETCORE_ENVIRONMENT=Production \
   -v ./horizonte:/home/horizonte \
   --restart unless-stopped \
   franfusto/horizontenet:10.0.6-beta
@@ -208,9 +202,6 @@ services:
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - ASPNETCORE_URLS=http://+:5000
-      - ASPNETCORE_HTTP_PORTS=5000
-      - ASPNETCORE_ENVIRONMENT=Production
     volumes:
       - ./horizonte:/home/horizonte
     restart: unless-stopped
