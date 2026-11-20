@@ -52,7 +52,7 @@ public static class Extensions
                 await csharpKernel.SetValueAsync("ServiceProvider", serviceProvider, typeof(IServiceProvider));
 
                 // Incluimos soporte mínimo a referencias de ensamblados
-                await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:Horizonte,10.0.7\""));
+                await csharpKernel.SendAsync(new SubmitCode($"#r \"nuget:Horizonte,10.0.1\""));
                 await csharpKernel.SendAsync(new SubmitCode("#r \"nuget: Microsoft.Extensions.DependencyInjection.Abstractions, 10.0.1\""));
             }
             //aqui hay que implementar la función display para integrarla con el Widget...
@@ -124,15 +124,6 @@ public static class Extensions
                                 }
                                 intercepted = true;
                                 continue; // No añadir esta línea al código final si se manejó aquí
-                            }
-                            else
-                            {
-                                var cached = envCoordinator.AssemblySolver.AssemblyCache?.Get(packageName, version);
-                                if (cached != null && cached.Found && cached.IsRuntimePackage)
-                                {
-                                    intercepted = true;
-                                    continue;
-                                }
                             }
                         }
 
