@@ -33,5 +33,20 @@ public class NugetPackageVersionInformation()
     /// Obtiene o establece la ruta completa al archivo DLL del paquete NuGet en el sistema de archivos.
     /// </summary>
     public string DllPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Indica si el paquete resuelto es puramente de runtime nativo (sin DLL administrada en lib/).
+    /// </summary>
+    public bool IsRuntimePackage { get; set; }
+
+    /// <summary>
+    /// Indica si el paquete contiene activos nativos en /runtimes/ para el identificador de runtime (RID) actual.
+    /// </summary>
+    public bool HasNativeAssets { get; set; }
+
+    /// <summary>
+    /// Ruta absoluta al directorio raíz de la versión del paquete.
+    /// </summary>
+    public string? PackageRootDirectory { get; set; }
 }
 

@@ -34,4 +34,19 @@ public class PackageResolutionResult
     /// Indica si el paquete fue bloqueado por una regla de seguridad de BlockedPackages.
     /// </summary>
     public bool Blocked { get; set; }
+
+    /// <summary>
+    /// Indica si el paquete resuelto es puramente de runtime nativo (sin DLL administrada en lib/).
+    /// </summary>
+    public bool IsRuntimePackage { get; set; }
+
+    /// <summary>
+    /// Indica si el paquete contiene activos nativos en /runtimes/ para el identificador de runtime (RID) actual.
+    /// </summary>
+    public bool HasNativeAssets { get; set; }
+
+    /// <summary>
+    /// Ruta absoluta al directorio raíz de la versión del paquete resuelto en el sistema de archivos.
+    /// </summary>
+    public string? PackageRootDirectory { get; set; }
 }

@@ -38,12 +38,15 @@ public class HDomainManager : IHDomainManager
     {
         try
         {
+            AssemblyLoadContext.Default.Resolving -= OnResolving;
+            AssemblyLoadContext.Default.Resolving += OnResolving;
+            AssemblyLoadContext.Default.ResolvingUnmanagedDll -= OnResolvingUnmanagedDll;
+            AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
+
             foreach (var domainName in _settings.Domains)
             {
                 if (string.Equals(domainName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
                 {
-                    AssemblyLoadContext.Default.Resolving -= OnResolving;
-                    AssemblyLoadContext.Default.Resolving += OnResolving;
                     continue;
                 }
 
@@ -64,6 +67,13 @@ public class HDomainManager : IHDomainManager
     {
         var assemblySolver = _serviceProvider.GetService<IHAssemblySolver>();
         return assemblySolver?.ResolveAssemblyFromALC(context, assemblyName);
+    }
+
+    private IntPtr OnResolvingUnmanagedDll(Assembly assembly, string unmanagedDllName)
+    {
+        var context = AssemblyLoadContext.GetLoadContext(assembly) ?? AssemblyLoadContext.Default;
+        var assemblySolver = _serviceProvider.GetService<IHAssemblySolver>();
+        return assemblySolver?.ResolveUnmanagedDll(context, unmanagedDllName) ?? IntPtr.Zero;
     }
 
     /// <inheritdoc/>
@@ -100,6 +110,7 @@ public class HDomainManager : IHDomainManager
         _logger.LogInformation("Creating domain AssemblyLoadContext: {DomainName} (isCollectible: {IsCollectible})", domainName, isCollectible);
         var alc = new AssemblyLoadContext(domainName, isCollectible: isCollectible);
         alc.Resolving += OnResolving;
+        alc.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
         _domains[domainName] = alc;
         return alc;
     }
@@ -151,6 +162,7 @@ public class HDomainManager : IHDomainManager
         {
             _logger.LogInformation("Unloading domain ALC: {DomainName}", domainName);
             alc.Resolving -= OnResolving;
+            alc.ResolvingUnmanagedDll -= OnResolvingUnmanagedDll;
             alc.Unload();
             _domains.Remove(domainName);
 

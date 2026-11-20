@@ -125,6 +125,15 @@ public static class Extensions
                                 intercepted = true;
                                 continue; // No añadir esta línea al código final si se manejó aquí
                             }
+                            else
+                            {
+                                var cached = envCoordinator.AssemblySolver.AssemblyCache?.Get(packageName, version);
+                                if (cached != null && cached.Found && cached.IsRuntimePackage)
+                                {
+                                    intercepted = true;
+                                    continue;
+                                }
+                            }
                         }
 
                     }

@@ -104,6 +104,7 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
 
 - **Responsabilidades**:
   - Resolver ensamblados solicitados por eventos de carga de contextos específicos (`ResolveAssemblyFromALC`) y eventos globales (`ResolveAssemblyFromNuGetPackages`).
+  - Resolver y cargar librerías nativas / no administradas (.so, .dll, .dylib) solicitadas en llamadas P/Invoke (`ResolveUnmanagedDll`) mediante sondeo de RIDs compatibles en `./runtimes/{rid}/native/`, `AppContext.BaseDirectory` y carpetas de paquetes.
   - Localizar rutas físicas de librerías en disco (`ResolveAssemblyDllPath`) y descargar paquetes desde feeds remotos (`DownloadNuGetPackageAsync`).
   - Mantener el mapeo bidireccional entre nombres de ensamblados y nombres de paquetes NuGet (`GetPackageName`, utilizando `AssemblyToPackageMap`).
   - Almacenar y consultar bytes de ensamblados en memoria (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
@@ -199,8 +200,9 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
 - **Responsabilidades**:
   - Mantener el diccionario de dominios activos (`Domains`).
   - Crear y configurar contextos de carga coleccionables (`CreateDomain` con `isCollectible = true`).
+  - Interceptar y conectar el evento `ResolvingUnmanagedDll` en `AssemblyLoadContext.Default` y en cada ALC personalizado, delegando la resolución en `IHAssemblySolver.ResolveUnmanagedDll`.
   - Cargar ensamblados en dominios específicos desde rutas de archivos o desde secuencias binarias en memoria (`LoadDomainContextAsync`).
-  - Descargar contextos de carga (`UnloadDomainContextAsync`), desconectando referencias y forzando la recolección de basura (`GC.Collect`) para la liberación efectiva de memoria.
+  - Descargar contextos de carga (`UnloadDomainContextAsync`), desconectando referencias y manejadores de eventos (`Resolving`, `ResolvingUnmanagedDll`) y forzando la recolección de basura (`GC.Collect`) para la liberación efectiva de memoria.
   - Enumerar los ensamblados asociados a un dominio específico (`GetDomainAssemblies`).
 
 ---
@@ -509,3 +511,22 @@ El subsistema `IPackageSolver` incorpora mecanismos de control para garantizar e
 - **Timeouts Controlados**: Uso de `CancellationTokenSource` vinculado con límites de tiempo estricto por servidor remoto (8 segundos para consultas de versiones y 20 segundos para descargas de paquetes).
 - **Consultas Concurrentes**: Consulta en paralelo mediante `Task.WhenAll` a todos los servidores remotos activos configurados en `NugetServers`.
 - **Trazabilidad Estructurada**: Emisión de trazas de registro estructuradas con prefijos normalizados (`[PKGSOLVER-*]`, `[RESOLVER-*]`) para auditoría y diagnóstico en tiempo de ejecución.
+
+---
+
+#### 5. Resolución y Carga Dinámica de Librerías Nativas (P/Invoke)
+
+Cuando un ensamblado administrado invoca código nativo no administrado vía P/Invoke (por ejemplo, `OpenCvSharp`, `SkiaSharp`, `TensorFlow`), el CLR dispara el evento `AssemblyLoadContext.ResolvingUnmanagedDll`.
+
+- **Manejador Centralizado**: `HDomainManager` conecta el evento `ResolvingUnmanagedDll` en `AssemblyLoadContext.Default` y en todos los contextos ALC creados dinámicamente, delegando la resolución en `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
+- **Estrategia de Sondeo Multiplataforma**:
+  1. **Generación de Nombres Candidatos**:
+     - **Linux / Unix**: `lib{Nombre}.so`, `{Nombre}.so`, `lib{Nombre}`, `{Nombre}`.
+     - **Windows**: `{Nombre}.dll`, `{Nombre}`.
+     - **macOS**: `lib{Nombre}.dylib`, `{Nombre}.dylib`, `lib{Nombre}`, `{Nombre}`.
+  2. **RIDs Compatibles**: Detección de la jerarquía de Runtime Identifiers mediante `NugetHelpers.GetCompatibleRuntimeIdentifiers` (ej. `linux-x64` -> `linux` -> `unix` -> `any`).
+  3. **Rutas Inspeccionadas Secuencialmente**:
+     - `./runtimes/{cRid}/native/{candidateName}` (directorio de trabajo del proceso / scaffolding).
+     - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
+     - Directorios de paquetes locales registrados en `NugetFolders`.
+  4. **Carga Segura en Memoria**: Carga del binario nativo mediante `NativeLibrary.TryLoad` devolviendo el puntero `IntPtr` del manejador al CLR, permitiendo la resolución de dependencias transitivas en el mismo directorio.

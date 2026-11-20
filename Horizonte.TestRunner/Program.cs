@@ -7,12 +7,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Horizonte.Entities;
+using Horizonte.Helpers;
+using Horizonte.Interfaces;
 using Horizonte.Services;
 using Horizonte.Settings;
+using Horizonte.Extensions.Interactive;
 
 namespace Horizonte.TestRunner;
 
@@ -77,6 +82,18 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunSemanticVersionSelectionTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE PAQUETES NATIVOS, HIBRIDOS, SYMLINKS ARCHIVO A ARCHIVO Y COMPILACION ===");
+        Console.WriteLine("================================================================================");
+
+        await RunNativeAndHybridPackageResolutionTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE RESOLUCION DE LIBRERIAS NATIVAS (ResolvingUnmanagedDll / NativeLibrary) ===");
+        Console.WriteLine("================================================================================");
+
+        await RunNativeUnmanagedDllResolutionTestsAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -407,5 +424,328 @@ public class Program
 
         var versionList = versions?.ToList() ?? new();
         Console.WriteLine($"[EXITO] Versiones encontradas ({versionList.Count}): {string.Join(", ", versionList.Take(5).Select(v => v.ToNormalizedString()))} ...");
+    }
+
+    private static async Task RunNativeAndHybridPackageResolutionTestsAsync()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "horizonte_native_test_" + Guid.NewGuid().ToString("N"));
+        var rid = NugetHelpers.GetEffectiveRuntimeIdentifier();
+
+        // 1. Crear estructura de paquete nativo puro (ej. OpenCvSharp4.official.runtime.linux-x64)
+        var pureNativePkg = "OpenCvSharp4.official.runtime.linux-x64";
+        var pureNativeVer = "4.10.0.20240616";
+        var pureNativeDir = Path.Combine(tempDir, pureNativePkg.ToLowerInvariant(), pureNativeVer, "runtimes", rid, "native");
+        Directory.CreateDirectory(pureNativeDir);
+        var pureNativeSo = Path.Combine(pureNativeDir, "libOpenCvSharpExtern.so");
+        await File.WriteAllTextAsync(pureNativeSo, "/* dummy native binary */");
+
+        // 2. Crear estructura de paquete mixto / híbrido (lib/net10.0/MyMixed.dll + runtimes/{rid}/native/libMyMixedNative.so)
+        var mixedPkg = "MyMixed.Package";
+        var mixedVer = "1.0.0";
+        var mixedLibDir = Path.Combine(tempDir, mixedPkg.ToLowerInvariant(), mixedVer, "lib", "net10.0");
+        var mixedNativeDir = Path.Combine(tempDir, mixedPkg.ToLowerInvariant(), mixedVer, "runtimes", rid, "native");
+        Directory.CreateDirectory(mixedLibDir);
+        Directory.CreateDirectory(mixedNativeDir);
+        var mixedDll = Path.Combine(mixedLibDir, "MyMixed.Package.dll");
+        var mixedSo = Path.Combine(mixedNativeDir, "libMyMixedNative.so");
+        await File.WriteAllTextAsync(mixedDll, "dummy managed dll");
+        await File.WriteAllTextAsync(mixedSo, "/* dummy mixed native binary */");
+
+        SymLinkScafolder? scafolder = null;
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddLogging();
+            var settings = new ModulesSettings
+            {
+                NugetFolders = new List<NugetFolderItem>
+                {
+                    new NugetFolderItem { Folder = tempDir, Active = true, InstallFolder = true }
+                },
+                FrameworkPriorities = new List<string> { "net10.0" }
+            };
+
+            var cache = new HAssemblyCache();
+            var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+
+            // TEST 1: Resolución de paquete nativo puro en PackageSolver
+            Console.WriteLine("\n[TEST NATIVO 1] Resolviendo paquete nativo puro en PackageSolver...");
+            var resPure = await packageSolver.ResolvePackageAsync(pureNativePkg, pureNativeVer);
+            Console.WriteLine($"  -> Success: {resPure.Success}, IsRuntimePackage: {resPure.IsRuntimePackage}, HasNativeAssets: {resPure.HasNativeAssets}, DllPath: '{resPure.DllPath}', Root: '{resPure.PackageRootDirectory}'");
+            if (resPure.Success && resPure.IsRuntimePackage && resPure.HasNativeAssets && string.IsNullOrEmpty(resPure.DllPath))
+            {
+                Console.WriteLine("  ✓ [OK] Paquete nativo puro resuelto correctamente (Success=true, IsRuntimePackage=true, HasNativeAssets=true).");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Resultado inesperado en paquete nativo puro.");
+            }
+
+            // TEST 2: Resolución de paquete mixto en PackageSolver
+            Console.WriteLine("\n[TEST NATIVO 2] Resolviendo paquete mixto (DLL + Runtimes) en PackageSolver...");
+            var resMixed = await packageSolver.ResolvePackageAsync(mixedPkg, mixedVer);
+            Console.WriteLine($"  -> Success: {resMixed.Success}, IsRuntimePackage: {resMixed.IsRuntimePackage}, HasNativeAssets: {resMixed.HasNativeAssets}, DllPath: '{resMixed.DllPath}', Root: '{resMixed.PackageRootDirectory}'");
+            if (resMixed.Success && !resMixed.IsRuntimePackage && resMixed.HasNativeAssets && !string.IsNullOrEmpty(resMixed.DllPath))
+            {
+                Console.WriteLine("  ✓ [OK] Paquete mixto resuelto correctamente (Success=true, IsRuntimePackage=false, HasNativeAssets=true, DllPath no vacio).");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Resultado inesperado en paquete mixto.");
+            }
+
+            // TEST 3: Andamiaje de symlinks archivo por archivo y coexistencia en HAssemblySolver
+            Console.WriteLine("\n[TEST NATIVO 3] Verificando scaffolding archivo por archivo y coexistencia multi-paquete...");
+            scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+            scafolder.CleanScafolder();
+            services.AddSingleton<IHAssemblyCache>(cache);
+            services.AddSingleton<IPackageSolver>(packageSolver);
+            services.AddSingleton<ISymLinkScafolder>(scafolder);
+            var sp = services.BuildServiceProvider();
+
+            var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+
+            // Resolver paquete puro a través de HAssemblySolver
+            var alc = System.Runtime.Loader.AssemblyLoadContext.Default;
+            var pureAsm = assemblySolver.ResolveAssemblyFromNuGetPackages(alc, new ResolveEventArgs($"{pureNativePkg}, Version={pureNativeVer}"));
+            Console.WriteLine($"  -> Pure native Assembly retorno: {(pureAsm == null ? "null (correcto para paquete puro)" : pureAsm.FullName)}");
+
+            var scafolderLinks = scafolder.GetScafolder().ToList();
+            Console.WriteLine($"  -> Enlaces simbólicos creados tras paquete puro: {scafolderLinks.Count}");
+            foreach (var link in scafolderLinks)
+            {
+                Console.WriteLine($"     * [Link] Source: '{link.Source}' -> Dest: '{link.Destination}', IsDirectory: {link.IsDirecory}");
+            }
+
+            var pureLink = scafolderLinks.FirstOrDefault(l => l.Destination.EndsWith("libOpenCvSharpExtern.so"));
+            if (pureAsm == null && pureLink != null && !pureLink.IsDirecory)
+            {
+                Console.WriteLine("  ✓ [OK] Paquete puro retornó null para ALC y creó enlace archivo por archivo (IsDirecory=false).");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Fallo en scaffolding de paquete puro.");
+            }
+
+            // Resolver paquete mixto
+            var mixedDllPath = assemblySolver.ResolveAssemblyDllPath(mixedPkg, mixedVer);
+            Console.WriteLine($"  -> Mixed DLL Path resuelto: '{mixedDllPath}'");
+
+            var allLinks = scafolder.GetScafolder().ToList();
+            Console.WriteLine($"  -> Enlaces simbólicos totales tras paquete mixto: {allLinks.Count}");
+            foreach (var link in allLinks)
+            {
+                Console.WriteLine($"     * [Link] Source: '{link.Source}' -> Dest: '{link.Destination}', IsDirectory: {link.IsDirecory}");
+            }
+
+            var mixedLink = allLinks.FirstOrDefault(l => l.Destination.EndsWith("libMyMixedNative.so"));
+            if (mixedLink != null && !mixedLink.IsDirecory && allLinks.Count >= 2)
+            {
+                Console.WriteLine("  ✓ [OK] Coexistencia multi-paquete validada: ambos archivos nativos coexisten en runtimes/ sin colisión.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Fallo en coexistencia de enlaces simbólicos.");
+            }
+
+            // TEST 4: Caché en HAssemblyCache
+            Console.WriteLine("\n[TEST NATIVO 4] Verificando estado en HAssemblyCache...");
+            var pureCache = cache.Get(pureNativePkg, pureNativeVer);
+            if (pureCache != null && pureCache.Found && pureCache.IsRuntimePackage && pureCache.HasNativeAssets)
+            {
+                Console.WriteLine("  ✓ [OK] HAssemblyCache registró correctamente el paquete como Found=true, IsRuntimePackage=true.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Estado incorrecto en HAssemblyCache.");
+            }
+
+            // TEST 5: Compilación interactiva de script con directiva NuGet nativa pura
+            Console.WriteLine("\n[TEST NATIVO 5] Verificando compilación de script con directiva NuGet nativa pura...");
+            var mockCoordinator = new MockEnvCoordinator(assemblySolver);
+            var script = new ScriptDef
+            {
+                Name = "TestNativeScript",
+                CodeText = $"#r \"nuget:{pureNativePkg}, {pureNativeVer}\"\nConsole.WriteLine(\"Script compilado!\");"
+            };
+
+            var compileResult = await script.Compile(mockCoordinator);
+            var isSuccess = compileResult.Assembly != null && compileResult.Assembly.Length > 0 && !compileResult.Errors.Any();
+            Console.WriteLine($"  -> Compilacion Success: {isSuccess}, Bytes: {compileResult.Assembly?.Length}, Errors: {string.Join("; ", compileResult.Errors)}");
+            if (isSuccess)
+            {
+                Console.WriteLine("  ✓ [OK] Script compilado exitosamente sin error CS0006 para paquete nativo puro.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Error en compilación de script: {string.Join("; ", compileResult.Errors)}");
+            }
+        }
+        finally
+        {
+            scafolder?.CleanScafolder();
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
+    }
+
+    private static async Task RunNativeUnmanagedDllResolutionTestsAsync()
+    {
+        var rid = NugetHelpers.GetEffectiveRuntimeIdentifier();
+        var runtimeNativeDir = Path.Combine(Directory.GetCurrentDirectory(), "runtimes", rid, "native");
+        Directory.CreateDirectory(runtimeNativeDir);
+
+        var dotnetDir = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+        var validNativeSource = Directory.EnumerateFiles(dotnetDir)
+            .FirstOrDefault(f => f.EndsWith(".so") || f.EndsWith(".dylib") || (OperatingSystem.IsWindows() && f.EndsWith(".dll") && !f.Contains("System.Private.CoreLib")));
+
+        string targetFileName = OperatingSystem.IsWindows()
+            ? "OpenCvSharpExtern.dll"
+            : (OperatingSystem.IsMacOS() ? "libOpenCvSharpExtern.dylib" : "libOpenCvSharpExtern.so");
+
+        var targetFilePath = Path.Combine(runtimeNativeDir, targetFileName);
+
+        try
+        {
+            if (validNativeSource != null && File.Exists(validNativeSource))
+            {
+                File.Copy(validNativeSource, targetFilePath, overwrite: true);
+            }
+            else
+            {
+                // Fallback: crear un archivo dummy si no se encuentra binario nativo en dotnetDir
+                await File.WriteAllTextAsync(targetFilePath, "/* dummy native */");
+            }
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            var settings = new ModulesSettings
+            {
+                Domains = new List<string> { Const.DefaultDomainName, "TestCustomDomain" }
+            };
+
+            var cache = new HAssemblyCache();
+            var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+            var scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+
+            services.AddSingleton<IHAssemblyCache>(cache);
+            services.AddSingleton<IPackageSolver>(packageSolver);
+            services.AddSingleton<ISymLinkScafolder>(scafolder);
+
+            var sp = services.BuildServiceProvider();
+            var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+            services.AddSingleton<IHAssemblySolver>(assemblySolver);
+            var finalSp = services.BuildServiceProvider();
+
+            var domainManager = new HDomainManager(finalSp, NullLogger<HDomainManager>.Instance);
+
+            // TEST 1: Resolución directa de nombre canónico sin prefijo ni extensión ("OpenCvSharpExtern")
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 1] Resolviendo nombre corto 'OpenCvSharpExtern' en ALC Default...");
+            var handleShort = assemblySolver.ResolveUnmanagedDll(System.Runtime.Loader.AssemblyLoadContext.Default, "OpenCvSharpExtern");
+            Console.WriteLine($"  -> Handle devuelto: {handleShort}");
+            if (handleShort != IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] 'OpenCvSharpExtern' resuelto y cargado exitosamente mediante NativeLibrary.TryLoad.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] No se pudo resolver 'OpenCvSharpExtern'.");
+            }
+
+            // TEST 2: Resolución directa de nombre exacto con prefijo/extensión ("libOpenCvSharpExtern.so")
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 2] Resolviendo nombre exacto '{0}'...", targetFileName);
+            var handleExact = assemblySolver.ResolveUnmanagedDll(System.Runtime.Loader.AssemblyLoadContext.Default, targetFileName);
+            Console.WriteLine($"  -> Handle devuelto: {handleExact}");
+            if (handleExact != IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] Nombre exacto resuelto y cargado exitosamente.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] No se pudo resolver nombre exacto.");
+            }
+
+            // TEST 3: Resolución en dominio aislado (Custom ALC)
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 3] Resolviendo en dominio aislado 'TestCustomDomain'...");
+            var customAlc = domainManager.GetDomain("TestCustomDomain");
+            var handleCustom = assemblySolver.ResolveUnmanagedDll(customAlc, "OpenCvSharpExtern");
+            Console.WriteLine($"  -> Handle devuelto en dominio: {handleCustom}");
+            if (handleCustom != IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] Biblioteca nativa resuelta exitosamente en contexto de dominio aislado.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Fallo en resolución de dominio aislado.");
+            }
+
+            // TEST 4: Resolución transparente mediante evento ALC y NativeLibrary
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 4] Verificando sondeo transparente a través de NativeLibrary.TryLoad...");
+            bool loadedViaAlc = System.Runtime.InteropServices.NativeLibrary.TryLoad("OpenCvSharpExtern", typeof(Program).Assembly, null, out var alcHandle);
+            Console.WriteLine($"  -> TryLoad: {loadedViaAlc}, Handle: {alcHandle}");
+            if (loadedViaAlc && alcHandle != IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] NativeLibrary.TryLoad invocó el evento ResolvingUnmanagedDll de HDomainManager y cargó la librería correctamente.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Falló la resolución automática por evento ALC.");
+            }
+
+            // TEST 5: Manejo de biblioteca inexistente
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 5] Verificando biblioteca inexistente...");
+            var handleNonExistent = assemblySolver.ResolveUnmanagedDll(System.Runtime.Loader.AssemblyLoadContext.Default, "InexistentNativeLib_987654321");
+            if (handleNonExistent == IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] Biblioteca inexistente retornó IntPtr.Zero sin lanzar excepciones no controladas.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Biblioteca inexistente retornó un puntero no nulo.");
+            }
+
+            // TEST 6: Descarga de dominio
+            Console.WriteLine("\n[TEST RESOLUCION NATIVA 6] Verificando desuscripción y descarga de dominio...");
+            await domainManager.UnloadDomainContextAsync("TestCustomDomain");
+            Console.WriteLine("  ✓ [OK] Dominio descargado y eventos desuscritos limpiamente.");
+        }
+        finally
+        {
+            if (File.Exists(targetFilePath))
+            {
+                try { File.Delete(targetFilePath); } catch { }
+            }
+        }
+    }
+
+    private class MockEnvCoordinator : IEnvCoordinator
+    {
+        public MockEnvCoordinator(IHAssemblySolver assemblySolver)
+        {
+            AssemblySolver = assemblySolver;
+        }
+
+        public IHAssemblySolver AssemblySolver { get; }
+        public IHDomainManager DomainManager => throw new NotImplementedException();
+        public IHGesCom GesCom => throw new NotImplementedException();
+        public IhWorkersManager WorkersManager => throw new NotImplementedException();
+        public IReadOnlyList<System.Reflection.Assembly> Assemblies => Array.Empty<System.Reflection.Assembly>();
+        public IReadOnlyDictionary<string, List<System.Reflection.Assembly>> AssembliesByDomain => new Dictionary<string, List<System.Reflection.Assembly>>();
+        public StaticFileRegistry StaticFileRegistry => AssemblySolver.StaticFileRegistry;
+        public event Action? DomainChanged { add { } remove { } }
+        public Task LoadDomainAsync(string domainName) => Task.CompletedTask;
+        public Task LoadDomainAsync(string domainName, IEnumerable<byte[]> assemblies) => Task.CompletedTask;
+        public Task UnloadDomainAsync(string domainName) => Task.CompletedTask;
+        public Task ReloadDomainAsync(string domainName) => Task.CompletedTask;
+        public bool StartBackgroundService(string serviceType) => false;
+        public bool StopBackgroundService(string serviceType) => false;
+        public bool BackgroundServiceRunning(string serviceType) => false;
+        public void LoadModule(string domainName) { }
+        public void UnloadModule(string domainName) { }
+        public void LoadCommandsByDomain(string domainName) { }
+        public void UnloadCommandsByDomain(string domainName) { }
+        public object? CreateInstance(Type type) => Activator.CreateInstance(type);
     }
 }

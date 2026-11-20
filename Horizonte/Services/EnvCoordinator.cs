@@ -700,6 +700,17 @@ public class EnvCoordinator : IEnvCoordinator
                     dllPath = _assemblySolver.DownloadNuGetPackageAsync(package.PackageId, package.Version).GetAwaiter().GetResult();
                 }
 
+                var cachedRuntime = _assemblySolver.AssemblyCache?.Get(package.PackageId, package.Version);
+                if (cachedRuntime != null && cachedRuntime.Found && cachedRuntime.IsRuntimePackage)
+                {
+                    _logger.LogInformation(
+                        "Forced runtime package {PackageId} {Version} resolved and scaffolded for target domain {DomainName}",
+                        package.PackageId,
+                        package.Version,
+                        string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
+                    continue;
+                }
+
                 if (dllPath != null)
                 {
                     if (!Path.IsPathRooted(dllPath))

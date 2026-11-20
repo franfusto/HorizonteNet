@@ -15,6 +15,11 @@ public interface IHAssemblySolver
     StaticFileRegistry StaticFileRegistry { get; }
 
     /// <summary>
+    /// Obtiene la instancia de la caché unificada de ensamblados.
+    /// </summary>
+    IHAssemblyCache AssemblyCache { get; }
+
+    /// <summary>
     /// Intenta resolver un ensamblado solicitado dentro de un contexto de carga específico (<see cref="AssemblyLoadContext"/>).
     /// </summary>
     /// <param name="context">Contexto de carga de ensamblados.</param>
@@ -73,4 +78,12 @@ public interface IHAssemblySolver
     /// <param name="key">Clave identificadora en la caché.</param>
     /// <returns><see langword="true"/> si el ensamblado está en caché; de lo contrario, <see langword="false"/>.</returns>
     bool IsAssemblyCached(string key);
+
+    /// <summary>
+    /// Resuelve y carga una biblioteca de código nativo / no administrado solicitada dentro de un contexto ALC.
+    /// </summary>
+    /// <param name="context">Contexto de carga de ensamblados que originó la solicitud.</param>
+    /// <param name="unmanagedDllName">Nombre o ruta de la biblioteca no administrada solicitada.</param>
+    /// <returns>Puntero al manejador de la biblioteca nativa cargada o <see cref="IntPtr.Zero"/> si no pudo resolverse.</returns>
+    IntPtr ResolveUnmanagedDll(AssemblyLoadContext? context, string unmanagedDllName);
 }

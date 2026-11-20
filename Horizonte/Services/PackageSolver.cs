@@ -292,7 +292,6 @@ public class PackageSolver : IPackageSolver
 
         // 2. Intentar resolución local inicial si se descubrieron versiones locales
         string? targetVersionStr = null;
-        string? resolvedDllPath = null;
         bool requiresRemoteFallback = false;
 
         if (versionResources.Sources.Count > 0)
@@ -351,28 +350,40 @@ public class PackageSolver : IPackageSolver
                 }
             }
 
-            // Si tenemos versión candidata no bloqueada y no se requiere fallback remoto explícito, intentar resolver DLL local
+            // Si tenemos versión candidata no bloqueada y no se requiere fallback remoto explícito, intentar resolver paquete localmente
             if (!requiresRemoteFallback && !string.IsNullOrEmpty(targetVersionStr))
             {
-                _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia de DLL local para '{PackageId}' v'{Version}'...",
+                _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia local para '{PackageId}' v'{Version}'...",
                     packageId, targetVersionStr);
-                resolvedDllPath = ResolveLocalDllPath(packageId, targetVersionStr);
-                if (resolvedDllPath != null)
-                {
-                    _logger.LogInformation("[PKGSOLVER-LOCAL-HIT-SUCCESS] Paquete '{PackageId}' v'{Version}' resuelto localmente sin consultas remotas -> '{DllPath}'",
-                        packageId, targetVersionStr, resolvedDllPath);
 
-                    return new PackageResolutionResult
+                var localInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
+                if (localInfo != null)
+                {
+                    bool hasManagedDll = !string.IsNullOrEmpty(localInfo.DllPath) && File.Exists(localInfo.DllPath);
+                    bool hasNative = localInfo.HasNativeAssets ||
+                                     (!string.IsNullOrEmpty(localInfo.PackageRootDirectory) && NugetHelpers.HasNativeRuntimeAssets(localInfo.PackageRootDirectory));
+
+                    if (hasManagedDll || hasNative)
                     {
-                        Success = true,
-                        PackageId = packageId,
-                        Version = targetVersionStr,
-                        DllPath = resolvedDllPath
-                    };
+                        bool isPureNative = !hasManagedDll && hasNative;
+                        _logger.LogInformation("[PKGSOLVER-LOCAL-HIT-SUCCESS] Paquete '{PackageId}' v'{Version}' resuelto localmente (IsRuntime: {IsRuntime}, HasNative: {HasNative}) -> DLL: '{DllPath}', Root: '{PackageRoot}'",
+                            packageId, targetVersionStr, isPureNative, hasNative, localInfo.DllPath, localInfo.PackageRootDirectory);
+
+                        return new PackageResolutionResult
+                        {
+                            Success = true,
+                            PackageId = packageId,
+                            Version = targetVersionStr,
+                            DllPath = hasManagedDll ? localInfo.DllPath : string.Empty,
+                            IsRuntimePackage = isPureNative,
+                            HasNativeAssets = hasNative,
+                            PackageRootDirectory = localInfo.PackageRootDirectory
+                        };
+                    }
                 }
                 else
                 {
-                    _logger.LogDebug("[PKGSOLVER-LOCAL-DLL-MISS] DLL física no encontrada localmente para '{PackageId}' v'{Version}'. Procediendo a fallback remoto.",
+                    _logger.LogDebug("[PKGSOLVER-LOCAL-DLL-MISS] Recursos físicos no encontrados localmente para '{PackageId}' v'{Version}'. Procediendo a fallback remoto.",
                         packageId, targetVersionStr);
                 }
             }
@@ -447,13 +458,14 @@ public class PackageSolver : IPackageSolver
             }
         }
 
-        // 6. Comprobar si tras la resolución la DLL ya existía o descargarlo
+        // 6. Comprobar si tras la resolución el paquete ya existía o descargarlo
+        NugetPackageVersionInformation? postLocalInfo = null;
         if (!string.IsNullOrEmpty(targetVersionStr))
         {
-            resolvedDllPath = ResolveLocalDllPath(packageId, targetVersionStr);
+            postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
         }
 
-        if (resolvedDllPath == null && !string.IsNullOrEmpty(targetVersionStr))
+        if (postLocalInfo == null && !string.IsNullOrEmpty(targetVersionStr))
         {
             _logger.LogInformation("[PKGSOLVER-REMOTE-DOWNLOAD-TRIGGER] Paquete '{PackageId}' v'{Version}' no localizado localmente. Iniciando descarga remota...",
                 packageId, targetVersionStr);
@@ -461,26 +473,37 @@ public class PackageSolver : IPackageSolver
             var downloaded = await DownloadAndInstallPackageAsync(packageId, targetVersionStr).ConfigureAwait(false);
             if (downloaded != null)
             {
-                _logger.LogDebug("[PKGSOLVER-POST-DOWNLOAD-RESOLVE] Localizando DLL tras descarga e instalación en '{DownloadedDir}'...", downloaded);
-                resolvedDllPath = ResolveLocalDllPath(packageId, targetVersionStr);
+                _logger.LogDebug("[PKGSOLVER-POST-DOWNLOAD-RESOLVE] Localizando recursos tras descarga e instalación en '{DownloadedDir}'...", downloaded);
+                postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
             }
         }
 
-        if (resolvedDllPath != null)
+        if (postLocalInfo != null)
         {
-            _logger.LogInformation("[PKGSOLVER-RESOLVED-SUCCESS] Paquete '{PackageId}' v'{Version}' resuelto exitosamente -> '{DllPath}'",
-                packageId, targetVersionStr, resolvedDllPath);
+            bool hasManagedDll = !string.IsNullOrEmpty(postLocalInfo.DllPath) && File.Exists(postLocalInfo.DllPath);
+            bool hasNative = postLocalInfo.HasNativeAssets ||
+                             (!string.IsNullOrEmpty(postLocalInfo.PackageRootDirectory) && NugetHelpers.HasNativeRuntimeAssets(postLocalInfo.PackageRootDirectory));
 
-            return new PackageResolutionResult
+            if (hasManagedDll || hasNative)
             {
-                Success = true,
-                PackageId = packageId,
-                Version = targetVersionStr,
-                DllPath = resolvedDllPath
-            };
+                bool isPureNative = !hasManagedDll && hasNative;
+                _logger.LogInformation("[PKGSOLVER-RESOLVED-SUCCESS] Paquete '{PackageId}' v'{Version}' resuelto exitosamente (IsRuntime: {IsRuntime}, HasNative: {HasNative}) -> DLL: '{DllPath}', Root: '{PackageRoot}'",
+                    packageId, targetVersionStr, isPureNative, hasNative, postLocalInfo.DllPath, postLocalInfo.PackageRootDirectory);
+
+                return new PackageResolutionResult
+                {
+                    Success = true,
+                    PackageId = packageId,
+                    Version = targetVersionStr,
+                    DllPath = hasManagedDll ? postLocalInfo.DllPath : string.Empty,
+                    IsRuntimePackage = isPureNative,
+                    HasNativeAssets = hasNative,
+                    PackageRootDirectory = postLocalInfo.PackageRootDirectory
+                };
+            }
         }
 
-        _logger.LogWarning("[PKGSOLVER-RESOLVED-FAILED] No fue posible resolver o localizar la librería DLL para '{PackageId}' v'{Version}'.",
+        _logger.LogWarning("[PKGSOLVER-RESOLVED-FAILED] No fue posible resolver o localizar la librería DLL o activos de runtime para '{PackageId}' v'{Version}'.",
             packageId, targetVersionStr);
 
         return new PackageResolutionResult
@@ -488,21 +511,16 @@ public class PackageSolver : IPackageSolver
             Success = false,
             PackageId = packageId,
             Version = targetVersionStr,
-            ErrorMessage = $"No fue posible resolver o localizar la librería DLL para '{packageId}' versión '{targetVersionStr}'."
+            ErrorMessage = $"No fue posible resolver o localizar la librería DLL o activos de runtime para '{packageId}' versión '{targetVersionStr}'."
         };
     }
 
-    /// <inheritdoc/>
-    public string? ResolveLocalDllPath(string packageName, string version)
+    private NugetPackageVersionInformation? ResolveLocalPackageInfo(string packageName, string version)
     {
         if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(version))
             return null;
 
         var frameworkSolicitado = AssemblyHelpers.GetRequestedFramework();
-        _logger.LogTrace("[PKGSOLVER-LOCAL-DLL] Buscando DLL local para '{PackageName}' v'{Version}' (TFM solicitado: '{Framework}')...",
-            packageName,
-            version,
-            frameworkSolicitado);
 
         foreach (var searchPath in _searchPaths)
         {
@@ -521,7 +539,7 @@ public class PackageSolver : IPackageSolver
 
             if (Directory.Exists(versionDir))
             {
-                _logger.LogTrace("[PKGSOLVER-LOCAL-VERSION-DIR] Directorio de versión encontrado: '{VersionDir}'. Inspeccionando TFM...", versionDir);
+                _logger.LogTrace("[PKGSOLVER-LOCAL-VERSION-DIR] Directorio de versión encontrado: '{VersionDir}'. Inspeccionando TFM y runtimes...", versionDir);
                 var versionList = NugetHelpers.GetNugetPackageVersionInformation(_logger, targetPackageDir);
                 var versionSeleccionada = NugetHelpers.SelectedVersion(
                     _settings.FrameworkPriorities,
@@ -531,12 +549,9 @@ public class PackageSolver : IPackageSolver
                     exactmatch: true,
                     exactFramework: false);
 
-                if (versionSeleccionada != null && File.Exists(versionSeleccionada.DllPath))
+                if (versionSeleccionada != null)
                 {
-                    _logger.LogDebug("[PKGSOLVER-LOCAL-DLL-FOUND] Coincidencia exacta de DLL: '{DllPath}' (Framework: '{Framework}')",
-                        versionSeleccionada.DllPath,
-                        versionSeleccionada.Framework);
-                    return versionSeleccionada.DllPath;
+                    return versionSeleccionada;
                 }
             }
 
@@ -553,17 +568,24 @@ public class PackageSolver : IPackageSolver
                 exactmatch: false,
                 exactFramework: false);
 
-            if (flexibleSelection != null && File.Exists(flexibleSelection.DllPath))
+            if (flexibleSelection != null)
             {
-                _logger.LogInformation("[PKGSOLVER-LOCAL-FLEX-FOUND] Coincidencia flexible de DLL: '{DllPath}' (Versión: '{Version}', Framework: '{Framework}')",
-                    flexibleSelection.DllPath,
-                    flexibleSelection.VersionString,
-                    flexibleSelection.Framework);
-                return flexibleSelection.DllPath;
+                return flexibleSelection;
             }
         }
 
-        _logger.LogTrace("[PKGSOLVER-LOCAL-DLL-NOTFOUND] No se encontró DLL local para '{PackageName}' v'{Version}'.", packageName, version);
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public string? ResolveLocalDllPath(string packageName, string version)
+    {
+        var info = ResolveLocalPackageInfo(packageName, version);
+        if (info != null && !string.IsNullOrEmpty(info.DllPath) && File.Exists(info.DllPath))
+        {
+            return info.DllPath;
+        }
+
         return null;
     }
 

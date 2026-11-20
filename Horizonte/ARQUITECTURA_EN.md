@@ -104,6 +104,7 @@ The core of the modular system is organized around a central orchestrator (`IEnv
 
 - **Responsibilities**:
   - Resolve assemblies requested by specific context load events (`ResolveAssemblyFromALC`) and global events (`ResolveAssemblyFromNuGetPackages`).
+  - Resolve and load native / unmanaged libraries (.so, .dll, .dylib) requested in P/Invoke calls (`ResolveUnmanagedDll`) by probing compatible RIDs in `./runtimes/{rid}/native/`, `AppContext.BaseDirectory`, and package folders.
   - Locate physical library paths on disk (`ResolveAssemblyDllPath`) and download packages from remote feeds (`DownloadNuGetPackageAsync`).
   - Maintain bidirectional mapping between assembly names and NuGet package IDs (`GetPackageName`, using `AssemblyToPackageMap`).
   - Store and query in-memory assembly bytes (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
@@ -199,8 +200,9 @@ The core of the modular system is organized around a central orchestrator (`IEnv
 - **Responsibilities**:
   - Maintain dictionary of active domains (`Domains`).
   - Create and configure collectible load contexts (`CreateDomain` with `isCollectible = true`).
+  - Intercept and connect the `ResolvingUnmanagedDll` event on `AssemblyLoadContext.Default` and each custom ALC, delegating resolution to `IHAssemblySolver.ResolveUnmanagedDll`.
   - Load assemblies into specific domains from file paths or in-memory binary streams (`LoadDomainContextAsync`).
-  - Unload contexts (`UnloadDomainContextAsync`), disconnecting references and forcing garbage collection (`GC.Collect`) for effective memory reclamation.
+  - Unload contexts (`UnloadDomainContextAsync`), disconnecting references and event handlers (`Resolving`, `ResolvingUnmanagedDll`) and forcing garbage collection (`GC.Collect`) for effective memory reclamation.
   - Enumerate assemblies associated with a specific domain (`GetDomainAssemblies`).
 
 ---
@@ -509,3 +511,22 @@ The `IPackageSolver` subsystem incorporates control mechanisms to ensure stabili
 - **Controlled Timeouts**: Strict linked `CancellationTokenSource` time limits per remote server (8 seconds for version queries and 20 seconds for package downloads).
 - **Concurrent Queries**: Parallel querying via `Task.WhenAll` to all active remote servers configured in `NugetServers`.
 - **Structured Traceability**: Emission of structured log traces with standard prefixes (`[PKGSOLVER-*]`, `[RESOLVER-*]`) for runtime auditing and diagnostics.
+
+---
+
+#### 5. Dynamic Resolution and Loading of Native Libraries (P/Invoke)
+
+When a managed assembly invokes unmanaged native code via P/Invoke (e.g., `OpenCvSharp`, `SkiaSharp`, `TensorFlow`), the CLR raises the `AssemblyLoadContext.ResolvingUnmanagedDll` event.
+
+- **Centralized Handler**: `HDomainManager` hooks `ResolvingUnmanagedDll` on `AssemblyLoadContext.Default` and all dynamically created ALC contexts, delegating resolution to `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
+- **Cross-Platform Probing Strategy**:
+  1. **Candidate Name Generation**:
+     - **Linux / Unix**: `lib{Name}.so`, `{Name}.so`, `lib{Name}`, `{Name}`.
+     - **Windows**: `{Name}.dll`, `{Name}`.
+     - **macOS**: `lib{Name}.dylib`, `{Name}.dylib`, `lib{Name}`, `{Name}`.
+  2. **Compatible RIDs**: Detection of the Runtime Identifier hierarchy via `NugetHelpers.GetCompatibleRuntimeIdentifiers` (e.g., `linux-x64` -> `linux` -> `unix` -> `any`).
+  3. **Sequentially Probed Paths**:
+     - `./runtimes/{cRid}/native/{candidateName}` (process working directory / scaffolding).
+     - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
+     - Local package directories registered in `NugetFolders`.
+  4. **Safe In-Memory Loading**: Native binary loading via `NativeLibrary.TryLoad` returning the `IntPtr` handle pointer to the CLR, enabling transitive dependency resolution within the same directory.

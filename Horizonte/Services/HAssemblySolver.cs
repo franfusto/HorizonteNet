@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Xml.Linq;
 using Horizonte.Entities;
@@ -34,6 +35,9 @@ public class HAssemblySolver : IHAssemblySolver
 
     /// <inheritdoc/>
     public StaticFileRegistry StaticFileRegistry { get; } = new();
+
+    /// <inheritdoc/>
+    public IHAssemblyCache AssemblyCache => _assemblyCache;
 
     /// <summary>
     /// Inicializa una nueva instancia de la clase <see cref="HAssemblySolver"/> con todas sus dependencias explícitas.
@@ -198,6 +202,15 @@ public class HAssemblySolver : IHAssemblySolver
                     return null;
                 }
 
+                if (cachedItem.Found && cachedItem.IsRuntimePackage)
+                {
+                    _logger.LogInformation(
+                        "[RESOLVER-CACHE-HIT-RUNTIME] Paquete de runtime nativo {AssemblyName} resuelto previamente en caché para dominio {DomainName}. Omitiendo carga ALC y retornando null.",
+                        args.Name,
+                        requesterDomain);
+                    return null;
+                }
+
                 if (cachedItem.Found && cachedItem.ResolvedAssembly != null)
                 {
                     _logger.LogInformation(
@@ -231,20 +244,27 @@ public class HAssemblySolver : IHAssemblySolver
             // 2. Resolver paquete mediante IPackageSolver
             var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(name, version, requesterDomain)).GetAwaiter().GetResult();
             string? resAssemblyPath = null;
+            string? packageRootDirectory = resolutionResult.PackageRootDirectory;
 
-            if (resolutionResult.Success && !string.IsNullOrEmpty(resolutionResult.DllPath))
+            if (resolutionResult.Success)
             {
-                resAssemblyPath = resolutionResult.DllPath;
+                if (!string.IsNullOrEmpty(resolutionResult.DllPath))
+                {
+                    resAssemblyPath = resolutionResult.DllPath;
+                }
+
                 _logger.LogInformation(
-                    "[RESOLVER-PKG-SUCCESS] PackageSolver resolvió '{PackageId}' v'{Version}' -> '{DllPath}'",
+                    "[RESOLVER-PKG-SUCCESS] PackageSolver resolvió '{PackageId}' v'{Version}' -> Dll: '{DllPath}', IsRuntime: {IsRuntime}, HasNative: {HasNative}",
                     resolutionResult.PackageId,
                     resolutionResult.Version,
-                    resAssemblyPath);
+                    resAssemblyPath ?? "none",
+                    resolutionResult.IsRuntimePackage,
+                    resolutionResult.HasNativeAssets);
             }
             else
             {
                 _logger.LogDebug(
-                    "[RESOLVER-FALLBACK-LOCAL] PackageSolver no resolvió DLL directamente ({Error}). Ejecutando fallback local para '{PackageName}' v'{Version}'...",
+                    "[RESOLVER-FALLBACK-LOCAL] PackageSolver no resolvió directamente ({Error}). Ejecutando fallback local para '{PackageName}' v'{Version}'...",
                     resolutionResult.ErrorMessage,
                     packageName,
                     version);
@@ -253,7 +273,7 @@ public class HAssemblySolver : IHAssemblySolver
                                ?? ResolveNugetFromLocalDirectory(packageName, version, null, false);
             }
 
-            if (resAssemblyPath == null)
+            if (string.IsNullOrEmpty(resAssemblyPath) && !resolutionResult.IsRuntimePackage)
             {
                 _logger.LogError(
                     "[RESOLVER-NOT-FOUND] No fue posible resolver el ensamblado: {AssemblyName} desde el paquete NuGet {PackageName} para el dominio {DomainName}",
@@ -275,35 +295,94 @@ public class HAssemblySolver : IHAssemblySolver
                 return null;
             }
 
-            if (!Path.IsPathRooted(resAssemblyPath))
+            if (!string.IsNullOrEmpty(resAssemblyPath))
             {
-                resAssemblyPath = Path.GetFullPath(resAssemblyPath);
+                if (!Path.IsPathRooted(resAssemblyPath))
+                {
+                    resAssemblyPath = Path.GetFullPath(resAssemblyPath);
+                }
+
+                if (string.IsNullOrEmpty(packageRootDirectory))
+                {
+                    var frameworkDir = Directory.GetParent(resAssemblyPath);
+                    var libDir = frameworkDir?.Parent;
+                    packageRootDirectory = libDir?.Parent?.FullName;
+                }
+
+                _logger.LogInformation(
+                    "[RESOLVER-RESOLVED] Ensamblado {AssemblyName} resuelto a la ruta física {AssemblyPath} para dominio {DomainName}",
+                    args.Name,
+                    resAssemblyPath,
+                    requesterDomain);
+
+                _logger.LogDebug("[RESOLVER-POSTPROCESS] Registrando activos estáticos web en StaticFileRegistry para dominio '{DomainName}'...", requesterDomain);
+                StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath, requesterDomain);
             }
 
-            _logger.LogInformation(
-                "[RESOLVER-RESOLVED] Ensamblado {AssemblyName} resuelto a la ruta física {AssemblyPath} para dominio {DomainName}",
-                args.Name,
-                resAssemblyPath,
-                requesterDomain);
+            // Scaffolding de activos nativos de runtimes (archivo por archivo)
+            if (!string.IsNullOrEmpty(packageRootDirectory) &&
+                (resolutionResult.HasNativeAssets || resolutionResult.IsRuntimePackage || NugetHelpers.HasNativeRuntimeAssets(packageRootDirectory)))
+            {
+                try
+                {
+                    var runtimeSymLinks = GetRuntimeMappingsFromPackage(packageRootDirectory);
+                    if (runtimeSymLinks.Any())
+                    {
+                        _logger.LogInformation(
+                            "[RESOLVER-RUNTIME-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de runtime para '{PackageRoot}'...",
+                            runtimeSymLinks.Count,
+                            packageRootDirectory);
+                        _linkScafolder.BuildScafolder(runtimeSymLinks);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[RESOLVER-RUNTIME-SYMLINKS-ERROR] Error al procesar enlaces simbólicos de runtime para '{PackageRoot}'.", packageRootDirectory);
+                }
+            }
 
-            _logger.LogDebug("[RESOLVER-POSTPROCESS] Registrando activos estáticos web en StaticFileRegistry para dominio '{DomainName}'...", requesterDomain);
-            StaticFileRegistry.RegisterPackageDirectory(resAssemblyPath, requesterDomain);
-
+            // Scaffolding de .targets y .props
             try
             {
-                var symLinks = GetContentMappingsFromPackage(resAssemblyPath);
+                var symLinks = GetContentMappingsFromPackage(resAssemblyPath, packageRootDirectory);
                 if (symLinks.Any())
                 {
                     _logger.LogInformation(
-                        "[RESOLVER-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de .targets para '{AssemblyPath}'...",
+                        "[RESOLVER-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de .targets para '{PackageRoot}'...",
                         symLinks.Count,
-                        resAssemblyPath);
+                        packageRootDirectory ?? resAssemblyPath);
                     _linkScafolder.BuildScafolder(symLinks);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[RESOLVER-SYMLINKS-ERROR] Error al procesar enlaces simbólicos MSBuild para '{AssemblyPath}'.", resAssemblyPath);
+                _logger.LogError(ex, "[RESOLVER-SYMLINKS-ERROR] Error al procesar enlaces simbólicos MSBuild para '{PackageRoot}'.", packageRootDirectory ?? resAssemblyPath);
+            }
+
+            // Si es un paquete puramente de runtime nativo (sin DLL administrada)
+            if (resolutionResult.IsRuntimePackage || string.IsNullOrEmpty(resAssemblyPath))
+            {
+                _logger.LogInformation(
+                    "[RESOLVER-RUNTIME-PACKAGE-ONLY] Paquete '{PackageId}' v'{Version}' es puramente nativo. Omitiendo carga en ALC y registrando en HAssemblyCache.",
+                    resolutionResult.PackageId ?? packageName,
+                    resolutionResult.Version ?? version);
+
+                _assemblyCache.Add(new AssemblyCacheItem
+                {
+                    AssemblyName = name,
+                    Version = version ?? string.Empty,
+                    DomainName = requesterDomain,
+                    PackageId = resolutionResult.PackageId ?? packageName,
+                    PackageVersion = resolutionResult.Version ?? version,
+                    DllPath = string.Empty,
+                    ResolvedAssembly = null,
+                    IsResolved = true,
+                    Found = true,
+                    IsRuntimePackage = true,
+                    HasNativeAssets = true
+                });
+
+                return null;
             }
 
             Assembly loadedAssembly;
@@ -339,7 +418,9 @@ public class HAssemblySolver : IHAssemblySolver
                 DllPath = resAssemblyPath,
                 ResolvedAssembly = loadedAssembly,
                 IsResolved = true,
-                Found = true
+                Found = true,
+                IsRuntimePackage = false,
+                HasNativeAssets = resolutionResult.HasNativeAssets
             });
 
             _logger.LogDebug(
@@ -364,6 +445,29 @@ public class HAssemblySolver : IHAssemblySolver
         if (cached != null && cached.Found && !string.IsNullOrEmpty(cached.DllPath))
         {
             return cached.DllPath;
+        }
+
+        var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(resolvedPackageName, version)).GetAwaiter().GetResult();
+        if (resolutionResult.Success)
+        {
+            if (resolutionResult.HasNativeAssets || resolutionResult.IsRuntimePackage)
+            {
+                if (!string.IsNullOrEmpty(resolutionResult.PackageRootDirectory))
+                {
+                    var runtimeSymLinks = GetRuntimeMappingsFromPackage(resolutionResult.PackageRootDirectory);
+                    if (runtimeSymLinks.Any())
+                    {
+                        _linkScafolder.BuildScafolder(runtimeSymLinks);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(resolutionResult.DllPath))
+            {
+                return Path.IsPathRooted(resolutionResult.DllPath)
+                    ? resolutionResult.DllPath
+                    : Path.GetFullPath(resolutionResult.DllPath);
+            }
         }
 
         var path = _packageSolver.ResolveLocalDllPath(resolvedPackageName, version);
@@ -709,30 +813,124 @@ public class HAssemblySolver : IHAssemblySolver
         return versions.Distinct().ToList();
     }
 
-    private List<SymLinkDef> GetContentMappingsFromPackage(string resAssemblyPath)
+    private List<SymLinkDef> GetRuntimeMappingsFromPackage(string packageVersionDir, string? rid = null)
     {
         var mappings = new List<SymLinkDef>();
 
         try
         {
-            var libDir = Directory.GetParent(resAssemblyPath);
-            var pkgVersionDir = libDir?.Parent;
-            var packagePath = pkgVersionDir?.Parent?.FullName;
-
-            if (string.IsNullOrEmpty(packagePath))
+            if (string.IsNullOrWhiteSpace(packageVersionDir) || !Directory.Exists(packageVersionDir))
                 return mappings;
 
-            var framework = libDir?.Name ?? Const.DefaultFramework;
+            var runtimesDir = Path.Combine(packageVersionDir, "runtimes");
+            if (!Directory.Exists(runtimesDir))
+                return mappings;
+
+            var effectiveRid = NugetHelpers.GetEffectiveRuntimeIdentifier();
+            var compatibleRids = NugetHelpers.GetCompatibleRuntimeIdentifiers(rid ?? effectiveRid);
+
+            foreach (var cRid in compatibleRids)
+            {
+                var nativeDir = Path.Combine(runtimesDir, cRid, "native");
+                if (Directory.Exists(nativeDir))
+                {
+                    var files = Directory.GetFiles(nativeDir, "*", SearchOption.AllDirectories);
+                    if (files.Length > 0)
+                    {
+                        foreach (var file in files)
+                        {
+                            var relativeSubPath = Path.GetRelativePath(nativeDir, file);
+                            var destinationPath = Path.Combine("runtimes", cRid, "native", relativeSubPath);
+
+                            mappings.Add(new SymLinkDef
+                            {
+                                Source = Path.GetFullPath(file),
+                                Destination = destinationPath,
+                                IsDirecory = false,
+                                HardCoded = false
+                            });
+                        }
+
+                        return mappings;
+                    }
+                }
+
+                var ridDir = Path.Combine(runtimesDir, cRid);
+                if (Directory.Exists(ridDir))
+                {
+                    var files = Directory.GetFiles(ridDir, "*", SearchOption.TopDirectoryOnly);
+                    if (files.Length > 0)
+                    {
+                        foreach (var file in files)
+                        {
+                            var fileName = Path.GetFileName(file);
+                            var destinationPath = Path.Combine("runtimes", cRid, "native", fileName);
+
+                            mappings.Add(new SymLinkDef
+                            {
+                                Source = Path.GetFullPath(file),
+                                Destination = destinationPath,
+                                IsDirecory = false,
+                                HardCoded = false
+                            });
+                        }
+
+                        return mappings;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error obteniendo mapeos de runtime para '{PackageVersionDir}'.", packageVersionDir);
+        }
+
+        return mappings;
+    }
+
+    private List<SymLinkDef> GetContentMappingsFromPackage(string? resAssemblyPath, string? packageVersionDir = null)
+    {
+        var mappings = new List<SymLinkDef>();
+
+        try
+        {
+            string? packagePath = null;
+            string framework = Const.DefaultFramework;
+
+            if (!string.IsNullOrEmpty(resAssemblyPath))
+            {
+                var frameworkDir = Directory.GetParent(resAssemblyPath);
+                var libDir = frameworkDir?.Parent;
+                var pkgVersionDir = libDir?.Parent;
+                packagePath = pkgVersionDir?.FullName;
+                framework = frameworkDir?.Name ?? Const.DefaultFramework;
+            }
+            else if (!string.IsNullOrEmpty(packageVersionDir))
+            {
+                packagePath = packageVersionDir;
+            }
+
+            if (string.IsNullOrEmpty(packagePath) || !Directory.Exists(packagePath))
+                return mappings;
 
             string buildDir = Path.Combine(packagePath, "buildTransitive", framework);
             if (!Directory.Exists(buildDir))
             {
-                buildDir = Path.Combine(packagePath, "build", framework);
-                if (!Directory.Exists(buildDir)) return mappings;
+                buildDir = Path.Combine(packagePath, "buildTransitive");
+                if (!Directory.Exists(buildDir))
+                {
+                    buildDir = Path.Combine(packagePath, "build", framework);
+                    if (!Directory.Exists(buildDir))
+                    {
+                        buildDir = Path.Combine(packagePath, "build");
+                        if (!Directory.Exists(buildDir)) return mappings;
+                    }
+                }
             }
 
-            var definitionFiles = Directory.GetFiles(buildDir, "*.targets")
-                .Concat(Directory.GetFiles(buildDir, "*.props"));
+            var definitionFiles = Directory.GetFiles(buildDir, "*.targets", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(buildDir, "*.props", SearchOption.AllDirectories))
+                .Distinct();
 
             XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
 
@@ -1057,5 +1255,157 @@ public class HAssemblySolver : IHAssemblySolver
 
             return false;
         }
+    }
+
+    /// <inheritdoc/>
+    public IntPtr ResolveUnmanagedDll(AssemblyLoadContext? context, string unmanagedDllName)
+    {
+        if (string.IsNullOrWhiteSpace(unmanagedDllName))
+            return IntPtr.Zero;
+
+        var contextName = context?.Name ?? Const.DefaultDomainName;
+        _logger.LogInformation(
+            "[RESOLVER-NATIVE] Solicitud de resolución de biblioteca no administrada: '{UnmanagedDllName}' en contexto '{ContextName}'",
+            unmanagedDllName,
+            contextName);
+
+        // Si ya es una ruta absoluta o relativa directa existente
+        if (File.Exists(unmanagedDllName))
+        {
+            var fullPath = Path.GetFullPath(unmanagedDllName);
+            if (NativeLibrary.TryLoad(fullPath, out var directHandle))
+            {
+                _logger.LogInformation(
+                    "[RESOLVER-NATIVE-LOAD] Biblioteca nativa cargada directamente desde ruta '{Path}' para contexto '{ContextName}'",
+                    fullPath,
+                    contextName);
+                return directHandle;
+            }
+        }
+
+        var candidateNames = GetNativeCandidateNames(unmanagedDllName);
+        var effectiveRid = NugetHelpers.GetEffectiveRuntimeIdentifier();
+        var compatibleRids = NugetHelpers.GetCompatibleRuntimeIdentifiers(effectiveRid);
+
+        var searchRoots = new List<string>
+        {
+            Directory.GetCurrentDirectory(),
+            AppContext.BaseDirectory
+        };
+
+        foreach (var cRid in compatibleRids)
+        {
+            foreach (var candidateName in candidateNames)
+            {
+                foreach (var root in searchRoots)
+                {
+                    // 1. Probar en root/runtimes/{cRid}/native/{candidateName}
+                    var candidatePath = Path.Combine(root, "runtimes", cRid, "native", candidateName);
+                    if (File.Exists(candidatePath))
+                    {
+                        var fullCandidatePath = Path.GetFullPath(candidatePath);
+                        if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                        {
+                            _logger.LogInformation(
+                                "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde '{CandidatePath}' para contexto '{ContextName}'",
+                                unmanagedDllName,
+                                fullCandidatePath,
+                                contextName);
+                            return handle;
+                        }
+                    }
+
+                    // 2. Probar en root/runtimes/{cRid}/{candidateName}
+                    candidatePath = Path.Combine(root, "runtimes", cRid, candidateName);
+                    if (File.Exists(candidatePath))
+                    {
+                        var fullCandidatePath = Path.GetFullPath(candidatePath);
+                        if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                        {
+                            _logger.LogInformation(
+                                "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde '{CandidatePath}' para contexto '{ContextName}'",
+                                unmanagedDllName,
+                                fullCandidatePath,
+                                contextName);
+                            return handle;
+                        }
+                    }
+                }
+
+                // 3. Probar en directorios de paquetes registrados o configurados
+                foreach (var folder in _searchPaths)
+                {
+                    if (!Directory.Exists(folder))
+                        continue;
+
+                    var candidatePath = Path.Combine(folder, "runtimes", cRid, "native", candidateName);
+                    if (File.Exists(candidatePath))
+                    {
+                        var fullCandidatePath = Path.GetFullPath(candidatePath);
+                        if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                        {
+                            _logger.LogInformation(
+                                "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde '{CandidatePath}' para contexto '{ContextName}'",
+                                unmanagedDllName,
+                                fullCandidatePath,
+                                contextName);
+                            return handle;
+                        }
+                    }
+                }
+            }
+        }
+
+        _logger.LogDebug(
+            "[RESOLVER-NATIVE-NOTFOUND] No se encontró biblioteca nativa para '{UnmanagedDllName}' en contexto '{ContextName}'. Dejando fallback al CLR.",
+            unmanagedDllName,
+            contextName);
+
+        return IntPtr.Zero;
+    }
+
+    private static List<string> GetNativeCandidateNames(string unmanagedDllName)
+    {
+        var candidates = new List<string>();
+        var cleanName = Path.GetFileName(unmanagedDllName);
+
+        if (!string.IsNullOrWhiteSpace(cleanName))
+        {
+            candidates.Add(cleanName);
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            if (!cleanName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add(cleanName + ".dll");
+            }
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            if (!cleanName.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add(cleanName + ".dylib");
+                candidates.Add("lib" + cleanName + ".dylib");
+            }
+            if (!cleanName.StartsWith("lib", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add("lib" + cleanName);
+            }
+        }
+        else // Linux y otros Unix
+        {
+            if (!cleanName.EndsWith(".so", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add(cleanName + ".so");
+                candidates.Add("lib" + cleanName + ".so");
+            }
+            if (!cleanName.StartsWith("lib", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add("lib" + cleanName);
+            }
+        }
+
+        return candidates.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 }

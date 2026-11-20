@@ -288,15 +288,38 @@ public class SymLinkScafolder :ISymLinkScafolder
                         Directory.CreateDirectory(parentDir);
                     }
 
+                    bool entryExists = Path.Exists(fullDestinationPath) || File.Exists(fullDestinationPath) || Directory.Exists(fullDestinationPath);
+
                     if (symLinkDef.IsDirecory)
                     {
-                        if (Directory.Exists(fullDestinationPath))
+                        if (entryExists)
                         {
                             if (IsSameLinkTarget(fullDestinationPath, symLinkDef.Source))
                             {
                                 _logger.LogInformation($"El enlace simbólico ya existe: {symLinkDef.Destination} -> {symLinkDef.Source}");
+                                _symLinkDefs.Add(symLinkDef);
                                 continue;
                             }
+
+                            try
+                            {
+                                var linkTarget = Directory.ResolveLinkTarget(fullDestinationPath, returnFinalTarget: false);
+                                if (linkTarget != null && !Directory.Exists(linkTarget.FullName))
+                                {
+                                    if (Directory.Exists(fullDestinationPath) || Path.Exists(fullDestinationPath))
+                                    {
+                                        Directory.Delete(fullDestinationPath);
+                                    }
+                                    else if (File.Exists(fullDestinationPath))
+                                    {
+                                        File.Delete(fullDestinationPath);
+                                    }
+                                    Directory.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
+                                    _symLinkDefs.Add(symLinkDef);
+                                    continue;
+                                }
+                            }
+                            catch { }
 
                             _logger.LogWarning(
                                 $"Conflicto de enlace simbólico para {symLinkDef.Destination}. " +
@@ -308,7 +331,7 @@ public class SymLinkScafolder :ISymLinkScafolder
                     }
                     else
                     {
-                        if (File.Exists(fullDestinationPath))
+                        if (entryExists)
                         {
                             if (IsSameLinkTarget(fullDestinationPath, symLinkDef.Source))
                             {
@@ -316,6 +339,26 @@ public class SymLinkScafolder :ISymLinkScafolder
                                 _symLinkDefs.Add(symLinkDef);
                                 continue;
                             }
+
+                            try
+                            {
+                                var linkTarget = File.ResolveLinkTarget(fullDestinationPath, returnFinalTarget: false);
+                                if (linkTarget != null && !File.Exists(linkTarget.FullName))
+                                {
+                                    if (File.Exists(fullDestinationPath) || Path.Exists(fullDestinationPath))
+                                    {
+                                        File.Delete(fullDestinationPath);
+                                    }
+                                    else if (Directory.Exists(fullDestinationPath))
+                                    {
+                                        Directory.Delete(fullDestinationPath);
+                                    }
+                                    File.CreateSymbolicLink(fullDestinationPath, symLinkDef.Source);
+                                    _symLinkDefs.Add(symLinkDef);
+                                    continue;
+                                }
+                            }
+                            catch { }
 
                             _logger.LogWarning(
                                 $"Conflicto de enlace simbólico para {symLinkDef.Destination}. " +
@@ -344,16 +387,12 @@ public class SymLinkScafolder :ISymLinkScafolder
     {
         try
         {
-            var fileInfo = new FileInfo(linkPath);
-            if (fileInfo.Exists && fileInfo.LinkTarget != null)
-            {
-                return PathsEqual(fileInfo.LinkTarget, expectedTarget);
-            }
+            var target = File.ResolveLinkTarget(linkPath, returnFinalTarget: false)
+                      ?? Directory.ResolveLinkTarget(linkPath, returnFinalTarget: false);
 
-            var directoryInfo = new DirectoryInfo(linkPath);
-            if (directoryInfo.Exists && directoryInfo.LinkTarget != null)
+            if (target != null)
             {
-                return PathsEqual(directoryInfo.LinkTarget, expectedTarget);
+                return PathsEqual(target.FullName, expectedTarget);
             }
         }
         catch

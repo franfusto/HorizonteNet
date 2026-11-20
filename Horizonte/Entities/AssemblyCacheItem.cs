@@ -58,6 +58,16 @@ public class AssemblyCacheItem
     public VersionResources? VersionResources { get; set; }
 
     /// <summary>
+    /// Indica si el elemento corresponde a un paquete puramente de runtime nativo (sin DLL administrada en lib/).
+    /// </summary>
+    public bool IsRuntimePackage { get; set; }
+
+    /// <summary>
+    /// Indica si el paquete contiene activos nativos en /runtimes/ para el identificador de runtime (RID) actual.
+    /// </summary>
+    public bool HasNativeAssets { get; set; }
+
+    /// <summary>
     /// Marca de tiempo UTC en la que se resolvió o registró la entrada.
     /// </summary>
     public DateTime ResolvedAtUtc { get; set; } = DateTime.UtcNow;
