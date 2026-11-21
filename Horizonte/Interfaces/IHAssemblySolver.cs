@@ -61,6 +61,19 @@ public interface IHAssemblySolver
     string GetPackageName(string assemblyName);
 
     /// <summary>
+    /// Registra manualmente o actualiza el mapeo entre el nombre de un ensamblado y su identificador de paquete NuGet.
+    /// </summary>
+    /// <param name="assemblyName">Nombre del ensamblado.</param>
+    /// <param name="packageName">Identificador del paquete NuGet asociado.</param>
+    void RegisterAssemblyMapping(string assemblyName, string packageName);
+
+    /// <summary>
+    /// Escanea un ensamblado en busca de definiciones con el atributo <see cref="AssemblyMappingDefinition"/> y registra los mapeos descubiertos.
+    /// </summary>
+    /// <param name="assembly">Ensamblado a inspeccionar.</param>
+    void ScanAssemblyForMappings(Assembly assembly);
+
+    /// <summary>
     /// Almacena un ensamblado en la caché en memoria bajo una clave determinada.
     /// </summary>
     /// <param name="key">Clave identificadora en la caché.</param>

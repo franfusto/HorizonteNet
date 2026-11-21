@@ -735,6 +735,8 @@ public class EnvCoordinator : IEnvCoordinator
                     if (alreadyLoadedInTargetAlc == null)
                     {
                         var loadedAssembly = alc.LoadFromAssemblyPath(dllPath);
+                        _assemblySolver.ScanAssemblyForMappings(loadedAssembly);
+
                         _logger.LogInformation(
                             "Forced package {PackageId} ({AssemblyName}) loaded into domain {DomainName} from {DllPath}",
                             package.PackageId,
@@ -744,6 +746,8 @@ public class EnvCoordinator : IEnvCoordinator
                     }
                     else
                     {
+                        _assemblySolver.ScanAssemblyForMappings(alreadyLoadedInTargetAlc);
+
                         _logger.LogInformation(
                             "Forced package {PackageId} ({AssemblyName}) ya estaba cargado en dominio {DomainName}",
                             package.PackageId,
@@ -790,6 +794,7 @@ public class EnvCoordinator : IEnvCoordinator
                     domainName);
 
                 var loadedAssembly = alc.LoadFromAssemblyPath(fullPath);
+                _assemblySolver.ScanAssemblyForMappings(loadedAssembly);
 
                 _logger.LogInformation(
                     "Module assembly {AssemblyName} loaded into domain {DomainName}",
@@ -813,6 +818,8 @@ public class EnvCoordinator : IEnvCoordinator
                 }
                 else
                 {
+                    _assemblySolver.ScanAssemblyForMappings(nugetAssembly);
+
                     _logger.LogInformation(
                         "Module assembly {AssemblyName} resolved for domain {DomainName}",
                         nugetAssembly.FullName,
@@ -864,6 +871,8 @@ public class EnvCoordinator : IEnvCoordinator
 
                 var fullDllPath = Path.GetFullPath(dllFile);
                 var loadedAssembly = alc.LoadFromAssemblyPath(fullDllPath);
+                _assemblySolver.ScanAssemblyForMappings(loadedAssembly);
+
                 _logger.LogInformation(
                     "Additional dll {AssemblyName} loaded from {FullDllPath} into domain {DomainName}",
                     loadedAssembly.FullName,

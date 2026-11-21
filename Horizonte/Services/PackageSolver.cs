@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Compression;
 using Horizonte.Entities;
 using Horizonte.Helpers;
@@ -25,6 +26,8 @@ public class PackageSolver : IPackageSolver
     private string _installFolder = "packages";
     private static readonly TimeSpan DefaultRemoteQueryTimeout = TimeSpan.FromSeconds(8);
     private static readonly TimeSpan DefaultRemoteDownloadTimeout = TimeSpan.FromSeconds(20);
+
+    private readonly ConcurrentDictionary<string, string> _dynamicAssemblyToPackageMap = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Inicializa una nueva instancia de la clase <see cref="PackageSolver"/> utilizando el proveedor de servicios para obtener la configuración.
@@ -829,8 +832,23 @@ public class PackageSolver : IPackageSolver
         return (fallbackUnblocked ?? allDiscoveredVersions.First()).ToNormalizedString();
     }
 
+    /// <inheritdoc/>
+    public void RegisterAssemblyMapping(string assemblyName, string packageName)
+    {
+        if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+            return;
+
+        _dynamicAssemblyToPackageMap[assemblyName] = packageName;
+        _logger.LogDebug("[PKGSOLVER-MAPPING-REG] Mapeo dinámico registrado: '{AssemblyName}' -> '{PackageName}'", assemblyName, packageName);
+    }
+
     private string GetPackageName(string assemblyName)
     {
+        if (_dynamicAssemblyToPackageMap.TryGetValue(assemblyName, out var dynamicPackage))
+        {
+            return dynamicPackage;
+        }
+
         if (_settings.AssemblyToPackageMap != null &&
             _settings.AssemblyToPackageMap.TryGetValue(assemblyName, out var mappedPackage))
         {

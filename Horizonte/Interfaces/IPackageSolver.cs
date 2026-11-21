@@ -33,4 +33,11 @@ public interface IPackageSolver
     /// <param name="version">Versión del paquete.</param>
     /// <returns>Una tarea que devuelve la ruta local de instalación/extracción o <see langword="null"/> si se produce un error.</returns>
     Task<string?> DownloadAndInstallPackageAsync(string packageName, string version);
+
+    /// <summary>
+    /// Registra o actualiza el mapeo entre un nombre de ensamblado y su identificador de paquete NuGet correspondiente.
+    /// </summary>
+    /// <param name="assemblyName">Nombre del ensamblado.</param>
+    /// <param name="packageName">Identificador del paquete NuGet.</param>
+    void RegisterAssemblyMapping(string assemblyName, string packageName);
 }

@@ -60,7 +60,9 @@ public class HAssemblySolver : IHAssemblySolver
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _linkScafolder = linkScafolder ?? throw new ArgumentNullException(nameof(linkScafolder));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = serviceProvider.GetService<IhContext>()?.Get<ModulesSettings>() ?? new ModulesSettings();
+        _settings = serviceProvider.GetService<ModulesSettings>()
+                    ?? serviceProvider.GetService<IhContext>()?.Get<ModulesSettings>()
+                    ?? new ModulesSettings();
 
         MapAssemblyToPackage();
         SetUpAssemblyPaths();
@@ -242,8 +244,8 @@ public class HAssemblySolver : IHAssemblySolver
                 version ?? "any",
                 requesterDomain);
 
-            // 2. Resolver paquete mediante IPackageSolver
-            var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(name, version, requesterDomain)).GetAwaiter().GetResult();
+            // 2. Resolver paquete mediante IPackageSolver pasando el packageName ya resuelto
+            var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(packageName, version, requesterDomain)).GetAwaiter().GetResult();
             string? resAssemblyPath = null;
             string? packageRootDirectory = resolutionResult.PackageRootDirectory;
 
@@ -390,6 +392,8 @@ public class HAssemblySolver : IHAssemblySolver
             if (sender is AssemblyLoadContext context)
             {
                 loadedAssembly = context.LoadFromAssemblyPath(resAssemblyPath);
+                MapAssemblyToPackageFromAssembly(loadedAssembly);
+
                 var targetDomain = domainsDict != null
                     ? AssemblyHelpers.GetDomainNameForAssemblyLoadContext(domainsDict, context)
                     : context.Name ?? Const.DefaultDomainName;
@@ -1120,6 +1124,34 @@ public class HAssemblySolver : IHAssemblySolver
         }
     }
 
+    /// <inheritdoc/>
+    public void RegisterAssemblyMapping(string assemblyName, string packageName)
+    {
+        if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+            return;
+
+        lock (_assemblyToPackageMapLock)
+        {
+            _assemblyToPackageMap[assemblyName] = packageName;
+        }
+
+        _packageSolver.RegisterAssemblyMapping(assemblyName, packageName);
+
+        _logger.LogInformation(
+            "[RESOLVER-MAPPING-REG] Mapeo de ensamblado '{AssemblyName}' a paquete '{PackageName}' registrado dinámicamente.",
+            assemblyName,
+            packageName);
+    }
+
+    /// <inheritdoc/>
+    public void ScanAssemblyForMappings(Assembly assembly)
+    {
+        if (assembly != null)
+        {
+            MapAssemblyToPackageFromAssembly(assembly);
+        }
+    }
+
     private void MapAssemblyToPackage()
     {
         lock (_assemblyToPackageMapLock)
@@ -1230,46 +1262,49 @@ public class HAssemblySolver : IHAssemblySolver
                         continue;
                     }
 
-                    foreach (var mapping in mappings)
+                    ProcessMappings(mappings, type.FullName ?? type.Name, field.Name, assembly.FullName ?? assemblyKey);
+                }
+
+                var properties = type.GetProperties(
+                    BindingFlags.Public |
+                    BindingFlags.NonPublic |
+                    BindingFlags.Static);
+
+                foreach (var prop in properties)
+                {
+                    if (!HasAssemblyMappingDefinition(prop) || !prop.CanRead)
+                        continue;
+
+                    object? value;
+
+                    try
                     {
-                        var assemblyName = mapping.Key;
-                        var packageName = mapping.Value;
-
-                        if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
-                        {
-                            _logger.LogWarning(
-                                "Se ha ignorado un mapeo inválido en {TypeName}.{FieldName}: AssemblyName='{AssemblyName}', PackageName='{PackageName}'.",
-                                type.FullName,
-                                field.Name,
-                                assemblyName,
-                                packageName);
-
-                            continue;
-                        }
-
-                        lock (_assemblyToPackageMapLock)
-                        {
-                            if (_assemblyToPackageMap.TryGetValue(assemblyName, out var currentPackageName))
-                            {
-                                _logger.LogInformation(
-                                    "El mapeo para el ensamblado {AssemblyName} ya existe como {CurrentPackageName}. Se mantiene el mapeo actual y se ignora {PackageName} definido en {MappingAssemblyName}.",
-                                    assemblyName,
-                                    currentPackageName,
-                                    packageName,
-                                    assembly.FullName);
-
-                                continue;
-                            }
-
-                            _assemblyToPackageMap[assemblyName] = packageName;
-
-                            _logger.LogInformation(
-                                "Añadido mapeo de ensamblado {AssemblyName} a paquete {PackageName} desde {MappingAssemblyName}.",
-                                assemblyName,
-                                packageName,
-                                assembly.FullName);
-                        }
+                        value = prop.GetValue(null);
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "No se pudo leer la propiedad de mapeo {PropertyName} del tipo {TypeName} en el ensamblado {AssemblyName}.",
+                            prop.Name,
+                            type.FullName,
+                            assembly.FullName);
+
+                        continue;
+                    }
+
+                    if (value is not IEnumerable<KeyValuePair<string, string>> mappings)
+                    {
+                        _logger.LogWarning(
+                            "La propiedad {PropertyName} del tipo {TypeName} está marcada con {AttributeName}, pero no contiene un diccionario compatible con string/string.",
+                            prop.Name,
+                            type.FullName,
+                            nameof(AssemblyMappingDefinition));
+
+                        continue;
+                    }
+
+                    ProcessMappings(mappings, type.FullName ?? type.Name, prop.Name, assembly.FullName ?? assemblyKey);
                 }
             }
 
@@ -1289,11 +1324,57 @@ public class HAssemblySolver : IHAssemblySolver
         }
     }
 
-    private bool HasAssemblyMappingDefinition(FieldInfo field)
+    private void ProcessMappings(IEnumerable<KeyValuePair<string, string>> mappings, string typeName, string memberName, string mappingAssemblyName)
+    {
+        foreach (var mapping in mappings)
+        {
+            var assemblyName = mapping.Key;
+            var packageName = mapping.Value;
+
+            if (string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(packageName))
+            {
+                _logger.LogWarning(
+                    "Se ha ignorado un mapeo inválido en {TypeName}.{MemberName}: AssemblyName='{AssemblyName}', PackageName='{PackageName}'.",
+                    typeName,
+                    memberName,
+                    assemblyName,
+                    packageName);
+
+                continue;
+            }
+
+            lock (_assemblyToPackageMapLock)
+            {
+                if (_assemblyToPackageMap.TryGetValue(assemblyName, out var currentPackageName))
+                {
+                    _logger.LogInformation(
+                        "El mapeo para el ensamblado {AssemblyName} ya existe como {CurrentPackageName}. Se mantiene el mapeo actual y se ignora {PackageName} definido en {MappingAssemblyName}.",
+                        assemblyName,
+                        currentPackageName,
+                        packageName,
+                        mappingAssemblyName);
+
+                    continue;
+                }
+
+                _assemblyToPackageMap[assemblyName] = packageName;
+            }
+
+            _packageSolver.RegisterAssemblyMapping(assemblyName, packageName);
+
+            _logger.LogInformation(
+                "Añadido mapeo de ensamblado {AssemblyName} a paquete {PackageName} desde {MappingAssemblyName}.",
+                assemblyName,
+                packageName,
+                mappingAssemblyName);
+        }
+    }
+
+    private bool HasAssemblyMappingDefinition(MemberInfo member)
     {
         try
         {
-            return field
+            return member
                 .GetCustomAttributes(inherit: false)
                 .Any(attribute => string.Equals(
                     attribute.GetType().FullName,
@@ -1304,8 +1385,8 @@ public class HAssemblySolver : IHAssemblySolver
         {
             _logger.LogDebug(
                 ex,
-                "No se pudieron leer los atributos del campo {FieldName}.",
-                field.Name);
+                "No se pudieron leer los atributos del miembro {MemberName}.",
+                member.Name);
 
             return false;
         }

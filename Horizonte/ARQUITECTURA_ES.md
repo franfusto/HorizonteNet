@@ -109,7 +109,8 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
   - Resolver y cargar librerías nativas / no administradas (.so, .dll, .dylib) solicitadas en llamadas P/Invoke (`ResolveUnmanagedDll`) mediante sondeo de RIDs compatibles en `./runtimes/{rid}/native/`, `AppContext.BaseDirectory` y carpetas de paquetes.
   - Registrar y almacenar handles de librerías nativas precargadas manualmente por dominio (`RegisterUnmanagedDll`).
   - Localizar rutas físicas de librerías en disco (`ResolveAssemblyDllPath`, aceptando opcionalmente `targetFramework` prioritario) y descargar paquetes desde feeds remotos (`DownloadNuGetPackageAsync`).
-  - Mantener el mapeo bidireccional entre nombres de ensamblados y nombres de paquetes NuGet (`GetPackageName`, utilizando `AssemblyToPackageMap`).
+  - Mantener el mapeo bidireccional entre nombres de ensamblados y nombres de paquetes NuGet (`GetPackageName`, utilizando `AssemblyToPackageMap` enriquecido dinámicamente mediante `[AssemblyMappingDefinition]`).
+  - Registrar y actualizar mapeos en tiempo de ejecución (`RegisterAssemblyMapping`) y escanear ensamblados cargados en cualquier ALC (`ScanAssemblyForMappings`).
   - Almacenar y consultar bytes de ensamblados en memoria (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
   - Administrar el catálogo de recursos web por dominio (`StaticFileRegistry`) para el middleware web.
   - Delegar la gestión de caché estructurada en `IHAssemblyCache` y la evaluación de paquetes en `IPackageSolver`.
@@ -327,6 +328,7 @@ La sección central de configuración es `ModulesSettings`, la cual contiene los
 
 9. **`AssemblyToPackageMap` (`Dictionary<string, string>`)**:
    - Diccionario de mapeo entre nombres de archivo de ensamblados y el identificador del paquete NuGet que los contiene, para casos donde el nombre de la DLL difiere del ID del paquete.
+   - **Mapeos declarativos y por código (`[AssemblyMappingDefinition]`)**: Además de la configuración en JSON, los módulos y librerías pueden declarar campos o propiedades estáticas (`Dictionary<string, string>` o `IReadOnlyDictionary<string, string>`) anotadas con `[AssemblyMappingDefinition]` (por ejemplo en `PanelModulo`). El runtime escanea automáticamente estos atributos al cargar ensamblados en cualquier dominio o ALC y sincroniza el catálogo activo en `IHAssemblySolver` y `IPackageSolver`.
 
 10. **`Domains` (`List<string>`)**:
     - Lista declarativa de nombres de dominios lógicos a inicializar en la aplicación.

@@ -109,7 +109,8 @@ The core of the modular system is organized around a central orchestrator (`IEnv
   - Resolve and load native / unmanaged libraries (.so, .dll, .dylib) requested in P/Invoke calls (`ResolveUnmanagedDll`) by probing compatible RIDs in `./runtimes/{rid}/native/`, `AppContext.BaseDirectory`, and package folders.
   - Register and store handles of manually preloaded native libraries per domain (`RegisterUnmanagedDll`).
   - Locate physical library paths on disk (`ResolveAssemblyDllPath`, optionally accepting priority `targetFramework`) and download packages from remote feeds (`DownloadNuGetPackageAsync`).
-  - Maintain bidirectional mapping between assembly names and NuGet package IDs (`GetPackageName`, using `AssemblyToPackageMap`).
+  - Maintain bidirectional mapping between assembly names and NuGet package IDs (`GetPackageName`, using `AssemblyToPackageMap` enriched dynamically via `[AssemblyMappingDefinition]`).
+  - Register and update mappings dynamically at runtime (`RegisterAssemblyMapping`) and scan loaded assemblies across all ALCs (`ScanAssemblyForMappings`).
   - Store and query in-memory assembly bytes (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
   - Manage web static asset catalog per domain (`StaticFileRegistry`) for web middleware.
   - Delegate structured cache management to `IHAssemblyCache` and package evaluation to `IPackageSolver`.
@@ -327,6 +328,7 @@ The core configuration section is `ModulesSettings`, containing the following el
 
 9. **`AssemblyToPackageMap` (`Dictionary<string, string>`)**:
    - Mapping dictionary between assembly file names and the NuGet package ID containing them, for cases where the DLL name differs from the package ID.
+   - **Declarative and code-defined mappings (`[AssemblyMappingDefinition]`)**: In addition to JSON configuration, modules and libraries can declare static fields or properties (`Dictionary<string, string>` or `IReadOnlyDictionary<string, string>`) annotated with `[AssemblyMappingDefinition]` (for example in `PanelModulo`). The runtime automatically scans these attributes when loading assemblies into any domain or ALC and synchronizes the active catalog across `IHAssemblySolver` and `IPackageSolver`.
 
 10. **`Domains` (`List<string>`)**:
     - Declarative list of logical domain names to initialize in the application.

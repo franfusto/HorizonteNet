@@ -112,6 +112,12 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunForcedPackageTfmPriorityTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE MAPEO DE ENSAMBLADO A PAQUETE POR CODIGO ([AssemblyMappingDefinition]) ===");
+        Console.WriteLine("================================================================================");
+
+        await RunAssemblyToPackageMappingCodeTestsAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -1071,6 +1077,134 @@ public class Program
                 try { Directory.Delete(tempDir, recursive: true); } catch { }
             }
         }
+    }
+
+    private static async Task RunAssemblyToPackageMappingCodeTestsAsync()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "horizonte_mapping_tests_" + Guid.NewGuid().ToString("N"));
+        var pkgRoot = Path.Combine(tempDir, "packages", "z.custom.diagrams", "1.5.0");
+        var net10Lib = Path.Combine(pkgRoot, "lib", "net10.0");
+
+        Directory.CreateDirectory(net10Lib);
+        var dllPath = Path.Combine(net10Lib, "Custom.Diagrams.dll");
+        await File.WriteAllTextAsync(dllPath, "fake dll content for mapped package");
+
+        var settings = new ModulesSettings
+        {
+            NugetFolders = new List<NugetFolderItem>
+            {
+                new NugetFolderItem
+                {
+                    Folder = Path.Combine(tempDir, "packages"),
+                    Name = "TestMappingLocal",
+                    InstallFolder = true,
+                    Active = true,
+                    Order = 0
+                }
+            },
+            NugetServers = new List<NugetServerItem>(),
+            FrameworkPriorities = new List<string> { "net10.0" },
+            AssemblyToPackageMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Initial.Json.Assembly"] = "Package.Initial.Json"
+            }
+        };
+
+        var cache = new HAssemblyCache();
+        var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+        var scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IHAssemblyCache>(cache);
+        services.AddSingleton<IPackageSolver>(packageSolver);
+        services.AddSingleton<ISymLinkScafolder>(scafolder);
+        services.AddSingleton<ModulesSettings>(settings);
+
+        var sp = services.BuildServiceProvider();
+        var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+
+        try
+        {
+            // Test 1: Comprobar que el mapeo inicial del JSON funciona
+            Console.WriteLine("\n[TEST MAPPING 1] Comprobando mapeo inicial desde JSON...");
+            var mappedFromJson = assemblySolver.GetPackageName("Initial.Json.Assembly");
+            if (string.Equals(mappedFromJson, "Package.Initial.Json", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("  ✓ [OK] Mapeo inicial desde JSON resuelto correctamente: 'Initial.Json.Assembly' -> 'Package.Initial.Json'");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Mapeo JSON incorrecto. Obtenido: '{mappedFromJson}'");
+            }
+
+            // Test 2: Escanear el ensamblado actual (Horizonte.TestRunner) que contiene DummyCodeMappingClass con [AssemblyMappingDefinition]
+            Console.WriteLine("\n[TEST MAPPING 2] Escaneando ensamblado con [AssemblyMappingDefinition]...");
+            assemblySolver.ScanAssemblyForMappings(typeof(Program).Assembly);
+
+            var mappedByCodeField = assemblySolver.GetPackageName("Custom.Diagrams");
+            var mappedByCodeProp = assemblySolver.GetPackageName("Custom.Diagrams.Core");
+
+            if (string.Equals(mappedByCodeField, "Z.Custom.Diagrams", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(mappedByCodeProp, "Z.Custom.Diagrams.Core", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("  ✓ [OK] Mapeos descubiertos por atributo en campo y propiedad: 'Custom.Diagrams' -> 'Z.Custom.Diagrams', 'Custom.Diagrams.Core' -> 'Z.Custom.Diagrams.Core'");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Mapeo por código falló. Field: '{mappedByCodeField}', Prop: '{mappedByCodeProp}'");
+            }
+
+            // Test 3: Verificar que PackageSolver.ResolvePackageAsync traduce el nombre de ensamblado al PackageId y localiza la DLL
+            Console.WriteLine("\n[TEST MAPPING 3] Resolviendo paquete a través de PackageSolver usando el nombre de ensamblado sin mapear en JSON...");
+            var pkgResult = await packageSolver.ResolvePackageAsync("Custom.Diagrams", "1.5.0");
+            Console.WriteLine($"  -> Success: {pkgResult.Success}, PackageId: {pkgResult.PackageId}, DllPath: {pkgResult.DllPath}");
+
+            if (pkgResult.Success && string.Equals(pkgResult.PackageId, "Z.Custom.Diagrams", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("  ✓ [OK] PackageSolver tradujo exitosamente el nombre de ensamblado al PackageId mapeado por código 'Z.Custom.Diagrams'.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] PackageSolver no pudo resolver el paquete mapeado por código. Error: {pkgResult.ErrorMessage}");
+            }
+
+            // Test 4: Verificar que HAssemblySolver.ResolveAssemblyDllPath resuelve la DLL física usando el nombre de ensamblado
+            Console.WriteLine("\n[TEST MAPPING 4] Resolviendo ruta de DLL mediante HAssemblySolver.ResolveAssemblyDllPath...");
+            var resolvedDll = assemblySolver.ResolveAssemblyDllPath("Custom.Diagrams", "1.5.0");
+            Console.WriteLine($"  -> DLL: {resolvedDll}");
+
+            if (!string.IsNullOrEmpty(resolvedDll) && File.Exists(resolvedDll))
+            {
+                Console.WriteLine("  ✓ [OK] HAssemblySolver localizó la DLL física para el ensamblado con mapeo definido por código.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] No se localizó la DLL para 'Custom.Diagrams'.");
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch { }
+            }
+        }
+    }
+
+    public static class DummyCodeMappingClass
+    {
+        [AssemblyMappingDefinition]
+        public static readonly Dictionary<string, string> CodeMappingsField = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Custom.Diagrams"] = "Z.Custom.Diagrams"
+        };
+
+        [AssemblyMappingDefinition]
+        public static IReadOnlyDictionary<string, string> CodeMappingsProperty { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Custom.Diagrams.Core"] = "Z.Custom.Diagrams.Core"
+        };
     }
 
     private class MockEnvCoordinator : IEnvCoordinator

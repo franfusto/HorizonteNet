@@ -73,10 +73,10 @@ namespace Horizonte
         }
     }
     /// <summary>
-    /// Atributo utilizado para marcar un campo estático que define mapeos entre nombres de ensamblado
+    /// Atributo utilizado para marcar un campo o propiedad estática que define mapeos entre nombres de ensamblado
     /// y nombres de paquete NuGet.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     public sealed class AssemblyMappingDefinition : Attribute
     {
     }
