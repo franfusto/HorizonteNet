@@ -75,6 +75,7 @@ The core of the modular system is organized around a central orchestrator (`IEnv
   - Publish the `DomainChanged` event upon any alteration in active domains or assemblies.
   - Provide consolidated runtime views: global assembly list (`Assemblies`), domain grouping (`AssembliesByDomain`), and static file registry (`StaticFileRegistry`).
   - Offer delegated operations for background service control (`StartBackgroundService`, `StopBackgroundService`, `BackgroundServiceRunning`) and per-domain commands (`LoadModule`, `UnloadModule`, `LoadCommandsByDomain`, `UnloadCommandsByDomain`).
+  - Provide explicit preloading and registration of native / unmanaged libraries from custom file paths (`LoadUnmanagedDll`).
   - Resolve type instantiation via the dependency injection container (`CreateInstance`).
 
 - **Operational Contract of `IEnvCoordinator`**:
@@ -94,6 +95,7 @@ The core of the modular system is organized around a central orchestrator (`IEnv
   - `BackgroundServiceRunning(string serviceType)`: Checks worker execution state.
   - `LoadModule(string domainName)` / `UnloadModule(string domainName)`: Module registration/unregistration per domain.
   - `LoadCommandsByDomain(string domainName)` / `UnloadCommandsByDomain(string domainName)`: Command loading and unloading per domain.
+  - `LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath)`: Explicitly loads a native library (.so, .dll, .dylib) into a domain and registers it for P/Invoke resolution.
   - `CreateInstance(Type type)`: Type instantiation with dependency injection.
 
 ---
@@ -105,6 +107,7 @@ The core of the modular system is organized around a central orchestrator (`IEnv
 - **Responsibilities**:
   - Resolve assemblies requested by specific context load events (`ResolveAssemblyFromALC`) and global events (`ResolveAssemblyFromNuGetPackages`).
   - Resolve and load native / unmanaged libraries (.so, .dll, .dylib) requested in P/Invoke calls (`ResolveUnmanagedDll`) by probing compatible RIDs in `./runtimes/{rid}/native/`, `AppContext.BaseDirectory`, and package folders.
+  - Register and store handles of manually preloaded native libraries per domain (`RegisterUnmanagedDll`).
   - Locate physical library paths on disk (`ResolveAssemblyDllPath`) and download packages from remote feeds (`DownloadNuGetPackageAsync`).
   - Maintain bidirectional mapping between assembly names and NuGet package IDs (`GetPackageName`, using `AssemblyToPackageMap`).
   - Store and query in-memory assembly bytes (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
@@ -498,7 +501,7 @@ graph TD
 16. **Target Framework Selection**: Selection of optimal `lib/` folder according to `FrameworkPriorities` order.
 17. **Context Loading**: Loading DLL file into domain `AssemblyLoadContext`.
 18. **Cache Update**: Recording successful result in `IHAssemblyCache`.
-19. **Symbolic Link Scaffolding**: Processing `.targets` and `.props` files via `ISymLinkScafolder`.
+19. **Symbolic Link Scaffolding**: Unified processing of native assets (`/runtimes/{rid}/native/`) and MSBuild `.targets` / `.props` files via `ISymLinkScafolder` (both during dynamic resolution and initial forced package loading `ForcedPackages` via `ResolveAssemblyDllPath`).
 20. **Web Asset Registration**: Adding static files to `StaticFileRegistry` under domain namespace.
 
 ---
@@ -520,13 +523,21 @@ When a managed assembly invokes unmanaged native code via P/Invoke (e.g., `OpenC
 
 - **Centralized Handler**: `HDomainManager` hooks `ResolvingUnmanagedDll` on `AssemblyLoadContext.Default` and all dynamically created ALC contexts, delegating resolution to `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
 - **Cross-Platform Probing Strategy**:
-  1. **Candidate Name Generation**:
+  1. **Explicit Preload / Registration**: Initial check for native libraries manually preloaded and registered via `IEnvCoordinator.LoadUnmanagedDll` or `IHAssemblySolver.RegisterUnmanagedDll` in the target domain or global `"Default"` domain.
+  2. **Candidate Name Generation**:
      - **Linux / Unix**: `lib{Name}.so`, `{Name}.so`, `lib{Name}`, `{Name}`.
      - **Windows**: `{Name}.dll`, `{Name}`.
      - **macOS**: `lib{Name}.dylib`, `{Name}.dylib`, `lib{Name}`, `{Name}`.
-  2. **Compatible RIDs**: Detection of the Runtime Identifier hierarchy via `NugetHelpers.GetCompatibleRuntimeIdentifiers` (e.g., `linux-x64` -> `linux` -> `unix` -> `any`).
-  3. **Sequentially Probed Paths**:
+  3. **Compatible RIDs**: Detection of the Runtime Identifier hierarchy via `NugetHelpers.GetCompatibleRuntimeIdentifiers` (e.g., `linux-x64` -> `linux` -> `unix` -> `any`).
+  4. **Sequentially Probed Paths**:
      - `./runtimes/{cRid}/native/{candidateName}` (process working directory / scaffolding).
      - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
      - Local package directories registered in `NugetFolders`.
-  4. **Safe In-Memory Loading**: Native binary loading via `NativeLibrary.TryLoad` returning the `IntPtr` handle pointer to the CLR, enabling transitive dependency resolution within the same directory.
+  5. **Safe In-Memory Loading**: Native binary loading via `NativeLibrary.TryLoad` returning the `IntPtr` handle pointer to the CLR, enabling transitive dependency resolution within the same directory.
+
+##### Explicit Preload of Native Binaries (`LoadUnmanagedDll`)
+For packages or custom binary distributions outside the `/runtimes/{rid}/native/` convention, `IEnvCoordinator` exposes a programmatic method:
+```csharp
+IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath);
+```
+This method validates the binary file path (`.so`, `.dll`, `.dylib`), loads it into memory with `NativeLibrary.TryLoad`, and registers the alias mapping in `IHAssemblySolver` for the specified domain (or `Default`), ensuring immediate resolution for subsequent P/Invoke calls within that domain.

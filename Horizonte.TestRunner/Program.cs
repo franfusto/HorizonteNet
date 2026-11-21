@@ -94,6 +94,18 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunNativeUnmanagedDllResolutionTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE PRECARGA EXPLICITA DE LIBRERIAS NATIVAS (IEnvCoordinator.LoadUnmanagedDll) ===");
+        Console.WriteLine("================================================================================");
+
+        await RunExplicitNativeDllLoadingTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE CARGA FORZADA DE PAQUETES CON RUNTIMES Y .TARGETS (ResolveAssemblyDllPath) ===");
+        Console.WriteLine("================================================================================");
+
+        await RunForcedPackageScaffoldingTestsAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -720,6 +732,242 @@ public class Program
         }
     }
 
+    private static async Task RunExplicitNativeDllLoadingTestsAsync()
+    {
+        var tempFolder = Path.Combine(Path.GetTempPath(), "horizonte_native_test_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempFolder);
+
+        var dotnetDir = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+        var validNativeSource = Directory.EnumerateFiles(dotnetDir)
+            .FirstOrDefault(f => f.EndsWith(".so") || f.EndsWith(".dylib") || (OperatingSystem.IsWindows() && f.EndsWith(".dll") && !f.Contains("System.Private.CoreLib")));
+
+        string customArbitraryFileName = OperatingSystem.IsWindows()
+            ? "custom_external_lib.dll"
+            : (OperatingSystem.IsMacOS() ? "libcustom_external_lib.dylib" : "libcustom_external_lib.so");
+
+        var customArbitraryFilePath = Path.Combine(tempFolder, customArbitraryFileName);
+
+        try
+        {
+            if (validNativeSource != null && File.Exists(validNativeSource))
+            {
+                File.Copy(validNativeSource, customArbitraryFilePath, overwrite: true);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(customArbitraryFilePath, "/* dummy native content */");
+            }
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            var settings = new ModulesSettings
+            {
+                Domains = new List<string> { Const.DefaultDomainName, "DomainAlpha", "DomainBeta" }
+            };
+
+            var cache = new HAssemblyCache();
+            var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+            var scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+
+            services.AddSingleton<IHAssemblyCache>(cache);
+            services.AddSingleton<IPackageSolver>(packageSolver);
+            services.AddSingleton<ISymLinkScafolder>(scafolder);
+
+            var sp = services.BuildServiceProvider();
+            var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+            services.AddSingleton<IHAssemblySolver>(assemblySolver);
+            var finalSp = services.BuildServiceProvider();
+
+            var domainManager = new HDomainManager(finalSp, NullLogger<HDomainManager>.Instance);
+            var domainAlphaAlc = domainManager.CreateDomain("DomainAlpha");
+            var domainBetaAlc = domainManager.CreateDomain("DomainBeta");
+            IEnvCoordinator coordinator = new MockEnvCoordinator(assemblySolver);
+
+            // TEST 1: Precarga explícita mediante coordinator.LoadUnmanagedDll en dominio aislado 'DomainAlpha'
+            Console.WriteLine("\n[TEST PRECARGA 1] Precargando 'MyCustomAlias' en dominio 'DomainAlpha' con ruta arbitraria...");
+            var loadedHandle = coordinator.LoadUnmanagedDll("DomainAlpha", "MyCustomAlias", customArbitraryFilePath);
+            Console.WriteLine($"  -> Handle devuelto por LoadUnmanagedDll: {loadedHandle}");
+            if (loadedHandle != IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] LoadUnmanagedDll cargó exitosamente la librería nativa desde una ruta fuera de /runtimes.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] LoadUnmanagedDll falló al cargar la librería nativa.");
+            }
+
+            // TEST 2: Resolución en ALC de 'DomainAlpha' usando el alias registrado
+            Console.WriteLine("\n[TEST PRECARGA 2] Resolviendo alias 'MyCustomAlias' en ALC de 'DomainAlpha'...");
+            var resolvedHandleAlpha = assemblySolver.ResolveUnmanagedDll(domainAlphaAlc, "MyCustomAlias");
+            Console.WriteLine($"  -> Handle resuelto en DomainAlpha: {resolvedHandleAlpha}");
+            if (resolvedHandleAlpha != IntPtr.Zero && resolvedHandleAlpha == loadedHandle)
+            {
+                Console.WriteLine("  ✓ [OK] ResolveUnmanagedDll devolvió exactamente el handle precargado para 'DomainAlpha'.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] No se resolvió el handle precargado en DomainAlpha.");
+            }
+
+            // TEST 3: Precarga explícita en Default (dominio null/vacío) y resolución desde cualquier dominio
+            Console.WriteLine("\n[TEST PRECARGA 3] Precargando en dominio Default y verificando fallback global...");
+            var defaultHandle = coordinator.LoadUnmanagedDll(null, "GlobalNativeLib", customArbitraryFilePath);
+            var resolvedInBeta = assemblySolver.ResolveUnmanagedDll(domainBetaAlc, "GlobalNativeLib");
+            Console.WriteLine($"  -> Handle en DomainBeta (via fallback Default): {resolvedInBeta}");
+            if (resolvedInBeta != IntPtr.Zero && resolvedInBeta == defaultHandle)
+            {
+                Console.WriteLine("  ✓ [OK] Fallback global a dominio Default resuelto exitosamente desde DomainBeta.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Falló la resolución global en dominio Default.");
+            }
+
+            // TEST 4: Ruta inexistente retorna IntPtr.Zero de forma controlada
+            Console.WriteLine("\n[TEST PRECARGA 4] Probando precarga con ruta inexistente...");
+            var failHandle = coordinator.LoadUnmanagedDll("DomainAlpha", "MissingLib", "/invalid/path/that/does/not/exist.so");
+            if (failHandle == IntPtr.Zero)
+            {
+                Console.WriteLine("  ✓ [OK] Archivo inexistente manejado correctamente retornando IntPtr.Zero.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Se esperaba IntPtr.Zero para archivo inexistente.");
+            }
+
+            // TEST 5: Descarga de dominios
+            Console.WriteLine("\n[TEST PRECARGA 5] Descarga de dominios de prueba...");
+            await domainManager.UnloadDomainContextAsync("DomainAlpha");
+            await domainManager.UnloadDomainContextAsync("DomainBeta");
+            Console.WriteLine("  ✓ [OK] Dominios descargados.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempFolder))
+            {
+                try { Directory.Delete(tempFolder, recursive: true); } catch { }
+            }
+        }
+    }
+
+    private static async Task RunForcedPackageScaffoldingTestsAsync()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "horizonte_forced_test_" + Guid.NewGuid().ToString("N"));
+        var pkgRoot = Path.Combine(tempDir, "packages", "MyForcedHybridPackage", "1.0.0");
+        var rid = NugetHelpers.GetEffectiveRuntimeIdentifier();
+
+        var runtimesNativeDir = Path.Combine(pkgRoot, "runtimes", rid, "native");
+        var buildDir = Path.Combine(pkgRoot, "build");
+        var contentDir = Path.Combine(pkgRoot, "contentFiles", "any", "any");
+        var libDir = Path.Combine(pkgRoot, "lib", "net10.0");
+
+        Directory.CreateDirectory(runtimesNativeDir);
+        Directory.CreateDirectory(buildDir);
+        Directory.CreateDirectory(contentDir);
+        Directory.CreateDirectory(libDir);
+
+        var nativeFile = Path.Combine(runtimesNativeDir, "libForcedNative.so");
+        await File.WriteAllTextAsync(nativeFile, "/* forced native content */");
+
+        var contentFile = Path.Combine(contentDir, "forced_asset.data");
+        await File.WriteAllTextAsync(contentFile, "/* forced static content */");
+
+        var targetsContent = @"<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <ItemGroup>
+    <Content Include=""$(MSBuildThisFileDirectory)../contentFiles/any/any/forced_asset.data"">
+      <Link>forced_asset.data</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>";
+        await File.WriteAllTextAsync(Path.Combine(buildDir, "MyForcedHybridPackage.targets"), targetsContent);
+
+        var dummyManagedDll = Path.Combine(libDir, "MyForcedHybridPackage.dll");
+        await File.WriteAllTextAsync(dummyManagedDll, "/* dummy managed dll */");
+
+        var settings = new ModulesSettings
+        {
+            NugetFolders = new List<NugetFolderItem>
+            {
+                new NugetFolderItem
+                {
+                    Folder = Path.Combine(tempDir, "packages"),
+                    Name = "TestForcedLocal",
+                    InstallFolder = true,
+                    Active = true,
+                    Order = 0
+                }
+            },
+            NugetServers = new List<NugetServerItem>(),
+            FrameworkPriorities = new List<string> { "net10.0", "netstandard2.1" }
+        };
+
+        var cache = new HAssemblyCache();
+        var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+        var scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IHAssemblyCache>(cache);
+        services.AddSingleton<IPackageSolver>(packageSolver);
+        services.AddSingleton<ISymLinkScafolder>(scafolder);
+
+        var sp = services.BuildServiceProvider();
+        var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+
+        try
+        {
+            Console.WriteLine("\n[TEST CARGA FORZADA 1] Invocando ResolveAssemblyDllPath para 'MyForcedHybridPackage' v1.0.0...");
+            var resolvedDll = assemblySolver.ResolveAssemblyDllPath("MyForcedHybridPackage", "1.0.0");
+            Console.WriteLine($"  -> DLL resuelta: '{resolvedDll}'");
+
+            var allLinks = scafolder.GetScafolder().ToList();
+            Console.WriteLine($"  -> Enlaces simbólicos generados en scaffolding: {allLinks.Count}");
+            foreach (var link in allLinks)
+            {
+                Console.WriteLine($"     * [Link] Source: '{link.Source}' -> Dest: '{link.Destination}', IsDirectory: {link.IsDirecory}");
+            }
+
+            var hasNativeSymlink = allLinks.Any(l => l.Destination.Contains("libForcedNative.so"));
+            var hasTargetsSymlink = allLinks.Any(l => l.Destination.EndsWith("forced_asset.data"));
+
+            if (hasNativeSymlink)
+            {
+                Console.WriteLine("  ✓ [OK] Enlace simbólico de /runtimes/ procesado y creado correctamente en carga forzada.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] No se encontró el enlace simbólico de runtime.");
+            }
+
+            if (hasTargetsSymlink)
+            {
+                Console.WriteLine("  ✓ [OK] Enlace simbólico de .targets procesado y creado correctamente en carga forzada.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] No se encontró el enlace simbólico de .targets.");
+            }
+
+            if (hasNativeSymlink && hasTargetsSymlink)
+            {
+                Console.WriteLine("  ✓ [OK] Carga forzada unificada exitosamente con resolución de /runtimes y .targets.");
+            }
+            else
+            {
+                Console.WriteLine("  ✗ [FAIL] Faltan enlaces simbólicos en el proceso de carga forzada.");
+            }
+        }
+        finally
+        {
+            scafolder?.CleanScafolder();
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch { }
+            }
+        }
+    }
+
     private class MockEnvCoordinator : IEnvCoordinator
     {
         public MockEnvCoordinator(IHAssemblySolver assemblySolver)
@@ -747,5 +995,17 @@ public class Program
         public void LoadCommandsByDomain(string domainName) { }
         public void UnloadCommandsByDomain(string domainName) { }
         public object? CreateInstance(Type type) => Activator.CreateInstance(type);
+        public IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath)
+        {
+            if (string.IsNullOrWhiteSpace(unmanagedDllName) || string.IsNullOrWhiteSpace(libraryPath) || !File.Exists(libraryPath))
+                return IntPtr.Zero;
+            var fullPath = Path.GetFullPath(libraryPath);
+            if (System.Runtime.InteropServices.NativeLibrary.TryLoad(fullPath, out var handle))
+            {
+                AssemblySolver.RegisterUnmanagedDll(domainName ?? Const.DefaultDomainName, unmanagedDllName, handle, fullPath);
+                return handle;
+            }
+            return IntPtr.Zero;
+        }
     }
 }

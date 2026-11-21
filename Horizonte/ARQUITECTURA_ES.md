@@ -75,6 +75,7 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
   - Publicar el evento `DomainChanged` ante cualquier alteración en el catálogo de dominios o ensamblados activos.
   - Proporcionar vistas consolidadas del estado en ejecución: lista global de ensamblados (`Assemblies`), agrupación por dominio (`AssembliesByDomain`) y el registro de archivos estáticos (`StaticFileRegistry`).
   - Ofrecer operaciones delegadas para el control de servicios en segundo plano (`StartBackgroundService`, `StopBackgroundService`, `BackgroundServiceRunning`) y comandos por dominio (`LoadModule`, `UnloadModule`, `LoadCommandsByDomain`, `UnloadCommandsByDomain`).
+  - Proporcionar la precarga y registro explícito de librerías nativas / no administradas en rutas personalizadas (`LoadUnmanagedDll`).
   - Resolver la instanciación de tipos mediante el contenedor de inyección de dependencias (`CreateInstance`).
 
 - **Contrato Operativo de `IEnvCoordinator`**:
@@ -94,6 +95,7 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
   - `BackgroundServiceRunning(string serviceType)`: Consulta del estado de ejecución de un worker.
   - `LoadModule(string domainName)` / `UnloadModule(string domainName)`: Registro y desregistro de módulos por dominio.
   - `LoadCommandsByDomain(string domainName)` / `UnloadCommandsByDomain(string domainName)`: Carga y descarga de comandos por dominio.
+  - `LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath)`: Carga explícitamente una biblioteca nativa (.so, .dll, .dylib) en el dominio y la registra para resolución P/Invoke.
   - `CreateInstance(Type type)`: Instanciación de tipos con inyección de dependencias.
 
 ---
@@ -105,6 +107,7 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
 - **Responsabilidades**:
   - Resolver ensamblados solicitados por eventos de carga de contextos específicos (`ResolveAssemblyFromALC`) y eventos globales (`ResolveAssemblyFromNuGetPackages`).
   - Resolver y cargar librerías nativas / no administradas (.so, .dll, .dylib) solicitadas en llamadas P/Invoke (`ResolveUnmanagedDll`) mediante sondeo de RIDs compatibles en `./runtimes/{rid}/native/`, `AppContext.BaseDirectory` y carpetas de paquetes.
+  - Registrar y almacenar handles de librerías nativas precargadas manualmente por dominio (`RegisterUnmanagedDll`).
   - Localizar rutas físicas de librerías en disco (`ResolveAssemblyDllPath`) y descargar paquetes desde feeds remotos (`DownloadNuGetPackageAsync`).
   - Mantener el mapeo bidireccional entre nombres de ensamblados y nombres de paquetes NuGet (`GetPackageName`, utilizando `AssemblyToPackageMap`).
   - Almacenar y consultar bytes de ensamblados en memoria (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
@@ -498,7 +501,7 @@ graph TD
 16. **Selección de Target Framework**: Selección de la carpeta `lib/` óptima según el orden de `FrameworkPriorities`.
 17. **Carga en Contexto**: Carga del archivo DLL en el `AssemblyLoadContext` del dominio correspondiente.
 18. **Actualización de Caché**: Registro del resultado exitoso en `IHAssemblyCache`.
-19. **Andamiaje de Enlaces Simbólicos**: Procesamiento de archivos `.targets` y `.props` mediante `ISymLinkScafolder`.
+19. **Andamiaje de Enlaces Simbólicos**: Procesamiento unificado de activos nativos (`/runtimes/{rid}/native/`) y archivos `.targets` / `.props` mediante `ISymLinkScafolder` (tanto en resolución dinámica como en la carga forzada de paquetes iniciales `ForcedPackages` vía `ResolveAssemblyDllPath`).
 20. **Registro de Activos Web**: Incorporación de los archivos estáticos en `StaticFileRegistry` bajo el espacio de nombres del dominio.
 
 ---
@@ -520,13 +523,21 @@ Cuando un ensamblado administrado invoca código nativo no administrado vía P/I
 
 - **Manejador Centralizado**: `HDomainManager` conecta el evento `ResolvingUnmanagedDll` en `AssemblyLoadContext.Default` y en todos los contextos ALC creados dinámicamente, delegando la resolución en `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
 - **Estrategia de Sondeo Multiplataforma**:
-  1. **Generación de Nombres Candidatos**:
+  1. **Registro Explícito / Precarga**: Verificación inicial de librerías nativas registradas previamente mediante `IEnvCoordinator.LoadUnmanagedDll` o `IHAssemblySolver.RegisterUnmanagedDll` en el dominio actual o en el dominio `"Default"`.
+  2. **Generación de Nombres Candidatos**:
      - **Linux / Unix**: `lib{Nombre}.so`, `{Nombre}.so`, `lib{Nombre}`, `{Nombre}`.
      - **Windows**: `{Nombre}.dll`, `{Nombre}`.
      - **macOS**: `lib{Nombre}.dylib`, `{Nombre}.dylib`, `lib{Nombre}`, `{Nombre}`.
-  2. **RIDs Compatibles**: Detección de la jerarquía de Runtime Identifiers mediante `NugetHelpers.GetCompatibleRuntimeIdentifiers` (ej. `linux-x64` -> `linux` -> `unix` -> `any`).
-  3. **Rutas Inspeccionadas Secuencialmente**:
+  3. **RIDs Compatibles**: Detección de la jerarquía de Runtime Identifiers mediante `NugetHelpers.GetCompatibleRuntimeIdentifiers` (ej. `linux-x64` -> `linux` -> `unix` -> `any`).
+  4. **Rutas Inspeccionadas Secuencialmente**:
      - `./runtimes/{cRid}/native/{candidateName}` (directorio de trabajo del proceso / scaffolding).
      - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
      - Directorios de paquetes locales registrados en `NugetFolders`.
-  4. **Carga Segura en Memoria**: Carga del binario nativo mediante `NativeLibrary.TryLoad` devolviendo el puntero `IntPtr` del manejador al CLR, permitiendo la resolución de dependencias transitivas en el mismo directorio.
+  5. **Carga Segura en Memoria**: Carga del binario nativo mediante `NativeLibrary.TryLoad` devolviendo el puntero `IntPtr` del manejador al CLR, permitiendo la resolución de dependencias transitivas en el mismo directorio.
+
+##### Precarga Explícita de Binarios Nativos (`LoadUnmanagedDll`)
+Para paquetes o distribuciones personalizadas que no utilicen la convención de empaquetado `/runtimes/{rid}/native/`, `IEnvCoordinator` expone el método programable:
+```csharp
+IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath);
+```
+Este método valida la ruta física del archivo binario (`.so`, `.dll`, `.dylib`), lo carga en memoria mediante `NativeLibrary.TryLoad` y registra el mapeo del alias en `IHAssemblySolver` para el dominio indicado (o en `Default` si no se especifica dominio), garantizando que subsiguientes llamadas P/Invoke en dicho dominio resuelvan el handle inmediatamente.

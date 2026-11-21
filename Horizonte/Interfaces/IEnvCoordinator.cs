@@ -128,4 +128,13 @@ public interface IEnvCoordinator
     /// <param name="type">Tipo del objeto a instanciar.</param>
     /// <returns>La instancia creada o <see langword="null"/> si no se pudo resolver.</returns>
     object? CreateInstance(Type type);
+
+    /// <summary>
+    /// Carga explícitamente una biblioteca de código nativo / no administrado (.so, .dll, .dylib) en el dominio especificado.
+    /// </summary>
+    /// <param name="domainName">Nombre del dominio o contexto en el que se asociará la biblioteca (si es nulo o vacío se utiliza el dominio por defecto).</param>
+    /// <param name="unmanagedDllName">Nombre identificador de la biblioteca no administrada esperada por P/Invoke.</param>
+    /// <param name="libraryPath">Ruta física (absoluta o relativa) al archivo binario nativo.</param>
+    /// <returns>Puntero al manejador nativo cargado o <see cref="IntPtr.Zero"/> si falló la carga.</returns>
+    IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath);
 }

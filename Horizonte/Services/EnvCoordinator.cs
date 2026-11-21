@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Horizonte.Entities;
 using Horizonte.Helpers;
@@ -1093,6 +1094,65 @@ public class EnvCoordinator : IEnvCoordinator
                     "Error loading cached script assembly into domain {DomainName}",
                     domainName);
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath)
+    {
+        if (string.IsNullOrWhiteSpace(unmanagedDllName))
+        {
+            _logger.LogWarning("[ENV-NATIVE-LOAD] Nombre de biblioteca no administrada inválido o vacío.");
+            return IntPtr.Zero;
+        }
+
+        if (string.IsNullOrWhiteSpace(libraryPath))
+        {
+            _logger.LogWarning("[ENV-NATIVE-LOAD] Ruta de biblioteca no administrada inválida o vacía para '{UnmanagedDllName}'.", unmanagedDllName);
+            return IntPtr.Zero;
+        }
+
+        if (!File.Exists(libraryPath))
+        {
+            _logger.LogWarning("[ENV-NATIVE-LOAD] El archivo de biblioteca nativa no existe en la ruta especificada: '{Path}' (Biblioteca: '{UnmanagedDllName}').", libraryPath, unmanagedDllName);
+            return IntPtr.Zero;
+        }
+
+        var fullPath = Path.GetFullPath(libraryPath);
+        var effectiveDomain = string.IsNullOrWhiteSpace(domainName) ? Const.DefaultDomainName : domainName;
+
+        try
+        {
+            if (NativeLibrary.TryLoad(fullPath, out var handle))
+            {
+                _assemblySolver.RegisterUnmanagedDll(effectiveDomain, unmanagedDllName, handle, fullPath);
+                _logger.LogInformation(
+                    "[ENV-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde '{Path}' y registrada en dominio '{Domain}'. Handle: {Handle}",
+                    unmanagedDllName,
+                    fullPath,
+                    effectiveDomain,
+                    handle);
+                return handle;
+            }
+            else
+            {
+                _logger.LogError(
+                    "[ENV-NATIVE-LOAD-FAIL] NativeLibrary.TryLoad falló al cargar la biblioteca nativa '{UnmanagedDllName}' desde '{Path}' para dominio '{Domain}'.",
+                    unmanagedDllName,
+                    fullPath,
+                    effectiveDomain);
+                return IntPtr.Zero;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "[ENV-NATIVE-LOAD-ERROR] Excepción al cargar la biblioteca nativa '{UnmanagedDllName}' desde '{Path}' para dominio '{Domain}'.",
+                unmanagedDllName,
+                fullPath,
+                effectiveDomain);
+            return IntPtr.Zero;
         }
     }
 }

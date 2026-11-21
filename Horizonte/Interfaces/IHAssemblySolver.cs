@@ -86,4 +86,13 @@ public interface IHAssemblySolver
     /// <param name="unmanagedDllName">Nombre o ruta de la biblioteca no administrada solicitada.</param>
     /// <returns>Puntero al manejador de la biblioteca nativa cargada o <see cref="IntPtr.Zero"/> si no pudo resolverse.</returns>
     IntPtr ResolveUnmanagedDll(AssemblyLoadContext? context, string unmanagedDllName);
+
+    /// <summary>
+    /// Registra manualmente una biblioteca de código nativo / no administrado asociada a un dominio o contexto ALC.
+    /// </summary>
+    /// <param name="domainName">Nombre del dominio o contexto.</param>
+    /// <param name="unmanagedDllName">Nombre identificador de la biblioteca no administrada.</param>
+    /// <param name="handle">Puntero al manejador de la biblioteca nativa cargada.</param>
+    /// <param name="libraryPath">Ruta física al binario nativo.</param>
+    void RegisterUnmanagedDll(string domainName, string unmanagedDllName, IntPtr handle, string libraryPath);
 }
