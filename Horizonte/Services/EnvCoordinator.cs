@@ -694,11 +694,11 @@ public class EnvCoordinator : IEnvCoordinator
                     package.Framework,
                     string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
 
-                var dllPath = _assemblySolver.ResolveAssemblyDllPath(package.PackageId, package.Version);
+                var dllPath = _assemblySolver.ResolveAssemblyDllPath(package.PackageId, package.Version, package.Framework);
 
                 if (dllPath == null)
                 {
-                    dllPath = _assemblySolver.DownloadNuGetPackageAsync(package.PackageId, package.Version).GetAwaiter().GetResult();
+                    dllPath = _assemblySolver.DownloadNuGetPackageAsync(package.PackageId, package.Version, package.Framework).GetAwaiter().GetResult();
                 }
 
                 var cachedRuntime = _assemblySolver.AssemblyCache?.Get(package.PackageId, package.Version);

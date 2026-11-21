@@ -40,16 +40,18 @@ public interface IHAssemblySolver
     /// </summary>
     /// <param name="packageName">Identificador del paquete NuGet.</param>
     /// <param name="version">Versión del paquete.</param>
+    /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
     /// <returns>La ruta absoluta a la DLL o <see langword="null"/> si no se encuentra.</returns>
-    string? ResolveAssemblyDllPath(string packageName, string version);
+    string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework = null);
 
     /// <summary>
     /// Descarga e instala asíncronamente un paquete NuGet con la versión solicitada.
     /// </summary>
     /// <param name="packageName">Identificador del paquete NuGet a descargar.</param>
     /// <param name="version">Versión del paquete.</param>
+    /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
     /// <returns>Una tarea que devuelve la ruta base de extracción del paquete o <see langword="null"/> si falla la descarga.</returns>
-    Task<string?> DownloadNuGetPackageAsync(string packageName, string version);
+    Task<string?> DownloadNuGetPackageAsync(string packageName, string version, string? targetFramework = null);
 
     /// <summary>
     /// Obtiene el nombre del paquete NuGet correspondiente a partir del nombre de un ensamblado.

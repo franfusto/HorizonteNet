@@ -108,7 +108,7 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
   - Resolver ensamblados solicitados por eventos de carga de contextos específicos (`ResolveAssemblyFromALC`) y eventos globales (`ResolveAssemblyFromNuGetPackages`).
   - Resolver y cargar librerías nativas / no administradas (.so, .dll, .dylib) solicitadas en llamadas P/Invoke (`ResolveUnmanagedDll`) mediante sondeo de RIDs compatibles en `./runtimes/{rid}/native/`, `AppContext.BaseDirectory` y carpetas de paquetes.
   - Registrar y almacenar handles de librerías nativas precargadas manualmente por dominio (`RegisterUnmanagedDll`).
-  - Localizar rutas físicas de librerías en disco (`ResolveAssemblyDllPath`) y descargar paquetes desde feeds remotos (`DownloadNuGetPackageAsync`).
+  - Localizar rutas físicas de librerías en disco (`ResolveAssemblyDllPath`, aceptando opcionalmente `targetFramework` prioritario) y descargar paquetes desde feeds remotos (`DownloadNuGetPackageAsync`).
   - Mantener el mapeo bidireccional entre nombres de ensamblados y nombres de paquetes NuGet (`GetPackageName`, utilizando `AssemblyToPackageMap`).
   - Almacenar y consultar bytes de ensamblados en memoria (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
   - Administrar el catálogo de recursos web por dominio (`StaticFileRegistry`) para el middleware web.
@@ -123,10 +123,10 @@ El núcleo del sistema modular se organiza alrededor de un orquestador central (
      - Permite la invalidación global (`Clear()`) o por dominio específico (`Clear(domainName)`).
 
   2. **`IPackageSolver` (Evaluador y Selector de Paquetes NuGet)**:
-     - Evalúa y selecciona la versión y archivo DLL óptimos (`ResolvePackageAsync`, devolviendo `PackageResolutionResult`).
-     - Localiza DLLs en repositorios y carpetas locales (`NugetFolders`, caché de usuario `~/.nuget/packages`) mediante `ResolveLocalDllPath`.
+     - Evalúa y selecciona la versión y archivo DLL óptimos (`ResolvePackageAsync`, devolviendo `PackageResolutionResult` con soporte de `targetFramework` prioritario).
+     - Localiza DLLs en repositorios y carpetas locales (`NugetFolders`, caché de usuario `~/.nuget/packages`) mediante `ResolveLocalDllPath` (con parámetro opcional `targetFramework`).
      - Descarga e instala paquetes desde servidores remotos (`NugetServers`) mediante `DownloadAndInstallPackageAsync`.
-     - Aplica las prioridades de framework (`FrameworkPriorities`) y valida las políticas de paquetes bloqueados (`BlockedPackagesPolicy`: `Null`, `Error`, `Mayor`).
+     - Aplica las prioridades de framework (`FrameworkPriorities`) y valida las políticas de paquetes bloqueados (`BlockedPackagesPolicy`: `Null`, `Error`, `Mayor`). Si se proporciona un `targetFramework`, se prioriza dicho TFM antes de recurrir a la lista de `FrameworkPriorities`.
 
   3. **`ISymLinkScafolder` (Andamiaje de Enlaces Simbólicos)**:
      - Inspecciona los archivos `.targets` y `.props` de los paquetes NuGet (`build/` y `buildTransitive/`).
@@ -311,7 +311,8 @@ La sección central de configuración es `ModulesSettings`, la cual contiene los
 
 6. **`ForcedPackages` (`List<ForcedPackageItem>`)**:
    - Colección de paquetes NuGet cuya presencia y carga es obligatoria en el entorno.
-   - Cada elemento especifica: `PackageId` (identificador del paquete), `Version` (versión requerida), `Framework` (framework compatible), `Domain` (dominio de carga, por defecto `"Default"`) y `Active` (indicador de activación).
+   - Cada elemento especifica: `PackageId` (identificador del paquete), `Version` (versión requerida), `Framework` (TFM objetivo prioritario, ej. `net8.0`, `net10.0`), `Domain` (dominio de carga, por defecto `"Default"`) y `Active` (indicador de activación).
+   - **Resolución con Prioridad de TFM y Fallback**: Al cargar paquetes forzados (`LoadForcedPackages`), el sistema busca prioritariamente el TFM configurado en `package.Framework`. Si dicho framework no existe en el paquete, se aplica automáticamente como mecanismo de fallback la lista ordenada de `FrameworkPriorities`. Si no se especifica ningún TFM, se utiliza la resolución por defecto basada en el framework del host y `FrameworkPriorities`.
 
 7. **`BlockedPackages` (`List<BlockedPackageItem>`)**:
    - Lista de paquetes o versiones bloqueadas por incompatibilidad o motivos de seguridad.

@@ -439,7 +439,7 @@ public class HAssemblySolver : IHAssemblySolver
     }
 
     /// <inheritdoc/>
-    public string? ResolveAssemblyDllPath(string packageName, string version)
+    public string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework = null)
     {
         var resolvedPackageName = GetPackageName(packageName);
         var cached = _assemblyCache.Get(resolvedPackageName, version);
@@ -448,7 +448,7 @@ public class HAssemblySolver : IHAssemblySolver
             return cached.DllPath;
         }
 
-        var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(resolvedPackageName, version)).GetAwaiter().GetResult();
+        var resolutionResult = Task.Run(() => _packageSolver.ResolvePackageAsync(resolvedPackageName, version, null, targetFramework)).GetAwaiter().GetResult();
         if (resolutionResult.Success)
         {
             var packageRootDirectory = resolutionResult.PackageRootDirectory;
@@ -525,11 +525,11 @@ public class HAssemblySolver : IHAssemblySolver
             }
         }
 
-        var path = _packageSolver.ResolveLocalDllPath(resolvedPackageName, version);
+        var path = _packageSolver.ResolveLocalDllPath(resolvedPackageName, version, targetFramework);
         if (path == null)
         {
-            path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, true)
-                ?? ResolveNugetFromLocalDirectory(resolvedPackageName, version, null, false);
+            path = ResolveNugetFromLocalDirectory(resolvedPackageName, version, targetFramework, true)
+                ?? ResolveNugetFromLocalDirectory(resolvedPackageName, version, targetFramework, false);
         }
 
         if (path != null && !Path.IsPathRooted(path))
@@ -541,11 +541,11 @@ public class HAssemblySolver : IHAssemblySolver
     }
 
     /// <inheritdoc/>
-    public async Task<string?> DownloadNuGetPackageAsync(string packageName, string version)
+    public async Task<string?> DownloadNuGetPackageAsync(string packageName, string version, string? targetFramework = null)
     {
         var resolvedPackageName = GetPackageName(packageName);
         var downloaded = await _packageSolver.DownloadAndInstallPackageAsync(resolvedPackageName, version).ConfigureAwait(false);
-        return ResolveAssemblyDllPath(resolvedPackageName, version);
+        return ResolveAssemblyDllPath(resolvedPackageName, version, targetFramework);
     }
 
     /// <inheritdoc/>
@@ -591,7 +591,6 @@ public class HAssemblySolver : IHAssemblySolver
         if (string.IsNullOrEmpty(version)) return null;
 
         string frameworkSolicitado = framework ?? AssemblyHelpers.GetRequestedFramework();
-        bool exactFramework = !string.IsNullOrEmpty(framework);
 
         foreach (var searchPath in _searchPaths)
         {
@@ -607,7 +606,7 @@ public class HAssemblySolver : IHAssemblySolver
                         NugetHelpers.GetNugetPackageVersionInformation(_logger, directorioPaquete.First());
                     var versionSeleccionada =
                         NugetHelpers.SelectedVersion(_settings.FrameworkPriorities, version, frameworkSolicitado,
-                            versionList, true, exactFramework);
+                            versionList, true, exactFramework: false);
 
                     if (versionSeleccionada != null) return versionSeleccionada.DllPath;
                 }
@@ -617,7 +616,7 @@ public class HAssemblySolver : IHAssemblySolver
                 var versionList = NugetHelpers.GetNugetPackageVersionInformation(_logger, directorioPaquete.First());
                 var versionSeleccionada =
                     NugetHelpers.SelectedVersion(_settings.FrameworkPriorities, version, frameworkSolicitado,
-                        versionList, false, exactFramework);
+                        versionList, false, exactFramework: false);
 
                 if (versionSeleccionada != null) return versionSeleccionada.DllPath;
             }

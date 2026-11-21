@@ -269,7 +269,8 @@ public class PackageSolver : IPackageSolver
     public async Task<PackageResolutionResult> ResolvePackageAsync(
         string packageOrAssemblyName,
         string? requestedVersion = null,
-        string? domainName = null)
+        string? domainName = null,
+        string? targetFramework = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageOrAssemblyName);
 
@@ -353,10 +354,10 @@ public class PackageSolver : IPackageSolver
             // Si tenemos versión candidata no bloqueada y no se requiere fallback remoto explícito, intentar resolver paquete localmente
             if (!requiresRemoteFallback && !string.IsNullOrEmpty(targetVersionStr))
             {
-                _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia local para '{PackageId}' v'{Version}'...",
-                    packageId, targetVersionStr);
+                _logger.LogDebug("[PKGSOLVER-LOCAL-CHECK] Comprobando existencia local para '{PackageId}' v'{Version}' (TFM prioritario: {Tfm})...",
+                    packageId, targetVersionStr, targetFramework ?? "none");
 
-                var localInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
+                var localInfo = ResolveLocalPackageInfo(packageId, targetVersionStr, targetFramework);
                 if (localInfo != null)
                 {
                     bool hasManagedDll = !string.IsNullOrEmpty(localInfo.DllPath) && File.Exists(localInfo.DllPath);
@@ -462,7 +463,7 @@ public class PackageSolver : IPackageSolver
         NugetPackageVersionInformation? postLocalInfo = null;
         if (!string.IsNullOrEmpty(targetVersionStr))
         {
-            postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
+            postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr, targetFramework);
         }
 
         if (postLocalInfo == null && !string.IsNullOrEmpty(targetVersionStr))
@@ -474,7 +475,7 @@ public class PackageSolver : IPackageSolver
             if (downloaded != null)
             {
                 _logger.LogDebug("[PKGSOLVER-POST-DOWNLOAD-RESOLVE] Localizando recursos tras descarga e instalación en '{DownloadedDir}'...", downloaded);
-                postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr);
+                postLocalInfo = ResolveLocalPackageInfo(packageId, targetVersionStr, targetFramework);
             }
         }
 
@@ -515,12 +516,14 @@ public class PackageSolver : IPackageSolver
         };
     }
 
-    private NugetPackageVersionInformation? ResolveLocalPackageInfo(string packageName, string version)
+    private NugetPackageVersionInformation? ResolveLocalPackageInfo(string packageName, string? version, string? targetFramework = null)
     {
         if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(version))
             return null;
 
-        var frameworkSolicitado = AssemblyHelpers.GetRequestedFramework();
+        var frameworkSolicitado = !string.IsNullOrWhiteSpace(targetFramework)
+            ? targetFramework
+            : AssemblyHelpers.GetRequestedFramework();
 
         foreach (var searchPath in _searchPaths)
         {
@@ -578,9 +581,9 @@ public class PackageSolver : IPackageSolver
     }
 
     /// <inheritdoc/>
-    public string? ResolveLocalDllPath(string packageName, string version)
+    public string? ResolveLocalDllPath(string packageName, string? version, string? targetFramework = null)
     {
-        var info = ResolveLocalPackageInfo(packageName, version);
+        var info = ResolveLocalPackageInfo(packageName, version, targetFramework);
         if (info != null && !string.IsNullOrEmpty(info.DllPath) && File.Exists(info.DllPath))
         {
             return info.DllPath;

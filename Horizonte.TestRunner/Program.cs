@@ -106,6 +106,12 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunForcedPackageScaffoldingTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== TEST DE PRIORIDAD DE TFM Y FALLBACK EN PAQUETES FORZADOS ===");
+        Console.WriteLine("================================================================================");
+
+        await RunForcedPackageTfmPriorityTestsAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)
@@ -961,6 +967,105 @@ public class Program
         finally
         {
             scafolder?.CleanScafolder();
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch { }
+            }
+        }
+    }
+
+    private static async Task RunForcedPackageTfmPriorityTestsAsync()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "horizonte_forced_tfm_tests_" + Guid.NewGuid().ToString("N"));
+        var pkgRoot = Path.Combine(tempDir, "packages", "mytfmmultitargetpackage", "2.0.0");
+        var net8Lib = Path.Combine(pkgRoot, "lib", "net8.0");
+        var net10Lib = Path.Combine(pkgRoot, "lib", "net10.0");
+
+        Directory.CreateDirectory(net8Lib);
+        Directory.CreateDirectory(net10Lib);
+
+        var net8DllPath = Path.Combine(net8Lib, "MyTfmMultiTargetPackage.dll");
+        var net10DllPath = Path.Combine(net10Lib, "MyTfmMultiTargetPackage.dll");
+
+        await File.WriteAllTextAsync(net8DllPath, "fake dll content net8.0");
+        await File.WriteAllTextAsync(net10DllPath, "fake dll content net10.0");
+
+        var settings = new ModulesSettings
+        {
+            NugetFolders = new List<NugetFolderItem>
+            {
+                new NugetFolderItem
+                {
+                    Folder = Path.Combine(tempDir, "packages"),
+                    Name = "TestTfmLocal",
+                    InstallFolder = true,
+                    Active = true,
+                    Order = 0
+                }
+            },
+            NugetServers = new List<NugetServerItem>(),
+            FrameworkPriorities = new List<string> { "net10.0", "netstandard2.1", "net8.0" }
+        };
+
+        var cache = new HAssemblyCache();
+        var packageSolver = new PackageSolver(cache, settings, NullLogger<PackageSolver>.Instance);
+        var scafolder = new SymLinkScafolder(NullLogger<PanelModulo>.Instance);
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IHAssemblyCache>(cache);
+        services.AddSingleton<IPackageSolver>(packageSolver);
+        services.AddSingleton<ISymLinkScafolder>(scafolder);
+
+        var sp = services.BuildServiceProvider();
+        var assemblySolver = new HAssemblySolver(cache, packageSolver, sp, scafolder, NullLogger<HAssemblySolver>.Instance);
+
+        try
+        {
+            // Test 1: Prioridad explícita TFM "net8.0" cuando FrameworkPriorities tiene "net10.0" al inicio
+            Console.WriteLine("\n[TEST TFM 1] Resolviendo paquete con targetFramework 'net8.0'...");
+            var resolvedNet8 = assemblySolver.ResolveAssemblyDllPath("MyTfmMultiTargetPackage", "2.0.0", "net8.0");
+            Console.WriteLine($"  -> DLL resuelta: '{resolvedNet8}'");
+
+            if (!string.IsNullOrEmpty(resolvedNet8) && resolvedNet8.Contains(Path.Combine("lib", "net8.0")))
+            {
+                Console.WriteLine("  ✓ [OK] Se priorizó correctamente el TFM especificado 'net8.0' sobre 'net10.0'.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Se esperaba la DLL de 'net8.0' pero se obtuvo: '{resolvedNet8}'");
+            }
+
+            // Test 2: Fallback automático ante TFM inexistente "net9.0" -> debe resolver "net10.0" por FrameworkPriorities
+            Console.WriteLine("\n[TEST TFM 2] Resolviendo paquete con targetFramework inexistente 'net9.0' (esperando fallback a 'net10.0')...");
+            var resolvedFallback = assemblySolver.ResolveAssemblyDllPath("MyTfmMultiTargetPackage", "2.0.0", "net9.0");
+            Console.WriteLine($"  -> DLL resuelta: '{resolvedFallback}'");
+
+            if (!string.IsNullOrEmpty(resolvedFallback) && resolvedFallback.Contains(Path.Combine("lib", "net10.0")))
+            {
+                Console.WriteLine("  ✓ [OK] Fallback automático ejecutado correctamente a 'net10.0' según FrameworkPriorities.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Se esperaba fallback a 'net10.0' pero se obtuvo: '{resolvedFallback}'");
+            }
+
+            // Test 3: Sin targetFramework especificado (null) -> debe resolver "net10.0" según comportamiento por defecto
+            Console.WriteLine("\n[TEST TFM 3] Resolviendo paquete sin targetFramework (null) (esperando 'net10.0' por defecto)...");
+            var resolvedDefault = assemblySolver.ResolveAssemblyDllPath("MyTfmMultiTargetPackage", "2.0.0");
+            Console.WriteLine($"  -> DLL resuelta: '{resolvedDefault}'");
+
+            if (!string.IsNullOrEmpty(resolvedDefault) && resolvedDefault.Contains(Path.Combine("lib", "net10.0")))
+            {
+                Console.WriteLine("  ✓ [OK] Resolución por defecto ejecutada correctamente.");
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ [FAIL] Se esperaba 'net10.0' pero se obtuvo: '{resolvedDefault}'");
+            }
+        }
+        finally
+        {
             if (Directory.Exists(tempDir))
             {
                 try { Directory.Delete(tempDir, recursive: true); } catch { }

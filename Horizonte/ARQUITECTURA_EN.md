@@ -108,7 +108,7 @@ The core of the modular system is organized around a central orchestrator (`IEnv
   - Resolve assemblies requested by specific context load events (`ResolveAssemblyFromALC`) and global events (`ResolveAssemblyFromNuGetPackages`).
   - Resolve and load native / unmanaged libraries (.so, .dll, .dylib) requested in P/Invoke calls (`ResolveUnmanagedDll`) by probing compatible RIDs in `./runtimes/{rid}/native/`, `AppContext.BaseDirectory`, and package folders.
   - Register and store handles of manually preloaded native libraries per domain (`RegisterUnmanagedDll`).
-  - Locate physical library paths on disk (`ResolveAssemblyDllPath`) and download packages from remote feeds (`DownloadNuGetPackageAsync`).
+  - Locate physical library paths on disk (`ResolveAssemblyDllPath`, optionally accepting priority `targetFramework`) and download packages from remote feeds (`DownloadNuGetPackageAsync`).
   - Maintain bidirectional mapping between assembly names and NuGet package IDs (`GetPackageName`, using `AssemblyToPackageMap`).
   - Store and query in-memory assembly bytes (`CacheAssembly`, `GetCachedAssembly`, `IsAssemblyCached`).
   - Manage web static asset catalog per domain (`StaticFileRegistry`) for web middleware.
@@ -123,10 +123,10 @@ The core of the modular system is organized around a central orchestrator (`IEnv
      - Allows global invalidation (`Clear()`) or domain-specific invalidation (`Clear(domainName)`).
 
   2. **`IPackageSolver` (NuGet Package Evaluator and Selector)**:
-     - Evaluates and selects optimal version and DLL file (`ResolvePackageAsync`, returning `PackageResolutionResult`).
-     - Locates DLLs in local folders and repositories (`NugetFolders`, user cache `~/.nuget/packages`) via `ResolveLocalDllPath`.
+     - Evaluates and selects optimal version and DLL file (`ResolvePackageAsync`, returning `PackageResolutionResult` with support for optional priority `targetFramework`).
+     - Locates DLLs in local folders and repositories (`NugetFolders`, user cache `~/.nuget/packages`) via `ResolveLocalDllPath` (with optional `targetFramework`).
      - Downloads and installs packages from remote servers (`NugetServers`) via `DownloadAndInstallPackageAsync`.
-     - Applies framework priorities (`FrameworkPriorities`) and validates blocked package policies (`BlockedPackagesPolicy`: `Null`, `Error`, `Mayor`).
+     - Applies framework priorities (`FrameworkPriorities`) and validates blocked package policies (`BlockedPackagesPolicy`: `Null`, `Error`, `Mayor`). If a `targetFramework` is provided, it prioritizes that TFM before falling back to `FrameworkPriorities`.
 
   3. **`ISymLinkScafolder` (Symbolic Link Scaffolder)**:
      - Inspects `.targets` and `.props` files from NuGet packages (`build/` and `buildTransitive/`).
@@ -311,7 +311,8 @@ The core configuration section is `ModulesSettings`, containing the following el
 
 6. **`ForcedPackages` (`List<ForcedPackageItem>`)**:
    - Collection of NuGet packages whose presence and loading is mandatory in the environment.
-   - Each item specifies: `PackageId` (package identifier), `Version` (required version), `Framework` (compatible framework), `Domain` (load domain, defaults to `"Default"`), and `Active` (activation flag).
+   - Each item specifies: `PackageId` (package identifier), `Version` (required version), `Framework` (priority target framework, e.g. `net8.0`, `net10.0`), `Domain` (load domain, defaults to `"Default"`), and `Active` (activation flag).
+   - **TFM Priority and Fallback Resolution**: When loading forced packages (`LoadForcedPackages`), the system prioritizes resolving the TFM specified in `package.Framework`. If that framework is not available within the package, it automatically applies `FrameworkPriorities` as a fallback mechanism. If no TFM is specified, default host TFM and `FrameworkPriorities` resolution is applied.
 
 7. **`BlockedPackages` (`List<BlockedPackageItem>`)**:
    - List of packages or versions blocked due to incompatibility or security reasons.

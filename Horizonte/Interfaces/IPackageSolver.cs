@@ -13,16 +13,18 @@ public interface IPackageSolver
     /// <param name="packageOrAssemblyName">Nombre del paquete o del ensamblado a resolver.</param>
     /// <param name="requestedVersion">Versión solicitada explícitamente, o <see langword="null"/> para resolver la más adecuada.</param>
     /// <param name="domainName">Nombre opcional del dominio en el que se ejecuta la resolución.</param>
+    /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
     /// <returns>Una tarea que devuelve el resultado de la resolución de paquete (<see cref="PackageResolutionResult"/>).</returns>
-    Task<PackageResolutionResult> ResolvePackageAsync(string packageOrAssemblyName, string? requestedVersion = null, string? domainName = null);
+    Task<PackageResolutionResult> ResolvePackageAsync(string packageOrAssemblyName, string? requestedVersion = null, string? domainName = null, string? targetFramework = null);
 
     /// <summary>
     /// Resuelve la ruta local hacia la DLL correspondiente a un paquete y versión determinados.
     /// </summary>
     /// <param name="packageName">Identificador del paquete.</param>
     /// <param name="version">Versión del paquete.</param>
+    /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
     /// <returns>La ruta absoluta a la DLL o <see langword="null"/> si no se encuentra en las carpetas locales.</returns>
-    string? ResolveLocalDllPath(string packageName, string version);
+    string? ResolveLocalDllPath(string packageName, string? version, string? targetFramework = null);
 
     /// <summary>
     /// Descarga e instala asíncronamente un paquete NuGet con la versión especificada.
