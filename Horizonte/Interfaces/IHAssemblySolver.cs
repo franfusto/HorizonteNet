@@ -36,13 +36,31 @@ public interface IHAssemblySolver
     Assembly? ResolveAssemblyFromNuGetPackages(object? sender, ResolveEventArgs args);
 
     /// <summary>
-    /// Resuelve la ruta local al archivo DLL de un paquete NuGet y versión determinados.
+    /// Resuelve la ruta local al archivo DLL de un paquete NuGet y versión determinados utilizando el dominio por defecto.
+    /// </summary>
+    /// <param name="packageName">Identificador del paquete NuGet.</param>
+    /// <param name="version">Versión del paquete.</param>
+    /// <returns>La ruta absoluta a la DLL o <see langword="null"/> si no se encuentra.</returns>
+    string? ResolveAssemblyDllPath(string packageName, string version);
+
+    /// <summary>
+    /// Resuelve la ruta local al archivo DLL de un paquete NuGet y versión determinados especificando un Target Framework prioritario.
     /// </summary>
     /// <param name="packageName">Identificador del paquete NuGet.</param>
     /// <param name="version">Versión del paquete.</param>
     /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
     /// <returns>La ruta absoluta a la DLL o <see langword="null"/> si no se encuentra.</returns>
-    string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework = null);
+    string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework);
+
+    /// <summary>
+    /// Resuelve la ruta local al archivo DLL de un paquete NuGet y versión determinados especificando el Target Framework y el dominio que solicita la resolución.
+    /// </summary>
+    /// <param name="packageName">Identificador del paquete NuGet.</param>
+    /// <param name="version">Versión del paquete.</param>
+    /// <param name="targetFramework">Target Framework Moniker (TFM) prioritario opcional.</param>
+    /// <param name="domain">Nombre del dominio que solicita la resolución.</param>
+    /// <returns>La ruta absoluta a la DLL o <see langword="null"/> si no se encuentra.</returns>
+    string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework, string domain);
 
     /// <summary>
     /// Descarga e instala asíncronamente un paquete NuGet con la versión solicitada.

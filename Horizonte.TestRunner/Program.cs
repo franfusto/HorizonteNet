@@ -25,6 +25,15 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        if (args.Length > 0 && (args.Contains("--matrix") || args.Contains("-m")))
+        {
+            Console.WriteLine("================================================================================");
+            Console.WriteLine("=== MATRIZ EXHAUSTIVA DE RESOLUCION DE PAQUETES Y RECURSOS (15 CASOS) ===");
+            Console.WriteLine("================================================================================");
+            var success = await PackageResolutionMatrixTests.RunAll15CasesMatrixAsync();
+            Environment.Exit(success ? 0 : 1);
+            return;
+        }
         Console.WriteLine("================================================================================");
         Console.WriteLine("=== REPRODUCTOR Y DIAGNOSTICO DE RESOLUCION (Microsoft.CodeAnalysis.CSharp.Scripting) ===");
         Console.WriteLine("================================================================================");
@@ -118,6 +127,12 @@ public class Program
         Console.WriteLine("================================================================================");
 
         await RunAssemblyToPackageMappingCodeTestsAsync();
+
+        Console.WriteLine("\n================================================================================");
+        Console.WriteLine("=== MATRIZ EXHAUSTIVA DE RESOLUCION DE PAQUETES Y RECURSOS (15 CASOS) ===");
+        Console.WriteLine("================================================================================");
+
+        await PackageResolutionMatrixTests.RunAll15CasesMatrixAsync();
     }
 
     private static async Task RunPackageSolverDiagnosticAsync(string packageId, string versionStr)

@@ -687,14 +687,15 @@ public class EnvCoordinator : IEnvCoordinator
                     continue;
                 }
 
+                var targetDomain = string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain;
                 _logger.LogInformation(
                     "Loading forced package: {PackageId} version {Version} framework {Framework} target domain {DomainName}",
                     package.PackageId,
                     package.Version,
                     package.Framework,
-                    string.IsNullOrWhiteSpace(package.Domain) ? Const.DefaultDomainName : package.Domain);
+                    targetDomain);
 
-                var dllPath = _assemblySolver.ResolveAssemblyDllPath(package.PackageId, package.Version, package.Framework);
+                var dllPath = _assemblySolver.ResolveAssemblyDllPath(package.PackageId, package.Version, package.Framework, targetDomain);
 
                 if (dllPath == null)
                 {

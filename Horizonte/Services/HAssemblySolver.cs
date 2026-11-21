@@ -328,13 +328,14 @@ public class HAssemblySolver : IHAssemblySolver
             {
                 try
                 {
-                    var runtimeSymLinks = GetRuntimeMappingsFromPackage(packageRootDirectory);
+                    var runtimeSymLinks = GetRuntimeMappingsFromPackage(packageRootDirectory, requesterDomain);
                     if (runtimeSymLinks.Any())
                     {
                         _logger.LogInformation(
-                            "[RESOLVER-RUNTIME-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de runtime para '{PackageRoot}'...",
+                            "[RESOLVER-RUNTIME-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de runtime para '{PackageRoot}' en dominio '{DomainName}'...",
                             runtimeSymLinks.Count,
-                            packageRootDirectory);
+                            packageRootDirectory,
+                            requesterDomain);
                         _linkScafolder.BuildScafolder(runtimeSymLinks);
                     }
                 }
@@ -443,7 +444,19 @@ public class HAssemblySolver : IHAssemblySolver
     }
 
     /// <inheritdoc/>
-    public string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework = null)
+    public string? ResolveAssemblyDllPath(string packageName, string version)
+    {
+        return ResolveAssemblyDllPath(packageName, version, null, Const.DefaultDomainName);
+    }
+
+    /// <inheritdoc/>
+    public string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework)
+    {
+        return ResolveAssemblyDllPath(packageName, version, targetFramework, Const.DefaultDomainName);
+    }
+
+    /// <inheritdoc/>
+    public string? ResolveAssemblyDllPath(string packageName, string version, string? targetFramework, string domain)
     {
         var resolvedPackageName = GetPackageName(packageName);
         var cached = _assemblyCache.Get(resolvedPackageName, version);
@@ -470,13 +483,14 @@ public class HAssemblySolver : IHAssemblySolver
                 {
                     try
                     {
-                        var runtimeSymLinks = GetRuntimeMappingsFromPackage(packageRootDirectory);
+                        var runtimeSymLinks = GetRuntimeMappingsFromPackage(packageRootDirectory, domain);
                         if (runtimeSymLinks.Any())
                         {
                             _logger.LogInformation(
-                                "[RESOLVER-RUNTIME-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de runtime para '{PackageRoot}' en carga forzada...",
+                                "[RESOLVER-RUNTIME-SYMLINKS] Procesando {Count} enlace(s) simbólico(s) de runtime para '{PackageRoot}' en dominio '{DomainName}' (carga forzada)...",
                                 runtimeSymLinks.Count,
-                                packageRootDirectory);
+                                packageRootDirectory,
+                                domain);
                             _linkScafolder.BuildScafolder(runtimeSymLinks);
                         }
                     }
@@ -513,7 +527,7 @@ public class HAssemblySolver : IHAssemblySolver
                     PackageVersion = version,
                     AssemblyName = resolvedPackageName,
                     Version = version ?? string.Empty,
-                    DomainName = Const.DefaultDomainName,
+                    DomainName = domain,
                     IsResolved = true,
                     Found = true,
                     IsRuntimePackage = true,
@@ -871,7 +885,7 @@ public class HAssemblySolver : IHAssemblySolver
         return versions.Distinct().ToList();
     }
 
-    private List<SymLinkDef> GetRuntimeMappingsFromPackage(string packageVersionDir, string? rid = null)
+    private List<SymLinkDef> GetRuntimeMappingsFromPackage(string packageVersionDir, string domainName = Const.DefaultDomainName, string? rid = null)
     {
         var mappings = new List<SymLinkDef>();
 
@@ -884,6 +898,7 @@ public class HAssemblySolver : IHAssemblySolver
             if (!Directory.Exists(runtimesDir))
                 return mappings;
 
+            var effectiveDomain = string.IsNullOrWhiteSpace(domainName) ? Const.DefaultDomainName : domainName;
             var effectiveRid = NugetHelpers.GetEffectiveRuntimeIdentifier();
             var compatibleRids = NugetHelpers.GetCompatibleRuntimeIdentifiers(rid ?? effectiveRid);
 
@@ -898,7 +913,7 @@ public class HAssemblySolver : IHAssemblySolver
                         foreach (var file in files)
                         {
                             var relativeSubPath = Path.GetRelativePath(nativeDir, file);
-                            var destinationPath = Path.Combine("runtimes", cRid, "native", relativeSubPath);
+                            var destinationPath = Path.Combine("runtimes", effectiveDomain, cRid, "native", relativeSubPath);
 
                             mappings.Add(new SymLinkDef
                             {
@@ -907,6 +922,18 @@ public class HAssemblySolver : IHAssemblySolver
                                 IsDirecory = false,
                                 HardCoded = false
                             });
+
+                            if (string.Equals(effectiveDomain, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var legacyDestinationPath = Path.Combine("runtimes", cRid, "native", relativeSubPath);
+                                mappings.Add(new SymLinkDef
+                                {
+                                    Source = Path.GetFullPath(file),
+                                    Destination = legacyDestinationPath,
+                                    IsDirecory = false,
+                                    HardCoded = false
+                                });
+                            }
                         }
 
                         return mappings;
@@ -922,7 +949,7 @@ public class HAssemblySolver : IHAssemblySolver
                         foreach (var file in files)
                         {
                             var fileName = Path.GetFileName(file);
-                            var destinationPath = Path.Combine("runtimes", cRid, "native", fileName);
+                            var destinationPath = Path.Combine("runtimes", effectiveDomain, cRid, "native", fileName);
 
                             mappings.Add(new SymLinkDef
                             {
@@ -931,6 +958,18 @@ public class HAssemblySolver : IHAssemblySolver
                                 IsDirecory = false,
                                 HardCoded = false
                             });
+
+                            if (string.Equals(effectiveDomain, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var legacyDestinationPath = Path.Combine("runtimes", cRid, "native", fileName);
+                                mappings.Add(new SymLinkDef
+                                {
+                                    Source = Path.GetFullPath(file),
+                                    Destination = legacyDestinationPath,
+                                    IsDirecory = false,
+                                    HardCoded = false
+                                });
+                            }
                         }
 
                         return mappings;
@@ -1468,6 +1507,7 @@ public class HAssemblySolver : IHAssemblySolver
                     "[RESOLVER-NATIVE-LOAD] Biblioteca nativa cargada directamente desde ruta '{Path}' para contexto '{ContextName}'",
                     fullPath,
                     contextName);
+                _registeredUnmanagedLibraries[$"{contextName}::{unmanagedDllName}"] = directHandle;
                 return directHandle;
             }
         }
@@ -1485,9 +1525,72 @@ public class HAssemblySolver : IHAssemblySolver
         {
             foreach (var candidateName in candidateNames)
             {
+                // 1. Probar en rutas aisladas del dominio específico:
+                //    root/runtimes/{contextName}/{cRid}/native/{candidateName}
+                //    root/runtimes/{contextName}/{cRid}/{candidateName}
                 foreach (var root in searchRoots)
                 {
-                    // 1. Probar en root/runtimes/{cRid}/native/{candidateName}
+                    var domainNativePath = Path.Combine(root, "runtimes", contextName, cRid, "native", candidateName);
+                    if (File.Exists(domainNativePath))
+                    {
+                        var fullCandidatePath = Path.GetFullPath(domainNativePath);
+                        if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                        {
+                            _logger.LogInformation(
+                                "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde ruta de dominio '{CandidatePath}' para contexto '{ContextName}'",
+                                unmanagedDllName,
+                                fullCandidatePath,
+                                contextName);
+                            _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
+                            return handle;
+                        }
+                    }
+
+                    var domainRidPath = Path.Combine(root, "runtimes", contextName, cRid, candidateName);
+                    if (File.Exists(domainRidPath))
+                    {
+                        var fullCandidatePath = Path.GetFullPath(domainRidPath);
+                        if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                        {
+                            _logger.LogInformation(
+                                "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde ruta de dominio '{CandidatePath}' para contexto '{ContextName}'",
+                                unmanagedDllName,
+                                fullCandidatePath,
+                                contextName);
+                            _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
+                            return handle;
+                        }
+                    }
+                }
+
+                // 2. Fallback: Probar en rutas del dominio Default o rutas compartidas:
+                //    root/runtimes/Default/{cRid}/native/{candidateName}
+                //    root/runtimes/{cRid}/native/{candidateName}
+                //    root/runtimes/{cRid}/{candidateName}
+                if (!string.Equals(contextName, Const.DefaultDomainName, StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (var root in searchRoots)
+                    {
+                        var defaultNativePath = Path.Combine(root, "runtimes", Const.DefaultDomainName, cRid, "native", candidateName);
+                        if (File.Exists(defaultNativePath))
+                        {
+                            var fullCandidatePath = Path.GetFullPath(defaultNativePath);
+                            if (NativeLibrary.TryLoad(fullCandidatePath, out var handle))
+                            {
+                                _logger.LogInformation(
+                                    "[RESOLVER-NATIVE-LOAD] Biblioteca nativa '{UnmanagedDllName}' cargada exitosamente desde fallback Default '{CandidatePath}' para contexto '{ContextName}'",
+                                    unmanagedDllName,
+                                    fullCandidatePath,
+                                    contextName);
+                                _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
+                                return handle;
+                            }
+                        }
+                    }
+                }
+
+                foreach (var root in searchRoots)
+                {
                     var candidatePath = Path.Combine(root, "runtimes", cRid, "native", candidateName);
                     if (File.Exists(candidatePath))
                     {
@@ -1499,11 +1602,11 @@ public class HAssemblySolver : IHAssemblySolver
                                 unmanagedDllName,
                                 fullCandidatePath,
                                 contextName);
+                            _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
                             return handle;
                         }
                     }
 
-                    // 2. Probar en root/runtimes/{cRid}/{candidateName}
                     candidatePath = Path.Combine(root, "runtimes", cRid, candidateName);
                     if (File.Exists(candidatePath))
                     {
@@ -1515,6 +1618,7 @@ public class HAssemblySolver : IHAssemblySolver
                                 unmanagedDllName,
                                 fullCandidatePath,
                                 contextName);
+                            _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
                             return handle;
                         }
                     }
@@ -1537,6 +1641,7 @@ public class HAssemblySolver : IHAssemblySolver
                                 unmanagedDllName,
                                 fullCandidatePath,
                                 contextName);
+                            _registeredUnmanagedLibraries[$"{contextName}::{candidateName}"] = handle;
                             return handle;
                         }
                     }

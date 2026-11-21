@@ -431,11 +431,10 @@ El comportamiento del sistema ante la solicitud de distintas versiones de un mis
 - Si `DominioA` solicita `PaqueteWeb 1.0.0` y `DominioB` solicita `PaqueteWeb 2.0.0`, ambos activos coexisten en memoria de forma aislada.
 - El middleware `HorizonteStaticFileMiddleware` resuelve el archivo correspondiente en función del dominio de la petición sin colisiones en disco.
 
-##### B. Enlaces Simbólicos y Recursos Nativos (`ISymLinkScafolder`)
-`ISymLinkScafolder` procesa archivos `.targets` y `.props` para crear enlaces simbólicos en el directorio de trabajo del proceso.
-- Si `DominioA` carga `PaqueteNativo 1.0.0`, se crean los enlaces simbólicos en el directorio de trabajo.
-- Si `DominioB` carga posteriormente `PaqueteNativo 2.0.0`, el andamiaje detecta que los archivos de destino ya existen y **no sobrescribe los enlaces existentes**, emitiendo una advertencia.
-- **Regla Arquitectónica**: Los paquetes que dependan de binarios nativos o archivos `.targets` deben unificarse en el dominio `"Default"` o registrarse en `ForcedPackages` para garantizar una versión única y consistente a nivel de proceso.
+##### B. Enlaces Simbólicos y Recursos Nativos (`ISymLinkScafolder` y Runtimes por Dominio)
+`ISymLinkScafolder` procesa los activos nativos de paquetes (`runtimes/{rid}/native/`) y los archivos `.targets` / `.props` creando enlaces simbólicos en el directorio de trabajo:
+- **Recursos Nativos Aislados por Dominio**: Los binarios nativos no administrados se andamian bajo rutas aisladas por dominio: `./runtimes/{domainName}/{rid}/native/{subPath}` (manteniendo enlaces adicionales en `./runtimes/{rid}/native/` para el dominio `"Default"` por compatibilidad). Esto permite que `DominioA` disponga de `./runtimes/DominioA/{rid}/native/libbar.so` (v1.0.0) y `DominioB` disponga de `./runtimes/DominioB/{rid}/native/libbar.so` (v2.0.0) simultáneamente en disco sin colisiones.
+- **Archivos `.targets`, `.props` y Bitcode de Proceso**: Los artefactos derivados de directivas MSBuild que se copian a la raíz de ejecución mantienen la política de preservación: si un destino ya existe, no se sobrescribe y emite advertencia.
 
 ---
 
@@ -525,18 +524,25 @@ El subsistema `IPackageSolver` incorpora mecanismos de control para garantizar e
 Cuando un ensamblado administrado invoca código nativo no administrado vía P/Invoke (por ejemplo, `OpenCvSharp`, `SkiaSharp`, `TensorFlow`), el CLR dispara el evento `AssemblyLoadContext.ResolvingUnmanagedDll`.
 
 - **Manejador Centralizado**: `HDomainManager` conecta el evento `ResolvingUnmanagedDll` en `AssemblyLoadContext.Default` y en todos los contextos ALC creados dinámicamente, delegando la resolución en `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
-- **Estrategia de Sondeo Multiplataforma**:
-  1. **Registro Explícito / Precarga**: Verificación inicial de librerías nativas registradas previamente mediante `IEnvCoordinator.LoadUnmanagedDll` o `IHAssemblySolver.RegisterUnmanagedDll` en el dominio actual o en el dominio `"Default"`.
-  2. **Generación de Nombres Candidatos**:
+- **Estrategia de Sondeo y Jerarquía de Búsqueda por Dominio**:
+  1. **Registro Explícito / Precarga**:
+     - Verificación inicial de librerías registradas explícitamente en el contexto del dominio (`{domainName}::{candidateName}`).
+     - Fallback a registros explícitos globales en el dominio `"Default"` (`Default::{candidateName}`).
+  2. **Ruta Directa Existente**: Carga inmediata si `unmanagedDllName` corresponde a un archivo existente en disco.
+  3. **Generación de Nombres Candidatos**:
      - **Linux / Unix**: `lib{Nombre}.so`, `{Nombre}.so`, `lib{Nombre}`, `{Nombre}`.
      - **Windows**: `{Nombre}.dll`, `{Nombre}`.
      - **macOS**: `lib{Nombre}.dylib`, `{Nombre}.dylib`, `lib{Nombre}`, `{Nombre}`.
-  3. **RIDs Compatibles**: Detección de la jerarquía de Runtime Identifiers mediante `NugetHelpers.GetCompatibleRuntimeIdentifiers` (ej. `linux-x64` -> `linux` -> `unix` -> `any`).
-  4. **Rutas Inspeccionadas Secuencialmente**:
-     - `./runtimes/{cRid}/native/{candidateName}` (directorio de trabajo del proceso / scaffolding).
-     - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
-     - Directorios de paquetes locales registrados en `NugetFolders`.
-  5. **Carga Segura en Memoria**: Carga del binario nativo mediante `NativeLibrary.TryLoad` devolviendo el puntero `IntPtr` del manejador al CLR, permitiendo la resolución de dependencias transitivas en el mismo directorio.
+  4. **RIDs Compatibles**: Detección de la jerarquía de Runtime Identifiers mediante `NugetHelpers.GetCompatibleRuntimeIdentifiers` (ej. `linux-x64` -> `linux` -> `unix` -> `any`).
+  5. **Sondeo en Rutas de Disco Aisladas por Dominio**:
+     - `./runtimes/{domainName}/{cRid}/native/{candidateName}` y `<AppContext.BaseDirectory>/runtimes/{domainName}/{cRid}/native/{candidateName}`.
+     - `./runtimes/{domainName}/{cRid}/{candidateName}`.
+  6. **Fallback a Dominio Default y Rutas Compartidas**:
+     - `./runtimes/Default/{cRid}/native/{candidateName}`.
+     - `./runtimes/{cRid}/native/{candidateName}` y `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
+     - `./runtimes/{cRid}/{candidateName}`.
+  7. **Fallback a Directorios de Paquetes**: Búsqueda en `./runtimes/{cRid}/native/{candidateName}` dentro de cada carpeta configurada en `NugetFolders`.
+  8. **Carga Segura y Registro en Caché**: Carga del binario nativo mediante `NativeLibrary.TryLoad` devolviendo el puntero `IntPtr` del manejador al CLR, y registro automático en la caché interna de librerías nativas bajo `{domainName}::{candidateName}`.
 
 ##### Precarga Explícita de Binarios Nativos (`LoadUnmanagedDll`)
 Para paquetes o distribuciones personalizadas que no utilicen la convención de empaquetado `/runtimes/{rid}/native/`, `IEnvCoordinator` expone el método programable:
@@ -544,3 +550,65 @@ Para paquetes o distribuciones personalizadas que no utilicen la convención de 
 IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath);
 ```
 Este método valida la ruta física del archivo binario (`.so`, `.dll`, `.dylib`), lo carga en memoria mediante `NativeLibrary.TryLoad` y registra el mapeo del alias en `IHAssemblySolver` para el dominio indicado (o en `Default` si no se especifica dominio), garantizando que subsiguientes llamadas P/Invoke en dicho dominio resuelvan el handle inmediatamente.
+
+---
+
+### Apéndice: Matriz Exhaustiva de Resolución de Paquetes y Recursos Multi-Versión
+
+Este apéndice documenta formalmente el comportamiento de resolución, aislamiento e interacción de recursos en HorizonteNet cuando coexisten diferentes versiones de paquetes NuGet administrados, nativos, web y con andamiaje de `.targets`.
+
+#### 1. Dimensiones y Capas de Aislamiento del Sistema
+
+El comportamiento ante cargas multiversión se rige por cuatro niveles ortogonales:
+
+1. **Código Administrado (.NET `AssemblyLoadContext`)**:
+   - Cada ALC es inmutable respecto a los nombres simples de ensamblado ya cargados.
+   - `Default` es el contexto raíz del proceso (no coleccionable).
+   - Los dominios secundarios (`DominioX`, `DominioY`) son ALCs coleccionables independientes.
+   - Dos versiones del mismo ensamblado (`foo 1.0.0` y `foo 2.0.0`) pueden coexistir en memoria si residen en dominios (ALCs) distintos, pero no dentro del mismo ALC.
+
+2. **Activos Web Estáticos (`StaticFileRegistry`)**:
+   - Indexación lógica en memoria mediante la clave compuesta `dominio#ruta_relativa` (ej. `DominioX#/_content/bar/bar.css`).
+   - Permite la coexistencia simultánea de distintas versiones de assets estáticos web (CSS, JS, imágenes) en dominios diferentes sin colisiones en disco ni sobrescrituras.
+
+3. **Librerías Nativas y P/Invoke (`NativeLibrary.TryLoad` y `ResolvingUnmanagedDll`)**:
+   - Los binarios nativos se andamian y resuelven bajo rutas aisladas por dominio (`runtimes/{domainName}/{rid}/native/`).
+   - Al resolverse una llamada P/Invoke dentro de un ALC (`DominioX`), el motor busca prioritariamente en el subdirectorio de runtime de dicho dominio.
+   - Si `DominioX` carga `bar 1.0.0` y `DominioY` carga `bar 2.0.0`, ambos dominios resuelven de forma independiente sus respectivos binarios nativos sin interferencias ni colisiones en disco.
+
+4. **Bitcode y `.targets` en Directorio de Trabajo (`ISymLinkScafolder`)**:
+   - `ISymLinkScafolder` materializa enlaces simbólicos en el directorio de trabajo del proceso (`Directory.GetCurrentDirectory()`).
+   - Política de preservación: Si un archivo o enlace simbólico ya existe en el destino, **no se sobrescribe** y se emite una advertencia para salvaguardar la integridad de la ejecución en curso.
+
+---
+
+#### 2. Matriz Completa de Comportamiento (15 Escenarios de Prueba)
+
+A continuación se detalla la matriz de 15 combinaciones evaluadas y verificadas mediante el arnés automatizado `PackageResolutionMatrixTests`:
+
+| Caso | Tipo de Paquete / Contenido | Secuencia de Solicitud | Ensamblados Administrados | Assets Web (`StaticFileRegistry`) | Recursos Nativos (P/Invoke) | Bitcode y Targets (`ISymLinkScafolder`) |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | `foo` (Solo Administrado) | 1º `foo 1.0.0` en `Default`<br>2º `foo 2.0.0` en `Default` | `Default` mantiene **1.0.0**. La v2.0.0 **no se carga** en `Default` (inmutabilidad ALC). | N/A | N/A | N/A |
+| **2** | `foo` (Solo Administrado) | 1º `foo 1.0.0` en `Default`<br>2º `foo 2.0.0` en `DominioX` | `Default` tiene **1.0.0**.<br>`DominioX` tiene **2.0.0**.<br>(Coexistencia en memoria). | N/A | N/A | N/A |
+| **3** | `foo` (Solo Administrado) | 1º `foo 1.0.0` en `DominioX`<br>2º `foo 2.0.0` en `DominioX` | `DominioX` mantiene **1.0.0**. La v2.0.0 **no se carga** en ese ALC. | N/A | N/A | N/A |
+| **4** | `foo` (Solo Administrado) | 1º `foo 1.0.0` en `DominioX`<br>2º `foo 2.0.0` en `DominioY` | `DominioX` tiene **1.0.0**.<br>`DominioY` tiene **2.0.0**.<br>(Coexistencia en memoria). | N/A | N/A | N/A |
+| **5** | `foo` (Solo Administrado) | 1º `foo 1.0.0` en `DominioX`<br>2º `foo 2.0.0` en `Default` | `DominioX` tiene **1.0.0**.<br>`Default` carga y tiene **2.0.0**. | N/A | N/A | N/A |
+| **6** | `bar` (Admin + Nativo + Web) | 1º `bar 1.0.0` en `Default`<br>2º `bar 2.0.0` en `Default` | `Default` mantiene **1.0.0**. La v2.0.0 **no se carga**. | Registrado para 1.0.0 en `Default`. | `Default` resuelve nativo **1.0.0**. | Mantiene enlaces simbólicos de **1.0.0**. |
+| **7** | `bar` (Admin + Nativo + Web) | 1º `bar 1.0.0` en `Default`<br>2º `bar 2.0.0` en `DominioX` | `Default` tiene **1.0.0**.<br>`DominioX` tiene **2.0.0**. | `Default` entrega assets de 1.0.0.<br>`DominioX` entrega assets de 2.0.0. | `Default` resuelve nativo **1.0.0**.<br>`DominioX` resuelve nativo **2.0.0** (aislado en `runtimes/DominioX/`). | Scaffolding crea enlaces en `runtimes/DominioX/` (v2.0.0) sin colisionar con `Default` (v1.0.0). |
+| **8** | `bar` (Admin + Nativo + Web) | 1º `bar 1.0.0` en `DominioX`<br>2º `bar 2.0.0` en `DominioX` | `DominioX` mantiene **1.0.0**. | Mantiene assets de 1.0.0 en `DominioX`. | `DominioX` resuelve nativo de **1.0.0**. | Permanece scaffolding de **1.0.0** en `DominioX`. |
+| **9** | `bar` (Admin + Nativo + Web) | 1º `bar 1.0.0` en `DominioX`<br>2º `bar 2.0.0` en `DominioY` | `DominioX` tiene **1.0.0**.<br>`DominioY` tiene **2.0.0**. | `DominioX` tiene assets 1.0.0.<br>`DominioY` tiene assets 2.0.0. | `DominioX` resuelve nativo **1.0.0**.<br>`DominioY` resuelve nativo **2.0.0** (aislados por subcarpeta de dominio). | Coexisten enlaces de `DominioX` (1.0.0) y `DominioY` (2.0.0) en sus carpetas respectivas. |
+| **10** | `bar` (Admin + Nativo + Web) | 1º `bar 1.0.0` en `DominioX`<br>2º `bar 2.0.0` en `Default` | `DominioX` tiene **1.0.0**.<br>`Default` tiene **2.0.0**. | `DominioX` tiene assets 1.0.0.<br>`Default` tiene assets 2.0.0. | `DominioX` resuelve nativo **1.0.0**.<br>`Default` resuelve nativo **2.0.0**. | Enlaces aislados en `runtimes/DominioX/` (1.0.0) y `runtimes/Default/` (2.0.0). |
+| **11** | `zap` (Admin + Bitcode/.targets + Web) | 1º `zap 1.0.0` en `Default`<br>2º `zap 2.0.0` en `Default` | `Default` mantiene **1.0.0**. La v2.0.0 **no se carga**. | Registrado para 1.0.0 en `Default`. | N/A | Scaffolding mantiene bitcode/.targets de **1.0.0**. |
+| **12** | `zap` (Admin + Bitcode/.targets + Web) | 1º `zap 1.0.0` en `Default`<br>2º `zap 2.0.0` en `DominioX` | `Default` tiene **1.0.0**.<br>`DominioX` tiene **2.0.0**. | `Default` tiene assets 1.0.0.<br>`DominioX` tiene assets 2.0.0. | N/A | Scaffolding para 2.0.0 detecta destino existente en directorio de trabajo y **no sobrescribe** (queda 1.0.0). |
+| **13** | `zap` (Admin + Bitcode/.targets + Web) | 1º `zap 1.0.0` en `DominioX`<br>2º `zap 2.0.0` en `DominioX` | `DominioX` mantiene **1.0.0**. | Mantiene assets de 1.0.0. | N/A | Bitcode en disco permanece en **1.0.0**. |
+| **14** | `zap` (Admin + Bitcode/.targets + Web) | 1º `zap 1.0.0` en `DominioX`<br>2º `zap 2.0.0` en `DominioY` | `DominioX` tiene **1.0.0**.<br>`DominioY` tiene **2.0.0**. | `DominioX` tiene assets 1.0.0.<br>`DominioY` tiene assets 2.0.0. | N/A | Scaffolding de `DominioY` detecta colisión en directorio de trabajo y **no sobrescribe** (permanece 1.0.0). |
+| **15** | `zap` (Admin + Bitcode/.targets + Web) | 1º `zap 1.0.0` en `DominioX`<br>2º `zap 2.0.0` en `Default` | `DominioX` tiene **1.0.0**.<br>`Default` tiene **2.0.0**. | `DominioX` tiene assets 1.0.0.<br>`Default` tiene assets 2.0.0. | N/A | Scaffolding de `Default` no sobrescribe el bitcode de 1.0.0 ya presente. |
+
+---
+
+#### 3. Recomendaciones y Reglas Arquitectónicas
+
+- **Paquetes Puramente Administrados**: Pueden utilizarse libremente con versiones dispares entre diferentes dominios (`DominioX`, `DominioY`). El aislamiento por ALC garantiza independencia de tipos.
+- **Activos Web Estáticos**: La indexación `dominio#ruta` en `StaticFileRegistry` permite a componentes Razor/Blazor de distintos dominios servir sus propias versiones de archivos CSS/JS sin interferencias.
+- **Paquetes con Binarios Nativos**: La organización en subcarpetas de runtime por dominio (`./runtimes/{domainName}/{rid}/native/`) y la jerarquía de resolución en `ResolveUnmanagedDll` permite a dominios independientes ejecutar versiones distintas de binarios nativos sin colisiones en disco.
+- **Paquetes con Bitcode o `.targets` de Proceso**: Aquellos paquetes que copien archivos a la raíz del proceso mediante reglas MSBuild globales no aisladas deben unificarse en el dominio `"Default"` o registrarse en `ForcedPackages` para evitar colisiones en el directorio de trabajo común.

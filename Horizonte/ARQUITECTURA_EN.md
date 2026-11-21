@@ -431,11 +431,10 @@ The system behavior when different versions of the same package are requested de
 - If `DomainA` requests `WebPackage 1.0.0` and `DomainB` requests `WebPackage 2.0.0`, both assets coexist in memory in an isolated manner.
 - The `HorizonteStaticFileMiddleware` resolves the appropriate file based on the request domain without disk collisions.
 
-##### B. Symbolic Links and Native Resources (`ISymLinkScafolder`)
-`ISymLinkScafolder` processes `.targets` and `.props` files to create symbolic links in the process working directory.
-- If `DomainA` loads `NativePackage 1.0.0`, symbolic links are created in the working directory.
-- If `DomainB` subsequently loads `NativePackage 2.0.0`, scaffolding detects that destination files already exist and **does not overwrite existing links**, emitting a warning.
-- **Architectural Rule**: Packages depending on native binaries or `.targets` files should be unified in the `"Default"` domain or registered in `ForcedPackages` to guarantee a single consistent version across the process.
+##### B. Symbolic Links and Native Resources (`ISymLinkScafolder` and Per-Domain Runtimes)
+`ISymLinkScafolder` processes native package assets (`runtimes/{rid}/native/`) and `.targets` / `.props` files by creating symbolic links in the working directory:
+- **Domain-Isolated Native Resources**: Unmanaged native binaries are scaffolded under domain-isolated paths: `./runtimes/{domainName}/{rid}/native/{subPath}` (also maintaining links in `./runtimes/{rid}/native/` for the `"Default"` domain for backwards compatibility). This allows `DomainA` to have `./runtimes/DomainA/{rid}/native/libbar.so` (v1.0.0) and `DomainB` to have `./runtimes/DomainB/{rid}/native/libbar.so` (v2.0.0) simultaneously on disk without collisions.
+- **`.targets`, `.props` Files and Process Bitcode**: Artifacts derived from MSBuild directives copied to the execution root maintain the preservation policy: if a destination already exists, it is not overwritten and emits a warning.
 
 ---
 
@@ -525,18 +524,25 @@ The `IPackageSolver` subsystem incorporates control mechanisms to ensure stabili
 When a managed assembly invokes unmanaged native code via P/Invoke (e.g., `OpenCvSharp`, `SkiaSharp`, `TensorFlow`), the CLR raises the `AssemblyLoadContext.ResolvingUnmanagedDll` event.
 
 - **Centralized Handler**: `HDomainManager` hooks `ResolvingUnmanagedDll` on `AssemblyLoadContext.Default` and all dynamically created ALC contexts, delegating resolution to `IHAssemblySolver.ResolveUnmanagedDll(context, unmanagedDllName)`.
-- **Cross-Platform Probing Strategy**:
-  1. **Explicit Preload / Registration**: Initial check for native libraries manually preloaded and registered via `IEnvCoordinator.LoadUnmanagedDll` or `IHAssemblySolver.RegisterUnmanagedDll` in the target domain or global `"Default"` domain.
-  2. **Candidate Name Generation**:
+- **Probing Strategy and Domain-Aware Search Hierarchy**:
+  1. **Explicit Preload / Registration**:
+     - Initial check for libraries explicitly registered in the domain context (`{domainName}::{candidateName}`).
+     - Fallback to global explicit registrations in the `"Default"` domain (`Default::{candidateName}`).
+  2. **Direct Existing File Path**: Immediate load if `unmanagedDllName` exists as a physical path on disk.
+  3. **Candidate Name Generation**:
      - **Linux / Unix**: `lib{Name}.so`, `{Name}.so`, `lib{Name}`, `{Name}`.
      - **Windows**: `{Name}.dll`, `{Name}`.
      - **macOS**: `lib{Name}.dylib`, `{Name}.dylib`, `lib{Name}`, `{Name}`.
-  3. **Compatible RIDs**: Detection of the Runtime Identifier hierarchy via `NugetHelpers.GetCompatibleRuntimeIdentifiers` (e.g., `linux-x64` -> `linux` -> `unix` -> `any`).
-  4. **Sequentially Probed Paths**:
-     - `./runtimes/{cRid}/native/{candidateName}` (process working directory / scaffolding).
-     - `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
-     - Local package directories registered in `NugetFolders`.
-  5. **Safe In-Memory Loading**: Native binary loading via `NativeLibrary.TryLoad` returning the `IntPtr` handle pointer to the CLR, enabling transitive dependency resolution within the same directory.
+  4. **Compatible RIDs**: Detection of the Runtime Identifier hierarchy via `NugetHelpers.GetCompatibleRuntimeIdentifiers` (e.g., `linux-x64` -> `linux` -> `unix` -> `any`).
+  5. **Domain-Isolated Disk Path Probing**:
+     - `./runtimes/{domainName}/{cRid}/native/{candidateName}` and `<AppContext.BaseDirectory>/runtimes/{domainName}/{cRid}/native/{candidateName}`.
+     - `./runtimes/{domainName}/{cRid}/{candidateName}`.
+  6. **Fallback to Default Domain and Shared Paths**:
+     - `./runtimes/Default/{cRid}/native/{candidateName}`.
+     - `./runtimes/{cRid}/native/{candidateName}` and `<AppContext.BaseDirectory>/runtimes/{cRid}/native/{candidateName}`.
+     - `./runtimes/{cRid}/{candidateName}`.
+  7. **Fallback to Package Directories**: Lookup in `./runtimes/{cRid}/native/{candidateName}` within each configured folder in `NugetFolders`.
+  8. **Safe Loading and Cache Registration**: Native binary loading via `NativeLibrary.TryLoad` returning the `IntPtr` handle pointer to the CLR, and automatically caching the loaded handle under `{domainName}::{candidateName}`.
 
 ##### Explicit Preload of Native Binaries (`LoadUnmanagedDll`)
 For packages or custom binary distributions outside the `/runtimes/{rid}/native/` convention, `IEnvCoordinator` exposes a programmatic method:
@@ -544,3 +550,65 @@ For packages or custom binary distributions outside the `/runtimes/{rid}/native/
 IntPtr LoadUnmanagedDll(string? domainName, string unmanagedDllName, string libraryPath);
 ```
 This method validates the binary file path (`.so`, `.dll`, `.dylib`), loads it into memory with `NativeLibrary.TryLoad`, and registers the alias mapping in `IHAssemblySolver` for the specified domain (or `Default`), ensuring immediate resolution for subsequent P/Invoke calls within that domain.
+
+---
+
+### Appendix: Comprehensive Multi-Version Package and Resource Resolution Matrix
+
+This appendix formally documents the resolution behavior, isolation boundaries, and resource interaction in HorizonteNet when different versions of managed, native, web, and `.targets`-scaffolded NuGet packages coexist.
+
+#### 1. System Isolation Dimensions and Layers
+
+Multi-version runtime behavior is governed across four orthogonal isolation layers:
+
+1. **Managed Code (.NET `AssemblyLoadContext`)**:
+   - Each ALC is immutable with respect to already-loaded simple assembly names.
+   - `Default` is the root process context (non-collectible).
+   - Secondary domains (`DominioX`, `DominioY`) are independent collectible ALCs.
+   - Two versions of the same assembly (`foo 1.0.0` and `foo 2.0.0`) can coexist simultaneously in memory when hosted in different domains (ALCs), but cannot be loaded into the same ALC.
+
+2. **Static Web Assets (`StaticFileRegistry`)**:
+   - In-memory logical indexing using the composite key `domain#relative_path` (e.g. `DominioX#/_content/bar/bar.css`).
+   - Enables clean coexistence of different static web asset versions (CSS, JS, images) across domains without disk collisions or file overwriting.
+
+3. **Native Libraries and P/Invoke (`NativeLibrary.TryLoad` and `ResolvingUnmanagedDll`)**:
+   - Native binaries are scaffolded and resolved under domain-isolated paths (`runtimes/{domainName}/{rid}/native/`).
+   - When a P/Invoke call is resolved inside an ALC (`DominioX`), the engine probes the domain-specific runtime subdirectory first.
+   - If `DominioX` loads `bar 1.0.0` and `DominioY` loads `bar 2.0.0`, both domains independently resolve and run their respective native binaries without interference or disk collisions.
+
+4. **Bitcode and `.targets` in Working Directory (`ISymLinkScafolder`)**:
+   - `ISymLinkScafolder` materializes symbolic links in the process working directory (`Directory.GetCurrentDirectory()`).
+   - Preservation policy: If a destination file or symbolic link already exists, **it is never overwritten**, and a warning is logged to maintain runtime stability.
+
+---
+
+#### 2. Full Behavior Matrix (15 Test Scenarios)
+
+The table below outlines the 15 evaluated and automated test combinations verified with the `PackageResolutionMatrixTests` harness:
+
+| Case | Package Type / Content | Request Sequence | Managed Assemblies | Web Assets (`StaticFileRegistry`) | Native Resources (P/Invoke) | Bitcode & Targets (`ISymLinkScafolder`) |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | `foo` (Managed Only) | 1st `foo 1.0.0` in `Default`<br>2nd `foo 2.0.0` in `Default` | `Default` keeps **1.0.0**. v2.0.0 **is not loaded** in `Default` (ALC immutability). | N/A | N/A | N/A |
+| **2** | `foo` (Managed Only) | 1st `foo 1.0.0` in `Default`<br>2nd `foo 2.0.0` in `DominioX` | `Default` has **1.0.0**.<br>`DominioX` has **2.0.0**.<br>(In-memory coexistence). | N/A | N/A | N/A |
+| **3** | `foo` (Managed Only) | 1st `foo 1.0.0` in `DominioX`<br>2nd `foo 2.0.0` in `DominioX` | `DominioX` keeps **1.0.0**. v2.0.0 **is not loaded** in that ALC. | N/A | N/A | N/A |
+| **4** | `foo` (Managed Only) | 1st `foo 1.0.0` in `DominioX`<br>2nd `foo 2.0.0` in `DominioY` | `DominioX` has **1.0.0**.<br>`DominioY` has **2.0.0**.<br>(In-memory coexistence). | N/A | N/A | N/A |
+| **5** | `foo` (Managed Only) | 1st `foo 1.0.0` in `DominioX`<br>2nd `foo 2.0.0` in `Default` | `DominioX` has **1.0.0**.<br>`Default` loads and has **2.0.0**. | N/A | N/A | N/A |
+| **6** | `bar` (Managed + Native + Web) | 1st `bar 1.0.0` in `Default`<br>2nd `bar 2.0.0` in `Default` | `Default` keeps **1.0.0**. v2.0.0 **is not loaded**. | Registered for 1.0.0 in `Default`. | `Default` resolves **1.0.0** native binary. | Maintains symlinks from **1.0.0**. |
+| **7** | `bar` (Managed + Native + Web) | 1st `bar 1.0.0` in `Default`<br>2nd `bar 2.0.0` in `DominioX` | `Default` has **1.0.0**.<br>`DominioX` has **2.0.0**. | `Default` serves 1.0.0 assets.<br>`DominioX` serves 2.0.0 assets. | `Default` resolves **1.0.0** native library.<br>`DominioX` resolves **2.0.0** native library (isolated in `runtimes/DominioX/`). | Scaffolding creates links in `runtimes/DominioX/` (v2.0.0) without colliding with `Default` (v1.0.0). |
+| **8** | `bar` (Managed + Native + Web) | 1st `bar 1.0.0` in `DominioX`<br>2nd `bar 2.0.0` in `DominioX` | `DominioX` keeps **1.0.0**. | Maintains 1.0.0 assets in `DominioX`. | `DominioX` resolves native from **1.0.0**. | Scaffolding for **1.0.0** remains in `DominioX`. |
+| **9** | `bar` (Managed + Native + Web) | 1st `bar 1.0.0` in `DominioX`<br>2nd `bar 2.0.0` in `DominioY` | `DominioX` has **1.0.0**.<br>`DominioY` has **2.0.0**. | `DominioX` has 1.0.0 assets.<br>`DominioY` has 2.0.0 assets. | `DominioX` resolves native **1.0.0**.<br>`DominioY` resolves native **2.0.0** (isolated in domain subfolders). | Coexisting symlinks for `DominioX` (1.0.0) and `DominioY` (2.0.0) in respective folders. |
+| **10** | `bar` (Managed + Native + Web) | 1st `bar 1.0.0` in `DominioX`<br>2nd `bar 2.0.0` in `Default` | `DominioX` has **1.0.0**.<br>`Default` has **2.0.0**. | `DominioX` has 1.0.0 assets.<br>`Default` has 2.0.0 assets. | `DominioX` resolves native **1.0.0**.<br>`Default` resolves native **2.0.0**. | Isolated symlinks in `runtimes/DominioX/` (1.0.0) and `runtimes/Default/` (2.0.0). |
+| **11** | `zap` (Managed + Bitcode/.targets + Web) | 1st `zap 1.0.0` in `Default`<br>2nd `zap 2.0.0` in `Default` | `Default` keeps **1.0.0**. v2.0.0 **is not loaded**. | Registered for 1.0.0 in `Default`. | N/A | Scaffolding maintains bitcode/.targets from **1.0.0**. |
+| **12** | `zap` (Managed + Bitcode/.targets + Web) | 1st `zap 1.0.0` in `Default`<br>2nd `zap 2.0.0` in `DominioX` | `Default` has **1.0.0**.<br>`DominioX` has **2.0.0**. | `Default` has 1.0.0 assets.<br>`DominioX` has 2.0.0 assets. | N/A | Scaffolding for 2.0.0 detects existing working directory target and **does not overwrite** (remains 1.0.0). |
+| **13** | `zap` (Managed + Bitcode/.targets + Web) | 1st `zap 1.0.0` in `DominioX`<br>2nd `zap 2.0.0` in `DominioX` | `DominioX` keeps **1.0.0**. | Maintains 1.0.0 assets. | N/A | Bitcode on disk remains **1.0.0**. |
+| **14** | `zap` (Managed + Bitcode/.targets + Web) | 1st `zap 1.0.0` in `DominioX`<br>2nd `zap 2.0.0` in `DominioY` | `DominioX` has **1.0.0**.<br>`DominioY` has **2.0.0**. | `DominioX` has 1.0.0 assets.<br>`DominioY` has 2.0.0 assets. | N/A | Scaffolding in `DominioY` detects collision in working directory and **does not overwrite** (remains 1.0.0). |
+| **15** | `zap` (Managed + Bitcode/.targets + Web) | 1st `zap 1.0.0` in `DominioX`<br>2nd `zap 2.0.0` in `Default` | `DominioX` has **1.0.0**.<br>`Default` has **2.0.0**. | `DominioX` has 1.0.0 assets.<br>`Default` has 2.0.0 assets. | N/A | Scaffolding in `Default` does not overwrite the 1.0.0 bitcode already present. |
+
+---
+
+#### 3. Architectural Recommendations and Rules
+
+- **Purely Managed Packages**: Can be safely consumed across different versions in separate domains (`DominioX`, `DominioY`). ALC isolation guarantees type independence.
+- **Static Web Assets**: In-memory domain-scoped routing (`domain#path` in `StaticFileRegistry`) allows Razor/Blazor components from separate domains to serve their respective CSS/JS assets without collisions.
+- **Packages with Native Binaries**: Subfolder organization by domain (`./runtimes/{domainName}/{rid}/native/`) and the resolution hierarchy in `ResolveUnmanagedDll` allows independent domains to execute different versions of native binaries without disk collisions.
+- **Packages with Process Bitcode or `.targets`**: Packages that copy files directly to the root execution directory via un-isolated global MSBuild directives should be centralized in the `"Default"` domain or registered in `ForcedPackages` to avoid collisions in the common working directory.
