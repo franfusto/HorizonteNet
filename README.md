@@ -44,34 +44,6 @@ HorizonteNet is based on a microservices and decoupled modules architecture:
 
 ---
 
-## Technical documentation
-
-Each component of the HorizonteNet ecosystem provides detailed technical architecture specifications:
-
-- **HorizonteNet Core (`Horizonte`)**:  
-  Architecture of the central orchestrator (`IEnvCoordinator`), collectible ALC domain lifecycle, NuGet resolution and caching (`IHAssemblyCache`), symbolic link scaffolding, and decoupled command dispatching.  
-  📖 [Architecture Specification](Horizonte/ARQUITECTURA_EN.md)
-
-- **Interactive Extensions (`Horizonte.Extensions.Interactive`)**:  
-  Integration with .NET Interactive and dynamic in-memory compilation with Roslyn (`CSharpCompilation`), `#r` directive interception, and automatic deployment to isolated domains.  
-  📖 [Architecture Specification](Horizonte.Extensions.Interactive/ARQUITECTURA_EN.md)
-
-- **Web Support & Middleware (`Horizonte.Extension.AspNetCore`)**:  
-  Middleware for serving static files and packaged web resources (`_content/...`) with domain contextual resolution and optimized streaming via `IHttpResponseBodyFeature`.  
-  📖 [Architecture Specification](Horizonte.Extension.AspNetCore/ARQUITECTURA_EN.md)
-
-- **Intelligent Workflows (`Horizonte.Extension.AiWorkFlows`)**:  
-  Directed graph orchestration powered by `Microsoft.Agents.AI.Workflows`, execution checkpoints, pause/resume lifecycle, AI agents, and semantic vector command indexing with OpenAI and Semantic Kernel.  
-  📖 [Architecture Specification](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
-
-- **Declarative Agents (`Horizonte.Extension.Ai`)**:  
-  Declarative runtime for `Hagent` agents, decoupled factory composition model, file management policies, automated tool execution, and interchangeable AI clients.  
-  📖 [Architecture Specification](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
-
-
-
----
-
 ## Preview 10.0.8-beta
 
 HorizonteNet can be run directly from the compiled binaries available in the project release:
@@ -84,56 +56,6 @@ HorizonteNet can be run directly from the compiled binaries available in the pro
 1. Download the executable corresponding to your operating system.
 2. Run the downloaded file.
 3. Open the application in your browser:
-
-   ```text
-   http://localhost:5000
-   ```
-
----
-
-## Getting started
-
-### Prerequisites
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) or later.
-- A compatible development environment:
-  - JetBrains Rider
-  - Visual Studio
-  - Visual Studio Code
-
-### Installation from source code
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/franfusto/HorizonteNet.git
-   ```
-
-2. Go to the project directory:
-
-   ```bash
-   cd HorizonteNet
-   ```
-
-3. Restore dependencies:
-
-   ```bash
-   dotnet restore
-   ```
-
-4. Build the project:
-
-   ```bash
-   dotnet build
-   ```
-
-5. Run the `ConsoleApp` project:
-
-   ```bash
-   dotnet run --project Launchers/ConsoleApp
-   ```
-
-6. Open the application in your browser:
 
    ```text
    http://localhost:5000
@@ -225,6 +147,82 @@ http://localhost:5000
 ```
 
 > **Default credentials:** The default password for the application is `admin123`.
+
+---
+
+## Technical documentation
+
+Each component of the HorizonteNet ecosystem provides detailed technical architecture specifications:
+
+- **HorizonteNet Core (`Horizonte`)**:  
+  Architecture of the central orchestrator (`IEnvCoordinator`), collectible ALC domain lifecycle, NuGet resolution and caching (`IHAssemblyCache`), symbolic link scaffolding, and decoupled command dispatching.  
+  📖 [Architecture Specification](Horizonte/ARQUITECTURA_EN.md)
+
+- **Interactive Extensions (`Horizonte.Extensions.Interactive`)**:  
+  Integration with .NET Interactive and dynamic in-memory compilation with Roslyn (`CSharpCompilation`), `#r` directive interception, and automatic deployment to isolated domains.  
+  📖 [Architecture Specification](Horizonte.Extensions.Interactive/ARQUITECTURA_EN.md)
+
+- **Web Support & Middleware (`Horizonte.Extension.AspNetCore`)**:  
+  Middleware for serving static files and packaged web resources (`_content/...`) with domain contextual resolution and optimized streaming via `IHttpResponseBodyFeature`.  
+  📖 [Architecture Specification](Horizonte.Extension.AspNetCore/ARQUITECTURA_EN.md)
+
+- **Intelligent Workflows (`Horizonte.Extension.AiWorkFlows`)**:  
+  Directed graph orchestration powered by `Microsoft.Agents.AI.Workflows`, execution checkpoints, pause/resume lifecycle, AI agents, and semantic vector command indexing with OpenAI and Semantic Kernel.  
+  📖 [Architecture Specification](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
+
+- **Declarative Agents (`Horizonte.Extension.Ai`)**:  
+  Declarative runtime for `Hagent` agents, decoupled factory composition model, file management policies, automated tool execution, and interchangeable AI clients.  
+  📖 [Architecture Specification](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
+
+---
+
+## Developers
+
+### Prerequisites
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) or later.
+- A compatible development environment:
+  - JetBrains Rider
+  - Visual Studio
+  - Visual Studio Code
+
+### Installation from source code
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/franfusto/HorizonteNet.git
+   ```
+
+2. Go to the project directory:
+
+   ```bash
+   cd HorizonteNet
+   ```
+
+3. Restore dependencies:
+
+   ```bash
+   dotnet restore
+   ```
+
+4. Build the project:
+
+   ```bash
+   dotnet build
+   ```
+
+5. Run the `ConsoleApp` project:
+
+   ```bash
+   dotnet run --project Launchers/ConsoleApp
+   ```
+
+6. Open the application in your browser:
+
+   ```text
+   http://localhost:5000
+   ```
 
 ---
 

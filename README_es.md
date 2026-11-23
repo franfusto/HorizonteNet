@@ -43,32 +43,6 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 ---
 
-## Documentación técnica
-
-Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas:
-
-- **Núcleo de HorizonteNet (`Horizonte`)**:  
-  Arquitectura del orquestador central (`IEnvCoordinator`), ciclo de vida de dominios en ALC coleccionables, resolución y caché NuGet (`IHAssemblyCache`), andamiaje de enlaces simbólicos y despacho de comandos desacoplados.  
-  📖 [Especificación de Arquitectura](Horizonte/ARQUITECTURA_ES.md)
-
-- **Extensiones Interactivas (`Horizonte.Extensions.Interactive`)**:  
-  Integración con .NET Interactive y compilación dinámica en memoria mediante Roslyn (`CSharpCompilation`), intercepción de directivas `#r` y despliegue automático en dominios aislados.  
-  📖 [Especificación de Arquitectura](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md)
-
-- **Soporte Web y Middleware (`Horizonte.Extension.AspNetCore`)**:  
-  Middleware de entrega de archivos estáticos y recursos web empaquetados (`_content/...`) con resolución contextual por dominio y streaming optimizado con `IHttpResponseBodyFeature`.  
-  📖 [Especificación de Arquitectura](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md)
-
-- **Flujos de Trabajo Inteligentes (`Horizonte.Extension.AiWorkFlows`)**:  
-  Orquestación de grafos dirigidos con `Microsoft.Agents.AI.Workflows`, puntos de control (checkpoints), pausa/reanudación, agentes de IA e indexación semántica vectorial de comandos con OpenAI y Semantic Kernel.  
-  📖 [Especificación de Arquitectura](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
-
-- **Agentes Declarativos (`Horizonte.Extension.Ai`)**:  
-  Runtime declarativo de agentes `Hagent`, modelo de composición desacoplado mediante factoría, políticas de gestión de archivos, ejecución de herramientas automáticas y clientes IA intercambiables.  
-  📖 [Especificación de Arquitectura](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
-
----
-
 ## Vista previa 10.0.8-beta
 
 Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
@@ -81,56 +55,6 @@ Es posible ejecutar HorizonteNet directamente desde los binarios compilados disp
 1. Descarga el ejecutable correspondiente a tu sistema operativo.
 2. Ejecuta el archivo descargado.
 3. Abre la aplicación en el navegador:
-
-   ```text
-   http://localhost:5000
-   ```
-
----
-
-## Empezando
-
-### Requisitos previos
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) o superior.
-- Un entorno de desarrollo compatible:
-  - JetBrains Rider
-  - Visual Studio
-  - Visual Studio Code
-
-### Instalación desde el código fuente
-
-1. Clona el repositorio:
-
-   ```bash
-   git clone https://github.com/franfusto/HorizonteNet.git
-   ```
-
-2. Accede al directorio del proyecto:
-
-   ```bash
-   cd HorizonteNet
-   ```
-
-3. Restaura las dependencias:
-
-   ```bash
-   dotnet restore
-   ```
-
-4. Compila el proyecto:
-
-   ```bash
-   dotnet build
-   ```
-
-5. Ejecuta el proyecto `ConsoleApp`:
-
-   ```bash
-   dotnet run --project Launchers/ConsoleApp
-   ```
-
-6. Abre la aplicación en el navegador:
 
    ```text
    http://localhost:5000
@@ -223,6 +147,82 @@ http://localhost:5000
 ```
 
 > **Credenciales predeterminadas:** La contraseña predeterminada para la aplicación es `admin123`.
+
+---
+
+## Documentación técnica
+
+Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas:
+
+- **Núcleo de HorizonteNet (`Horizonte`)**:  
+  Arquitectura del orquestador central (`IEnvCoordinator`), ciclo de vida de dominios en ALC coleccionables, resolución y caché NuGet (`IHAssemblyCache`), andamiaje de enlaces simbólicos y despacho de comandos desacoplados.  
+  📖 [Especificación de Arquitectura](Horizonte/ARQUITECTURA_ES.md)
+
+- **Extensiones Interactivas (`Horizonte.Extensions.Interactive`)**:  
+  Integración con .NET Interactive y compilación dinámica en memoria mediante Roslyn (`CSharpCompilation`), intercepción de directivas `#r` y despliegue automático en dominios aislados.  
+  📖 [Especificación de Arquitectura](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md)
+
+- **Soporte Web y Middleware (`Horizonte.Extension.AspNetCore`)**:  
+  Middleware de entrega de archivos estáticos y recursos web empaquetados (`_content/...`) con resolución contextual por dominio y streaming optimizado con `IHttpResponseBodyFeature`.  
+  📖 [Especificación de Arquitectura](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md)
+
+- **Flujos de Trabajo Inteligentes (`Horizonte.Extension.AiWorkFlows`)**:  
+  Orquestación de grafos dirigidos con `Microsoft.Agents.AI.Workflows`, puntos de control (checkpoints), pausa/reanudación, agentes de IA e indexación semántica vectorial de comandos con OpenAI y Semantic Kernel.  
+  📖 [Especificación de Arquitectura](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
+
+- **Agentes Declarativos (`Horizonte.Extension.Ai`)**:  
+  Runtime declarativo de agentes `Hagent`, modelo de composición desacoplado mediante factoría, políticas de gestión de archivos, ejecución de herramientas automáticas y clientes IA intercambiables.  
+  📖 [Especificación de Arquitectura](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
+
+---
+
+## Desarrolladores
+
+### Requisitos previos
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) o superior.
+- Un entorno de desarrollo compatible:
+  - JetBrains Rider
+  - Visual Studio
+  - Visual Studio Code
+
+### Instalación desde el código fuente
+
+1. Clona el repositorio:
+
+   ```bash
+   git clone https://github.com/franfusto/HorizonteNet.git
+   ```
+
+2. Accede al directorio del proyecto:
+
+   ```bash
+   cd HorizonteNet
+   ```
+
+3. Restaura las dependencias:
+
+   ```bash
+   dotnet restore
+   ```
+
+4. Compila el proyecto:
+
+   ```bash
+   dotnet build
+   ```
+
+5. Ejecuta el proyecto `ConsoleApp`:
+
+   ```bash
+   dotnet run --project Launchers/ConsoleApp
+   ```
+
+6. Abre la aplicación en el navegador:
+
+   ```text
+   http://localhost:5000
+   ```
 
 ---
 
