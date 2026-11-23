@@ -45,36 +45,36 @@ HorizonteNet se basa en una arquitectura de microservicios y módulos desacoplad
 
 ## Documentación técnica
 
-Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas disponibles en español e inglés:
+Cada componente del ecosistema HorizonteNet cuenta con especificaciones de arquitectura detalladas:
 
 - **Núcleo de HorizonteNet (`Horizonte`)**:  
   Arquitectura del orquestador central (`IEnvCoordinator`), ciclo de vida de dominios en ALC coleccionables, resolución y caché NuGet (`IHAssemblyCache`), andamiaje de enlaces simbólicos y despacho de comandos desacoplados.  
-  📖 [Arquitectura en Español](Horizonte/ARQUITECTURA_ES.md) | [English Architecture](Horizonte/ARQUITECTURA_EN.md)
+  📖 [Especificación de Arquitectura](Horizonte/ARQUITECTURA_ES.md)
 
 - **Extensiones Interactivas (`Horizonte.Extensions.Interactive`)**:  
   Integración con .NET Interactive y compilación dinámica en memoria mediante Roslyn (`CSharpCompilation`), intercepción de directivas `#r` y despliegue automático en dominios aislados.  
-  📖 [Arquitectura en Español](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extensions.Interactive/ARQUITECTURA_EN.md)
+  📖 [Especificación de Arquitectura](Horizonte.Extensions.Interactive/ARQUITECTURA_ES.md)
 
 - **Soporte Web y Middleware (`Horizonte.Extension.AspNetCore`)**:  
   Middleware de entrega de archivos estáticos y recursos web empaquetados (`_content/...`) con resolución contextual por dominio y streaming optimizado con `IHttpResponseBodyFeature`.  
-  📖 [Arquitectura en Español](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.AspNetCore/ARQUITECTURA_EN.md)
+  📖 [Especificación de Arquitectura](Horizonte.Extension.AspNetCore/ARQUITECTURA_ES.md)
 
 - **Flujos de Trabajo Inteligentes (`Horizonte.Extension.AiWorkFlows`)**:  
   Orquestación de grafos dirigidos con `Microsoft.Agents.AI.Workflows`, puntos de control (checkpoints), pausa/reanudación, agentes de IA e indexación semántica vectorial de comandos con OpenAI y Semantic Kernel.  
-  📖 [Arquitectura en Español](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
+  📖 [Especificación de Arquitectura](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_ES.md)
 
 - **Agentes Declarativos (`Horizonte.Extension.Ai`)**:  
   Runtime declarativo de agentes `Hagent`, modelo de composición desacoplado mediante factoría, políticas de gestión de archivos, ejecución de herramientas automáticas y clientes IA intercambiables.  
-  📖 [Arquitectura en Español](Horizonte.Extension.Ai/ARQUITECTURA_ES.md) | [English Architecture](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
+  📖 [Especificación de Arquitectura](Horizonte.Extension.Ai/ARQUITECTURA_ES.md)
 
 ---
 
-## Vista previa 10.0.4-beta
+## Vista previa 10.0.8-beta
 
 Es posible ejecutar HorizonteNet directamente desde los binarios compilados disponibles en la release del proyecto:
 
-- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp.exe)
-- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp)
+- [Ejecutable para Windows](https://github.com/franfusto/HorizonteNet/releases/download/10.0.8-beta/ConsoleApp.exe)
+- [Ejecutable para Linux](https://github.com/franfusto/HorizonteNet/releases/download/10.0.8-beta/ConsoleApp)
 
 ### Ejecución desde binarios
 
@@ -186,12 +186,9 @@ docker run -d \
   -p 5000:5000 \
   -e PUID=1000 \
   -e PGID=1000 \
-  -e ASPNETCORE_URLS=http://+:5000 \
-  -e ASPNETCORE_HTTP_PORTS=5000 \
-  -e ASPNETCORE_ENVIRONMENT=Production \
   -v ./horizonte:/home/horizonte \
   --restart unless-stopped \
-  franfusto/horizontenet:10.0.7-beta
+  franfusto/horizontenet:10.0.8-beta
 ```
 
 ### Ejecución con Docker Compose
@@ -201,16 +198,13 @@ Crea un archivo `docker-compose.yml` con la siguiente configuración:
 ```yaml
 services:
   app:
-    image: franfusto/horizontenet:10.0.7-beta
+    image: franfusto/horizontenet:10.0.8-beta
     container_name: app_horizonte
     ports:
       - "5000:5000"
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - ASPNETCORE_URLS=http://+:5000
-      - ASPNETCORE_HTTP_PORTS=5000
-      - ASPNETCORE_ENVIRONMENT=Production
     volumes:
       - ./horizonte:/home/horizonte
     restart: unless-stopped

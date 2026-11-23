@@ -28,6 +28,7 @@ HorizonteNet is based on a microservices and decoupled modules architecture:
   - **Scripts:** execution and management of C# scripts and Jupyter Notebooks.
   - **Workflows:** orchestration of customizable workflows.
   - **Agents:** definition and execution of autonomous agents.
+  - **MCP Server:** a Model Context Protocol-based service integrating the modules' capabilities.
 
 ---
 
@@ -63,16 +64,20 @@ Each component of the HorizonteNet ecosystem provides detailed technical archite
   Directed graph orchestration powered by `Microsoft.Agents.AI.Workflows`, execution checkpoints, pause/resume lifecycle, AI agents, and semantic vector command indexing with OpenAI and Semantic Kernel.  
   📖 [Architecture Specification](Horizonte.Extension.AiWorkFlows/ARQUITECTURA_EN.md)
 
+- **Declarative Agents (`Horizonte.Extension.Ai`)**:  
+  Declarative runtime for `Hagent` agents, decoupled factory composition model, file management policies, automated tool execution, and interchangeable AI clients.  
+  📖 [Architecture Specification](Horizonte.Extension.Ai/ARQUITECTURA_EN.md)
+
 
 
 ---
 
-## Preview 10.0.4-beta
+## Preview 10.0.8-beta
 
 HorizonteNet can be run directly from the compiled binaries available in the project release:
 
-- [Windows executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp.exe)
-- [Linux executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.4-beta/ConsoleApp)
+- [Windows executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.8-beta/ConsoleApp.exe)
+- [Linux executable](https://github.com/franfusto/HorizonteNet/releases/download/10.0.8-beta/ConsoleApp)
 
 ### Running from binaries
 
@@ -185,7 +190,7 @@ docker run -d \
   -e PGID=1000 \
   -v ./horizonte:/home/horizonte \
   --restart unless-stopped \
-  franfusto/horizontenet:10.0.6-beta
+  franfusto/horizontenet:10.0.8-beta
 ```
 
 ### Running with Docker Compose
@@ -195,7 +200,7 @@ Create a `docker-compose.yml` file with the following configuration:
 ```yaml
 services:
   app:
-    image: franfusto/horizontenet:10.0.6-beta
+    image: franfusto/horizontenet:10.0.8-beta
     container_name: app_horizonte
     ports:
       - "5000:5000"
