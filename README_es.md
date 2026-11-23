@@ -222,6 +222,8 @@ Abre la aplicación en el navegador:
 http://localhost:5000
 ```
 
+> **Credenciales predeterminadas:** La contraseña predeterminada para la aplicación es `admin123`.
+
 ---
 
 ## Estado del proyecto

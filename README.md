@@ -224,6 +224,8 @@ Open the application in your browser:
 http://localhost:5000
 ```
 
+> **Default credentials:** The default password for the application is `admin123`.
+
 ---
 
 ## Project status
