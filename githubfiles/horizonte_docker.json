@@ -91,6 +91,7 @@
         "Active": true
       }
     ],
+    "UseUserNugetFolder": false,
     "FrameworkPriorities": [
       "net10.0",
       "netstandard2.1",
@@ -102,27 +103,29 @@
     ],
     "ForcedPackages": [
       {
-        "Active": true,
+        "Active": false,
         "PackageId": "Horizonte",
         "Version": "10.0.7-beta",
         "Framework": "net10.0",
         "Domain": "Default"
       },
       {
-        "Active": true,
+        "Active": false,
         "PackageId": "Z.Blazor.Diagrams.Core",
         "Version": "3.0.4",
         "Framework": "net6.0",
         "Domain": "Default"
       },
       {
-        "Active": true,
+        "Active": false,
         "PackageId": "Z.Blazor.Diagrams",
         "Version": "3.0.4",
         "Framework": "net6.0",
         "Domain": "Default"
       }
     ],
+    "BlockedPackages": [],
+    "BlockedPackagesPolicy": 0,
     "AssemblyToPackageMap": {
       "Microsoft.CodeAnalysis.Workspaces": "Microsoft.CodeAnalysis.Workspaces.Common",
       "Microsoft.CodeAnalysis": "Microsoft.CodeAnalysis.Common",
@@ -352,7 +355,7 @@
         "Id": "4b7ab579-9766-4359-9398-357cb7a47248",
         "Name": "MóduloSimple",
         "Description": "",
-        "Code": "I3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKCnVzaW5nIFN5c3RlbTsKdXNpbmcgSG9yaXpvbnRlOwp1c2luZyBNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nOwoKCltIb3Jpem9udGVNb2R1bGUoIlNhbXBsZSIpXQpwdWJsaWMgY2xhc3MgU2FtcGxlCnsKICAgIHByaXZhdGUgSUxvZ2dlcjxQYW5lbE1vZHVsbz4/IF9sb2dnZXI7CgogICAgcHVibGljIFNhbXBsZShJTG9nZ2VyPFBhbmVsTW9kdWxvPiBsb2dnZXIpCiAgICB7CiAgICAgICAgX2xvZ2dlciA9IGxvZ2dlcjsKICAgIH0KICAgIAogICAgW0hvcml6b250ZVJvbGUoImluaXQiKV0KICAgIFtIb3Jpem9udGVDb21tYW5kKCJTYW1wbGVfSW5pdCIpXQogICAgcHVibGljIGJvb2wgSW5pdCgpCiAgICB7CiAgICAgICAgCiAgICAgICAgX2xvZ2dlcj8uTG9nSW5mb3JtYXRpb24oIk3Ds2R1bG8gU2NyaXB0cyBJbmNpY2lhZG8iKTsKICAgICAgICByZXR1cm4gdHJ1ZTsKICAgIH0KCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiU2FtcGxlX0hhekFsZ28iLCJwcnVlYmFzIGluaWNpYWxlcyIpXQogICAgcHVibGljIHN0cmluZyBIYXpBbGdvKHN0cmluZyBhcmdzKQogICAgewogICAgICAgICBDb25zb2xlLldyaXRlTGluZSgiaG9sYSBtdW5kbyIpOwogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKGFyZ3MrIi0tLS0tIik7CiAgICAgICAgcmV0dXJuIGFyZ3M7CiAgICB9CgogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9IYXpBbGdvMiIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28yKHN0cmluZyBhcmdzKQogICAgewogICAgICAgIHZhciByZXMgPSJob2xhIG11bmRvKioqKioqKioqKioqKioqKjIiOwogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKHJlcyk7CiAgICAgICAgcmV0dXJuIHJlczsKICAgIH0KCgogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9IYXpBbGdvMyIsInBydWViYXMgaW5pY2lhbGVzIildCiAgICBwdWJsaWMgc3RyaW5nIEhhekFsZ28zKHN0cmluZyBhcmdzKQogICAgewogICAgICAgIHZhciByZXMgPSJob2xhIG11bmRvIDMzMyAqKioqKioqKioqKioqKioqMiI7CiAgICAgICAgQ29uc29sZS5Xcml0ZUxpbmUocmVzKTsKICAgICAgICByZXR1cm4gcmVzOwogICAgfQoKICAgIFtIb3Jpem9udGVDb21tYW5kKCJTYW1wbGVfVGFyZWEiKV0KICAgIHB1YmxpYyBhc3luYyBUYXNrPGJvb2w+IFRhcmVhICgpCiAgICB7CiAgICAgICAgcmV0dXJuIHRydWU7CiAgICB9Cgp9Cg==",
+        "Code": "I3IgIm51Z2V0Ok1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmcuQWJzdHJhY3Rpb25zLDEwLjAuMSIKI3IgIm51Z2V0OlN5c3RlbS5TZWN1cml0eS5DbGFpbXMsMTAuMC4wIgoKdXNpbmcgU3lzdGVtOwp1c2luZyBIb3Jpem9udGU7CnVzaW5nIE1pY3Jvc29mdC5FeHRlbnNpb25zLkxvZ2dpbmc7CnVzaW5nIFN5c3RlbS5TZWN1cml0eS5DbGFpbXM7CnVzaW5nIFN5c3RlbS5UZXh0Lkpzb247CgpbSG9yaXpvbnRlTW9kdWxlKCJTYW1wbGUiKV0KcHVibGljIGNsYXNzIFNhbXBsZQp7CiAgICBwcml2YXRlIElMb2dnZXI8UGFuZWxNb2R1bG8+PyBfbG9nZ2VyOwoKICAgIHB1YmxpYyBTYW1wbGUoSUxvZ2dlcjxQYW5lbE1vZHVsbz4gbG9nZ2VyKQogICAgewogICAgICAgIF9sb2dnZXIgPSBsb2dnZXI7CiAgICB9CiAgICAKICAgIFtIb3Jpem9udGVSb2xlKCJpbml0IildCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiU2FtcGxlX0luaXQiKV0KICAgIHB1YmxpYyBib29sIEluaXQoKQogICAgewogICAgICAgIAogICAgICAgIF9sb2dnZXI/LkxvZ0luZm9ybWF0aW9uKCJNw7NkdWxvIFNjcmlwdHMgSW5jaWNpYWRvIik7CiAgICAgICAgcmV0dXJuIHRydWU7CiAgICB9Ci8qCiovCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiU2FtcGxlX0VuY3JpcHRhciIsIkVuY3JpcHRhIGxhIGNhZGVuYSBkZSB0ZXh0byBpbnRyb2R1Y2lkYSIpXQogICAgcHVibGljIHN0cmluZyBIYXpBbGdvKHN0cmluZyBhcmdzLCBDbGFpbXNQcmluY2lwYWw/IHVzZXIpCiAgICB7CiAgICAgICAgc3RyaW5nIHVzZXJqc29uID0gICB1c2VyLkNsYWltcy5GaXJzdCgpLlZhbHVlID8/ICJzaW4gZGF0b3MiOwogICAgICAgIENvbnNvbGUuV3JpdGVMaW5lKCI9PT0+IiArIHVzZXJqc29uKTsKICAgICAgICBDb25zb2xlLldyaXRlTGluZShhcmdzKyItLS0tLSIpOwogICAgICAgIHJldHVybiAiWyIgKyBhcmdzICsgIl0iOwogICAgfQogIAogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9HZXRNZXRlb0luZm8iLCJvYnRpZW5lIGxhIGluZm9ybWFjacOzbiBtZXRlb3Jsb2dpY2EgcGFyYSBsYSBsb2NhbGlkYWQgaW50cm9kdWNpZGEiKV0KICAgIHB1YmxpYyBzdHJpbmcgSGF6QWxnbzIoc3RyaW5nIGxvY2FsaWRhZCkKICAgIHsKICAgICAgICB2YXIgcmVzID0idGVtcGVyYXR1cmE6JzM0IMK6JyBjbGltYTonc29lbGFkbyBzaW4gcHJlY2lwaXRhY2lvbmVzJyI7CiAgICAgICAgQ29uc29sZS5Xcml0ZUxpbmUocmVzKTsKICAgICAgICByZXR1cm4gcmVzOwogICAgfQoKCiAgICBbSG9yaXpvbnRlQ29tbWFuZCgiU2FtcGxlX0hhekFsZ28zIiwicHJ1ZWJhcyBpbmljaWFsZXMiKV0KICAgIHB1YmxpYyBzdHJpbmcgSGF6QWxnbzMoc3RyaW5nIGFyZ3MpCiAgICB7CiAgICAgICAgdmFyIHJlcyA9ImhvbGEgbXVuZG8gMzMzICoqKioqKioqKioqKioqKioyIjsKICAgICAgICBDb25zb2xlLldyaXRlTGluZShyZXMpOwogICAgICAgIHJldHVybiByZXM7CiAgICB9CgogICAgW0hvcml6b250ZUNvbW1hbmQoIlNhbXBsZV9UYXJlYSIpXQogICAgcHVibGljIGFzeW5jIFRhc2s8Ym9vbD4gVGFyZWEgKCkKICAgIHsKICAgICAgICByZXR1cm4gdHJ1ZTsKICAgIH0KCn0K",
         "Active": true
       },
       {
